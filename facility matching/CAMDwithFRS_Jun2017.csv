@@ -1,0 +1,2575 @@
+EPA REGION,STATE,COUNTY CD,LATITUDE,LONGITUDE,FRS ID,FACILITY NAME,ORIS CODE
+1,CT    ,CT011,41,-72,110000316015,AES Thames,10675
+1,CT    ,CT009,41,-73,110007353773,Alfred L Pierce Generating Station,6635
+1,CT    ,CT003,42,-73,110024519001,"Algonquin Power Windsor Locks, LLC",10567
+1,CT    ,CT009,41,-73,110010383343,Branford,540
+1,CT    ,CT001,41,-73,110044916062,Bridgeport Energy,55042
+1,CT    ,CT001,41,-73,,"Bridgeport Energy II, LLC",56601
+1,CT    ,CT001,41,-73,110000316989,Bridgeport Harbor Station,568
+1,CT    ,CT009,41,-73,,CPV Towantic Energy Center,56047
+1,CT    ,CT003,42,-73,110001403749,Capitol District Energy Center,50498
+1,CT    ,CT001,41,-74,110001731010,Cos Cob,542
+1,CT    ,CT009,41,-73,110030737610,Devon,544
+1,CT    ,CT015,42,-72,110000845140,EmpireCo Sterling Energy Facility,50736
+1,CT    ,CT009,41,-73,110017936091,English Station,569
+1,CT    ,CT005,42,-73,110002484678,Franklin Drive,561
+1,CT    ,CT011,42,-72,110000316024,Fusion Paperboard Connecticut LLC,54657
+1,CT    ,CT005,,,110058932268,Kimberly Clark New Milford Mill,58084
+1,CT    ,CT007,42,-73,110038324382,Kleen Energy Systems Project,56798
+1,CT    ,CT015,42,-72,110012515894,Lake Road Generating Company,55149
+1,CT    ,,,,,Meriden Combined Cycle Facility,55310
+1,CT    ,CT007,42,-73,110000316266,Middletown,562
+1,CT    ,CT009,41,-73,110012624712,Milford Power Company LLC,55126
+1,CT    ,CT011,41,-72,110000316006,Montville,546
+1,CT    ,CT009,41,-73,110000610651,New Haven Harbor,6156
+1,CT    ,CT001,41,-73,110000603106,Norwalk Harbor Station,548
+1,CT    ,CT011,42,-72,110019898896,Norwich,581
+1,CT    ,CT011,41,-72,110000315891,Pfizer,54236
+1,CT    ,CT003,42,-73,110022328765,Pratt & Whitney Willgoos Lab,880021
+1,CT    ,CT003,42,-73,110017435701,"Pratt & Whitney, East Hartford",54605
+1,CT    ,CT009,41,-73,,Shepaug,552
+1,CT    ,CT003,42,-73,110002395505,South Meadow Station,563
+1,CT    ,CT001,41,-73,,South Norwalk Electric & Water ,6598
+1,CT    ,CT005,42,-73,110002475045,Torrington Terminal,565
+1,CT    ,CT011,42,-72,110044341968,Tunnel,557
+1,CT    ,CT009,41,-73,110006547870,"Wallingford Energy, LLC",55517
+1,CT    ,CT009,42,-73,110033185915,Waterbury Generation,56629
+1,CT    ,CT001,41,-74,110028011345,"Waterside Power, LLC",56189
+1,MA    ,MA021,42,-71,110024360458,"ANP Bellingham Energy Company, LLC",55211
+1,MA    ,MA027,42,-72,110017410425,"ANP Blackstone Energy Company, LLC",55212
+1,MA    ,MA021,42,-71,110000310486,Bellingham,10307
+1,MA    ,MA013,42,-73,110002059361,Berkshire Power,55041
+1,MA    ,MA017,42,-71,110000739648,Blackstone,1594
+1,MA    ,MA005,42,-71,110028092597,Brayton Point,1619
+1,MA    ,,,,110012513930,Brockton Power,55425
+1,MA    ,MA013,42,-73,110000581086,Cabot-Holyoke,9864
+1,MA    ,MA001,42,-71,110000311485,Canal Station,1599
+1,MA    ,MA005,42,-71,110000312064,Cleary Flood,1682
+1,MA    ,MA005,42,-71,110000311911,Dartmouth Power,52026
+1,MA    ,MA025,42,-71,110025247720,Deer Island Treatment,10823
+1,MA    ,MA005,42,-71,110001937922,Dighton,55026
+1,MA    ,MA003,42,-73,110007369383,Doreen,1631
+1,MA    ,MA021,42,-71,110024352289,Edgar Station,1585
+1,MA    ,MA025,42,-71,110058932197,Exelon L Street Generating Station,1587
+1,MA    ,MA021,42,-71,110024352289,Fore River Energy Center,55317
+1,MA    ,MA017,42,-71,110024312411,Framingham Station,1586
+1,MA    ,MA009,42,-71,110000310191,General Electric Aircraft,10029
+1,MA    ,,,,,IDC Bellingham Power Project,55427
+1,MA    ,MA017,43,-72,110001957053,Indeck-Pepperell,10522
+1,MA    ,,,,110007309171,Indeck-Turners Falls,50460
+1,MA    ,MA017,42,-71,110000310976,Kendall Green Energy LLC,1595
+1,MA    ,MA025,42,-71,110001948046,Kneeland Station,880023
+1,MA    ,MA017,43,-71,110001950121,Lowell Cogeneration Company,10802
+1,MA    ,MA013,42,-73,110000308444,MASSPOWER,10726
+1,MA    ,MA017,42,-71,110002152795,MIT Central Utility Plant,54907
+1,MA    ,MA025,42,-71,110000881733,Medical Area Total Energy,10883
+1,MA    ,MA021,42,-71,110001949508,Medway Station,1592
+1,MA    ,MA027,42,-72,110001944353,"Milford Power, LLC",54805
+1,MA    ,MA027,42,-72,110002028635,Millennium Power Partners,55079
+1,MA    ,MA013,42,-73,110000581086,Mount Tom,1606
+1,MA    ,MA017,42,-71,110000310841,Mystic,1588
+1,MA    ,MA005,42,-71,110001939886,NSTAR Electric Cannon Street,1616
+1,MA    ,MA025,42,-71,110000310823,New Boston,1589
+1,MA    ,MA013,42,-73,,Palmer Renewable Energy,59336
+1,MA    ,MA027,,,110010426315,Pinetree Power Fitchburg,54620
+1,MA    ,MA003,42,-73,110000308480,Pittsfield Generating,50002
+1,MA    ,MA021,42,-71,110002011625,Potter,1660
+1,MA    ,MA009,43,-71,110000310459,Salem Harbor Station,1626
+1,MA    ,MA009,43,-71,,Salem Harbor Station NGCC,60903
+1,MA    ,MA003,,,,Silver Lake,1639
+1,MA    ,MA005,42,-71,110000311779,Somerset,1613
+1,MA    ,MA025,42,-71,110009589276,South Boston Combustion Turbines,10176
+1,MA    ,MA013,42,-73,110024332079,Stony Brook,6081
+1,MA    ,MA017,43,-71,110001959195,"Tanner Street Generation, LLC",54586
+1,MA    ,MA009,43,-71,110023148654,Waters River,1678
+1,MA    ,MA013,42,-73,110045630956,West Springfield,1642
+1,MA    ,MA003,42,-73,110007309233,Woodland Road,1643
+1,ME    ,ME007,45,-70,110008053587,Androscoggin Energy,55031
+1,ME    ,ME009,45,-69,110025329963,Bucksport Generation LLC,50243
+1,ME    ,ME003,47,-68,110009048155,Caribou,1513
+1,ME    ,,,,110012513440,Gorham Energy Project,55108
+1,ME    ,ME019,45,-69,110043378662,Graham Station,1470
+1,ME    ,,,,,"Loring BioEnergy, LLC",56105
+1,ME    ,ME019,45,-69,110042400666,Maine Independence Station,55068
+1,ME    ,ME015,44,-70,110000581488,Mason Steam,1496
+1,ME    ,ME017,45,-71,110017437781,Rumford Power,55100
+1,ME    ,ME005,44,-70,110001681243,Westbrook Energy Center,55294
+1,ME    ,ME005,44,-70,110000581406,William F Wyman,1507
+1,NH    ,NH007,44,-71,110057111995,Burgess BioPower,58054
+1,NH    ,NH015,43,-71,110021167011,"Essential Power Newington Energy, LLC",55661
+1,NH    ,NH015,43,-71,110015655209,Granite Ridge Energy,55170
+1,NH    ,NH007,45,-71,110010352821,Lost Nation,2362
+1,NH    ,NH013,43,-71,110000313802,Merrimack,2364
+1,NH    ,NH015,43,-71,110045448262,Newington,8002
+1,NH    ,NH015,43,-71,110000602991,Schiller,2367
+1,NH    ,NH003,44,-71,110007380609,White Lake,2369
+1,RI    ,RI009,41,-72,110001663450,Block Island,6567
+1,RI    ,,,,,Indeck-North Smithfield Energy Cent,55361
+1,RI    ,RI007,42,-71,110000312796,Manchester Street,3236
+1,RI    ,RI007,42,-72,110000312180,Ocean State Power,51030
+1,RI    ,RI007,42,-72,110000312180,Ocean State Power II,54324
+1,RI    ,RI007,42,-71,110028052185,"Pawtucket Power Associates, LP",54056
+1,RI    ,RI007,42,-72,110009450478,Rhode Island State Energy Center,55107
+1,RI    ,RI007,42,-71,110001662656,South Street,3238
+1,RI    ,RI005,42,-71,110002054491,"Tiverton Power, LLC",55048
+1,VT    ,VT023,44,-73,110007330290,Berlin 5,3734
+1,VT    ,VT007,44,-73,110005293592,J C McNeil,589
+1,VT    ,VT007,44,-73,110038781716,J Edward Moran,3755
+1,VT    ,VT007,44,-73,110028046326,Milton,3717
+1,VT    ,VT007,44,-73,110012144624,Penny Lane Gas Turbine ,3754
+1,VT    ,VT005,44,-72,110058932348,Ryegate Associates,51026
+2,NJ    ,NJ009,39,-75,110000321526,B L England,2378
+2,NJ    ,NJ017,41,-74,110043803685,Bayonne Energy Center,56964
+2,NJ    ,NJ017,41,-74,110043803685,Bayonne Generating Station,2397
+2,NJ    ,NJ017,41,-74,110000317826,"Bayonne Plant Holding, LLC",50497
+2,NJ    ,NJ039,41,-74,110041133163,Bayway Refinery,880016
+2,NJ    ,NJ003,41,-74,110013716826,Bergen,2398
+2,NJ    ,NJ005,40,-75,110000582012,Burlington Generating Station,2399
+2,NJ    ,NJ011,39,-75,110012513002,Butler,7152
+2,NJ    ,NJ007,40,-75,110000321456,"Camden Plant Holding, LLC",10751
+2,NJ    ,NJ011,39,-75,110010353508,Carlls Corner Energy Center,2379
+2,NJ    ,NJ033,40,-75,110017403264,Carneys Point,10566
+2,NJ    ,NJ029,40,-74,110010428689,Cedar Energy Station,2380
+2,NJ    ,NJ011,39,-75,,Clayville,58235
+2,NJ    ,,,,,"Commonwealth Shore Power, LLC",56109
+2,NJ    ,,,,110012513057,Conectiv Bordentown Power Plant,55675
+2,NJ    ,NJ011,39,-75,110023772229,Cumberland Energy Center,5083
+2,NJ    ,NJ041,41,-75,110000320705,"DSM Nutritional Products, Inc",54416
+2,NJ    ,NJ033,40,-76,110000321241,Deepwater,2384
+2,NJ    ,NJ039,41,-74,110000318406,"E F Kenilworth, Inc.",10805
+2,NJ    ,NJ023,40,-74,110001540681,"EFS Parlin Holdings, LLC",50799
+2,NJ    ,NJ015,40,-75,110046445548,Eagle Point Power Generation,50561
+2,NJ    ,NJ023,40,-74,110000836659,Edison,2400
+2,NJ    ,NJ003,41,-74,110004206680,Elmwood Park Power - LLC,50852
+2,NJ    ,NJ029,40,-74,110000321811,"Essential Power Lakewood, LLC",54640
+2,NJ    ,NJ029,40,-74,110015375280,"Essential Power Ocean Peaking Power, LLC",55938
+2,NJ    ,NJ013,41,-74,110001530898,Essex,2401
+2,NJ    ,NJ029,40,-74,110007141654,Forked River Power,7138
+2,NJ    ,NJ019,41,-75,110000734359,Gilbert Generating Station,2393
+2,NJ    ,NJ019,41,-75,110007930873,Glen Gardner,8227
+2,NJ    ,NJ011,39,-75,110000603197,Howard M Down,2434
+2,NJ    ,NJ017,41,-74,110040954296,Hudson Generating Station,2403
+2,NJ    ,NJ017,41,-74,110006367528,Kearny Generating Station,2404
+2,NJ    ,NJ039,41,-74,110012214184,Liberty Generating Station,55469
+2,NJ    ,NJ039,41,-74,110023868554,Linden Cogeneration Facility,50006
+2,NJ    ,NJ039,41,-74,110000869105,Linden Generating Station,2406
+2,NJ    ,NJ015,40,-75,110000575182,Logan Generating Plant,10043
+2,NJ    ,NJ015,40,-75,110012156843,Mantua Creek Generating Project,55291
+2,NJ    ,NJ021,40,-75,110000582236,Mercer Generating Station,2408
+2,NJ    ,NJ015,40,-75,110015062206,Mickleton Energy Center,8008
+2,NJ    ,NJ009,39,-75,110015064008,Middle Energy Center,2382
+2,NJ    ,NJ019,41,-75,110006847270,Milford Power (10616),10616
+2,NJ    ,NJ001,39,-74,110006182013,Missouri Avenue Energy Center,2383
+2,NJ    ,,,,110012512968,NA 1 -- 7139,7139
+2,NJ    ,,,,110012512977,NA 2 -- 7140,7140
+2,NJ    ,,,,110012512986,NA 3 -- 7141,7141
+2,NJ    ,,,,110012512995,NA 4 -- 7142,7142
+2,NJ    ,,,,110012513011,NA 5 -- 7217,7217
+2,NJ    ,,,,110012513020,NA 6 -- 7218,7218
+2,NJ    ,NJ015,40,-75,110021102901,National Park,2409
+2,NJ    ,NJ013,41,-74,110001539050,Newark Bay Cogen,50385
+2,NJ    ,NJ013,41,-74,110046284873,Newark Energy Center,58079
+2,NJ    ,NJ013,41,-74,110008054185,Newark Power Plant,50797
+2,NJ    ,NJ023,40,-74,110029906127,North Jersey Energy Associates,10308
+2,NJ    ,NJ023,40,-74,110004264037,O'Brien Biogas IV LLC,55092
+2,NJ    ,NJ023,40,-74,,Old Bridge Clean Energy Center,57814
+2,NJ    ,NJ015,40,-75,110022294569,Paulsboro Refining Company LLC,50628
+2,NJ    ,NJ033,40,-75,110000582094,Pedricktown Cogeneration Plant,10099
+2,NJ    ,NJ023,40,-74,110021321693,"Red Oak Power, LLC",55239
+2,NJ    ,NJ033,39,-76,110000603142,Salem Generating Station,2410
+2,NJ    ,NJ023,40,-74,110020515334,Sayreville,2390
+2,NJ    ,NJ023,41,-74,110000801614,Sewaren Generating Station,2411
+2,NJ    ,NJ011,39,-75,110007140432,Sherman Avenue,7288
+2,NJ    ,NJ015,40,-75,110000582101,"Sunoco, Inc. Eagle Point Facility",55113
+2,NJ    ,NJ011,39,-75,110031894065,Vineland Cogeneration,54807
+2,NJ    ,NJ023,40,-74,110007381163,Werner,2385
+2,NJ    ,NJ015,40,-75,110010354810,West Deptford Energy Station,56963
+2,NJ    ,NJ011,39,-75,110022447510,West Station,6776
+2,NJ    ,NJ023,41,-74,,Woodbridge Energy Center,57839
+2,NY    ,NY047,41,-74,110019827286,23rd and 3rd,7910
+2,NY    ,NY061,41,-74,110019296509,59th Street,2503
+2,NY    ,NY061,41,-74,110019296527,74th Street,2504
+2,NY    ,NY089,45,-75,110007383919,AG - Energy,10803
+2,NY    ,NY003,43,-78,110001599789,Allegany Station No. 133,10619
+2,NY    ,NY085,41,-74,110000866386,Arthur Kill,2490
+2,NY    ,NY081,41,-74,110043792401,Astoria Energy,55375
+2,NY    ,NY081,41,-74,110002093109,Astoria Gas Turbine Power,55243
+2,NY    ,NY081,41,-74,110002093109,Astoria Generating Station,8906
+2,NY    ,NY039,42,-74,110019468057,Athens Generating Company,55405
+2,NY    ,NY037,43,-78,110001600232,Batavia Energy,54593
+2,NY    ,NY081,41,-74,110019673441,Bayswater Peaking Facility,55699
+2,NY    ,NY049,44,-75,110002053580,"Beaver Falls, LLC",10617
+2,NY    ,NY001,43,-74,110000324177,Bethlehem Energy Center (Albany),2539
+2,NY    ,NY059,41,-73,110001576376,Bethpage Energy Center,50292
+2,NY    ,NY007,42,-76,110001595523,Binghamton Cogen Plant,55600
+2,NY    ,NY045,44,-76,110008035704,"Black River Generation, LLC",10464
+2,NY    ,,,,110001592991,Black Rock Facility,10331
+2,NY    ,NY087,41,-74,110000582352,Bowline Generating Station,2625
+2,NY    ,NY103,41,-73,110015378731,Brentwood,7912
+2,NY    ,NY119,41,-74,110015375627,Bronxville,2510
+2,NY    ,NY047,41,-74,110009461910,Brooklyn Navy Yard Cogeneration,54914
+2,NY    ,NY119,41,-74,110033144292,Buchanan Substation,4233
+2,NY    ,NY103,41,-73,110040566893,Caithness Long Island Energy Center,56234
+2,NY    ,NY089,,,110039685123,Canton Cogen,10662
+2,NY    ,NY067,43,-76,110001603809,Carr Street Generating Station,50978
+2,NY    ,NY045,44,-76,110019421017,Carthage Energy,10620
+2,NY    ,NY083,43,-74,110001600296,"Castleton Power, LLC",10190
+2,NY    ,NY109,43,-77,110000328547,"Cayuga Operating Company, LLC",2535
+2,NY    ,NY081,41,-74,110000323230,Charles Poletti,2491
+2,NY    ,NY001,,,110039685132,Colonie Cogen,10747
+2,NY    ,NY109,42,-76,110028041330,Cornell University Ithaca Campus,50368
+2,NY    ,NY063,43,-79,110001589282,Covanta Niagara,50472
+2,NY    ,NY027,42,-74,,Cricket Valley Energy Center,57185
+2,NY    ,NY071,42,-74,110000324747,Danskammer Generating Station,2480
+2,NY    ,NY059,41,-74,110000582389,E F Barrett,2511
+2,NY    ,NY103,41,-72,110019207482,East Hampton Facility,2512
+2,NY    ,NY061,41,-74,110000322623,East River,2493
+2,NY    ,NY103,41,-73,110014360057,Edgewood Energy,55786
+2,NY    ,NY083,43,-74,110020996083,Empire Generating Company LLC,56259
+2,NY    ,NY059,41,-74,110019162671,Equus  Power I,56032
+2,NY    ,NY081,41,-74,110000808680,Far Rockaway,2513
+2,NY    ,NY063,43,-79,110001599958,Fortistar North Tonawanda Inc,54131
+2,NY    ,NY059,41,-74,110019162671,Freeport Power Plant No. 2,2679
+2,NY    ,NY075,43,-76,110019121537,Fulton Cogeneration Associates,54138
+2,NY    ,NY101,42,-77,110000499443,GMMM Hickling,2529
+2,NY    ,NY017,42,-75,110000582762,GMMM Jennison,2531
+2,NY    ,NY007,42,-76,110000326157,GMMM Westover,2526
+2,NY    ,NY059,41,-74,110006532751,Glenwood,2514
+2,NY    ,NY059,41,-74,110006532751,Glenwood Landing Energy Center,7869
+2,NY    ,NY047,41,-74,110010433977,Gowanus Generating Station,2494
+2,NY    ,NY123,43,-77,110000327619,Greenidge Generation LLC,2527
+2,NY    ,NY005,41,-74,110012158663,Harlem River Yard,7914
+2,NY    ,NY103,41,-72,110043806334,"Hawkeye Energy Greenport, LLC",55969
+2,NY    ,NY005,41,-74,110019187770,Hell Gate,7913
+2,NY    ,NY075,43,-76,110006700454,Heritage Station,55366
+2,NY    ,NY087,41,-74,110007149861,Hillburn,2628
+2,NY    ,NY039,42,-74,110000825705,Holcim US Inc,880043
+2,NY    ,NY103,41,-73,110042050197,Holtsville Facility,8007
+2,NY    ,NY047,41,-74,110000808332,Hudson Avenue,2496
+2,NY    ,NY029,43,-79,110000326709,Huntley Power,2549
+2,NY    ,NY043,43,-75,110002442401,Ilion Energy Center,50459
+2,NY    ,NY091,43,-74,110000324934,Indeck-Corinth Energy Center,50458
+2,NY    ,NY009,42,-78,110001596381,Indeck-Olean Energy Center,54076
+2,NY    ,NY075,43,-76,110001599994,Indeck-Oswego Energy Center,50450
+2,NY    ,NY121,43,-78,110001587603,Indeck-Silver Springs Energy Center,50449
+2,NY    ,NY029,43,-79,110001600170,Indeck-Yerkes Energy Center,50451
+2,NY    ,NY075,43,-76,110001600009,Independence,54547
+2,NY    ,NY119,41,-74,110033144292,Indian Point,2497
+2,NY    ,,,,,Indian Point Peaking Facility,55859
+2,NY    ,NY091,43,-74,110007991030,International Paper-Hudson River,54088
+2,NY    ,NY081,41,-74,110007990246,KIAC Cogeneration,54114
+2,NY    ,NY001,42,-74,110015376289,"Lafarge Building Materials, Inc.",880044
+2,NY    ,NY113,43,-74,110002380049,Lehigh Northeast Cement Company,880052
+2,NY    ,NY063,43,-79,110000326530,Lockport,54041
+2,NY    ,NY063,43,-79,110000326530,Lockport Merchant Facility,55531
+2,NY    ,NY087,41,-74,110000739915,Lovett Generating Station,2629
+2,NY    ,NY089,45,-75,110019446517,Massena Energy Facility,54592
+2,NY    ,,,,,Medford Power Project,56101
+2,NY    ,NY059,41,-74,110015377037,Mitchel Gardens,6097
+2,NY    ,NY091,43,-74,110000324435,Momentive Performance Materials,880024
+2,NY    ,NY013,42,-79,110000326460,NRG Dunkirk Power,2554
+2,NY    ,NY047,41,-74,110008054265,Narrows Generating Station,2499
+2,NY    ,NY059,41,-74,110001575787,Nassau Energy Corporation,52056
+2,NY    ,NY089,,,110039685114,Natural Dam Cogeneration,10614
+2,NY    ,NY063,43,-79,110001578276,"Niagara Generation, LLC",50202
+2,NY    ,NY103,41,-73,110019611375,Nissequogue Energy Center,54149
+2,NY    ,NY047,41,-74,110012158707,North 1st,7915
+2,NY    ,,,,,North Bellport Energy Center,55959
+2,NY    ,NY103,41,-73,110000582398,Northport,2516
+2,NY    ,NY067,43,-76,110000325639,Onondaga Cogeneration,50855
+2,NY    ,NY075,43,-77,110000325416,Oswego Harbor Power,2594
+2,NY    ,NY103,41,-73,110023138451,Pinelawn Power,56188
+2,NY    ,NY081,41,-74,110000323230,Poletti 500 MW CC,56196
+2,NY    ,NY103,41,-73,110008025528,Port Jefferson Energy Center,2517
+2,NY    ,NY085,41,-74,110028050230,Pouch Terminal,8053
+2,NY    ,NY067,43,-76,110009482274,Project Orange Facility,54425
+2,NY    ,NY055,43,-78,110000492173,"RED-Rochester, LLC-Eastman Business Park",10025
+2,NY    ,NY081,41,-74,110033146165,Ravenswood Generating Station,2500
+2,NY    ,NY081,41,-74,110041359302,Ravenswood Steam Plant,880100
+2,NY    ,NY083,43,-74,110000324364,Rensselaer Cogen,54034
+2,NY    ,NY103,41,-73,110000323953,Richard M Flynn (Holtsville),7314
+2,NY    ,NY005,41,-74,110001588210,Riverbay Corp. - Co-Op City,52168
+2,NY    ,NY055,43,-78,110000327986,Rochester 3 - Beebee Station,2640
+2,NY    ,NY055,43,-78,110000498355,Rochester 7 - Russell Station,2642
+2,NY    ,NY071,42,-74,110000324747,Roseton Generating LLC,8006
+2,NY    ,NY013,42,-79,110000328235,S A Carlson,2682
+2,NY    ,NY019,45,-73,110000542994,"Saranac Power Partners, LP",54574
+2,NY    ,NY001,43,-74,110006625633,Selkirk Cogen Partners,10725
+2,NY    ,NY071,41,-74,110041998247,Shoemaker,2632
+2,NY    ,NY103,41,-73,110012589902,Shoreham Energy,55787
+2,NY    ,NY063,43,-79,110000326371,Somerset Operating Company  (Kintigh),6082
+2,NY    ,NY091,43,-74,110009480472,South Glens Falls Energy,10618
+2,NY    ,NY065,43,-76,110001594695,Sterling Power Plant,50744
+2,NY    ,NY067,43,-76,110000325540,Syracuse Energy Corporation,50651
+2,NY    ,NY067,43,-76,110001600189,"Syracuse, LLC",10621
+2,NY    ,NY031,44,-73,110000325005,Ticonderoga Mill,54099
+2,NY    ,NY071,41,-74,,Valley Energy Center,56940
+2,NY    ,NY081,41,-74,110012158734,Vernon Boulevard,7909
+2,NY    ,NY103,41,-73,110007994723,Wading River Facility,7146
+2,NY    ,NY061,41,-74,110019644973,Waterside,2502
+2,NY    ,NY103,41,-73,110040503880,West Babylon Facility,2521
+2,PR    ,PR057,18,-66,110012141805,"AES Puerto Rico, LP",880102
+2,PR    ,PR123,18,-66,,Aguirre Steam Power Plant,880105
+2,PR    ,PR059,18,-67,,Costa Sur Steam Power Plant,880104
+2,PR    ,PR137,18,-66,,Palo Seco Steam Power Plant,880103
+2,PR    ,PR127,18,-66,,San Juan Steam Power Plant,880106
+3,DC    ,DC001,39,-77,110000499531,Benning Generation Station,603
+3,DC    ,DC001,39,-77,110001136271,Buzzard Point,604
+3,DC    ,DC001,39,-77,110002486257,GSA Central Heating,880004
+3,DC    ,DC001,39,-77,110044865679,GSA West Heating,880003
+3,DE    ,DE003,40,-76,110007354095,Christiana Substation,591
+3,DE    ,DE003,40,-76,110001148598,Delaware City,592
+3,DE    ,DE003,40,-76,110001148598,Delaware City Refinery,52193
+3,DE    ,DE003,40,-76,110000338821,Edge Moor,593
+3,DE    ,DE001,39,-75,110043806931,Garrison Energy Center,57349
+3,DE    ,DE003,40,-76,110000338821,Hay Road,7153
+3,DE    ,DE005,39,-75,110000603936,Indian River,594
+3,DE    ,DE003,40,-76,110006553032,Madison Street,596
+3,DE    ,DE001,39,-76,110002506841,McKee Run,599
+3,DE    ,DE001,39,-76,110000338910,NRG Energy Center Dover,10030
+3,DE    ,DE001,39,-76,110001736033,Van Sant,7318
+3,DE    ,DE001,39,-76,110021346792,Warren F. Sam Beasley Pwr Station,7962
+3,DE    ,DE003,40,-76,110007354317,West Substation,597
+3,MD    ,MD017,39,-77,, CPV St. Charles Energy Center,56846
+3,MD    ,MD001,40,-79,110000551055,AES Warrior Run,10678
+3,MD    ,MD003,39,-77,110038162902,Brandon Shores,602
+3,MD    ,MD033,39,-77,110000852051,Brandywine Power Facility,54832
+3,MD    ,MD005,39,-76,110000339713,C P Crane,1552
+3,MD    ,,,,,Catoctin Power Plant,56236
+3,MD    ,MD033,39,-77,110005974286,Chalk Point,1571
+3,MD    ,MD009,38,-76,,Cove Point LNG Terminal,59073
+3,MD    ,MD031,39,-77,110000339303,Dickerson,1572
+3,MD    ,,,,,"Duke Energy Frederick, LLC",55806
+3,MD    ,MD041,39,-76,110001768775,Easton 2,4257
+3,MD    ,MD041,39,-76,110000614069,Easton Utilities - Plant 1,1580
+3,MD    ,MD510,39,-77,110019893276,Gould Street,1553
+3,MD    ,MD043,40,-78,110019891508,Hagerstown,1581
+3,MD    ,MD003,39,-77,110038162902,Herbert A Wagner,1554
+3,MD    ,,,,,Kelson Ridge Generating Station,55728
+3,MD    ,MD033,39,-77,,Keys Energy Center,60302
+3,MD    ,MD001,39,-79,110007334072,Luke Paper Company,50282
+3,MD    ,MD017,38,-77,110000339143,Morgantown,1573
+3,MD    ,MD019,38,-76,110012513404,Nanticoke,4207
+3,MD    ,MD005,39,-77,110002020651,Notchcliff,1555
+3,MD    ,MD025,39,-76,110000499559,Perryman,1556
+3,MD    ,MD510,39,-77,110003523027,Philadelphia Road,1557
+3,MD    ,MD043,40,-78,110022381545,R. Paul Smith Power Station,1570
+3,MD    ,MD005,39,-77,110043089635,Riverside,1559
+3,MD    ,MD015,40,-76,110012274797,Rock Springs Generating Facility,7835
+3,MD    ,MD005,39,-76,110000339697,Severstal Sparrows Point LLC,10485
+3,MD    ,MD019,38,-76,110000585260,Vienna,1564
+3,MD    ,MD510,39,-77,110011797591,Westport,1560
+3,MD    ,MD015,40,-76,,Wildcat Point Generation Facility,59220
+3,PA    ,PA007,41,-80,110000329083,AES Beaver Valley LLC,10676
+3,PA    ,,,,110010959105,AES Hoytdale,55631
+3,PA    ,PA003,41,-80,110001103010,Allegheny Energy Units 1 & 2,55196
+3,PA    ,PA003,41,-80,110001103010,"Allegheny Energy Units 3, 4 & 5",55710
+3,PA    ,PA051,40,-80,110007342303,Allegheny Energy Units 8 & 9,55377
+3,PA    ,PA077,41,-75,110000334656,Allentown,3139
+3,PA    ,PA063,40,-79,110001060574,Armagh Compressor Station,880071
+3,PA    ,PA005,41,-79,110000583618,Armstrong Power Station,3178
+3,PA    ,PA005,41,-79,110025330942,"Armstrong Power, LLC",55347
+3,PA    ,PA113,,,,Benton,3199
+3,PA    ,PA011,40,-76,110010317175,Bernville Station,880049
+3,PA    ,PA095,41,-75,110012565884,Bethlehem Power Plant,55690
+3,PA    ,,,,,Bethlehem Structural Products Corp,10483
+3,PA    ,PA011,40,-76,,Birdsboro Power,61035
+3,PA    ,PA117,42,-77,110007340494,Blossburg,3120
+3,PA    ,PA007,41,-80,110056969721,Bruce Mansfield,6094
+3,PA    ,PA133,40,-77,110000601778,"Brunner Island, LLC",3140
+3,PA    ,PA003,40,-80,110001219299,Brunot Island Power Station,3096
+3,PA    ,PA021,40,-79,110000330641,Cambria Cogen,10641
+3,PA    ,PA055,40,-78,110012215913,Chambersburg Units 12 & 13,55654
+3,PA    ,,40,-75,110010278877,Chester Station,3157
+3,PA    ,PA003,41,-80,110038170074,Cheswick,8226
+3,PA    ,PA021,41,-79,110001147786,Colver Power Project,10143
+3,PA    ,PA063,40,-79,110000538801,Conemaugh,3118
+3,PA    ,PA029,40,-76,110000584868,Cromby,3159
+3,PA    ,PA017,40,-75,110000337396,Croydon Generating Station,8012
+3,PA    ,PA101,40,-75,110000336716,Delaware,3160
+3,PA    ,PA047,41,-79,110000330400,"Domtar Paper Company, LLC",54638
+3,PA    ,PA051,40,-80,110017805730,"Dynegy Fayette II, LLC",55516
+3,PA    ,,,,110012511870,East Donegal Power Plant,55643
+3,PA    ,PA021,40,-79,110000330632,Ebensburg Power Company,10603
+3,PA    ,PA045,40,-75,110000817493,Eddystone Generating Station,3161
+3,PA    ,PA125,40,-80,110000582995,Elrama,3098
+3,PA    ,,,,110012511834,Endless Mountains Energy,55452
+3,PA    ,PA061,40,-78,110031477328,Entriken Compressor Station,880072
+3,PA    ,PA003,41,-80,110006645880,F R Phillips,3099
+3,PA    ,PA017,40,-75,110012163014,"Fairless Energy, LLC",55298
+3,PA    ,PA017,40,-75,110004879301,Fairless Hills Generating Station,7701
+3,PA    ,PA017,40,-75,110001120714,Falls Generating Station,3162
+3,PA    ,PA107,41,-76,110007340430,Fishbach,3142
+3,PA    ,PA049,42,-80,110012512218,Front Street,3121
+3,PA    ,PA007,41,-80,110000329038,G F Weaton,50130
+3,PA    ,PA023,,,110000332113,GE Transportation Systems,50358
+3,PA    ,PA107,41,-76,110020578891,Gilberton Power Company,10113
+3,PA    ,PA101,40,-75,110000744990,Grays Ferry Cogen Partnership,54785
+3,PA    ,PA001,40,-77,110010415167,Hamilton,3109
+3,PA    ,PA121,41,-80,110005971145,Handsome Lake Energy,55233
+3,PA    ,PA043,40,-77,110001035558,Harrisburg,3143
+3,PA    ,PA079,41,-76,110007340323,Harwood,3144
+3,PA    ,PA059,40,-80,110017437148,Hatfield's Ferry Power Station,3179
+3,PA    ,PA079,41,-76,110028048565,Hazleton Generation,10870
+3,PA    ,PA071,40,-76,110000492280,Holtwood,3145
+3,PA    ,PA063,41,-79,110000330339,Homer City,3122
+3,PA    ,PA101,40,-75,110038495768,Honeywell Resins & Chemicals LLC,880007
+3,PA    ,PA079,41,-76,110000335593,Hunlock Creek Energy Center,3176
+3,PA    ,PA079,41,-76,110038122260,Hunlock Unit 4,56397
+3,PA    ,PA001,40,-77,110022447574,Hunterstown,3110
+3,PA    ,PA001,40,-77,110022447574,Hunterstown Combined Cycle,55976
+3,PA    ,PA049,42,-80,110001148865,"International Paper, Erie Mill",10628
+3,PA    ,PA035,41,-77,110000584136,International Paper-Lock Haven Mill,54089
+3,PA    ,PA079,41,-76,110007340332,Jenkins,3146
+3,PA    ,PA005,41,-79,110000538525,Keystone,3136
+3,PA    ,PA045,40,-75,110000603847,Kimberly-Clark Tissue Company,50410
+3,PA    ,,,,,LTV Steel Company-Pittsburgh Works,880036
+3,PA    ,PA069,41,-76,,Lackawanna Energy Center,60357
+3,PA    ,PA045,40,-75,110016713573,Liberty Electric Power Plant,55231
+3,PA    ,,,,110012511843,Linfield Energy Center,55506
+3,PA    ,PA035,41,-77,110006117031,Lock Haven,3147
+3,PA    ,PA095,41,-75,110017810662,"Lower Mount Bethel Energy, LLC",55667
+3,PA    ,PA045,40,-75,110040907212,"MARCUS HOOK 50, L.P.",50074
+3,PA    ,PA045,40,-75,110018494869,"Marcus Hook Energy, LP",55801
+3,PA    ,PA095,41,-75,110000334656,"Martins Creek, LLC",3148
+3,PA    ,PA091,40,-75,110000603883,Merck & Company - West Point,52149
+3,PA    ,PA125,40,-80,110010265961,Mitchell Power Station,3181
+3,PA    ,PA093,41,-77,110000492324,"Montour, LLC",3149
+3,PA    ,PA091,40,-76,110001116685,Moser Generating Station,3163
+3,PA    ,PA041,40,-77,110007336374,Mountain,3111
+3,PA    ,PA079,41,-76,,Moxie Freedom Generation Plant,59906
+3,PA    ,PA097,41,-76,110007026306,Mt. Carmel Cogeneration,10343
+3,PA    ,PA101,40,-75,110001203359,Naval Surface Warfare Center,880009
+3,PA    ,PA073,41,-80,110010259451,New Castle,3138
+3,PA    ,PA049,42,-80,110000577661,North East Cogeneration Plant,54571
+3,PA    ,PA095,41,-75,110006623396,Northampton Generating Plant,50888
+3,PA    ,PA107,41,-76,110000584421,Northeastern Power Company,50039
+3,PA    ,PA011,40,-76,110017412450,Ontelaunee Energy Center,55193
+3,PA    ,PA001,40,-77,110010415176,Orrtanna,3112
+3,PA    ,PA133,40,-77,110017404664,P H Glatfelter Company,50397
+3,PA    ,PA069,41,-76,110001085646,PEI Power Corporation,50279
+3,PA    ,,,,,PPL West Earl,55671
+3,PA    ,PA109,41,-77,,Panda Hummel Station,60368
+3,PA    ,PA015,42,-76,110056297109,Panda Liberty Power Project,58420
+3,PA    ,PA081,42,-77,,Panda Patriot Generation Plant,58426
+3,PA    ,PA025,41,-76,110030471610,Panther Creek Energy Facility,50776
+3,PA    ,PA101,40,-75,110000336994,Philadelphia Refinery,52106
+3,PA    ,PA031,41,-79,110002348905,Piney Creek Power Plant,54144
+3,PA    ,PA095,41,-75,110009160978,Portland,3113
+3,PA    ,PA131,42,-76,110000584537,Procter & Gamble Paper Products,50463
+3,PA    ,PA101,40,-75,110000336958,Richmond,3168
+3,PA    ,PA045,40,-75,,SPMT Marcus Hook Industrial Complex,880107
+3,PA    ,PA101,40,-75,110000337029,Schuylkill,3169
+3,PA    ,PA121,41,-80,110005981296,Scrubgrass Generating Plant,50974
+3,PA    ,PA063,40,-79,110006623519,Seward,3130
+3,PA    ,PA089,41,-75,110015378349,Shawnee,3114
+3,PA    ,PA033,41,-78,110000603641,Shawville,3131
+3,PA    ,PA007,40,-80,,Shell Chemical Appalachia LLC,58933
+3,PA    ,PA003,40,-80,110000744874,Shenango Incorporated,54532
+3,PA    ,PA099,40,-77,110010283273,Shermans Dale Station,880050
+3,PA    ,PA101,40,-75,110001069254,Southwark,3170
+3,PA    ,PA003,41,-80,110001103010,Springdale Power Station,3182
+3,PA    ,PA107,41,-76,110006812716,St. Nicholas Cogeneration Project,54634
+3,PA    ,PA109,41,-77,110000601803,Sunbury,3152
+3,PA    ,PA045,40,-75,110015378465,Sunoco (R&M) - Marcus Hook,880020
+3,PA    ,PA075,40,-76,110007341386,TC Ironwood LLC,55337
+3,PA    ,PA129,40,-80,,Tenaska Westmoreland Generating Station,60464
+3,PA    ,PA011,40,-76,110000338064,Titus,3115
+3,PA    ,PA133,40,-77,110010174284,Tolna,3116
+3,PA    ,PA045,40,-75,110000336440,Trainer Refinery,880025
+3,PA    ,PA017,40,-75,110012511816,Trenton Cogen Proj,50731
+3,PA    ,PA003,40,-80,110042043384,US Steel (Clairton Coke),50729
+3,PA    ,PA003,40,-80,110001116934,US Steel (Edgar Thomson),50732
+3,PA    ,,,,110039686578,United Refining Company,880099
+3,PA    ,PA101,40,-75,110001224648,Veolia Energy Philadelphia - Edison Sta,880006
+3,PA    ,PA101,40,-75,110000744990,Veolia Energy Philadelphia - Schuylkill ,50607
+3,PA    ,PA107,41,-76,110010970235,"WPS Westwood Generation, LLC",50611
+3,PA    ,PA123,42,-79,110000331524,Warren,3132
+3,PA    ,PA039,42,-80,110015379311,Wayne,3134
+3,PA    ,PA041,40,-77,110007339362,West Shore,3154
+3,PA    ,PA107,41,-76,110014012157,Wheelabrator - Frackville,50879
+3,PA    ,PA013,40,-78,110007751584,Williamsburg,3135
+3,PA    ,PA081,41,-77,110010270535,Williamsport,3155
+3,PA    ,PA133,40,-76,110043196528,York Energy Center,55524
+3,PA    ,PA133,40,-77,110007008567,York Generation Company,880013
+3,VA    ,VA031,37,-79,110002401847,Altavista Power Station,10773
+3,VA    ,VA029,38,-78,110040579424,Bear Garden Generating Station,56807
+3,VA    ,VA760,37,-77,110002404390,Bellemeade Power Station,50966
+3,VA    ,VA099,38,-77,110000542743,Birchwood Power Facility,54304
+3,VA    ,VA065,38,-78,110020673485,Bremo Power Station,3796
+3,VA    ,VA025,37,-78,,Brunswick County Power Station,58260
+3,VA    ,,,,,Brunswick Generating Station,55696
+3,VA    ,VA027,37,-82,110007018921,Buchanan Units 1 & 2,55738
+3,VA    ,,,,,CPV Cunningham Creek Power Gen Fac,55814
+3,VA    ,VA071,37,-81,110049249055,Celanese Acetate LLC,52089
+3,VA    ,VA550,37,-76,110000342040,Chesapeake Energy Center,3803
+3,VA    ,VA041,37,-77,110000342530,Chesterfield Power Station,3797
+3,VA    ,VA036,37,-77,110007022060,Chickahominy Power,55666
+3,VA    ,VA670,37,-77,110000740422,City Point Energy Center,10377
+3,VA    ,VA167,37,-82,110000585581,Clinch River,3775
+3,VA    ,VA083,37,-79,110007008175,Clover Power Station,7213
+3,VA    ,VA001,38,-76,110001907768,Commonwealth Chesapeake,55381
+3,VA    ,VA143,37,-79,110000577732,Dan River Inc - Schoolfield Complex,50954
+3,VA    ,VA087,37,-77,110001889920,Darbytown Combustion Turbine,7212
+3,VA    ,VA085,38,-77,110017409286,Doswell Limited Partnership,52019
+3,VA    ,VA047,39,-78,110012510568,East Chandler,7186
+3,VA    ,VA550,37,-76,110001890053,Elizabeth River Combustion Turbine Sta,52087
+3,VA    ,VA019,38,-79,110000343922,"GP Big Island, LLC",50479
+3,VA    ,VA071,37,-81,110000585518,Glen Lyn,3776
+3,VA    ,VA109,38,-78,110000341489,Gordonsville Power Station,54844
+3,VA    ,VA181,37,-77,110001888459,Gravel Neck Combustion Turbine,7032
+3,VA    ,VA081,37,-78,,Greensville County Power Station,59913
+3,VA    ,VA149,37,-77,110000620221,"Honeywell Intl, Inc Hopewell Plant",880093
+3,VA    ,VA670,37,-77,110000342610,Hopewell Cogeneration Facility,10633
+3,VA    ,VA670,37,-77,110000342629,Hopewell Power Station,10771
+3,VA    ,VA093,37,-77,110000560492,International Paper-Franklin Mill,52152
+3,VA    ,VA033,38,-78,110006363960,Ladysmith Combustion Turbine Sta,7839
+3,VA    ,VA109,38,-78,110014436306,Louisa Generation Facility,7837
+3,VA    ,VA061,39,-78,110007395826,Marsh Run Generation Facility,7836
+3,VA    ,VA690,37,-80,110006176477,Martinsville Station,55497
+3,VA    ,VA005,38,-80,110000870013,"MeadWestvaco of Virginia, Covington",50900
+3,VA    ,VA117,37,-79,110000342772,Mecklenburg Power Station,52007
+3,VA    ,VA107,39,-78,,Panda Stonewall Power Project,59004
+3,VA    ,VA153,39,-77,110000340774,Possum Point Power Station,3804
+3,VA    ,VA510,39,-77,110000340916,Potomac River,3788
+3,VA    ,VA061,39,-78,110032891850,Remington Combustion Turbine Station,7838
+3,VA    ,VA101,38,-77,110007317484,RockTenn West Point Mill,10017
+3,VA    ,VA175,37,-77,110000869695,Southampton Power Station,10774
+3,VA    ,VA760,37,-77,110000868865,"Spruance Genco, LLC",54081
+3,VA    ,VA001,38,-76,110001890829,Tasley Energy Center,3785
+3,VA    ,VA065,38,-78,110017612074,Tenaska Virginia Generating Station,55439
+3,VA    ,VA195,37,-82,110041686271,Virginia City Hybrid Energy Center,56808
+3,VA    ,VA740,37,-76,110000342380,Virginia Renewable Power-Portsmouth LLC,10071
+3,VA    ,VA187,39,-78,110040513110,Warren County Power Station,55939
+3,VA    ,VA143,37,-79,110007021971,White Oak Power Company,55686
+3,VA    ,VA191,37,-82,110017413422,Wolf Hills Energy,55285
+3,VA    ,,,,,Wythe Energy Facility,55825
+3,VA    ,VA199,37,-76,110000342371,Yorktown Power Station,3809
+3,WV    ,WV077,39,-80,110000586143,Albright Power Station,3942
+3,WV    ,WV029,40,-81,110000492618,"ArcelorMittal Weirton,Inc.",54344
+3,WV    ,WV051,40,-81,110000875367,Axiall Corporation Natrium Plant,50491
+3,WV    ,WV099,38,-83,110016707296,Big Sandy Peaker Plant,55284
+3,WV    ,WV099,38,-83,110038917633,Ceredo Generating Station,55276
+3,WV    ,WV039,38,-82,110000344182,Chemours Belle Plant,10788
+3,WV    ,WV061,40,-80,110043799501,Fort Martin Power Station,3943
+3,WV    ,WV049,40,-80,110007881998,Grant Town Power Plant,10151
+3,WV    ,WV033,39,-80,110000586125,Harrison Power Station,3944
+3,WV    ,WV079,38,-82,110042086505,John E Amos,3935
+3,WV    ,WV051,40,-81,110013725077,Kammer,3947
+3,WV    ,WV039,38,-81,110000604025,Kanawha River,3936
+3,WV    ,WV061,40,-80,110040576267,Longview Power,56671
+3,WV    ,WV051,40,-81,110013725077,Mitchell (WV),3948
+3,WV    ,WV061,40,-80,110000344903,Morgantown Energy Facility,10743
+3,WV    ,WV023,39,-79,110007876637,Mount Storm Power Station,3954
+3,WV    ,WV053,39,-82,110000585910,Mountaineer (1301),6264
+3,WV    ,WV023,39,-79,110002098293,North Branch Power Station,7537
+3,WV    ,,,,110012510050,Panda Culloden Generating Station,55646
+3,WV    ,WV053,39,-82,110015743846,Phil Sporn,3938
+3,WV    ,WV073,39,-81,110010376734,"Pleasants Energy, LLC",55349
+3,WV    ,WV073,39,-81,110020047554,Pleasants Power Station,6004
+3,WV    ,WV049,40,-80,110000604114,Rivesville Power Station,3945
+3,WV    ,WV039,38,-82,110000745114,UCC South Charleston Plant,50151
+3,WV    ,WV039,38,-82,110043803676,Union Carbide Corp. Institute Facility,880053
+3,WV    ,WV019,38,-81,110000585849,"WV Alloys,  Inc.",50012
+3,WV    ,WV073,39,-81,110020047554,Willow Island Power Station,3946
+4,AL    ,,,,,AL Seier Pump Station,
+4,AL    ,AL121,33,-86,110028032698,AMEA Sylacauga Plant,56018
+4,AL    ,AL095,,,110015375119,Albertville Municipal,7924
+4,AL    ,AL103,35,-87,110007235269,Ascend (Decatur Plant),880041
+4,AL    ,AL097,31,-88,110000741270,Barry,3
+4,AL    ,,,,,Barton Shoals Energy Center,55819
+4,AL    ,AL071,35,-86,110043694179,Bellefonte,6150
+4,AL    ,,,,,Bender Shipbuilding and Repair,
+4,AL    ,AL009,34,-87,110007395951,Blount County Energy,55492
+4,AL    ,,,,,Cahaba River Wastewater Treatment P,
+4,AL    ,AL015,34,-86,110013812534,Calhoun Energy Center,55409
+4,AL    ,AL129,31,-88,110056968278,Charles R Lowman,56
+4,AL    ,AL097,31,-88,110003027778,Chickasaw,5
+4,AL    ,AL033,35,-88,110000367834,Colbert,47
+4,AL    ,AL103,35,-87,110007348405,Decatur Energy Center,55292
+4,AL    ,,,,,Dothan Power Facility,55730
+4,AL    ,AL001,32,-87,110007395942,E B Harris Generating Plant,7897
+4,AL    ,AL117,33,-86,110000589097,E C Gaston,26
+4,AL    ,,,,110012509570,Future Fossil,7064
+4,AL    ,AL055,34,-86,110000368183,Gadsden,7
+4,AL    ,AL127,34,-87,110001712861,Genpower - Kelley,55633
+4,AL    ,AL127,34,-87,110000367380,Gorgas,8
+4,AL    ,AL063,33,-88,110000608398,Greene County,10
+4,AL    ,AL123,33,-86,110010068103,Hillabee Energy Center,55411
+4,AL    ,AL097,31,-88,110025378614,Hog Bayou Energy Center,55241
+4,AL    ,AL103,35,-87,110056961417,"Indorama Ventures Xylenes and PTA, LLC",880075
+4,AL    ,AL079,35,-87,110000589382,International Paper-Courtland Mill,50245
+4,AL    ,AL001,32,-86,110011734935,International Paper-Prattville Mill,52140
+4,AL    ,AL047,32,-87,110002438103,International Paper-Riverdale Mill,54096
+4,AL    ,,,,,Irondale Test Facility,
+4,AL    ,AL073,34,-87,110043792651,James H Miller Jr,6002
+4,AL    ,,,,110012509598,Magnolia Generating,55430
+4,AL    ,AL129,31,-88,110007348030,McIntosh (7063),7063
+4,AL    ,AL039,31,-86,110020517957,McWilliams,533
+4,AL    ,AL113,32,-85,110010380097,"MeadWestvaco Coated Board, LLC",54802
+4,AL    ,AL097,31,-88,110000369468,Mobile Energy Services Company,50407
+4,AL    ,AL103,35,-87,110007348432,Morgan Energy Center,55293
+4,AL    ,AL081,33,-85,110021284894,Plant H. Allen Franklin,7710
+4,AL    ,AL121,33,-86,110056955166,Resolute FP - Coosa Pines Mill,54216
+4,AL    ,AL071,35,-86,110056119178,RockTenn CP LLC Stevenson Mill,880101
+4,AL    ,AL085,32,-87,110017438762,SABIC Innovative Plastics - Burkville,7698
+4,AL    ,,,,,Southside Steam Plant,
+4,AL    ,AL001,33,-87,110007348441,Tenaska Central Alabama Gen Station,55440
+4,AL    ,AL001,33,-87,110007348441,Tenaska Lindsay Hill Generating Station,55271
+4,AL    ,,,,110012510407,Tenaska Talladega Gen Station,55547
+4,AL    ,AL097,31,-88,110021333421,Theodore Cogeneration,7721
+4,AL    ,AL073,33,-87,110000366318,US Steel (Fairfield Works),50730
+4,AL    ,,,,,Village Creek Wastewater Treatment,
+4,AL    ,AL081,33,-85,110007348343,Walton Discover Power Facility,55138
+4,AL    ,AL129,31,-88,110037311263,Washington County Cogen (Olin),7697
+4,AL    ,AL071,35,-86,110000604944,Widows Creek,50
+4,FL    ,FL101,28,-83,110008329068,Anclote,8048
+4,FL    ,FL073,30,-84,110011349656,Arvah B Hopkins,688
+4,FL    ,FL105,28,-82,110017415901,Auburndale Peaker Energy Center,55833
+4,FL    ,FL055,28,-81,110001410562,Avon Park,624
+4,FL    ,FL103,28,-83,110035420121,Bayboro,627
+4,FL    ,FL057,28,-82,110000493056,Bayside Power Station,7873
+4,FL    ,,,,110012515322,Belle Glade Energy Center,55434
+4,FL    ,FL057,28,-82,110008319505,Big Bend,645
+4,FL    ,FL031,30,-82,110009104021,Brandy Branch,7846
+4,FL    ,FL011,26,-80,110009242337,Broward Energy Center,55436
+4,FL    ,FL105,28,-82,110000364882,C D McIntosh Jr Power Plant,676
+4,FL    ,,,,,CPV Cana,55727
+4,FL    ,FL081,27,-82,110007032656,CPV Gulfcoast,55613
+4,FL    ,,,,,CPV Pierce,55688
+4,FL    ,FL097,28,-82,110013931308,Cane Island,7238
+4,FL    ,FL009,28,-81,110000604748,Cape Canaveral,609
+4,FL    ,FL031,30,-82,110000362018,Cedar Bay Generating Co. LP,10672
+4,FL    ,FL053,29,-82,110060280075,Central Power and Lime,10333
+4,FL    ,FL105,28,-82,110000745383,Charles Larsen Memorial Power Plant,675
+4,FL    ,FL033,31,-87,110002526847,Crist Electric Generating Plant,641
+4,FL    ,FL017,29,-83,110017431215,Crystal River,628
+4,FL    ,FL095,28,-81,110025384368,Curtis H. Stanton Energy Center,564
+4,FL    ,FL086,26,-80,110002040915,Cutler,610
+4,FL    ,FL127,29,-81,110012446317,Debary,6046
+4,FL    ,FL001,30,-82,110000362615,Deerhaven,663
+4,FL    ,FL027,27,-82,110006176191,Desoto County Energy Park,55422
+4,FL    ,FL055,28,-81,110000731174,Dinner Lake,747
+4,FL    ,,,,110012515340,Duke Energy Fort Pierce,55468
+4,FL    ,FL057,28,-82,110000493056,F J Gannon,646
+4,FL    ,FL071,27,-82,110000365248,Fort Myers,612
+4,FL    ,FL111,27,-80,110012174663,Fort Pierce Repowering Project,55652
+4,FL    ,FL127,29,-81,110002524787,G E Turner,629
+4,FL    ,FL086,25,-80,110005275923,G W Ivey,665
+4,FL    ,FL001,30,-82,110058932142,Gainesville Renewable Energy Center,57241
+4,FL    ,FL031,30,-82,110037318499,Greenland Energy Center,56799
+4,FL    ,,,,110012515304,Hardee County Generation Facility,55420
+4,FL    ,FL049,28,-82,110035803262,Hardee Power Station,50949
+4,FL    ,FL111,27,-80,110002394579,Henry D King,658
+4,FL    ,FL103,28,-83,110006530762,Higgins,630
+4,FL    ,FL105,28,-82,110000753319,Hines Energy Complex,7302
+4,FL    ,FL057,28,-82,110000364329,Hookers Point,647
+4,FL    ,FL009,28,-81,110002077252,Indian River (55318),55318
+4,FL    ,FL009,28,-81,110028036435,Indian River (683),683
+4,FL    ,FL085,27,-81,110002394793,"Indiantown Cogeneration, LP",50976
+4,FL    ,FL097,28,-82,110005984328,Intercession City,8049
+4,FL    ,FL033,31,-87,110035614234,International Paper - Pensacola Mill,50250
+4,FL    ,FL031,30,-82,110000361929,J D Kennedy,666
+4,FL    ,FL001,30,-82,110001736925,J R Kelly,664
+4,FL    ,FL087,25,-82,,Key West,6583
+4,FL    ,FL099,27,-80,110010283898,Lake Worth Generation Plant,55416
+4,FL    ,FL005,30,-86,110000588677,Lansing Smith Generating Plant,643
+4,FL    ,FL011,26,-80,110002044065,Lauderdale,613
+4,FL    ,FL081,28,-82,110000496776,Manatee,6042
+4,FL    ,,,,110012515331,Manatee Energy Center,55435
+4,FL    ,FL085,27,-81,110008320566,Martin,6043
+4,FL    ,FL049,28,-82,110035803262,Midulla Generating Station,7380
+4,FL    ,,,,110012515386,Midway Energy Center,55677
+4,FL    ,FL105,28,-82,110017409393,Mulberry Cogeneration Facility,54426
+4,FL    ,FL031,30,-82,110000362134,Northside,667
+4,FL    ,FL009,28,-81,110008989737,Oleander Power Project,55286
+4,FL    ,FL105,28,-82,110002394597,Orange Cogeneration Facility,54365
+4,FL    ,FL111,27,-80,110010320642,"Orion Power Atlantic, Ltd.",55614
+4,FL    ,FL095,28,-81,110005626723,Orlando CoGen,54466
+4,FL    ,FL097,28,-81,110007007951,Osceola,55192
+4,FL    ,FL105,28,-82,110017218036,Osprey Energy Center,55412
+4,FL    ,FL103,28,-83,110000588846,P L Bartow,634
+4,FL    ,FL105,28,-82,110000365113,Polk,7242
+4,FL    ,FL011,26,-80,110000363847,Port Everglades,617
+4,FL    ,FL107,30,-82,110006645238,Putnam,6246
+4,FL    ,FL105,28,-82,110017415901,"Quantum Auburndale Power, LP",54658
+4,FL    ,FL069,29,-82,110013936456,"Quantum Lake Power, LP",54423
+4,FL    ,FL101,28,-82,110001411623,"Quantum Pasco Power, LP",54424
+4,FL    ,FL095,28,-82,110043802034,Reedy Creek,7254
+4,FL    ,FL105,28,-82,110001749314,Ridge Generating Station,54529
+4,FL    ,FL099,27,-80,110000363963,Riviera Beach Energy Center,619
+4,FL    ,FL097,28,-81,110017424553,Roy E Hansel Power Plant,672
+4,FL    ,FL129,30,-84,110001737390,S O Purdom,689
+4,FL    ,FL127,29,-81,110017410014,Sanford,620
+4,FL    ,FL113,31,-87,110010300076,Santa Rosa Energy Center,55242
+4,FL    ,FL063,31,-85,110002530805,Scholz Electric Generating Plant,642
+4,FL    ,FL107,30,-82,110041142304,Seminole (136),136
+4,FL    ,FL101,28,-83,110012581820,Shady Hills,55414
+4,FL    ,FL031,30,-82,110000876393,Southside,668
+4,FL    ,FL031,30,-82,110000362134,St. Johns River Power,207
+4,FL    ,FL095,28,-81,110025384368,Stanton A,55821
+4,FL    ,FL087,25,-82,110000363598,Stock Island,6584
+4,FL    ,FL087,25,-81,110000363598,Stock Island D 1,7143
+4,FL    ,FL087,25,-81,110000363598,Stock Island D 2,7144
+4,FL    ,FL121,30,-83,110000909214,Suwannee River,638
+4,FL    ,FL105,28,-82,110001411794,Tiger Bay,7699
+4,FL    ,FL099,27,-80,110000364098,Tom G Smith,673
+4,FL    ,FL111,27,-80,110031439762,Treasure Coast Energy Center,56400
+4,FL    ,FL086,25,-80,110000914832,Turkey Point,621
+4,FL    ,FL001,30,-82,110008313725,University of Florida,7345
+4,FL    ,FL049,28,-82,110017411718,Vandolah Power Project,55415
+4,FL    ,FL061,28,-80,110000363455,Vero Beach Municipal,693
+4,FL    ,FL099,27,-80,110007477391,West County Energy Center,56407
+4,GA    ,GA303,33,-83,110012143304,AL Sandersville Energy Facility,55672
+4,GA    ,GA095,32,-84,,Albany Green Energy LLC,60340
+4,GA    ,GA033,33,-82,110032877849,Allen B Wilson Combustion Turbine Plant,6258
+4,GA    ,GA021,33,-84,110000360207,Arkwright,699
+4,GA    ,,,,,Athens Energy Center,55709
+4,GA    ,GA067,34,-84,110000355972,Atkinson,700
+4,GA    ,,,,110012515180,Augusta Energy Center,55389
+4,GA    ,GA205,31,-84,110001360474,Baconton Power,55304
+4,GA    ,GA015,34,-85,110000356356,Bowen,703
+4,GA    ,GA149,33,-85,110013399492,Chattahoochee Energy Facility,7917
+4,GA    ,GA321,32,-84,110002439148,Crisp Plant,753
+4,GA    ,GA157,34,-83,110020517378,Dahlberg (Jackson County),7765
+4,GA    ,GA297,34,-84,110005719801,Doyle Energy Facility,55244
+4,GA    ,GA293,33,-84,110001971439,Edward L Addison Generating Plant,55267
+4,GA    ,GA103,32,-81,110012143493,"Effingham County Power, LLC",55406
+4,GA    ,,,,110012515206,Genpower - McIntosh,55632
+4,GA    ,,,,,"Georgia Energy Project 1, LLC",55827
+4,GA    ,GA115,34,-85,110012141468,Hammond,708
+4,GA    ,GA237,33,-83,110000588221,Harllee Branch,709
+4,GA    ,,,,110012515224,Hartwell Energy Center,55689
+4,GA    ,GA147,34,-83,110007250009,Hartwell Energy Facility,70454
+4,GA    ,GA149,33,-85,110005720256,Hawk Road Energy Facility,55141
+4,GA    ,GA245,33,-82,110000359718,International Paper - Augusta Mill,54358
+4,GA    ,GA067,34,-84,110000355972,Jack McDonough,710
+4,GA    ,GA051,32,-81,110038173464,Kraft,733
+4,GA    ,GA127,31,-82,,Live Oaks Power Plant,55800
+4,GA    ,GA297,34,-84,110005718367,MPC Generating,7764
+4,GA    ,GA103,32,-81,110000516273,McIntosh (6124),6124
+4,GA    ,GA103,32,-81,110028012175,McIntosh Combined Cycle Facility,56150
+4,GA    ,GA127,31,-82,110000360617,McManus,715
+4,GA    ,GA153,32,-84,110000359969,Mid-Georgia Cogeneration,55040
+4,GA    ,GA095,31,-84,110000360957,Mitchell (GA),727
+4,GA    ,,,,,"Peace Valley Generation Company, LLC",55993
+4,GA    ,,,,,"Pecan Grove Generating, LLC",55973
+4,GA    ,GA305,32,-82,110017412968,"Rayonier Advanced Materials, Jesup Mill",10560
+4,GA    ,GA051,32,-81,110007355218,Riverside (734),734
+4,GA    ,GA153,33,-84,110021316912,Robins,7348
+4,GA    ,GA115,,,,Rome Linerboard Mill,10426
+4,GA    ,GA207,33,-84,110007356066,Scherer,6257
+4,GA    ,GA233,34,-85,110013727618,Sewell Creek Energy,7813
+4,GA    ,GA207,33,-84,110001427215,Smarr Energy Facility,7829
+4,GA    ,GA205,31,-84,110001360474,Sowega Power Project,7768
+4,GA    ,GA263,33,-85,110012174565,Talbot Energy Facility,7916
+4,GA    ,GA149,33,-85,110010039494,Tenaska Georgia Generating Station,55061
+4,GA    ,GA213,35,-85,110002374216,Thomas A. Smith Energy Facility,55382
+4,GA    ,,,,,Tifton Power Facility,55674
+4,GA    ,GA297,,,,W R Clayton Plant,7968
+4,GA    ,GA087,31,-85,110035420764,Walton Bainbridge Power Facility,56015
+4,GA    ,GA297,34,-84,110015969139,Walton County Power,55128
+4,GA    ,GA149,33,-85,110046233919,Wansley (6052),6052
+4,GA    ,GA149,33,-85,110050259498,Wansley (7946),7946
+4,GA    ,GA149,33,-85,110050259474,Wansley CC (55965),55965
+4,GA    ,GA303,33,-83,110007390796,Washington County Power,55332
+4,GA    ,GA193,32,-84,110041155503,Weyerhaeuser Company - Flint River,50465
+4,GA    ,GA077,33,-85,110000357319,Yates,728
+4,KY    ,KY127,38,-83,110000591280,Big Sandy,1353
+4,KY    ,KY185,38,-85,110043808421,Bluegrass Generating Station,55164
+4,KY    ,,,,110012513976,Calvert City Power I,55119
+4,KY    ,KY111,38,-86,110000378537,Cane Run,1363
+4,KY    ,KY019,38,-83,110008361263,"Catlettsburg Refining, LLC",880038
+4,KY    ,KY091,38,-87,110000380891,Coleman,1381
+4,KY    ,KY183,37,-87,110000717877,D B Wilson,6823
+4,KY    ,KY157,37,-88,110003256066,"DTE Calvert City, LLC",55308
+4,KY    ,KY091,,,110028028275,"Domtar Paper, Kentucky Mills",55429
+4,KY    ,KY167,38,-85,110000872397,E W Brown,1355
+4,KY    ,KY015,39,-85,110006497585,East Bend,6018
+4,KY    ,KY059,38,-87,110056956940,Elmer Smith,1374
+4,KY    ,KY117,39,-85,110006834328,Erlanger Gas Plant,55394
+4,KY    ,KY065,38,-84,,Estill County Energy Partners LLC,56222
+4,KY    ,KY041,39,-85,110000874224,Ghent,1356
+4,KY    ,KY177,37,-87,110008360969,Green River,1357
+4,KY    ,KY161,39,-84,110017429521,H L Spurlock,6041
+4,KY    ,KY101,38,-88,110000591422,HMP&L Station 2,1382
+4,KY    ,KY027,38,-86,110010430890,Hardinsburg Electric Gen Station,55227
+4,KY    ,KY101,38,-88,110007392062,Henderson Generating Station,55275
+4,KY    ,KY101,38,-88,110011890659,Henderson I,1372
+4,KY    ,KY199,37,-85,110013870944,John S. Cooper,1384
+4,KY    ,,,,,"Kentucky Energy Project, LLC",55828
+4,KY    ,KY067,38,-84,110006531645,Kentucky Mountain Power,55289
+4,KY    ,KY049,38,-84,110006531654,Kentucky Pioneer Energy,55266
+4,KY    ,KY157,37,-88,110012262078,Marshall,55232
+4,KY    ,KY111,38,-86,110000378733,Mill Creek,1364
+4,KY    ,KY167,38,-85,110012513967,NA 1 -- 7220,7220
+4,KY    ,KY111,38,-86,110008358525,Paddy's Run,1366
+4,KY    ,KY145,37,-89,110040573484,Paducah Power Systems Plant 1,56556
+4,KY    ,KY177,37,-87,110000380882,Paradise,1378
+4,KY    ,KY013,37,-84,110000605328,Pineville,1360
+4,KY    ,KY233,38,-88,110000591422,R D Green,6639
+4,KY    ,KY127,38,-83,110012574071,Riverside Generating Company,55198
+4,KY    ,KY233,38,-88,110000591422,Robert Reid,1383
+4,KY    ,KY145,37,-89,110000493305,Shawnee,1379
+4,KY    ,KY049,38,-84,110000914592,Smith Generating Facility,54
+4,KY    ,,,,,Summer Shade Development Co. LLC,55737
+4,KY    ,KY177,,,110012514038,Thoroughbred Generating Station,55462
+4,KY    ,KY223,39,-85,110000377814,Trimble County,6071
+4,KY    ,,,,,Trimble Energy Facility,55746
+4,KY    ,KY239,38,-85,110000872841,Tyrone,1361
+4,KY    ,KY007,37,-89,110042076892,Wickliffe Paper Company,880065
+4,KY    ,KY049,38,-84,110008359542,William C. Dale,1385
+4,MS    ,MS019,33,-89,110024408256,Ackerman Combined Cycle,55694
+4,MS    ,MS007,33,-90,110041977000,Attala Generating Plant,55220
+4,MS    ,MS145,35,-89,110006067424,BTEC New Albany LLC,13213
+4,MS    ,MS033,35,-90,110017408679,"BTEC Southaven, LLC",55219
+4,MS    ,MS107,34,-90,110017413431,Batesville Generation Facility,55063
+4,MS    ,MS149,32,-91,110000376548,Baxter Wilson,2050
+4,MS    ,MS087,34,-88,110016774864,Caledonia,55197
+4,MS    ,MS087,34,-88,110004000401,"Caledonia Power I, LLC",55082
+4,MS    ,,,,,Canton Municipal Utilities,
+4,MS    ,MS059,30,-88,110000377477,Chevron Cogenerating Station,2047
+4,MS    ,MS019,33,-89,110016757348,Choctaw County Gen,55706
+4,MS    ,,,,110012513128,Crossroads Energy Center,55432
+4,MS    ,MS027,34,-91,110013395003,Crossroads Energy Center (CPU),55395
+4,MS    ,MS059,31,-89,110040875666,Daniel Electric Generating Plant,6073
+4,MS    ,MS069,33,-89,110058932133,David M Ratcliffe,57037
+4,MS    ,MS011,34,-91,110010569535,Delta,2051
+4,MS    ,,,,110012513137,Duke Energy Homochitto,55669
+4,MS    ,MS035,31,-89,110002224799,Eaton Electric Generating Plant,2046
+4,MS    ,,,,,Forrest General Hospital,
+4,MS    ,MS057,34,-88,110002225477,Fulton Power I,21247
+4,MS    ,MS151,33,-91,110000375781,Gerald Andrus,8054
+4,MS    ,MS083,34,-90,110002222871,Henderson,2062
+4,MS    ,MS049,32,-90,110010821753,Hinds Energy Facility,55218
+4,MS    ,MS023,32,-89,110012513100,KGen Enterprise Facility,55373
+4,MS    ,MS069,33,-89,110012705956,Kemper County,7960
+4,MS    ,,,,,Lee Power Partners,55663
+4,MS    ,,,,110012513119,Lone Oak Energy Center,55410
+4,MS    ,MS009,35,-89,110009113486,Magnolia Facility,55451
+4,MS    ,MS075,32,-89,110002228027,Meridian Naval Air Station,7719
+4,MS    ,MS067,32,-89,110008505448,Moselle Generating Plant,2070
+4,MS    ,MS001,32,-91,110001976773,Natchez,2052
+4,MS    ,,,,,New Albany Energy Dev Co LLC,55744
+4,MS    ,,,,110012513146,Panda Black Prairie Project,55693
+4,MS    ,MS113,31,-90,110008516659,Pike County Generation Facility,55329
+4,MS    ,MS073,31,-89,110000377271,R D Morrow Senior Generating Plant,6061
+4,MS    ,MS019,33,-89,110021170908,Red Hills Generation Facility,55076
+4,MS    ,MS049,32,-90,110001471568,Rex Brown,2053
+4,MS    ,MS065,32,-90,110011385571,Silver Creek Generating Plant,7988
+4,MS    ,,,,,Singing River Hospital,
+4,MS    ,MS033,35,-90,110007375465,Southaven Combined Cycle,55269
+4,MS    ,MS075,32,-89,110010569795,Sweatt Electric Generating Plant,2048
+4,MS    ,MS129,32,-89,110015713450,Sylvarena Generating Plant,7989
+4,MS    ,MS007,33,-90,110008514517,TPS - McAdams,55341
+4,MS    ,MS027,34,-91,110002211295,Third Street,2060
+4,MS    ,MS149,32,-91,110002227992,Warren Peaking Power Facility,55303
+4,MS    ,MS047,30,-89,110000590851,Watson Electric Generating Plant,2049
+4,MS    ,MS027,34,-91,110002079562,Wilkins,2059
+4,MS    ,MS083,34,-90,110011735774,Wright,2063
+4,MS    ,MS163,33,-90,110002209397,Yazoo,2067
+4,NC    ,NC021,35,-83,110000587071,Asheville,2706
+4,NC    ,NC169,36,-80,110000604141,Belews Creek,8042
+4,NC    ,NC007,35,-80,110018702769,Blewett,2707
+4,NC    ,NC087,36,-83,110009846480,Blue Ridge Paper Products Inc.,50244
+4,NC    ,NC159,36,-80,110001978334,Buck,2720
+4,NC    ,NC051,35,-79,110007669380,Butler-Warner Generation Plant,1016
+4,NC    ,NC145,36,-79,110000347045,CPI USA North Carolina Roxboro,10379
+4,NC    ,NC019,34,-78,110043787783,CPI USA North Carolina Southport,10378
+4,NC    ,NC037,36,-79,110000586349,Cape Fear,2708
+4,NC    ,NC045,35,-81,110058932124,Cleveland County Generating Facility,57029
+4,NC    ,NC045,35,-82,110006424404,Cliffside,2721
+4,NC    ,NC061,35,-78,110007377739,Coastal Carolina Clean Power LLC,10381
+4,NC    ,NC049,35,-77,110001482949,Craven County Wood Energy,10525
+4,NC    ,NC157,36,-80,110000345993,Dan River,2723
+4,NC    ,NC117,36,-77,110013794000,Domtar Paper Company LLC -  Plymouth,50189
+4,NC    ,NC065,36,-78,110022568531,"Edgecombe Genco, LLC",10384
+4,NC    ,NC071,35,-81,110000348008,G G Allen,2718
+4,NC    ,NC091,36,-77,110012146597,Genpower - Earleys,55628
+4,NC    ,NC191,35,-78,110000496552,H F Lee Steam Electric Plant,2709
+4,NC    ,NC047,34,-78,110009719304,International Paper-Riegelwood,54656
+4,NC    ,NC025,36,-81,,Kannapolis Energy Partners,10626
+4,NC    ,NC083,36,-78,110037266990,KapStone Paper and Packaging Corp,50254
+4,NC    ,NC045,35,-81,,Kings Mountain Energy Center,59325
+4,NC    ,NC129,34,-78,110000350174,L V Sutton,2713
+4,NC    ,NC109,35,-81,110001495347,Lincoln,7277
+4,NC    ,NC035,36,-81,110000351397,Marshall,2727
+4,NC    ,NC145,37,-79,110000347081,Mayo,6250
+4,NC    ,NC017,35,-79,110000349882,NC Renewable Power - Elizabethtown,10380
+4,NC    ,NC155,35,-79,110007015050,NC Renewable Power - Lumberton LLC,10382
+4,NC    ,NC007,35,-80,110040566982,NCEMC Anson Plant,56249
+4,NC    ,NC153,35,-80,110022483258,NCEMC Hamlet Plant,56292
+4,NC    ,NC159,36,-81,110020516486,Plant Rowan County,7826
+4,NC    ,NC153,35,-80,110004060417,Richmond County Plant,7805
+4,NC    ,NC071,35,-81,110000348641,Riverbend,2732
+4,NC    ,NC157,36,-80,110025240996,Rockingham County Combustion Turbine,55116
+4,NC    ,NC083,36,-78,110001483261,Rosemary Power Station,50555
+4,NC    ,NC159,36,-81,110012146070,Rowan Generating Facility,55530
+4,NC    ,NC145,36,-79,110000346386,Roxboro,2712
+4,NC    ,NC067,,,,Tobaccoville,50221
+4,NC    ,NC135,36,-79,110006710684,University of NC Chapel Hill,54276
+4,NC    ,NC155,35,-79,110000350049,W H Weatherspoon,2716
+4,NC    ,NC083,36,-78,110000347777,Westmoreland Partners Roanoke Valley I,54035
+4,NC    ,NC083,36,-78,110000347777,Westmoreland Partners Roanoke Valley II,54755
+4,NC    ,NC049,35,-77,110000350478,Weyerhaeuser - New Bern,50188
+4,SC    ,SC091,35,-81,110000355035,AbiBow US Inc. - Catawba Operations,2440
+4,SC    ,SC015,33,-80,110000353705,BP Amoco Chemical Company CR Plant,880092
+4,SC    ,SC021,35,-82,110017413119,Broad River Energy Center,55166
+4,SC    ,SC047,34,-82,110007833096,Buzzard Roost,3254
+4,SC    ,SC029,33,-81,110043797111,Canadys Steam,3280
+4,SC    ,SC091,,,110000355222,"Celanese Acetate, Celriver",880073
+4,SC    ,SC021,35,-82,110000553534,Cherokee County Cogen,55043
+4,SC    ,SC017,34,-81,110016798866,Columbia Energy Center (SC),55386
+4,SC    ,SC075,33,-81,110002232209,Cope Station,7210
+4,SC    ,SC015,33,-80,110000499764,Cross,130
+4,SC    ,SC031,34,-80,110007222512,Darlington County,3250
+4,SC    ,SC051,34,-79,110000353885,Dolphus M Grainger,3317
+4,SC    ,,,,110012511567,Genpower - Anderson,55476
+4,SC    ,SC045,35,-82,110007394943,Greenville Generating Facility,55532
+4,SC    ,SC031,34,-80,110043805326,H B Robinson,3251
+4,SC    ,SC019,33,-80,110001665083,Hagood,3285
+4,SC    ,SC013,32,-81,110002198363,Hilton Head Gas Turbine Site,3318
+4,SC    ,SC055,34,-81,110000587179,INVISTA S.a.r.l. Camden Plant,880057
+4,SC    ,SC079,34,-81,110043816289,International Paper-Eastover Mill,52151
+4,SC    ,SC053,32,-81,110020013590,Jasper County Generating Facility,55927
+4,SC    ,SC015,33,-80,110002232281,Jefferies,3319
+4,SC    ,SC007,34,-83,110017413734,John S. Rainey Generating Station,7834
+4,SC    ,SC019,33,-80,110016966381,"KapStone Charleston Kraft, LLC",7737
+4,SC    ,SC069,35,-80,110015374744,Marlboro Paper Mill,880074
+4,SC    ,SC063,34,-81,110000352564,McMeekin,3287
+4,SC    ,SC021,35,-81,110010431648,Mill Creek Combustion Turbine Sta,7981
+4,SC    ,SC051,34,-79,110028041928,Myrtle Beach Gas Turbine Site,3320
+4,SC    ,,,,110012511978,NA 1 -- 7106,7106
+4,SC    ,,,,110012511530,NA 2 -- 7107,7107
+4,SC    ,,,,110012511549,NA 3 -- 7108,7108
+4,SC    ,SC031,34,-80,110000587491,Sonoco Products Company,880078
+4,SC    ,SC057,35,-81,110000355188,Springs Global US - Grace Facility,880068
+4,SC    ,SC003,33,-82,110000355534,Urquhart,3295
+4,SC    ,SC017,34,-81,110015375217,Voridian Columbia Operations,880066
+4,SC    ,SC007,35,-82,110004937864,W S Lee,3264
+4,SC    ,SC079,34,-81,110015337198,Wateree,3297
+4,SC    ,SC041,34,-80,110056961890,"WestRock CP, LLC Florence Mill",50806
+4,SC    ,SC015,33,-80,110000353509,Williams,3298
+4,SC    ,SC043,33,-79,110000353457,Winyah,6249
+4,TN    ,TN157,35,-90,110000374130,Allen,3393
+4,TN    ,TN075,36,-89,110043786613,Brownsville CT,55081
+4,TN    ,TN001,36,-84,110043798487,Bull Run,3396
+4,TN    ,TN157,35,-90,110000496838,Cargill Corn Milling,10729
+4,TN    ,TN085,36,-88,110010575635,Chemours Johnsonville,880001
+4,TN    ,TN161,36,-88,110000493127,Cumberland,3399
+4,TN    ,TN001,36,-84,110000607521,DOE Oak Ridge Y-12,880055
+4,TN    ,TN163,37,-83,110000372329,"Domtar Paper Co., LLC - Kingsport Mill",10252
+4,TN    ,TN037,36,-87,110000370544,Dupont Old Hickory,10797
+4,TN    ,TN163,37,-83,110000574423,Eastman Chemical Company,50481
+4,TN    ,,,,,Flint Valley Energy Development,55745
+4,TN    ,,,,110012511709,Franklin,7950
+4,TN    ,TN165,36,-86,110000493136,Gallatin,3403
+4,TN    ,TN183,36,-89,110007395096,Gleason Generating Facility,55251
+4,TN    ,,,,,Haywood Energy Center,55729
+4,TN    ,,,,110012511718,Haywood Power I,55519
+4,TN    ,TN073,36,-83,110000607530,John Sevier,3405
+4,TN    ,TN085,36,-88,110000370535,Johnsonville,3406
+4,TN    ,TN145,36,-85,110000372631,Kingston,3407
+4,TN    ,TN075,36,-89,110006537373,Lagoon Creek,7845
+4,TN    ,TN063,36,-83,110000590085,Liberty Fibers Corporation,10321
+4,TN    ,TN071,35,-88,110017418338,Packaging Corporation of America,50296
+4,TN    ,TN107,35,-85,110056955157,Resolute Forest Products - Calhoun Ops,50956
+4,TN    ,,,,,Shelby Power I,55716
+4,TN    ,TN105,36,-84,110000372711,Tate & Lyle-Loudon,880079
+4,TN    ,TN157,35,-90,110000374087,"Valero Refining Company-Tennessee, LLC",55703
+4,TN    ,TN143,36,-85,110007843646,Watts Bar,3419
+5,IL    ,,,,,"AES Medina Valley Cogen, LLC",
+5,IL    ,IL171,40,-90,110054912387,Alsey Station,7818
+5,IL    ,IL049,,,110010024838,"Altamont, City of",7990
+5,IL    ,IL115,40,-89,110002387783,Archer Daniels Midland Co.,10865
+5,IL    ,IL143,41,-90,110000438107,Archer Daniels Midland Co. - Peoria,10866
+5,IL    ,IL043,42,-88,110024834036,Aurora,55279
+5,IL    ,IL063,41,-88,110010430300,Aux Sable Power Plant,55277
+5,IL    ,IL113,,,110058932008,BNWRD,56176
+5,IL    ,IL157,38,-90,110011697075,Baldwin Energy Complex,889
+5,IL    ,,,,,Blue Island Tss,
+5,IL    ,IL183,40,-88,110041189923,Bunge Milling Inc.,51000
+5,IL    ,IL109,,,110058931875,Bushnell Municipal Electric Light,935
+5,IL    ,IL031,42,-88,110012280316,"Calumet Energy Team, LLC",55296
+5,IL    ,IL027,39,-89,110001808410,Carlyle,936
+5,IL    ,IL023,,,110058931946,"Casey, City of",56053
+5,IL    ,IL031,42,-88,110039686569,"Chicago Coke Co., Inc.",880096
+5,IL    ,IL027,39,-89,110018351969,City of Breese,934
+5,IL    ,IL023,39,-88,110028018348,City of Marshall,949
+5,IL    ,,,,,City of Rock Falls 14th Ave Station,
+5,IL    ,IL135,39,-89,110000500501,Coffeen,861
+5,IL    ,IL063,41,-88,110000432997,Collins Station,6025
+5,IL    ,IL031,42,-88,110007390929,Cook Energy Facility,55388
+5,IL    ,IL161,42,-90,110002073005,Cordova Energy Company,55188
+5,IL    ,IL031,42,-88,110000434717,Crawford,867
+5,IL    ,IL197,41,-88,110040957364,Crete Energy Park,55253
+5,IL    ,IL167,40,-90,110000439721,Dallman,963
+5,IL    ,IL057,40,-90,110000437947,Duck Creek,6016
+5,IL    ,IL103,42,-89,110007399537,"Dynegy Lee II, LLC",55236
+5,IL    ,IL143,41,-90,110000438125,E D Edwards,856
+5,IL    ,IL031,42,-88,110001229796,"Elgin Energy Center, LLC",55438
+5,IL    ,,,,,Elmhurst Tss,
+5,IL    ,IL197,41,-88,110043787701,Elwood Energy Facility,55199
+5,IL    ,IL197,41,-88,110000595339,Exxonmobil Oil Corporation,50627
+5,IL    ,IL167,40,-90,110007269650,Factory Gas Turbine,8016
+5,IL    ,IL191,38,-88,110007266118,Fairfield,940
+5,IL    ,IL039,,,110042352799,Farmer City Power Plant,941
+5,IL    ,IL031,42,-88,110000433905,Fisk,886
+5,IL    ,IL197,41,-88,110038932411,"Flint Hills Resources, - Joliet Plant",880089
+5,IL    ,IL089,42,-88,110002073112,Fox River Peaking Station,55169
+5,IL    ,IL163,,,110001810489,"Freeburg Power Plant, Village of",943
+5,IL    ,IL051,39,-89,110043783475,Freedom Power Project,7842
+5,IL    ,IL073,41,-90,110018482435,Geneseo,944
+5,IL    ,IL031,42,-88,110001365086,"Geneva Energy, LLC",55174
+5,IL    ,IL089,,,110058932035,Geneva Generation Facility,56462
+5,IL    ,IL055,38,-89,110007391027,Genpower - West Frankfort,55649
+5,IL    ,IL053,40,-88,110018482747,"Gibson City Energy Center, LLC",55201
+5,IL    ,IL113,,,110028019579,Gillum,7891
+5,IL    ,IL147,40,-89,110043795275,Goose Creek Power Plant,55496
+5,IL    ,IL077,38,-90,110041990389,"Grand Tower Energy Center, LLC",862
+5,IL    ,,,,,Great Plains Energy Center,55830
+5,IL    ,IL143,,,110028019597,Hallock,7895
+5,IL    ,IL125,40,-90,110000595794,Havana,891
+5,IL    ,IL155,41,-89,110006166139,Hennepin Power Station,892
+5,IL    ,IL173,39,-89,110018128417,Holland Energy Facility,55334
+5,IL    ,IL033,39,-88,110000439366,Hutsonville,863
+5,IL    ,IL201,42,-89,110045008861,IEA - Alliant  SBD 9805 Rockford Prod.,55316
+5,IL    ,,,,,Indeck-Elwood Energy Center,55823
+5,IL    ,IL111,42,-88,110001233941,Indeck-Holiday Hills Energy Center,55190
+5,IL    ,IL097,42,-88,110007052580,Indeck-Libertyville Energy Center,55121
+5,IL    ,IL111,42,-88,110007281351,Indeck-Pleasant Valley Energy Center,9258
+5,IL    ,IL179,41,-90,110015379455,Indian Trails Cogen 1,7384
+5,IL    ,IL031,42,-88,110017414742,Ingredion Incorporated Argo Plant,54556
+5,IL    ,IL167,40,-90,110018334284,Interstate,7425
+5,IL    ,,,,,Itasca TSS,
+5,IL    ,IL197,41,-88,110000742929,Joliet 29,384
+5,IL    ,IL197,41,-88,110043782261,Joliet 9,874
+5,IL    ,IL127,37,-89,110043786249,Joppa Steam,887
+5,IL    ,IL091,41,-88,110010430328,Kankakee Energy Facility,55387
+5,IL    ,IL093,41,-88,110007280977,Kendall Energy Facility,55131
+5,IL    ,IL107,,,110058932071,Kickapoo,7896
+5,IL    ,IL021,40,-89,110000602125,Kincaid Generating Station,876
+5,IL    ,IL121,39,-89,110001347800,Kinmundy Power Plant,55204
+5,IL    ,IL197,41,-88,110015743800,"LSP University Park, LLC",55640
+5,IL    ,IL167,40,-90,110000439721,Lakeside,964
+5,IL    ,IL197,42,-88,110000595348,Lemont Refinery,880076
+5,IL    ,IL197,41,-88,110002073096,Lincoln Generating Facility,55222
+5,IL    ,,,,110012514644,Lincoln Generation,55256
+5,IL    ,,,,,Livingston Energy Center,55715
+5,IL    ,IL127,37,-89,110012515046,MEPI GT Facility,7858
+5,IL    ,IL033,39,-88,110018331296,Marathon Petroleum Company LP,880088
+5,IL    ,IL199,38,-89,110017420049,Marion,976
+5,IL    ,IL111,42,-88,110001233932,McHenry County - Reliant Energy,55280
+5,IL    ,IL065,,,110001290497,McLeansboro,948
+5,IL    ,IL137,40,-91,110042066046,Meredosia,864
+5,IL    ,IL161,42,-90,110001809981,Moline,899
+5,IL    ,IL063,41,-88,110009385888,"Morris Cogeneration, LLC",55216
+5,IL    ,,,,,Morris Power Plant,4093
+5,IL    ,,,,110007391045,NRG Bourbonnais Energy Center,55330
+5,IL    ,IL201,42,-89,110005980741,NRG Rockford Energy Center,55238
+5,IL    ,IL201,42,-89,110005980741,NRG Rockford II Energy Center,55936
+5,IL    ,IL097,42,-88,110041995758,Naval Station Great Lakes,880091
+5,IL    ,IL103,42,-90,110007399644,Nelson Energy Center,55183
+5,IL    ,IL079,39,-88,110000439393,Newton,6017
+5,IL    ,,,,,North Aurora Tss,
+5,IL    ,,,,110012514715,Oraville Station,55500
+5,IL    ,IL179,41,-90,110000438036,"Pacific Ethanol Pekin, Inc.",880086
+5,IL    ,IL113,41,-89,110018442611,Parkside,7888
+5,IL    ,IL149,39,-91,110018241829,Pearl Station,6238
+5,IL    ,IL099,41,-89,110001815509,Peru,955
+5,IL    ,IL145,38,-89,110009387207,Pinckneyville Power Plant,55202
+5,IL    ,IL179,41,-90,110000438027,Powerton,879
+5,IL    ,IL189,38,-90,110044852068,Prairie State Generating Station,55856
+5,IL    ,,,,,Prospect Heights Tss,
+5,IL    ,IL179,41,-90,110000833340,R S Wallace,859
+5,IL    ,IL025,39,-89,110007399396,Raccoon Creek Power Plant,55417
+5,IL    ,IL019,,,110058931884,Rantoul Electrical Generating Plant,958
+5,IL    ,IL157,,,110001800935,"Red Bud, City of",959
+5,IL    ,IL031,42,-88,,Robbins Community Power LLC,56576
+5,IL    ,IL089,42,-88,110001345982,"Rocky Road Power, LLC",55109
+5,IL    ,,,,,Sabrooke Tss,
+5,IL    ,IL173,39,-88,110007362086,Shelby County,55237
+5,IL    ,IL141,42,-89,110001809339,South Main Street,961
+5,IL    ,IL031,42,-88,110012514662,Southeast Chicago Energy Project,55281
+5,IL    ,IL139,40,-89,110001804959,Sullivan Power Plant,969
+5,IL    ,IL115,40,-89,110000578072,Tate & Lyle,10867
+5,IL    ,IL021,39,-89,,Taylorville Energy Center,56454
+5,IL    ,,,,110012514993,Tazewell,3252
+5,IL    ,IL183,40,-88,110018104353,Tilton Power Station,7760
+5,IL    ,IL041,40,-88,110000746211,Tuscola Plant,55245
+5,IL    ,IL031,,,,US Steel (South Works),880047
+5,IL    ,IL197,41,-88,110002073130,University Park Energy,55250
+5,IL    ,IL119,39,-90,110001287474,Venice,913
+5,IL    ,IL183,40,-88,110021308253,Vermilion Power Station,897
+5,IL    ,IL133,,,110040991996,"Waterloo, City of",971
+5,IL    ,IL097,42,-88,110000430178,Waukegan,883
+5,IL    ,,,,110012514733,Waukegan Energy Facility,55695
+5,IL    ,,,,,West Tech TSS,
+5,IL    ,IL197,42,-88,110000432933,Will County,884
+5,IL    ,,,,,Willow Springs TSS,
+5,IL    ,IL031,42,-88,110028020095,Winnetka,972
+5,IL    ,IL119,39,-90,110006402605,Wood River Power Station,898
+5,IL    ,IL119,39,-90,110041962873,Wood River Refinery,880067
+5,IL    ,IL097,42,-88,110021292260,Zion Energy Center,55392
+5,IN    ,IN129,38,-88,110044891150,A B Brown Generating Station,6137
+5,IN    ,IN173,38,-87,110044834668,Alcoa Allowance Management Inc,6705
+5,IN    ,IN095,40,-86,110001678006,Anderson,7336
+5,IN    ,IN089,42,-87,110000397829,ArcelorMittal USA - Indiana Harbor East,10474
+5,IN    ,IN089,42,-87,110000398338,BP Whiting Business Unit,52130
+5,IN    ,IN127,42,-87,110000397730,Bailly Generating Station,995
+5,IN    ,IN153,39,-88,110006645158,Breed,984
+5,IN    ,IN163,38,-88,110001235155,Broadway Avenue Generating Station,1011
+5,IN    ,,,,,Brookwood Substation,
+5,IN    ,IN097,40,-86,110001360116,C. C. Perry K Steam Plant,992
+5,IN    ,IN165,40,-87,110000404349,Cayuga,1001
+5,IN    ,IN077,39,-85,110000402314,Clifty Creek,983
+5,IN    ,IN093,39,-86,110008978197,Cogentrix Lawrence County,55443
+5,IN    ,IN041,40,-85,110007564698,Connersville Peaking Station,1002
+5,IN    ,IN107,40,-87,110017393907,Crawfordsville,1024
+5,IN    ,,,,,Cumberland Substation,
+5,IN    ,IN089,42,-87,110000592216,Dean H Mitchell Generating Station,996
+5,IN    ,,,,110012514494,Desoto Generating Station,55147
+5,IN    ,IN083,39,-87,110000403377,Edwardsport Generating Station,1004
+5,IN    ,IN173,38,-87,110000403723,F B Culley Generating Station,1012
+5,IN    ,IN053,41,-86,110002374476,Fairmount Electric Gen Station,55385
+5,IN    ,,,,,Fairview Primary,
+5,IN    ,IN125,39,-87,110000403581,Frank E Ratts,1043
+5,IN    ,IN097,40,-86,110003137203,Georgetown Substation,7759
+5,IN    ,,,,,German Church Substation,
+5,IN    ,IN051,38,-88,110000592813,Gibson,6113
+5,IN    ,,,,,Glens Valley Substation,
+5,IN    ,,,,,Green Valley Energy Project,
+5,IN    ,,,,,Guion Substation,
+5,IN    ,,,,,Hammond Energy Center,55362
+5,IN    ,IN065,40,-86,110013667031,Henry County Generating Station,7763
+5,IN    ,IN093,39,-86,110012514476,Hoosier Energy Lawrence Co Station,7948
+5,IN    ,IN109,39,-86,110000396606,IPL - Eagle Valley Generating Station,991
+5,IN    ,IN097,40,-86,110000396991,IPL - Harding Street Station (EW Stout),990
+5,IN    ,IN125,39,-87,110037247912,IPL - Petersburg Generating Station,994
+5,IN    ,IN037,38,-87,110010288866,Jasper 2,6225
+5,IN    ,,,,110012514573,Knox Generating Station,55483
+5,IN    ,,,,,Knox II Generating Station,55784
+5,IN    ,IN029,39,-85,110006764171,Lawrenceburg Energy Facility,55502
+5,IN    ,IN017,41,-86,110002074111,Logansport,1032
+5,IN    ,IN153,39,-88,110000592831,Merom,6213
+5,IN    ,IN091,42,-87,110000592154,Michigan City Generating Station,997
+5,IN    ,,,,,Midway Station,
+5,IN    ,IN179,41,-85,110021089061,Montpelier Electric Gen Station,55229
+5,IN    ,,,,110012514519,Mount Vernon Energy Center,55359
+5,IN    ,,,,110012514449,NA 1 -- 7221,7221
+5,IN    ,IN165,40,-87,110012514458,NA 1 -- 7228,7228
+5,IN    ,IN141,42,-86,110000399970,"Noble Americas South Bend Ethanol, LLC.",880087
+5,IN    ,IN057,40,-86,110000396349,Noblesville,1007
+5,IN    ,IN145,,,110012514582,PSEG Morristown Energy Facility,55523
+5,IN    ,IN097,40,-86,110001360125,Perry W,993
+5,IN    ,IN103,41,-86,110001235002,Peru,1037
+5,IN    ,IN127,42,-87,110006010583,Portside Energy,55096
+5,IN    ,,,,,Prospect Substation,
+5,IN    ,IN157,40,-87,110006766990,Purdue University-Wade Utility,50240
+5,IN    ,IN133,,,110012514546,Putnam Energy Center,55437
+5,IN    ,IN043,38,-86,110007565214,R Gallagher,1008
+5,IN    ,IN073,41,-87,110000493706,R M Schahfer Generating Station,6085
+5,IN    ,IN177,40,-85,110001678015,Richmond (IN),7335
+5,IN    ,IN147,38,-87,110000747924,Rockport,6166
+5,IN    ,,,,,Rockville Substation,
+5,IN    ,,,,110012514591,St. Joseph County Gen Facility,55636
+5,IN    ,IN141,42,-86,,St. Joseph Energy Center LLC,57794
+5,IN    ,IN089,42,-88,110000602633,State Line Generating Station (IN),981
+5,IN    ,IN167,39,-88,110008978151,Sugar Creek Generating Station,55364
+5,IN    ,,,,,Sunnyside Substation,
+5,IN    ,IN029,39,-85,110000605587,Tanners Creek,988
+5,IN    ,,,,110012514555,Tenaska Indiana Generating Station,55441
+5,IN    ,,,,,Thompson Substation,
+5,IN    ,IN089,42,-87,110000398374,US Steel Corp - Gary Works,50733
+5,IN    ,IN165,40,-87,110006010921,Vermillion Generating Station,55111
+5,IN    ,,,,110012514537,Vigo Energy Facility,55424
+5,IN    ,IN167,40,-87,110001961912,Wabash River Gen Station,1010
+5,IN    ,IN167,40,-87,,Wabash River Highland Plant,57842
+5,IN    ,IN083,39,-87,110001996902,Wheatland Generating Facility LLC,55224
+5,IN    ,IN177,40,-85,110000592662,Whitewater Valley,1040
+5,IN    ,IN089,42,-87,110003139023,"Whiting Clean Energy, Inc.",55259
+5,IN    ,IN055,39,-87,110021315254,Worthington Generation,55148
+5,MI    ,MI005,43,-86,110040862527,48th Street Peaking Station,7258
+5,MI    ,,,,,AAA Michigan-World Headquarters,
+5,MI    ,MI029,45,-85,110001830500,Advance,1869
+5,MI    ,,,,,Alma Site,
+5,MI    ,MI137,45,-85,,Alpine Power Plant,59926
+5,MI    ,,,,,Assumption Greek Orth. Church,
+5,MI    ,,,,110012513690,Augusta Park Energy Facility,55431
+5,MI    ,,,,,Awrey Bakery Site,
+5,MI    ,MI121,43,-86,110000411037,B C Cobb,1695
+5,MI    ,MI055,45,-86,110001840081,Bayside,1859
+5,MI    ,MI163,42,-83,110040970946,Beacon Heating,1724
+5,MI    ,MI029,45,-85,110012513609,Beaver Island,1870
+5,MI    ,MI029,,,110006175931,Beaver Island Four Corners,7831
+5,MI    ,MI147,43,-82,110017414038,Belle River,6034
+5,MI    ,MI165,44,-85,110009393370,Cadillac Renewable Energy,54415
+5,MI    ,,,,,Chelsea Site,
+5,MI    ,,,,,Cincap Chippewa,55755
+5,MI    ,MI005,43,-86,110001844513,Claude Vandyke,1880
+5,MI    ,MI023,42,-85,110028026455,Coldwater,1819
+5,MI    ,MI163,42,-83,110000759876,Conners Creek,1726
+5,MI    ,MI147,43,-82,110015836069,DTE East China,55718
+5,MI    ,MI125,43,-83,110015374414,DTE Pontiac North LLC,10111
+5,MI    ,MI017,44,-84,110000593171,Dan E Karn,1702
+5,MI    ,MI163,42,-83,110006650132,Dearborn Industrial Generation,55088
+5,MI    ,MI163,42,-83,110022939212,Delray,1728
+5,MI    ,MI021,,,110058931866,Donald C Cook,6000
+5,MI    ,MI065,43,-85,110000408531,Eckert Station,1831
+5,MI    ,MI059,42,-85,110017431162,Endicott Generating,4259
+5,MI    ,MI045,43,-85,110040958425,Erickson,1832
+5,MI    ,MI041,46,-87,110000412321,Escanaba,1771
+5,MI    ,,,,,Ford Motor Company - Clay Mine Site,
+5,MI    ,,,,,Ford Motor Company - Research & Eng,
+5,MI    ,,,,,Ford Motor Company - World Headquar,
+5,MI    ,MI163,,,110039685070,Ford Rouge Powerhouse,10272
+5,MI    ,,,,,General Motors Corporation - NA Flint,880080
+5,MI    ,MI049,43,-84,110035420666,Genesee Power Station,54751
+5,MI    ,MI133,44,-85,110028027855,George Johnson Plant,1877
+5,MI    ,MI077,,,,Georgia-Pacific Corp Kalamazoo Paper Mil,880085
+5,MI    ,MI077,42,-86,110000408791,"Graphic Packaging International, Inc.",10698
+5,MI    ,MI039,45,-85,110028027917,Grayling Generating Station,10822
+5,MI    ,MI147,43,-83,110000404517,Greenwood,6035
+5,MI    ,,,,,Gross Isle School District,
+5,MI    ,MI125,43,-83,110006514049,Hancock Peakers,1730
+5,MI    ,MI063,44,-83,110000497150,Harbor Beach,1731
+5,MI    ,MI139,43,-86,,Holland Energy Park,59093
+5,MI    ,,,,110012513707,Indeck-Niles Energy Center,55460
+5,MI    ,MI139,43,-86,110000410396,J B Sims,1825
+5,MI    ,MI017,44,-84,110000593171,J C Weadock,1720
+5,MI    ,MI139,43,-86,110000411108,J H Campbell,1710
+5,MI    ,MI115,42,-83,110001840964,J R Whiting,1723
+5,MI    ,MI075,42,-84,110015804511,Jackson Generating Station,55270
+5,MI    ,MI139,43,-86,110000541708,James De Young,1830
+5,MI    ,MI013,47,-88,110058240327,John H Warden,1772
+5,MI    ,,,,,KMart-World Headquarters,
+5,MI    ,MI077,42,-85,110007393105,Kalamazoo River Generating Station,55101
+5,MI    ,MI079,45,-85,110028028088,Kalkaska CT Project #1,7984
+5,MI    ,MI065,43,-85,110057110255,Lansing BWL REO Town Plant,58427
+5,MI    ,MI137,45,-85,110002356922,Livingston Generating Station,55102
+5,MI    ,MI163,42,-83,110039686444,Marathon Petroleum Company LP,880029
+5,MI    ,MI147,43,-82,110000404580,Marysville,1732
+5,MI    ,MI105,44,-86,110001826775,Michigan Power Limited Partnership,54915
+5,MI    ,MI111,44,-84,110017405093,Midland Cogeneration Venture,10745
+5,MI    ,,,,110012513725,"Mirant Wyandotte, LLC",55520
+5,MI    ,MI163,42,-83,110002379426,Mistersky,1822
+5,MI    ,MI115,42,-83,110000405927,Monroe,1733
+5,MI    ,MI159,42,-86,110015846076,New Covert Generating Project,55297
+5,MI    ,,,,,Ogihara Site,
+5,MI    ,MI005,42,-86,110000409291,"Otsego Paper, Inc.",55799
+5,MI    ,MI065,43,-84,110001840321,Ottawa Street,1835
+5,MI    ,,,,,Patterson Avenue Peaker,
+5,MI    ,MI163,42,-83,110003576443,Pennsalt,1736
+5,MI    ,MI147,43,-83,110015377607,Port Huron,1738
+5,MI    ,MI103,47,-87,110056964030,Presque Isle,1769
+5,MI    ,MI117,43,-85,110021353505,Renaissance Power,55402
+5,MI    ,MI163,42,-83,110000406917,River Rouge,1740
+5,MI    ,MI103,47,-87,110017426962,Shiras,1843
+5,MI    ,MI147,43,-82,110000404740,St. Clair,1743
+5,MI    ,MI023,,,110058932204,State Street Generating Station,7970
+5,MI    ,,,,,Sterling Inn Site,
+5,MI    ,MI163,42,-84,110017414172,Sumpter Plant,7972
+5,MI    ,MI065,43,-84,110028030547,T B Simon Power Plant,10328
+5,MI    ,MI101,44,-86,110000412054,TES Filer City Station,50835
+5,MI    ,,,,,Tallmadge Generation Station,55808
+5,MI    ,MI111,44,-84,110010593349,The Dow Chemical Company,880031
+5,MI    ,MI049,43,-84,110001847093,Thetford,1719
+5,MI    ,MI163,42,-83,110000406267,Trenton Channel,1745
+5,MI    ,,,,,Union Lake,
+5,MI    ,MI161,42,-84,110003691309,University of Michigan,880045
+5,MI    ,,,,,Venice Park,
+5,MI    ,MI163,42,-83,110001680823,Wyandotte,1866
+5,MI    ,MI139,43,-86,110012534551,Zeeland Generating Station,55087
+5,MN    ,MN163,45,-93,110000423612,Allen S King,1915
+5,MN    ,MN053,45,-93,110000847291,Alliant Techsystems,7376
+5,MN    ,MN099,44,-93,110008814792,Austin - DT,1960
+5,MN    ,MN151,,,110001442706,Benson Municipal Utilities,1964
+5,MN    ,MN151,45,-96,110008734085,Benson Power Biomass Plant,55867
+5,MN    ,MN037,45,-93,110017409320,Black Dog,1904
+5,MN    ,MN147,,,110003793226,Blooming Prairie,1966
+5,MN    ,MN043,44,-94,110008813846,Blue Earth Light & Water,1967
+5,MN    ,MN139,45,-93,110009397535,Blue Lake Generating Plant,8027
+5,MN    ,MN061,47,-94,110041028492,Boswell Energy Center,1893
+5,MN    ,MN059,46,-93,110028022869,Cambridge Station,2038
+5,MN    ,MN049,45,-93,110037417097,Cannon Falls Energy Center,56241
+5,MN    ,MN109,44,-92,110001826445,Cascade Creek,6058
+5,MN    ,MN093,45,-95,110008808843,City of Litchfield,1989
+5,MN    ,,,,,City of Rushford Power Plant,56103
+5,MN    ,MN045,,,110058932302,City of Spring Valley,2013
+5,MN    ,MN163,45,-93,110000423658,Cottage Grove Cogeneration,55010
+5,MN    ,MN083,,,,County Road 33 Generation,8014
+5,MN    ,MN171,45,-94,110001443894,Delano Municipal Utilities,1969
+5,MN    ,MN141,45,-94,110017390839,Elk River,2039
+5,MN    ,MN091,44,-94,110007277062,Fairmont,1973
+5,MN    ,MN131,44,-93,110020155945,Faribault Energy Park,56164
+5,MN    ,MN111,46,-96,110008788927,Fergus Control Center,7505
+5,MN    ,MN091,44,-95,110000427048,Fox Lake,1888
+5,MN    ,,,,110012513253,Future Base,7240
+5,MN    ,,,,,Georgia-Pacific - Alliant,54928
+5,MN    ,MN085,45,-94,110001447916,Glencoe,1975
+5,MN    ,MN173,,,110028023074,Granite Falls Mun Utils Plant 2,7977
+5,MN    ,MN107,,,110003810010,Halstad Municipal Utilities,8105
+5,MN    ,MN137,47,-92,110007601540,Hibbard Energy Center,1897
+5,MN    ,MN137,47,-93,110001442332,Hibbing,1979
+5,MN    ,MN123,45,-93,110000424032,High Bridge,1912
+5,MN    ,MN111,46,-96,110000427422,Hoot Lake,1943
+5,MN    ,MN085,45,-94,110001444492,Hutchinson - Plant 2,6358
+5,MN    ,MN037,45,-93,110001829610,Inver Hills,1913
+5,MN    ,MN161,44,-94,110008813533,Janesville Municipal Utilities,1982
+5,MN    ,MN049,44,-93,110008813276,Kenyon Municipal Utilities,1983
+5,MN    ,MN013,44,-94,110003910162,Lake Crystal,1985
+5,MN    ,MN091,44,-95,110008694975,Lakefield Junction Generating,7925
+5,MN    ,MN063,,,110003799186,Lakefield Public Utilities,7415
+5,MN    ,MN045,,,110020643703,Lanesboro,1987
+5,MN    ,MN137,48,-92,110007372100,Laskin Energy Center,1891
+5,MN    ,MN133,44,-96,110001445909,Luverne,1990
+5,MN    ,MN013,44,-94,110025213061,Mankato Energy Center,56104
+5,MN    ,MN171,45,-94,110035420513,Maple Lake Station,2042
+5,MN    ,MN019,45,-94,110035428105,Minnesota River Station,7844
+5,MN    ,MN023,45,-96,110007316109,Minnesota Valley,1918
+5,MN    ,MN079,44,-94,110035420951,Montgomery,8025
+5,MN    ,MN027,47,-97,110009400228,Moorhead,1995
+5,MN    ,MN015,44,-94,110008811492,New Ulm,2001
+5,MN    ,MN025,,,110003800423,North Branch Municipal Water&Light,2002
+5,MN    ,MN099,44,-93,110000426487,Northeast Station,1961
+5,MN    ,MN075,47,-91,110000910453,Northshore Mining Silver Bay Power,10849
+5,MN    ,MN147,44,-93,110001442644,Owatonna,2003
+5,MN    ,MN003,,,110040576276,"Planergy-Ramsey Methane, LLC",56672
+5,MN    ,MN099,44,-93,110012145507,Pleasant Valley Station,7843
+5,MN    ,MN095,,,110001301868,Princeton Public Utils Comm,2005
+5,MN    ,MN049,45,-93,110003743557,Red Wing,1926
+5,MN    ,MN053,45,-93,110000425656,Riverside (1927),1927
+5,MN    ,MN115,46,-93,110035420372,Rock Lake Station,6741
+5,MN    ,MN141,45,-94,110000424700,Sherburne County,6090
+5,MN    ,MN109,44,-92,110000426469,Silver Lake,2008
+5,MN    ,MN015,44,-95,110001301626,Sleepy Eye,2011
+5,MN    ,MN007,48,-95,110038098769,Solway Plant,7947
+5,MN    ,MN127,,,110028024279,South Generation,7982
+5,MN    ,MN015,44,-95,110001301644,Springfield,2012
+5,MN    ,MN019,45,-94,110035420684,St. Bonifacius Station,6824
+5,MN    ,MN169,,,110028024322,St. Charles Power Plant,56100
+5,MN    ,MN031,48,-91,110006367172,Taconite Harbor Energy Center,10075
+5,MN    ,MN113,,,110058932311,"Thief River Falls, City of",2014
+5,MN    ,MN091,44,-94,110040936084,Truman,2015
+5,MN    ,MN075,47,-92,110013809539,Two Harbors,2016
+5,MN    ,MN053,45,-93,110008817842,United Health Care,7377
+5,MN    ,MN123,45,-93,110001438677,United Hospital,7378
+5,MN    ,MN137,48,-93,110001442341,Virginia,2018
+5,MN    ,MN033,44,-95,110001443493,Westbrook Municipal Light and Power,2021
+5,MN    ,MN067,45,-95,110001850015,Willmar,2022
+5,MN    ,MN013,44,-94,110000798227,Wilmarth,1934
+5,OH    ,OH017,39,-84,110000392557,AK Steel Corporation - Middletown,880042
+5,OH    ,OH037,40,-85,110006235118,AMP-Ohio Arcanum,7781
+5,OH    ,OH035,,,110028051792,AMP-Ohio Cleveland Peaking,7774
+5,OH    ,OH173,41,-84,110013813150,AMP-Ohio Gas Turbines Bowling Green,55262
+5,OH    ,OH033,41,-83,110012512520,AMP-Ohio Gas Turbines Galion ,55263
+5,OH    ,OH069,41,-84,110006233726,AMP-Ohio Gas Turbines Napoleon,55264
+5,OH    ,OH169,41,-82,110009617174,AMP-Ohio Orrville Peaking,7778
+5,OH    ,OH139,,,110006233735,AMP-Ohio Shelby North,7827
+5,OH    ,OH095,42,-84,110000701474,Acme,2877
+5,OH    ,OH035,41,-82,110011945681,ArcelorMittal Cleveland LLC,10398
+5,OH    ,OH155,41,-81,110000389847,ArcelorMittal Warren,54207
+5,OH    ,OH007,42,-81,110000385002,Ashtabula,2835
+5,OH    ,OH093,42,-82,110000385173,Avon Lake Power Plant,2836
+5,OH    ,OH095,42,-83,110000384361,BP Husky Refining LLC,880030
+5,OH    ,OH095,42,-83,110000384325,Bay Shore,2878
+5,OH    ,,,,110012511987,Bloomfield Power,55490
+5,OH    ,OH081,40,-81,110000605426,Cardinal,2828
+5,OH    ,OH113,40,-84,110000497034,Cargill Incorporated,880039
+5,OH    ,OH019,41,-81,,Carroll County Energy,59773
+5,OH    ,,,,,City of Hamilton South Water Plant,
+5,OH    ,OH049,40,-83,110015376788,Columbus,2910
+5,OH    ,OH031,40,-82,110000605417,Conesville,2840
+5,OH    ,OH129,40,-83,110028032126,Darby Electric Generating Station,55247
+5,OH    ,OH157,41,-81,110041120578,Dover,2914
+5,OH    ,OH119,40,-82,110040565705,Dresden Energy Facility,55350
+5,OH    ,OH017,39,-84,110009677126,"Dynegy Dicks Creek, LLC",2831
+5,OH    ,OH087,39,-83,110044905216,"Dynegy Hanging Rock II, LLC",55736
+5,OH    ,OH167,40,-82,110040566633,"Dynegy Washington II, LLC",55397
+5,OH    ,OH085,42,-81,110000386332,Eastlake,2837
+5,OH    ,OH093,41,-82,110001617698,Edgewater (2857),2857
+5,OH    ,OH061,39,-85,110035808855,"Emery Oleochemicals, LLC",880033
+5,OH    ,OH113,40,-84,110005972224,Frank M Tait Station,2847
+5,OH    ,OH143,41,-83,110058931893,Fremont Energy Center,55701
+5,OH    ,OH053,39,-82,110043788327,Gen J M Gavin,8102
+5,OH    ,OH123,42,-83,110017765667,Genoa Diesel Generating Station,56181
+5,OH    ,OH153,41,-81,110001624715,Goodyear Tire & Rubber Company,10114
+5,OH    ,OH153,41,-81,110001625233,Gorge,2858
+5,OH    ,OH037,40,-85,110020497540,Greenville Electric Gen Station,55228
+5,OH    ,OH017,39,-85,110043782760,Hamilton Municipal Power Plant,2917
+5,OH    ,OH003,41,-84,110010320964,Harrod Electric Generating Station,55384
+5,OH    ,OH001,39,-84,110000741920,J M Stuart,2850
+5,OH    ,OH079,39,-83,110010127282,Jackson County Power,55444
+5,OH    ,OH001,39,-83,110000591841,Killen Station,6031
+5,OH    ,OH053,39,-82,110000395162,Kyger Creek,2876
+5,OH    ,OH035,41,-82,110000901230,Lake Road,2908
+5,OH    ,OH035,42,-82,110000386500,Lake Shore,2838
+5,OH    ,OH045,40,-83,110010319440,Lancaster Electric Gen Station,55254
+5,OH    ,OH003,41,-84,110012512003,Lima Energy Company,55635
+5,OH    ,OH003,41,-84,110000395475,Lima Refinery,880083
+5,OH    ,OH155,41,-81,,Lordstown Energy Center,60376
+5,OH    ,OH023,40,-84,110008117910,Mad River,2860
+5,OH    ,OH017,39,-84,110004737615,Madison Generating Station,55110
+5,OH    ,OH061,39,-85,110000823379,Miami Fort Power Station,2832
+5,OH    ,OH017,39,-84,,Middletown Energy Center,59326
+5,OH    ,OH167,40,-82,110000591930,Muskingum River,2872
+5,OH    ,OH145,,,,New Boston Coke Corporation,880090
+5,OH    ,OH011,,,110028052023,New Knoxville Generating Station,7898
+5,OH    ,OH155,41,-81,110008581659,Niles,2861
+5,OH    ,OH113,40,-84,110000394145,O H Hutchings,2848
+5,OH    ,OH093,41,-82,110001630708,Oberlin Municipal Light & Power,2933
+5,OH    ,OH173,41,-84,110006235626,Omega JV2 Bowling Green,7783
+5,OH    ,OH171,41,-85,110001627482,Omega JV2 Bryan,7779
+5,OH    ,OH157,41,-81,110006234020,Omega JV2 Dover,7777
+5,OH    ,,41,-85,110013813105,Omega JV2 Edgerton,7874
+5,OH    ,OH033,,,110041079249,Omega JV2 Galion,7918
+5,OH    ,OH017,39,-85,110043972403,Omega JV2 Hamilton,7782
+5,OH    ,OH149,40,-84,110011943834,Omega JV2 Jackson Center,7780
+5,OH    ,OH171,42,-85,110054261231,Omega JV2 Montpelier,7791
+5,OH    ,OH069,41,-84,110006233726,Omega JV2 Napoleon,7776
+5,OH    ,OH103,,,110028029915,Omega JV2 Seville,7919
+5,OH    ,OH139,41,-83,110006233717,Omega JV2 Shelby South,7828
+5,OH    ,OH037,40,-87,110054261197,Omega JV2 Versailles,7775
+5,OH    ,,,,,Omega JV3,
+5,OH    ,,,,,Omega JV5 - Napoleon,
+5,OH    ,,,,,Omega JV5 - Niles,
+5,OH    ,OH095,42,-83,,Oregon Clean Energy Center,59764
+5,OH    ,OH169,41,-82,110009629599,Orrville,2935
+5,OH    ,OH141,39,-83,110000395117,P H Glatfelter Company - Chillicothe Fac,10244
+5,OH    ,OH085,42,-81,110000385878,Painesville,2936
+5,OH    ,OH129,40,-83,110000382069,Picway,2843
+5,OH    ,OH109,40,-84,110000394216,Piqua,2937
+5,OH    ,OH009,39,-82,110007156549,Poston,2844
+5,OH    ,OH061,39,-85,110014344049,Procter & Gamble Company - Ivorydale,880028
+5,OH    ,OH101,41,-83,110006235608,Prospect,7603
+5,OH    ,OH013,40,-81,110000384922,R E Burger,2864
+5,OH    ,OH049,40,-83,110012512619,Refuse & Coal,312
+5,OH    ,OH093,41,-82,110000385645,Republic Engineered Products-Lorain,880077
+5,OH    ,OH167,39,-82,110000850525,Richard Gorsuch,7253
+5,OH    ,OH039,41,-84,110007158039,Richland Peaking Station,2880
+5,OH    ,OH161,41,-85,110006539200,Robert P Mone,7872
+5,OH    ,OH163,39,-82,110013300052,Rolling Hills Generating LLC,55401
+5,OH    ,OH139,41,-83,110000391816,Shelby Municipal,2943
+5,OH    ,OH017,39,-85,110000392174,Smart Papers LLC,50247
+5,OH    ,OH087,,,110039686532,South Point Power,880084
+5,OH    ,OH011,41,-84,110000395956,St. Marys,2942
+5,OH    ,OH145,39,-83,110042073332,Sunoco Inc (R&M) Haverhill Plant,880070
+5,OH    ,OH113,40,-84,110005972224,Tait Electric Generating Station,55248
+5,OH    ,OH049,40,-83,110044916080,The Ohio State University,50044
+5,OH    ,OH095,42,-84,110010534261,Toledo Refinery,50965
+5,OH    ,OH081,40,-81,110008119115,Toronto,2867
+5,OH    ,OH173,41,-83,110012160197,"Troy Energy, LLC",55348
+5,OH    ,OH081,41,-81,110000591609,W H Sammis,2866
+5,OH    ,OH025,39,-84,110000392860,W H Zimmer Generating Station,6019
+5,OH    ,,,,,WCLPP Reliable Power,7773
+5,OH    ,,,,110012512502,Wadsworth Generating Station,55261
+5,OH    ,OH025,39,-84,110000392888,Walter C Beckjord Generating Station,2830
+5,OH    ,OH167,40,-82,110017747205,Waterford Plant,55503
+5,OH    ,OH061,39,-85,110008628654,West End Station,2834
+5,OH    ,OH093,41,-82,110004588875,West Lorain,2869
+5,OH    ,OH017,39,-84,110004685868,Woodsdale,7158
+5,WI    ,,,,,API Software Diesel Generator,
+5,WI    ,WI011,44,-92,110000422560,Alma,4140
+5,WI    ,WI121,44,-91,110001925150,Arcadia Municipal,4100
+5,WI    ,WI065,,,110002038018,Argyle Municipal Electric & Water ,7810
+5,WI    ,WI003,47,-91,110000422846,Bay Front,3982
+5,WI    ,WI105,43,-89,110009515881,Blackhawk,4048
+5,WI    ,WI025,43,-89,110000420152,Blount Street,3992
+5,WI    ,WI009,44,-88,110013863275,Broadway Mill,10360
+5,WI    ,WI021,43,-89,110000420385,Columbia,8023
+5,WI    ,WI087,44,-88,110017419523,"Combined Locks Energy Center, LLC",55558
+5,WI    ,WI025,43,-89,110012510265,Combustion Turbine,7157
+5,WI    ,WI079,43,-88,110001922590,Commerce,4036
+5,WI    ,WI055,43,-89,110016940159,Concord,7159
+5,WI    ,WI071,44,88,110000421384,Custer Energy Center,7795
+5,WI    ,WI043,43,-91,110002034281,"DTE Stoneman, LLC",4146
+5,WI    ,,,,,Dean Health Systems East Clinic,
+5,WI    ,WI009,44,-88,110043815565,Depere Energy Center,55029
+5,WI    ,WI117,44,-88,110000416871,Edgewater (4050),4050
+5,WI    ,WI017,45,-92,110040928048,Elk Mound Generating Station,7863
+5,WI    ,WI079,43,-88,110038363669,Elm Road Generating Station,56068
+5,WI    ,WI057,,,110012709505,Elroy Municipal Electric Utility,4113
+5,WI    ,WI043,43,-91,110028045470,Fennimore Municipal,4114
+5,WI    ,WI025,43,-89,110035420826,Fitchburg Generating Station,3991
+5,WI    ,WI039,44,-88,110012510381,Fond Du Lac Energy Center,55498
+5,WI    ,WI087,44,-88,110023013228,Fox Energy Center,56031
+5,WI    ,WI063,44,-91,110000422524,French Island,4005
+5,WI    ,WI123,44,-91,110000422597,Genoa,4143
+5,WI    ,WI131,43,-88,110005266620,Germantown Power Plant,6253
+5,WI    ,,,,110012510372,Hurley Plant,55471
+5,WI    ,WI087,44,-88,110043811989,Island Street Peaking Plant,55836
+5,WI    ,WI011,44,-92,110000422560,J P Madgett,4271
+5,WI    ,WI025,,,,MGE Transportable Diesel Generators,56070
+5,WI    ,WI071,44,-88,110000421384,Manitowoc,4125
+5,WI    ,WI141,45,-90,110040571048,Marshfield Utilities Combustion Turbine,56480
+5,WI    ,WI139,44,-88,110013287184,Menasha,4127
+5,WI    ,,,,,Mirant Portage County,55697
+5,WI    ,WI103,43,-90,110015377000,Muscoda,4129
+5,WI    ,,,,110012509990,Muskego Energy Center,55670
+5,WI    ,,,,110012509972,Muskego Energy Park,55606
+5,WI    ,,,,110012510292,NA -- 7222,7222
+5,WI    ,,,,110012510283,NA 1 -- 7205,7205
+5,WI    ,,,,110012510309,NA 2,7250
+5,WI    ,,,,110012510318,NA 3,7251
+5,WI    ,,,,110012510327,NA 4,7252
+5,WI    ,WI139,44,-89,110040965462,Neenah Energy Facility,55135
+5,WI    ,WI043,43,-91,110000594081,Nelson Dewey,4054
+5,WI    ,,,,110012510390,New Berlin Energy Park,55535
+5,WI    ,WI057,,,110037604526,New Lisbon Municipal Elec & Water Dept,4130
+5,WI    ,WI079,43,-88,110012510247,North Oak Creek,4039
+5,WI    ,,,,,Oneida Casino,
+5,WI    ,WI059,43,-88,110041698268,Paris,7270
+5,WI    ,,,,,Petenwell,
+5,WI    ,WI059,43,-88,110000417433,Pleasant Prairie,6170
+5,WI    ,WI089,43,-88,110043810276,Port Washington Generating Station,4040
+5,WI    ,WI009,45,-88,110000421534,Pulliam,4072
+5,WI    ,WI103,43,-90,110007332591,Richland Center,4132
+5,WI    ,WI093,45,-93,110002034860,River Falls Municipal Utilities,4133
+5,WI    ,WI105,43,-89,110013294087,Riverside Energy Center,55641
+5,WI    ,WI105,43,-89,110000419538,Rock River,4057
+5,WI    ,WI025,43,-89,110013294069,Rockgen Energy Center,55391
+5,WI    ,WI073,45,-90,110057119363,Rothschild Biomass Cogeneration Facility,58124
+5,WI    ,WI117,44,-88,110018881931,Sheboygan Falls Energy Facility,56166
+5,WI    ,WI105,43,-89,110035420247,Sheepskin,4059
+5,WI    ,WI039,44,-88,110013863186,South Fond Du Lac,7203
+5,WI    ,WI079,43,-88,110000417709,South Oak Creek,4041
+5,WI    ,,,,,Two Rivers Diesel Generator,
+5,WI    ,WI079,43,-88,110000419299,Valley (WEPCO),4042
+5,WI    ,WI025,43,-89,110022398369,West Campus Cogeneration Facility,7991
+5,WI    ,WI075,45,-88,110002121515,West Marinette,4076
+5,WI    ,WI073,45,-90,110043779783,Weston,4078
+5,WI    ,WI017,45,-92,110007776692,Wheaton Generating Plant,4014
+5,WI    ,WI055,43,-89,110043795970,Whitewater Cogeneration Facility,55011
+5,WI    ,WI141,44,-90,110015376984,Wildwood,4126
+5,WI    ,WI031,46,-92,110007331510,Winslow,4026
+6,AR    ,AR147,35,-91,110043797077,Carl Bailey,202
+6,AR    ,AR119,35,-92,110001709517,Cecil Lynch,167
+6,AR    ,AR031,36,-91,110001699323,City Water & Light - City of Jonesboro,56505
+6,AR    ,AR041,34,-91,110012509669,Dam 2,7246
+6,AR    ,AR093,36,-90,110043716565,Dell Power Plant,55340
+6,AR    ,AR007,36,-95,110000452910,Flint Creek Power Plant,6138
+6,AR    ,AR057,34,-94,110033169416,Fulton,7825
+6,AR    ,,,,,Genova Arkansas 1,55869
+6,AR    ,AR085,35,-92,110007007666,Genpower - Keo,55629
+6,AR    ,AR123,35,-91,110006035370,Hamilton Moses,168
+6,AR    ,AR143,36,-94,110031288185,Harry D. Mattison Power Plant,56328
+6,AR    ,AR073,33,-93,110041165985,Harvey Couch,169
+6,AR    ,AR059,34,-93,110006785540,Hot Spring  Energy Facility,55418
+6,AR    ,AR063,36,-91,110000452705,Independence,6641
+6,AR    ,AR057,34,-94,110040573698,John W. Turk Jr. Power Plant,56564
+6,AR    ,AR059,34,-93,110043815397,Lake Catherine,170
+6,AR    ,AR059,34,-93,110015663735,Magnet Cove Generating Station,55714
+6,AR    ,AR103,34,-93,110000450985,McClellan,203
+6,AR    ,,,,110012509696,Newport Power,55653
+6,AR    ,AR119,35,-92,110024952176,Oswald Generating Station,55221
+6,AR    ,AR069,34,-92,110017410871,Pine Bluff Energy Center,55075
+6,AR    ,AR093,36,-90,110040489227,Plum Point Energy Station,56456
+6,AR    ,AR107,34,-91,110015673270,Robert E Ritchie,173
+6,AR    ,,,,110012509687,Tenaska Arkansas Generating Station,55442
+6,AR    ,AR047,35,-94,110007409571,Thomas Fitzhugh,201
+6,AR    ,AR139,33,-93,110010063858,Union Power Station,55380
+6,AR    ,AR069,34,-92,110000451788,White Bluff,6009
+6,LA    ,LA071,30,-90,110001245162,A B Paterson,1407
+6,LA    ,LA001,30,-92,110012534766,Acadia Power Station,55173
+6,LA    ,,,,110012513798,Acadian Energy Center,55346
+6,LA    ,LA017,33,-94,110001270847,Arsenal Hill Power Plant,1416
+6,LA    ,LA001,30,-93,110043802775,Bayou Cove Peaking Power Plant,55433
+6,LA    ,LA077,31,-91,110010565067,Big Cajun 1,1464
+6,LA    ,LA077,31,-91,110000449792,Big Cajun 2,6055
+6,LA    ,LA079,31,-93,110000450627,Brame Energy Center,6190
+6,LA    ,,,,,Caddo Parish Energy,55724
+6,LA    ,LA019,30,-93,110007042565,Calcasieu Plant,55165
+6,LA    ,LA047,30,-91,110008972362,Carville Energy Center,55404
+6,LA    ,LA093,30,-91,110000597328,Convent Cogeneration Facility,55290
+6,LA    ,LA039,31,-92,110029512837,Coughlin Power Station,1396
+6,LA    ,LA079,31,-92,110000577475,D G Hunter,6558
+6,LA    ,LA055,30,-92,110009579401,Doc Bonin,1443
+6,LA    ,LA031,32,-94,110000450155,Dolet Hills Power Station,51
+6,LA    ,LA055,30,-92,110040567687,Hargis-Hebert Electric Generating Statio,56283
+6,LA    ,LA109,30,-91,110033660722,Houma,1439
+6,LA    ,,,,,Iberville Energy Center,55723
+6,LA    ,,,,110012513789,Killona Energy Center,55338
+6,LA    ,LA101,30,-91,110055367302,LEPA Unit No. 1,58478
+6,LA    ,LA017,33,-94,110002045867,Lieberman Power Plant,1417
+6,LA    ,LA089,30,-90,110007291652,Little Gypsy,1402
+6,LA    ,LA033,30,-91,110001244957,Louisiana 1,1391
+6,LA    ,LA033,30,-91,110013884813,Louisiana 2,1392
+6,LA    ,LA071,30,-90,110001248891,Michoud,1409
+6,LA    ,LA119,33,-93,110001271551,Minden,1447
+6,LA    ,LA073,33,-92,110009575469,Monroe,1448
+6,LA    ,LA101,30,-91,110003352693,Morgan City Electrical Gen Facility,1449
+6,LA    ,LA069,32,-93,110003267241,Natchitoches,1450
+6,LA    ,LA019,30,-93,110003271049,Nelson Industrial Steam Company,50030
+6,LA    ,LA051,30,-90,110002049328,Ninemile Point,1403
+6,LA    ,LA097,31,-92,110001267888,Opelousas,1454
+6,LA    ,LA073,33,-92,110012218064,Ouachita Plant,55467
+6,LA    ,LA073,33,-92,110012217975,Perryville Power Station,55620
+6,LA    ,LA047,30,-91,110033654775,Plaquemine,1455
+6,LA    ,LA047,30,-91,110012671171,Plaquemine Cogen Facility,55419
+6,LA    ,,,,,Pointe Coupee Energy Center,55722
+6,LA    ,LA019,30,-93,110012513752,R S Cogen LLC,55117
+6,LA    ,LA019,30,-93,110003271049,R S Nelson,1393
+6,LA    ,,,,,Red River Energy Facility,55717
+6,LA    ,LA055,30,-92,110001316237,Rodemacher (1445),1445
+6,LA    ,LA061,33,-93,110001253081,Ruston,1458
+6,LA    ,LA061,33,-93,110001253081,Ruston Generating Facility,55371
+6,LA    ,LA073,33,-92,110002045929,Sterlington,1404
+6,LA    ,LA073,33,-92,110012383107,Sterlington Power LLC,55099
+6,LA    ,LA055,30,-92,110022291358,T J Labbe Electric Generating Station,56108
+6,LA    ,LA089,30,-90,110000597113,Taft Cogeneration Facility,55089
+6,LA    ,LA101,30,-92,110000794383,Teche Power Station,1400
+6,LA    ,LA057,,,110012599223,Thibodaux,6706
+6,LA    ,LA117,31,-90,,Washington Parish Energy Center,55486
+6,LA    ,LA089,30,-90,110000732388,Waterford 1 & 2,8056
+6,LA    ,LA047,30,-91,110002045885,Willow Glen,1394
+6,NM    ,,,,,ARPA - Raton Generation Project,
+6,NM    ,NM013,32,-107,110007007416,Afton Generating Station,55210
+6,NM    ,NM043,36,-107,110007142715,Algodones,2475
+6,NM    ,NM045,37,-108,110001547675,Animas Power Plant,2465
+6,NM    ,NM045,37,-108,110012158226,Bloomfield Generation,55458
+6,NM    ,NM045,37,-108,110027226151,Bluffview Power Plant,55977
+6,NM    ,NM025,33,-103,110002468375,Cunningham,2454
+6,NM    ,,,,,Curry Energy Facility,55681
+6,NM    ,NM015,32,-104,110011027067,Eddy County Generating Station,55252
+6,NM    ,NM031,35,-108,110000758797,Escalante ,87
+6,NM    ,,,,110012512771,Evergreen Energy Facility,55705
+6,NM    ,NM045,37,-108,110042068473,Four Corners Steam Elec Station,2442
+6,NM    ,NM017,,,110042056333,Freeport McMoran Tyrone Mine,54734
+6,NM    ,NM025,33,-103,110040570352,Hobbs Generating Station,56458
+6,NM    ,NM061,35,-107,,La Luz Energy Center,58284
+6,NM    ,NM023,32,-109,110015376706,Lordsburg,2443
+6,NM    ,NM023,32,-109,110022766096,Lordsburg Generating Station,7967
+6,NM    ,NM029,32,-108,110012245784,Luna Energy Facility,55343
+6,NM    ,NM025,33,-103,110006091059,Maddox,2446
+6,NM    ,NM045,37,-108,110006091353,Milagro Cogeneration and Gas Plant,54814
+6,NM    ,NM025,33,-103,110007975110,North Lovington,2473
+6,NM    ,NM001,35,-107,110012569942,Person Generating Station,2448
+6,NM    ,NM023,32,-109,110014356990,Pyramid Generating Station,7975
+6,NM    ,NM007,37,-104,110001547210,Raton,2468
+6,NM    ,NM001,35,-107,110022325170,Reeves Generating Station,2450
+6,NM    ,NM001,35,-107,110012569942,Rio Bravo Generating Station,55039
+6,NM    ,NM013,32,-107,110001547238,Rio Grande,2444
+6,NM    ,NM045,37,-108,110000600868,San Juan,2451
+6,NM    ,NM049,36,-106,110007974932,Santa Fe,2452
+6,NM    ,NM028,36,-106,110015377073,TA 3,6574
+6,NM    ,NM039,,,110045006293,TSGT Mobile Generator,57476
+6,NM    ,NM061,35,-107,110027231001,Valencia Power Plant,55802
+6,OK    ,OK079,35,-95,110056955460,"AES Shady Point, LLC",10671
+6,OK    ,OK015,35,-98,110001631440,Anadarko,3006
+6,OK    ,OK099,35,-97,110043792018,Arbuckle,2947
+6,OK    ,OK119,36,-97,110001633732,Boomer Lake,3000
+6,OK    ,OK071,37,-97,110057110594,Charles D Lamb Energy Center,58325
+6,OK    ,OK097,36,-95,110001649930,Chouteau Power Plant,7757
+6,OK    ,OK031,35,-98,110001631707,Comanche (8059),8059
+6,OK    ,OK071,37,-97,110015682830,Conoco,7185
+6,OK    ,,,,,Duke Energy Stephens Facility,55751
+6,OK    ,,,,,Genova Oklahoma 1,55868
+6,OK    ,OK097,36,-95,110000598489,Grand River Dam Authority,165
+6,OK    ,OK143,36,-96,110017414430,"Green Country Energy, LLC",55146
+6,OK    ,OK109,36,-97,110020515012,Horseshoe Lake,2951
+6,OK    ,OK023,34,-95,110000608236,Hugo,6772
+6,OK    ,OK131,36,-96,110012512021,Inola,798
+6,OK    ,OK087,35,-98,110024410485,McClain Energy Facility,55457
+6,OK    ,OK153,36,-99,110007161971,Mooreland,3008
+6,OK    ,OK101,36,-95,110000860854,Muskogee,2952
+6,OK    ,OK017,35,-98,110009432417,Mustang,2953
+6,OK    ,,,,110012512101,NA 1 -- 5030,5030
+6,OK    ,OK131,36,-96,110000750740,Northeastern,2963
+6,OK    ,OK109,35,-98,110002399887,Oklahoma Cogeneration LLC,50558
+6,OK    ,OK145,36,-96,110007389316,Oneta Energy Center,55225
+6,OK    ,,,,110007394612,Pittsburg Power Plant (OK),55421
+6,OK    ,OK071,37,-97,110001632145,Ponca,762
+6,OK    ,OK109,36,-97,110017422252,Redbud Power Plant,55463
+6,OK    ,OK143,36,-96,110001634232,Riverside (4940),4940
+6,OK    ,OK133,35,-97,110042090153,Seminole (2956),2956
+6,OK    ,OK103,36,-97,110000598611,Sooner,6095
+6,OK    ,OK015,35,-98,110000705041,Southwestern,2964
+6,OK    ,OK083,36,-98,110007168732,Spring Creek Power Plant,55651
+6,OK    ,OK119,36,-97,,Stillwater Energy Center,59647
+6,OK    ,OK121,35,-96,110021355816,Tenaska Kiamichi Generating Station,55501
+6,OK    ,OK143,36,-96,110001634072,Tulsa,2965
+6,OK    ,OK107,35,-96,110028049412,Weleetka,2966
+6,TX    ,TX201,30,-95,110000462785,"AES Deepwater, Inc.",10670
+6,TX    ,TX201,30,-95,110015744845,"AES Western Power, LLC",3461
+6,TX    ,TX441,32,-100,110000502046,Abilene,3517
+6,TX    ,TX201,30,-95,110001867846,Air Liquide Bayport Complex,10298
+6,TX    ,TX303,34,-102,110005089386,Alex Ty Cooke Generating Station,3602
+6,TX    ,,,,110012510461,Amelia Energy Center,55465
+6,TX    ,TX189,34,-102,110057108927,Antelope Elk Energy Center,57865
+6,TX    ,,,,110012510826,Archer Generating Station,55255
+6,TX    ,,,,110012510693,Augusta Pines Station,55167
+6,TX    ,TX167,29,-95,,Bacliff Generating Station,60264
+6,TX    ,TX355,28,-97,110002043752,Barney M. Davis,4939
+6,TX    ,TX021,30,-98,110010131419,Bastrop Clean Energy Center,55168
+6,TX    ,TX071,30,-95,110008972549,Baytown Energy Center,55327
+6,TX    ,,,,110012510737,Bell Energy Facility,55175
+6,TX    ,TX161,32,-96,110000598988,Big Brown,3497
+6,TX    ,TX233,36,-101,110037267980,Blackhawk Station,55064
+6,TX    ,TX035,32,-97,110033248563,Bosque County Power Plant,55172
+6,TX    ,TX157,29,-96,110022938419,"Brazos Valley Energy, LP",55357
+6,TX    ,TX041,31,-96,110001866623,Bryan (Atkins Power Plant),3561
+6,TX    ,TX113,33,-97,110001866776,C E Newman,3574
+6,TX    ,TX227,32,-101,110034338820,C. R. Wing Cogeneration Plant,52176
+6,TX    ,TX215,26,-98,110005187760,Calpine Hidalgo Energy Center,7762
+6,TX    ,TX157,29,-96,,Carbon Capture Plant,58378
+6,TX    ,TX071,30,-95,110015743301,Cedar Bayou,3460
+6,TX    ,TX071,30,-95,110015743301,Cedar Bayou 4,56806
+6,TX    ,,,,110012510434,Cedar Bluff Power Project,55426
+6,TX    ,TX201,30,-95,,"Chamon Power, LLC",60460
+6,TX    ,TX201,30,-95,110034690564,Channel Energy Center,55299
+6,TX    ,TX201,30,-95,110006531397,Channelview Cogeneration Facility,55187
+6,TX    ,TX201,30,-95,110035420746,Clear Lake Cogeneration,10741
+6,TX    ,TX175,29,-97,110000599692,Coleto Creek,6178
+6,TX    ,TX085,33,-97,110039092424,Collin,3500
+6,TX    ,TX481,29,-96,110040568793,Colorado Bend Energy Center,56350
+6,TX    ,TX481,29,-96,,Colorado Bend II,60122
+6,TX    ,TX451,31,-100,110008172039,Concho Power Station,3518
+6,TX    ,TX141,32,-106,110005162457,Copper Station,9
+6,TX    ,TX355,28,-97,110017743245,Corpus Christi Energy Center,55206
+6,TX    ,TX351,30,-94,110012181673,Cottonwood Energy Project,55358
+6,TX    ,TX113,33,-97,110005030769,Dallas,3451
+6,TX    ,TX453,30,-98,110001869078,Decker Creek,3548
+6,TX    ,TX221,32,-98,110008149217,Decordova,8063
+6,TX    ,TX201,30,-95,110017743254,Deer Park Energy Center,55464
+6,TX    ,TX165,33,-103,110006124844,Denver City,3480
+6,TX    ,TX057,29,-97,110001866641,E S Joslin,3436
+6,TX    ,TX439,33,-97,110005028638,Eagle Mountain,3489
+6,TX    ,TX203,32,-95,110005188545,Eastman Cogeneration Facility,55176
+6,TX    ,TX135,32,-103,110057112850,Ector County Energy Center,58471
+6,TX    ,,,,,Edinburg Energy Project,55145
+6,TX    ,TX139,32,-97,110008972763,"Ennis Power Company, LLC",55223
+6,TX    ,TX201,30,-95,110000463622,Exelon Laporte Generating Station,55365
+6,TX    ,TX245,30,-94,110041990913,Exxonmobil Beaumont Refinery,50625
+6,TX    ,TX213,32,-96,110005027773,Forest Grove,6148
+6,TX    ,TX257,33,-96,110031507028,Forney Power Plant,55480
+6,TX    ,TX253,33,-100,110000502046,Fort Phantom Power Station,4938
+6,TX    ,TX039,29,-95,110040565297,Freeport Energy Center,56152
+6,TX    ,TX161,32,-96,110021138348,Freestone Power Generation,55226
+6,TX    ,TX215,26,-98,110005185628,Frontera Generation Facility,55098
+6,TX    ,TX029,29,-98,110012511111,GT 98,7243
+6,TX    ,TX029,29,-98,110012511095,GT 99,7225
+6,TX    ,TX459,33,-95,110009771130,Gateway Power Project,55194
+6,TX    ,,,,110012511102,Generic Stat,7235
+6,TX    ,TX185,31,-96,110008138078,Gibbons Creek Steam Electric Station,6136
+6,TX    ,TX503,33,-99,110025239837,Graham,3490
+6,TX    ,TX201,30,-95,110001867560,Greens Bayou,3464
+6,TX    ,TX409,28,-97,110028042197,Gregory Power Facility,55086
+6,TX    ,TX187,30,-98,110021360329,Guadalupe Generating Station,55153
+6,TX    ,TX203,32,-94,110000458282,H W Pirkey Power Plant,7902
+6,TX    ,TX291,30,-95,110008135561,HNG Dayton Storage,55407
+6,TX    ,TX213,32,-96,,Halyard Henderson Energy Center,60268
+6,TX    ,TX481,29,-96,,Halyard Wharton Energy Center,60221
+6,TX    ,TX439,33,-97,110005028647,Handley Generating Station,3491
+6,TX    ,TX199,30,-94,110040575106,Hardin County Peaking Facility,56604
+6,TX    ,TX375,35,-102,110042010999,Harrington Station,6193
+6,TX    ,,,,110012510666,Harris Energy Facility,55143
+6,TX    ,TX203,32,-94,110014433728,Harrison County Power Project,55664
+6,TX    ,TX209,30,-98,110021082816,Hays Energy Facility,55144
+6,TX    ,TX217,32,-97,,Hill County Generation Facility,60194
+6,TX    ,TX201,30,-95,110012511273,Hiram Clarke,3465
+6,TX    ,TX453,30,-98,110042011275,Holly Street,3549
+6,TX    ,TX029,29,-98,110000464916,J K Spruce,7097
+6,TX    ,TX215,26,-98,110008060720,J L Bates,3438
+6,TX    ,TX303,34,-102,110028042302,J Robert Massengale Generating Station,3604
+6,TX    ,TX029,29,-98,110000464916,J T Deely,6181
+6,TX    ,TX237,33,-98,110028042311,Jack County Generation Facility,55230
+6,TX    ,TX251,32,-97,110000459012,Johnson County Generation Facility,54817
+6,TX    ,TX303,34,-102,110005028585,Jones Station,3482
+6,TX    ,TX183,32,-95,110031507322,Knox Lee Power Plant,3476
+6,TX    ,TX061,26,-98,110000725378,La Palma,3442
+6,TX    ,TX309,31,-97,110035784292,Lake Creek,3502
+6,TX    ,TX113,33,-97,110035782891,Lake Hubbard,3452
+6,TX    ,TX197,34,-100,110008152989,Lake Pauline,3521
+6,TX    ,TX277,34,-96,110005975098,Lamar Power Plant,55097
+6,TX    ,TX479,28,-100,110008060846,Laredo,3439
+6,TX    ,TX029,29,-99,110001878077,Leon Creek,3609
+6,TX    ,TX339,30,-96,110002052260,Lewis Creek,3457
+6,TX    ,TX293,31,-96,110000608245,Limestone,298
+6,TX    ,TX355,28,-98,110000501127,Lon C Hill,3440
+6,TX    ,TX343,33,-95,110006618151,Lone Star Power Plant,3477
+6,TX    ,TX021,30,-97,110005971733,Lost Pines 1,55154
+6,TX    ,TX215,26,-98,110006360446,Magic Valley Generating Station,55123
+6,TX    ,TX213,32,-96,110007199806,Malakoff,370
+6,TX    ,,,,110012510443,Markham Energy Storage Center,55428
+6,TX    ,TX401,32,-95,110043787220,Martin Lake,6146
+6,TX    ,TX139,32,-97,110012164380,Midlothian Energy,55091
+6,TX    ,,,,110012510719,Mirant Texas - Weatherford,55171
+6,TX    ,TX029,29,-98,110005030359,Mission Road,3610
+6,TX    ,TX141,32,-106,110063953306,Montana Power Station,58562
+6,TX    ,,,,110012510425,Montgomery County Power Project,55423
+6,TX    ,TX449,33,-95,110000598835,Monticello,6147
+6,TX    ,TX341,36,-102,110007206371,Moore County Station,3483
+6,TX    ,TX335,32,-101,110025238776,Morgan Creek,3492
+6,TX    ,TX113,33,-97,110015679443,Mountain Creek Generating Station,3453
+6,TX    ,TX501,33,-103,110015709688,Mustang Station,55065
+6,TX    ,TX501,33,-103,110015709688,Mustang Station (56326),56326
+6,TX    ,,,,110012511077,NA 1 -- 7216,7216
+6,TX    ,,,,110012511086,NA 1 -- 7219,7219
+6,TX    ,,,,110012510906,NA 2 -- 4274,4274
+6,TX    ,TX245,30,-94,110006134691,NAFTA Region Olefins Complex,55122
+6,TX    ,TX347,32,-95,110058931900,Nacogdoches Power LLC,55708
+6,TX    ,TX245,30,-94,110008153069,Neches,3458
+6,TX    ,TX073,32,-95,,Neches Station,59716
+6,TX    ,TX481,29,-96,110034921538,New Gulf Power Facility,50137
+6,TX    ,TX141,32,-106,110002135582,Newman,3456
+6,TX    ,TX375,35,-102,110042010999,Nichols Station,3484
+6,TX    ,TX113,33,-97,110007195622,North Lake,3454
+6,TX    ,TX439,33,-97,110034366228,North Main,3493
+6,TX    ,TX367,33,-98,110001870645,North Texas Generation Facility,3627
+6,TX    ,TX355,28,-97,110017746340,Nueces Bay,3441
+6,TX    ,TX029,29,-98,110000464916,O W Sommers,3611
+6,TX    ,TX081,32,-100,110008152961,Oak Creek Power Station,3523
+6,TX    ,TX395,31,-96,110040582937,Oak Grove,6180
+6,TX    ,TX135,32,-102,110013396379,"Odessa-Ector Power Partners, LP",55215
+6,TX    ,TX487,34,-99,110000460153,Oklaunion Power Station,127
+6,TX    ,TX201,30,-95,110002400731,"Optim Energy Altura Cogen, LLC",50815
+6,TX    ,TX039,29,-95,110028042507,Oyster Creek Unit VIII,54676
+6,TX    ,TX167,29,-95,110002345515,P H Robinson,3466
+6,TX    ,TX207,33,-100,110008153023,Paint Creek Power Station,3524
+6,TX    ,TX179,35,-101,110000717298,Pampa Power Plant,7678
+6,TX    ,TX181,34,-97,110054868345,Panda Sherman Power Station,58005
+6,TX    ,TX027,31,-97,110057120217,Panda Temple Power Station,58001
+6,TX    ,TX277,34,-96,110028042516,Paris Energy Center,50109
+6,TX    ,TX113,33,-97,110025238767,Parkdale,3455
+6,TX    ,TX201,30,-95,110000505481,Pasadena Power Plant,55047
+6,TX    ,TX163,29,-99,110007182878,Pearsall,3630
+6,TX    ,TX475,32,-103,110028051186,Permian Basin,3494
+6,TX    ,TX279,34,-102,110002471450,Plant X,3485
+6,TX    ,TX057,29,-97,,Port Comfort Peaking Facility,60459
+6,TX    ,TX245,30,-94,110014407846,Port Neches,54748
+6,TX    ,TX231,33,-96,110014389606,Power Lane Steam Plant,4195
+6,TX    ,TX135,32,-102,110034594419,Quail Run Energy Center,56349
+6,TX    ,TX363,33,-98,110006451945,R W Miller,3628
+6,TX    ,TX085,33,-96,110007175387,Ray Olinger,3576
+6,TX    ,TX187,30,-98,110014433700,"Rio Nogales Power Project, LP",55137
+6,TX    ,TX105,31,-102,110022448546,Rio Pecos Power Station,3526
+6,TX    ,TX387,33,-95,110022398797,River Crest,3503
+6,TX    ,TX041,31,-96,110028051177,Roland C. Dansby Power Plant,6243
+6,TX    ,TX361,30,-94,110021082576,SRW Cogen Limited Partnership,55120
+6,TX    ,TX361,30,-94,110007178874,Sabine,3459
+6,TX    ,TX361,30,-94,110005188082,Sabine Cogeneration Facility,55104
+6,TX    ,TX201,30,-95,110002344393,Sam Bertron,3468
+6,TX    ,TX469,29,-97,110031000823,Sam Rayburn Plant,3631
+6,TX    ,TX149,30,-97,110000465620,Sam Seymour,6179
+6,TX    ,TX451,31,-100,110000501136,San Angelo Power Station,3527
+6,TX    ,TX407,30,-95,110040575099,San Jacinto County Peaking Facility,56603
+6,TX    ,TX201,30,-95,110012511120,San Jacinto Steam Electric Station,7325
+6,TX    ,TX013,29,-98,110000464426,San Miguel,6183
+6,TX    ,TX453,30,-98,110008975804,Sand Hill Energy Center,7900
+6,TX    ,TX331,31,-97,110007197853,Sandow,6648
+6,TX    ,TX331,31,-97,110007197853,Sandow Station,52071
+6,TX    ,TX309,31,-97,110035106113,Sandy Creek Energy Station,56611
+6,TX    ,TX453,30,-98,110005082301,Seaholm,3550
+6,TX    ,TX061,26,-98,110007194847,Silas Ray,3559
+6,TX    ,TX021,30,-97,110035784112,Sim Gideon,3601
+6,TX    ,TX201,30,-95,,Sims Bayou Cogeneration,50229
+6,TX    ,TX167,29,-95,110028042188,South Houston Green Power Site,55470
+6,TX    ,TX121,33,-97,110012182770,Spencer,4266
+6,TX    ,TX073,32,-95,110008147665,Stryker Creek,3504
+6,TX    ,TX039,29,-96,110024547310,Sweeny Cogeneration Facility,55015
+6,TX    ,TX353,32,-100,110008158117,Sweetwater Generating Plant,50615
+6,TX    ,TX299,31,-98,110002052251,T C Ferguson Power Plant,4937
+6,TX    ,TX201,30,-96,110013314412,T H Wharton,3469
+6,TX    ,TX185,31,-96,110028050141,Tenaska Frontier Generating Station,55062
+6,TX    ,TX401,32,-95,110010661667,Tenaska Gateway Generating Station,55132
+6,TX    ,TX167,29,-95,110005109710,Texas City Cogeneration,52088
+6,TX    ,TX279,34,-103,110000600056,Tolk Station,6194
+6,TX    ,TX309,32,-97,110006621307,Tradinghouse,3506
+6,TX    ,TX213,32,-96,110007199735,Trinidad,3507
+6,TX    ,TX395,31,-97,110015666144,Twin Oaks,7030
+6,TX    ,TX029,29,-98,110008060873,V H Braunig,3612
+6,TX    ,TX147,34,-96,110037841681,Valley (TXU),3508
+6,TX    ,TX469,29,-97,,Victoria City Peaking Facility,61241
+6,TX    ,TX469,29,-97,,Victoria Port Peaking Facility,61242
+6,TX    ,TX469,29,-97,110000501154,Victoria Power Station,3443
+6,TX    ,TX157,29,-96,110000608254,W A Parish,3470
+6,TX    ,TX029,30,-98,110011445105,W B Tuttle,3613
+6,TX    ,TX027,31,-97,110015376886,W R Poage,3629
+6,TX    ,TX201,30,-95,110000854647,Webster,3471
+6,TX    ,TX449,33,-95,110013349947,Welsh Power Plant,6139
+6,TX    ,,,,110012510817,West Texas Energy Facility,55240
+6,TX    ,TX315,33,-95,110000704925,Wilkes Power Plant,3478
+6,TX    ,TX149,30,-97,110035090843,Winchester Power Park,56674
+6,TX    ,TX497,33,-98,110015743383,"Wise County Power Company, LLC",55320
+6,TX    ,TX221,32,-98,110012628255,Wolf Hollow Generating Station,55139
+6,TX    ,TX221,29,-96,,Wolf Hollow II,59812
+7,IA    ,IA109,43,-94,110036230575,Algona Municipal Utilities,1120
+7,IA    ,,,,,Amana Generation Plant,
+7,IA    ,IA169,42,-94,110017425730,Ames,1122
+7,IA    ,IA029,,,110011565760,Anita Municipal Utilities,1123
+7,IA    ,,41,-95,110028014574,Atlantic,1124
+7,IA    ,IA109,43,-93,110022697848,Bancroft Municipal Utility,1125
+7,IA    ,IA097,42,-90,110022700530,Bellevue Municipal Utilities,1126
+7,IA    ,IA015,42,-94,110015377368,Boone,1056
+7,IA    ,IA157,,,110028016938,Brooklyn Municipal - North Plant,7922
+7,IA    ,IA057,41,-91,110000415355,Burlington (IA),1104
+7,IA    ,IA007,41,-93,110022714080,Centerville,1105
+7,IA    ,IA139,42,-91,110007251204,City of West Liberty,1200
+7,IA    ,,,,,Coe College - Alliant,
+7,IA    ,IA113,,,110001400369,Coggon Municipal Utilities,1132
+7,IA    ,IA013,42,-92,110028016625,Combustion Turbine Station,1130
+7,IA    ,IA027,42,-95,110005735384,Coon Rapids Municipal Utility,7847
+7,IA    ,IA003,41,-95,110001760648,Corning,1134
+7,IA    ,IA187,42,-94,110001387776,Dayton,1135
+7,IA    ,IA169,42,-94,110028014529,Dayton Avenue Substation,6463
+7,IA    ,IA047,42,-95,110015377395,Denison,1136
+7,IA    ,IA153,42,-94,110005734786,Des Moines,1083
+7,IA    ,IA075,,,110058932017,Dike City Power Plant,56194
+7,IA    ,IA061,43,-91,110000414533,Dubuque,1046
+7,IA    ,IA031,42,-91,110001398924,Durant Municipal Electric,6220
+7,IA    ,IA041,43,-95,110010507317,Earl F Wisdom,1217
+7,IA    ,IA055,,,110028016554,Earlville Municipal Utilities,7865
+7,IA    ,,,,,East - Alliant,
+7,IA    ,IA013,42,-92,110018865682,Electrifarm,6063
+7,IA    ,IA033,43,-93,110015656388,Emery Station,8031
+7,IA    ,IA009,42,-95,110036377266,Exira Station,56013
+7,IA    ,IA139,41,-91,110028167702,Fair Station,1218
+7,IA    ,,,,,Farmers Electric Generation Plant,
+7,IA    ,IA193,42,-96,110001323318,George Neal North,1091
+7,IA    ,IA193,42,-96,110000414114,George Neal South,7343
+7,IA    ,IA001,,,110028016634,Gilliam South Substation,7857
+7,IA    ,IA147,43,-95,110040472253,Graettinger,1142
+7,IA    ,IA073,42,-94,110001766152,Grand Junction Municipal Utilities,1143
+7,IA    ,IA153,42,-94,110014336806,Greater Des Moines Energy Center,7985
+7,IA    ,IA001,41,-94,110005748254,Greenfield North,7856
+7,IA    ,IA157,42,-93,110005771209,Grinnell,7137
+7,IA    ,,,,,Hawkeye Generating,55725
+7,IA    ,IA055,43,-91,110001329385,Hopkinton Municipal Utilities,8108
+7,IA    ,IA091,43,-94,110015377411,Humboldt,1213
+7,IA    ,,,,,HyVee 32nd Street - Alliant,
+7,IA    ,,,,,HyVee Cedar Rapids,
+7,IA    ,,,,,HyVee Johnson - Alliant,
+7,IA    ,,,,,HyVee Marshalltown - Alliant,
+7,IA    ,,,,,HyVee Mt. Vernon - Alliant,
+7,IA    ,IA113,,,110058931928,IEA - Alliant SBD 0201 Penford Prod,55996
+7,IA    ,IA113,,,110028014315,IEA - Alliant SBD 8501 Aegon Life,54714
+7,IA    ,IA095,,,110028014324,IEA - Alliant SBD 8601 Vertis,54720
+7,IA    ,IA113,,,110028014333,IEA - Alliant SBD 8602 Marion Subsite,54716
+7,IA    ,IA169,,,110040568908,IEA - Alliant SBD 8603 Donnelley,54713
+7,IA    ,IA113,,,110028014342,IEA - Alliant SBD 9106 Rockwell CR,54717
+7,IA    ,IA127,42,-93,110028014351,IEA - Alliant SBD 9107 JBS USA,54715
+7,IA    ,IA005,,,110028014360,IEA - Alliant SBD 9201 Norplex,54712
+7,IA    ,IA113,42,-92,110028014379,IEA - Alliant SBD 9203 Profol,54719
+7,IA    ,IA061,,,110000414597,IEA - Alliant SBD 9205 A Y McDonald,54710
+7,IA    ,IA089,,,110000414702,IEA - Alliant SBD 9206 Donaldson,54718
+7,IA    ,IA061,43,-91,110028014404,IEA - Alliant SBD 9301 Prairie Farms,54735
+7,IA    ,IA113,,,110028014413,IEA - Alliant SBD 9302 Aegon North P,54967
+7,IA    ,IA111,41,-91,110000593830,IEA - Alliant SBD 9402 Climax,54930
+7,IA    ,IA113,,,110058932366,IEA - Alliant SBD 9403 Aegon Data C,54929
+7,IA    ,IA113,,,110001328698,IEA - Alliant SBD 9702 Cedar Graphics,55315
+7,IA    ,IA113,,,110058931964,IEA - Alliant SBD 9801 Martha's Way,56072
+7,IA    ,IA113,,,110028014495,IEA - Alliant SBD 9802 Toyota,56073
+7,IA    ,IA197,43,-94,110011274325,IEA - Eaton Alliant,54968
+7,IA    ,IA019,42,-92,110001388463,Independence Light & Power,1149
+7,IA    ,IA181,41,-94,110011410981,Indianola Municipal Utilities,1150
+7,IA    ,IA083,42,-93,110007253710,Iowa Falls,1065
+7,IA    ,IA125,,,110028016796,Knoxville Industrial Power Station,7849
+7,IA    ,IA053,41,-94,110010029922,Lamoni Municipal Utilities,1155
+7,IA    ,IA005,43,-91,110015649592,Lansing,1047
+7,IA    ,IA013,,,110040468990,Laporte City Utilities,1156
+7,IA    ,IA173,41,-95,110001387650,Lenox Municipal Light and Power,1158
+7,IA    ,IA033,43,-93,110022714035,Lime Creek,7155
+7,IA    ,IA115,41,-91,110000415783,Louisa,6664
+7,IA    ,IA097,42,-90,110012515064,Maquoketa Mun Elec - Plant 1,1162
+7,IA    ,IA097,,,110028016885,Maquoketa Mun Elec - Plant 2,7921
+7,IA    ,IA127,42,-93,110028016894,Marshalltown CTs,1068
+7,IA    ,IA127,42,-93,110057114929,Marshalltown Generating Station,58236
+7,IA    ,IA013,42,-92,110007504227,Maynard Station,1096
+7,IA    ,IA059,43,-95,110001329045,Milford Municipal Utilities,1164
+7,IA    ,IA045,42,-90,110010507344,Milton L Kapp,1048
+7,IA    ,IA157,42,-93,110001327644,Montezuma Municipal Light & Power,1165
+7,IA    ,IA087,41,-92,110001324095,Mt. Pleasant,1166
+7,IA    ,IA139,41,-91,110000415827,Muscatine,1167
+7,IA    ,,,,110012515117,NA 1 -- 7230,7230
+7,IA    ,IA037,43,-92,110001753451,New Hampton Light Plant,1168
+7,IA    ,IA131,43,-93,110001760915,Osage Municipal Light Plant,1172
+7,IA    ,IA179,41,-93,110000415202,Ottumwa,6254
+7,IA    ,IA077,42,-94,110028016983,Panora Municipal Electric,7584
+7,IA    ,IA125,41,-93,110013337095,Pella,1175
+7,IA    ,IA153,42,-94,110001324549,Pleasant Hill Energy Center,7145
+7,IA    ,IA113,42,-92,110017344337,Prairie Creek,1073
+7,IA    ,IA141,43,-96,110001753996,Primghar Municipal Light Plant,1177
+7,IA    ,,,,,Principal Life Insurance Company,
+7,IA    ,IA163,42,-90,110000415596,Riverside (1081),1081
+7,IA    ,IA145,,,110028015181,Shenandoah Power Station,7850
+7,IA    ,IA113,42,-92,110013397458,Sixth Street,1058
+7,IA    ,IA043,,,110028015225,South Strawberry,7926
+7,IA    ,IA127,42,-93,110036345568,State Center,1187
+7,IA    ,IA169,42,-94,110028015270,Story City Municipal Electric,1188
+7,IA    ,,,,,Story County Justice Center - Alliant,
+7,IA    ,IA013,43,-92,110000593572,Streeter Station,1131
+7,IA    ,IA175,41,-94,110018867993,Summit Lake,1206
+7,IA    ,IA017,43,-92,110001388427,Sumner Municipal Light Plant,1191
+7,IA    ,IA127,42,-93,110019914011,Sutherland,1077
+7,IA    ,IA153,42,-94,110001766278,Sycamore Combustion Turbine,8029
+7,IA    ,IA031,42,-91,110001362301,Tipton Municipal Utilities,8106
+7,IA    ,IA171,,,110028026286,Traer South,7820
+7,IA    ,IA137,,,110028015378,Villisca Municipal Power Plant,1193
+7,IA    ,IA011,42,-92,110011601178,Vinton Municipal,1194
+7,IA    ,IA155,41,-96,110000414383,Walter Scott Jr. Energy Center,1082
+7,IA    ,IA013,,,110018868493,Waterloo Lundquist Power Station,7851
+7,IA    ,IA017,43,-92,110001388445,Waverly Municipal Elec. North Plant,6554
+7,IA    ,IA017,43,-92,110001397872,Waverly Municipal Elec. South Plant,7758
+7,IA    ,IA139,41,-91,110001329278,Wilton Municipal,1202
+7,KS    ,KS189,,,110055951331,Abengoa Bioenergy Biomass of Kansas,58613
+7,KS    ,KS041,39,-97,110006011699,Abilene,1251
+7,KS    ,KS015,,,110028021209,Augusta Municipal Power Plant #2,6791
+7,KS    ,KS157,40,-98,110017537637,Belleville Power Plant,1263
+7,KS    ,KS133,38,-95,110001244216,Chanute 1,1267
+7,KS    ,KS133,38,-95,110001370187,Chanute 2,1268
+7,KS    ,KS175,37,-101,110017591630,Cimarron River,1230
+7,KS    ,KS133,38,-95,110001370178,City of Chanute Power Plant #3,7018
+7,KS    ,KS003,,,110007024638,City of Garnett,6965
+7,KS    ,KS037,38,-95,110017464796,City of Girard,1279
+7,KS    ,KS141,39,-99,110007363708,City of Osborne Light Plant,1315
+7,KS    ,KS027,39,-97,110001237929,Clay Center,1270
+7,KS    ,KS201,40,-97,110017591658,Clifton Station,8037
+7,KS    ,KS125,37,-96,110017530000,Coffeyville,1271
+7,KS    ,KS193,39,-101,110041076108,Colby,1225
+7,KS    ,KS035,37,-97,110017528399,East 12th Street,7013
+7,KS    ,KS111,38,-96,110030490779,Emporia Energy Center,56502
+7,KS    ,KS057,38,-100,110003167251,Fort Dodge aka Judson Large,1233
+7,KS    ,KS055,38,-101,110003215299,Garden City,1336
+7,KS    ,KS051,39,-99,110030490788,Goodman Energy Center,56497
+7,KS    ,KS173,38,-98,110001955563,Gordon Evans Energy Center,1240
+7,KS    ,KS009,38,-99,110008354146,Great Bend Station aka Arthur Mullergren,1235
+7,KS    ,KS051,39,-99,110015377439,Hays,1226
+7,KS    ,KS009,39,-99,110017461021,Hoisington,1286
+7,KS    ,KS055,38,-101,110009570259,Holcomb,108
+7,KS    ,KS085,39,-96,110001369162,Holton Municipal Power Plant,1287
+7,KS    ,KS013,40,-96,110017565847,Horton Power Plant,1288
+7,KS    ,KS189,37,-101,110001963162,Hugoton 2,7011
+7,KS    ,KS155,38,-98,110001964740,Hutchinson Energy Center,1248
+7,KS    ,KS001,38,-95,110017444595,Iola #1,1291
+7,KS    ,KS149,39,-96,110006011680,Jeffrey Energy Center,6068
+7,KS    ,KS187,38,-102,110017567462,Johnson City,6579
+7,KS    ,KS209,39,-95,110003167741,Kaw,1294
+7,KS    ,KS095,38,-98,110017556116,Kingman,1296
+7,KS    ,KS107,38,-95,110000747988,La Cygne,1241
+7,KS    ,KS145,38,-99,110001376993,Larned,1299
+7,KS    ,KS045,39,-95,110000445180,Lawrence Energy Center,1250
+7,KS    ,KS103,39,-95,110012155461,Leavenworth Energy Facility,55660
+7,KS    ,KS113,38,-98,110001238919,McPherson 1,1304
+7,KS    ,KS113,38,-98,110001238928,McPherson 2,1305
+7,KS    ,KS113,38,-98,110007021613,McPherson Municipal Power Plant #3,7515
+7,KS    ,KS173,37,-97,110017562225,Mulvane,1308
+7,KS    ,KS173,37,-97,110017465928,Mulvane Municipal Power Plant #2,7976
+7,KS    ,KS173,38,-97,110002128518,Murray Gill Energy Center,1242
+7,KS    ,KS209,39,-95,110000445340,Nearman Creek,6064
+7,KS    ,KS099,37,-95,110008059885,Neosho Energy Center,1243
+7,KS    ,KS121,39,-95,110041009734,Osawatomie Generating Station,7928
+7,KS    ,KS059,39,-95,110017544558,Ottawa,1316
+7,KS    ,KS151,38,-99,110017560799,Pratt,1317
+7,KS    ,KS209,39,-95,110000445368,Quindaro,1295
+7,KS    ,KS173,38,-97,110001307069,Ripley,1244
+7,KS    ,KS021,37,-95,110017494451,Riverton,1239
+7,KS    ,KS065,39,-100,110010336038,Ross Beach,1228
+7,KS    ,KS067,38,-101,,Rubart Station,58255
+7,KS    ,KS167,39,-99,110002067423,Russell Downtown,1319
+7,KS    ,KS167,39,-99,110016688011,Russell Energy Center,7930
+7,KS    ,KS131,40,-96,110001244243,Sabetha Municipal Power Plant,1320
+7,KS    ,KS035,,,110028021316,Strother Field Substation,56022
+7,KS    ,KS177,39,-96,110000596524,Tecumseh Energy Center,1252
+7,KS    ,KS149,39,-96,110017608249,Wamego,1328
+7,KS    ,KS191,37,-97,110001385322,Wellington,1330
+7,KS    ,KS035,37,-97,110015743793,West 14th St.,1332
+7,KS    ,KS091,39,-95,110017549624,West Gardner Generating Station,7929
+7,KS    ,KS173,38,-97,110013908129,Wichita,1245
+7,KS    ,,,,,"Wyandotte County Generating, LLC",55743
+7,MO    ,MO189,39,-90,110000441291,"Anheuser-Busch, Inc.",10430
+7,MO    ,MO097,37,-95,110056960418,Asbury,2076
+7,MO    ,MO007,39,-92,110017993420,Audrain Power Plant,55234
+7,MO    ,MO095,39,-94,110041172557,Blue Valley,2132
+7,MO    ,MO069,36,-90,110040873070,Campbell Municipal Utilities,2118
+7,MO    ,MO031,37,-90,110008973995,Cape Girardeau Power Facility,55448
+7,MO    ,MO033,,,110058932320,Carrollton Municipal Utilities,2120
+7,MO    ,MO151,39,-92,110017985019,Chamois Power Plant,2169
+7,MO    ,MO117,40,-94,110005984970,Chillicothe,2122
+7,MO    ,MO013,38,-94,110002079544,City of Butler Light Plant,2115
+7,MO    ,MO019,39,-92,110018010392,Columbia,2123
+7,MO    ,MO019,39,-92,110006735060,Columbia Energy Center (MO),55447
+7,MO    ,MO095,39,-94,110012513324,Combustion Turbine 1,7160
+7,MO    ,MO095,39,-94,110012513333,Combustion Turbine 2,7161
+7,MO    ,MO095,39,-94,110012513342,Combustion Turbine 3,7162
+7,MO    ,MO037,39,-94,110015854609,Dogwood Energy Facility,55178
+7,MO    ,MO201,37,-90,110028026669,E P Coleman,2158
+7,MO    ,MO021,40,-95,110015376626,Edmond Street,2097
+7,MO    ,MO097,37,-94,110017977821,Empire District Elec Co Energy Ctr,6223
+7,MO    ,MO207,37,-90,110007107219,Essex Power Plant,7749
+7,MO    ,MO051,39,-92,110028026678,Fairgrounds,2082
+7,MO    ,MO095,39,-94,110009412171,Grand Avenue,2078
+7,MO    ,MO095,39,-94,110001449905,Greenwood Energy Center,6074
+7,MO    ,MO095,39,-94,110017410942,Hawthorn,2079
+7,MO    ,MO107,39,-94,110001458592,Higginsville Municipal Power Plant,2131
+7,MO    ,MO101,39,-94,110015869826,Holden Power Plant,7848
+7,MO    ,MO189,39,-91,110007373243,Howard Bend,2102
+7,MO    ,MO165,39,-95,110000602651,Iatan,6065
+7,MO    ,MO077,37,-93,110000445037,James River,2161
+7,MO    ,MO069,36,-90,110017979160,Jim Hill,2073
+7,MO    ,MO077,37,-93,110000916082,John Twitty Energy Center,6195
+7,MO    ,MO071,39,-91,110000440470,Labadie,2103
+7,MO    ,MO021,40,-95,110014466069,Lake Road,2098
+7,MO    ,MO007,39,-92,110040571039,MJMEUC Generating Station 1,56478
+7,MO    ,MO121,,,110058931991,Macon Energy Center,56127
+7,MO    ,MO069,37,-90,110003984653,Malden Municipal Power & Light,2142
+7,MO    ,MO195,39,-93,110001451777,Marshall Municipal Utilities,2144
+7,MO    ,MO077,37,-93,110009882234,McCartney Generating Station,7903
+7,MO    ,MO189,38,-90,110001958515,Meramec,2104
+7,MO    ,MO007,39,-92,110035420309,Mexico,6650
+7,MO    ,MO047,39,-94,110001448979,Missouri City,2171
+7,MO    ,MO175,39,-92,110017986456,Moberly,6651
+7,MO    ,MO137,,,110018006343,Monroe City Power Plant,2146
+7,MO    ,MO083,38,-94,110002127680,Montrose,2080
+7,MO    ,MO051,39,-92,110017992476,Moreau,6652
+7,MO    ,,,,110012513066,NA 1 -- 7223,7223
+7,MO    ,,,,110012513075,NA 1 -- 7226,7226
+7,MO    ,MO143,37,-90,110000606336,New Madrid Power Plant,2167
+7,MO    ,MO077,37,-93,110040545078,Noble Hill Landfill Renewable Energy Ctr,56404
+7,MO    ,MO147,40,-95,110011873534,Nodaway Power Plant,7754
+7,MO    ,MO095,39,-95,110009338859,Northeast Generating Station,2081
+7,MO    ,MO073,,,110001460696,Owensville Power Plant,2149
+7,MO    ,MO127,,,110028026981,Palmyra Municipal 2,7304
+7,MO    ,MO163,39,-91,110017994376,Peno Creek Energy Center,7964
+7,MO    ,MO157,38,-90,,Perryville Renewable Energy Center,57157
+7,MO    ,MO037,39,-94,110003938865,RG 1 & 2,212
+7,MO    ,MO037,39,-94,110003938865,Ralph Green Station,2092
+7,MO    ,MO099,38,-90,110000440210,Rush Island,6155
+7,MO    ,MO205,,,110022826851,Shelbina Power #2,7406
+7,MO    ,MO095,39,-94,110017982593,Sibley,2094
+7,MO    ,MO201,37,-90,110000442548,Sikeston,6768
+7,MO    ,MO183,39,-90,110000442209,Sioux,2107
+7,MO    ,MO037,39,-94,110028012004,South Harper Peaking Facility,56151
+7,MO    ,MO069,37,-90,110017976403,St. Francis Power Plant,7604
+7,MO    ,MO097,37,-95,110017996873,State Line (MO),7296
+7,MO    ,MO121,,,110028028300,Sub Generating Station S-2,56126
+7,MO    ,MO121,40,-92,110028028319,Sub Generating Station S-3,56128
+7,MO    ,MO175,40,-93,110000444243,Thomas Hill Energy Center,2168
+7,MO    ,MO079,40,-94,110028028364,Trenton South,7935
+7,MO    ,MO189,39,-90,110028012406,Trigen St. Louis Energy,880094
+7,MO    ,MO171,40,-93,110001461249,Unionville Power & Light,2164
+7,MO    ,MO007,39,-92,110001460268,Vandalia Power Plant,2165
+7,MO    ,MO031,37,-90,110028028408,Viaduct,2096
+7,MO    ,,,,,"West Plains, City of",
+7,NE    ,NE013,42,-103,110010165454,Alliance,2212
+7,NE    ,NE127,40,-96,110001514246,Auburn,2215
+7,NE    ,NE067,40,-97,110012147747,Beatrice,8000
+7,NE    ,NE157,42,-104,110009417853,Bluffs,2276
+7,NE    ,NE079,41,-98,110001509788,C W Burdick,2241
+7,NE    ,NE073,41,-100,110001979477,Canaday,2226
+7,NE    ,NE025,41,-96,110015683786,Cass County Station,55972
+7,NE    ,NE027,43,-97,110039893684,City of Laurel Power Plant,2249
+7,NE    ,NE023,41,-97,110001506380,David City Plant,2233
+7,NE    ,NE169,,,110001514754,Deshler,2234
+7,NE    ,NE095,40,-97,110001510286,Fairbury,2236
+7,NE    ,NE111,41,-101,110000606522,Gerald Gentleman Station,6077
+7,NE    ,NE001,41,-98,110001505602,Gerald Whelan Energy Center,60
+7,NE    ,NE109,41,-97,110010158364,Hallam Peaking ,2265
+7,NE    ,NE153,41,-96,110007678833,Harold Kramer,2269
+7,NE    ,NE169,40,-98,110007127572,Hebron Peaking,2266
+7,NE    ,NE109,41,-97,110001510650,J Street,2250
+7,NE    ,NE055,41,-96,110001507860,Jones Street,2290
+7,NE    ,NE053,41,-96,110040983308,Lon D Wright Power Plant,2240
+7,NE    ,NE145,40,-101,110007127117,McCook Peaking,2271
+7,NE    ,,,,110012512940,NA 1 -- 7019,7019
+7,NE    ,NE131,41,-96,110000606489,Nebraska City Station,6096
+7,NE    ,NE001,41,-98,110001505595,North Denver,2244
+7,NE    ,NE055,41,-96,110041061374,North Omaha Station,2291
+7,NE    ,NE079,41,-98,110000448249,Platte,59
+7,NE    ,,,,,Progress Rail - Bridgeport,
+7,NE    ,NE109,41,-97,110000565816,Rokeby,6373
+7,NE    ,,,,,SW 40th Street - District Energy Corp,
+7,NE    ,NE153,41,-96,110001512612,Sarpy County Station,2292
+7,NE    ,NE037,42,-97,110001507003,Schuyler Plant,2301
+7,NE    ,NE109,41,-97,110000447785,Sheldon,2277
+7,NE    ,NE109,41,-97,110014390514,Terry Bundy Generating Station,7887
+7,NE    ,NE179,42,-97,110001513559,Wayne,2312
+7,NE    ,NE151,41,-97,110001514718,Wilber,2315
+8,CO    ,CO003,38,-106,110001436839,Alamosa,464
+8,CO    ,CO031,40,-105,110000467129,Arapahoe,465
+8,CO    ,CO031,40,-105,110000467129,Arapahoe Combustion Turbine Facility,55200
+8,CO    ,CO001,40,-105,110031381109,Blue Spruce Energy Center,55645
+8,CO    ,CO087,40,-104,110017431484,Brush Power Projects,10682
+8,CO    ,CO077,39,-108,110000600305,Cameo,468
+8,CO    ,CO001,40,-105,110000859679,Cherokee,469
+8,CO    ,CO101,38,-105,110000467851,Comanche (470),470
+8,CO    ,CO081,40,-108,110000468020,Craig,6021
+8,CO    ,CO123,40,-105,110022511851,Fort St. Vrain,6112
+8,CO    ,CO041,39,-105,110021274896,Fountain Valley Power Plant,55453
+8,CO    ,CO001,40,-105,110006657885,Frank Knutson Station,55505
+8,CO    ,CO041,39,-105,110012515812,Front Range Power Plant,55283
+8,CO    ,CO041,39,-105,110025216585,George Birdsall,493
+8,CO    ,CO107,40,-107,110012355281,Hayden,525
+8,CO    ,CO099,38,-102,110010337153,Holly,502
+8,CO    ,CO123,40,-105,110039685775,J M Shafer,50707
+8,CO    ,,,,,Jetway Substation,
+8,CO    ,,,,110012515778,KQ1,55191
+8,CO    ,,,,,Kettlecreek Substation,
+8,CO    ,CO099,38,-103,110001430997,Lamar,508
+8,CO    ,CO073,39,-104,110022515777,Limon Generating Station,55504
+8,CO    ,CO087,40,-104,110007078429,Manchief Generating Station,55127
+8,CO    ,CO041,39,-105,110009559637,Martin Drake,492
+8,CO    ,,,,,North Substation - Arpa Unit,
+8,CO    ,,,,,Northgate Substation,
+8,CO    ,CO085,38,-109,110000467931,Nucla,527
+8,CO    ,CO087,40,-104,110000600234,Pawnee,6248
+8,CO    ,CO059,40,-105,110021153516,Plains End Generating Station,55650
+8,CO    ,CO059,,,110021153516,"Plains End II, LLC",56516
+8,CO    ,CO101,38,-105,110022509052,Pueblo,460
+8,CO    ,CO101,38,-105,110043330071,Pueblo Airport Generating Station,56998
+8,CO    ,,38,-105,110021157497,Pueblo Airport Industrial Park,7995
+8,CO    ,CO069,41,-105,110000607148,Rawhide Energy Station,6761
+8,CO    ,CO041,39,-105,110000467646,Ray D Nixon,8219
+8,CO    ,CO089,38,-104,110022509294,Rocky Ford,6516
+8,CO    ,CO123,40,-105,110017766719,Rocky Mountain Energy Center,55835
+8,CO    ,CO123,40,-105,110027250294,Spindle Hill Energy Center,56445
+8,CO    ,,,,,Squirrel Creek Energy Center,56490
+8,CO    ,,,,,Tagawa Greenhouse Microturbine,
+8,CO    ,,,,,Telluride High School Microturbine,
+8,CO    ,CO071,37,-105,110001437963,Trinidad,511
+8,CO    ,CO013,40,-105,110000467290,Valmont,477
+8,CO    ,CO013,40,-105,110000467290,Valmont Combustion Turbine Facility,55207
+8,CO    ,CO043,38,-105,110009067650,W N Clark,462
+8,CO    ,CO031,40,-105,110000759457,Zuni,478
+8,MT    ,MT093,46,-113,110015375592,Basin Creek,55866
+8,MT    ,MT087,46,-107,110041982520,Colstrip,6076
+8,MT    ,MT087,46,-107,,Colstrip Energy Limited Partnership,10784
+8,MT    ,MT085,48,-104,110041624187,Culbertson Station,56606
+8,MT    ,MT111,46,-108,110007651763,Frank Bird,2184
+8,MT    ,MT021,47,-105,110041017468,Glendive Generating Station,2176
+8,MT    ,MT003,46,-108,110038363623,Hardin Generating Station,55749
+8,MT    ,MT013,48,-111,110037276195,Highwood Generating Station,57480
+8,MT    ,MT111,46,-108,110010427635,J E Corette,2187
+8,MT    ,MT083,48,-104,110020377019,Lewis & Clark,6089
+8,MT    ,MT023,46,-113,110043693964,Mill Creek Generating Station,56908
+8,MT    ,,,,,NorthWestern MT First Megawatts LLC,55781
+8,MT    ,MT093,46,-112,,Silver Bow Generation Plant,55797
+8,MT    ,MT111,46,-108,110001474164,Yellowstone Energy Limited Partnership,50931
+8,ND    ,ND057,47,-102,110000428369,Antelope Valley,6469
+8,ND    ,,,,,Arthur Substation,
+8,ND    ,ND057,47,-102,110015376742,Beulah,2788
+8,ND    ,,,,,"Cass County Electric Cooperative, Inc.",
+8,ND    ,ND055,47,-101,110000494563,Coal Creek,6030
+8,ND    ,ND057,47,-102,110000428378,Coyote,8222
+8,ND    ,,,,110012512931,Dakotas,7081
+8,ND    ,ND035,48,-97,110011562610,G F Wood,2820
+8,ND    ,ND097,,,110058931982,Hillsboro,56098
+8,ND    ,ND017,,,110058932026,Kindred School District,56242
+8,ND    ,ND057,47,-101,110000595099,Leland Olds,2817
+8,ND    ,ND053,48,-104,110058932231,Lonesome Creek Station,57943
+8,ND    ,ND065,47,-101,110000428387,Milton R Young,2823
+8,ND    ,,,,,Oxbow Substation,
+8,ND    ,ND105,48,-104,110057110996,Pioneer Generating Station,57881
+8,ND    ,ND059,47,-101,110022356591,R M Heskett,2790
+8,ND    ,,,,,Reed Substation,
+8,ND    ,ND093,47,-99,110039526377,Spiritwood Station,56786
+8,ND    ,ND057,47,-101,110000595080,Stanton,2824
+8,ND    ,ND049,48,-101,110015376760,William J Neal,2818
+8,ND    ,ND105,48,-103,110022362245,Williston,2791
+8,SD    ,SD013,45,-98,110054611979,Aberdeen Generating Station,3338
+8,SD    ,SD099,44,-97,110025317173,Angus Anson,7237
+8,SD    ,SD103,44,-103,110012375599,Ben French,3325
+8,SD    ,SD051,45,-97,110011493437,Big Stone,6098
+8,SD    ,SD103,44,-103,110006692631,CT,7236
+8,SD    ,SD013,44,-97,110040575151,Deer Creek Station,56610
+8,SD    ,SD013,45,-98,110040566919,Groton Generating Station,56238
+8,SD    ,SD005,44,-98,110004950964,Huron,3344
+8,SD    ,,,,,HyVee #1 - Alliant,
+8,SD    ,SD081,44,-104,110007840024,Kirk,3328
+8,SD    ,SD103,44,-103,110012511610,Lange,55478
+8,SD    ,SD005,44,-98,110004950964,Mobile Unit,3346
+8,SD    ,SD099,44,-97,110005975267,Pathfinder,3334
+8,UT    ,,,,,6600 S. Wasatch Boulevard,
+8,UT    ,UT047,40,-109,110015757670,Bonanza,7790
+8,UT    ,UT007,40,-111,110000607200,Carbon,3644
+8,UT    ,UT021,38,-113,110002279677,Cedar,3633
+8,UT    ,UT023,40,-112,110017841601,Currant Creek Power Project,56102
+8,UT    ,UT045,41,-113,110007022284,Desert Power Plant,55858
+8,UT    ,UT035,41,-112,110000896816,Gadsby,3648
+8,UT    ,UT049,40,-112,110008177542,Hale,3652
+8,UT    ,UT015,39,-111,110000600608,Hunter,6165
+8,UT    ,UT015,39,-111,110020101922,Huntington,8069
+8,UT    ,UT027,40,-113,110000470053,Intermountain,6481
+8,UT    ,UT035,41,-112,110002172915,Jordan,3653
+8,UT    ,UT049,40,-112,110022936475,Lake Side Power Plant,56237
+8,UT    ,UT049,40,-112,110012510531,Lehi Independent Power Associates,55032
+8,UT    ,UT053,37,-114,110041070051,Millcreek Power,56253
+8,UT    ,UT035,,,110011562380,Murray Turbine Station,8010
+8,UT    ,UT049,40,-112,110028051523,Nebo Power Station,56177
+8,UT    ,UT049,40,-112,110020107472,Provo,3686
+8,UT    ,UT007,40,-110,110000470008,Sunnyside Cogeneration Associates,50951
+8,UT    ,,,,,Wellsville City,
+8,UT    ,UT035,41,-112,110028042767,West Valley Power Plant,55622
+8,UT    ,,,,,Wheeler Power Systems,
+8,WY    ,,,,,Arapahoe Clinic Microturbine,
+8,WY    ,WY021,41,-105,110055478139,Cheyenne Prairie Generating Station,57703
+8,WY    ,WY009,43,-106,110013320245,Dave Johnston,4158
+8,WY    ,WY005,44,-105,110039589585,Dry Fork Station,56609
+8,WY    ,WY037,42,-109,110007899970,Jim Bridger,8066
+8,WY    ,WY031,42,-105,110000468075,Laramie River,6204
+8,WY    ,WY023,42,-111,110042054013,Naughton,4162
+8,WY    ,WY005,44,-105,110000600341,Neil Simpson,4150
+8,WY    ,WY005,44,-105,110000600341,Neil Simpson II,7504
+8,WY    ,WY005,44,-105,110000600341,Neil Simpson II (CT2),55477
+8,WY    ,WY045,44,-104,110007335605,Osage,4151
+8,WY    ,WY005,44,-105,110041417829,Wygen I,55479
+8,WY    ,WY005,44,-105,110041417829,Wygen II,56319
+8,WY    ,WY005,44,-105,110041417829,Wygen III,56596
+8,WY    ,WY005,44,-105,110007334982,Wyodak,6101
+9,AZ    ,AZ021,33,-111,110041968902,APS Saguaro Power Plant,118
+9,AZ    ,AZ013,33,-112,110017422145,APS West Phoenix Power Plant,117
+9,AZ    ,AZ013,34,-112,110000780851,Agua Fria Generating Station,141
+9,AZ    ,AZ003,32,-110,110043804390,Apache Station,160
+9,AZ    ,AZ013,33,-113,110017420398,Arlington Valley Energy Facility,55282
+9,AZ    ,AZ015,35,-114,110045950583,Black Mountain Generating Station,56482
+9,AZ    ,AZ003,32,-109,,Bowie Power Station,55780
+9,AZ    ,AZ013,34,-113,,Buckeye Generation Center LLC,59471
+9,AZ    ,AZ017,35,-110,110017206192,Cholla,113
+9,AZ    ,AZ021,33,-112,110039412267,Coolidge Generating Station,56948
+9,AZ    ,AZ021,33,-111,,Copper Crossing Energy Center,58413
+9,AZ    ,AZ001,35,-109,110017431242,Coronado Generating Station,6177
+9,AZ    ,AZ013,33,-112,110002568150,Crosscut,143
+9,AZ    ,AZ019,32,-111,110002569569,De Moss Petrie Generating Station,124
+9,AZ    ,AZ021,33,-112,110041241073,Desert Basin Generating Station,55129
+9,AZ    ,AZ013,33,-112,110012168858,Gila Bend,923
+9,AZ    ,AZ013,33,-112,110012168858,Gila Bend Power Generation Station,55507
+9,AZ    ,AZ013,33,-113,110012168901,Gila River Power Station,55306
+9,AZ    ,AZ015,35,-114,110005974197,Griffith Energy Project,55124
+9,AZ    ,AZ019,32,-111,110000472097,Irvington Generating Station,126
+9,AZ    ,AZ013,33,-112,110009523319,Kyrene Generating Station,147
+9,AZ    ,,,,,La Paz Generating Facility,55711
+9,AZ    ,AZ013,33,-113,110012547431,Mesquite Generating Station,55481
+9,AZ    ,AZ005,37,-111,110028287725,Navajo Generating Station,4941
+9,AZ    ,AZ013,33,-113,110043810132,"New Harquahala Generating Company, LLC",55372
+9,AZ    ,AZ015,35,-114,,Northern Arizona Energy Project,56507
+9,AZ    ,AZ013,33,-112,110009526539,Ocotillo Power Plant,116
+9,AZ    ,AZ013,33,-113,110012141609,Redhawk Generating Facility,55455
+9,AZ    ,AZ013,33,-112,110001697049,Santan,8068
+9,AZ    ,,,,110012509838,Signal Peak Generating Facility,55692
+9,AZ    ,AZ015,35,-115,110005969149,"South Point Energy Center, LLC",55177
+9,AZ    ,AZ001,34,-109,110000600788,Springerville Generating Station,8223
+9,AZ    ,AZ021,33,-112,110013372974,Sundance Power Plant,55522
+9,AZ    ,AZ027,33,-115,110001695407,Yucca Power Plant,120
+9,AZ    ,AZ027,33,-115,,Yuma Cogeneration Associates,54694
+9,CA    ,CA037,34,-118,110000522113,AES Alamitos,315
+9,CA    ,CA059,34,-118,110002921713,AES Huntington Beach,335
+9,CA    ,CA037,34,-118,110014322170,AES Redondo Beach,356
+9,CA    ,CA071,34,-117,110028012237,Agua Mansa Power,55951
+9,CA    ,CA099,38,-121,110021087517,Almond Power Plant,7315
+9,CA    ,CA059,34,-118,110001197008,Anaheim Combustion Turbine,7693
+9,CA    ,CA031,36,-120,,Avenal Energy,56801
+9,CA    ,CA013,38,-122,110002945467,Avon,216
+9,CA    ,CA059,34,-118,110040571011,Barre Generating Station,56474
+9,CA    ,CA065,34,-115,110015714912,Blythe Energy,55295
+9,CA    ,CA037,34,-118,110002053161,Broadway,420
+9,CA    ,CA073,33,-117,110000730433,Cabrillo Power I Encina Power Station,302
+9,CA    ,,,,110012509482,Cal Peak Power - Midway LLC,55509
+9,CA    ,,,,110012516090,Cal Peak Power - Mission LLC,55511
+9,CA    ,CA073,33,-117,110022882585,CalPeak Power - Border,55510
+9,CA    ,CA073,33,-117,110022882576,CalPeak Power - Enterprise,55513
+9,CA    ,CA019,37,-121,110014339634,CalPeak Power - Panoche LLC,55508
+9,CA    ,CA095,38,-122,110012509464,CalPeak Power - Vaca Dixon LLC,55499
+9,CA    ,CA085,37,-122,110001151324,"Calpine Gilroy Cogen, LP",10034
+9,CA    ,CA101,39,-122,110001188116,Calpine Sutter Energy Center,55112
+9,CA    ,CA059,34,-118,110040486364,Canyon Power Plant,57027
+9,CA    ,CA067,38,-121,110000908251,Carson Cogeneration,7527
+9,CA    ,CA037,34,-118,110000508745,Carson Cogeneration Company,10169
+9,CA    ,CA037,34,-118,110040571020,Center Generating Station,56475
+9,CA    ,,,,110012509455,Central Valley Energy Facility,55408
+9,CA    ,CA039,37,-120,110013828821,Chowchilla II,56185
+9,CA    ,CA073,33,-117,110012533419,Chula Vista Energy Center,55540
+9,CA    ,CA085,,,110040989375,City of Palo Alto,57714
+9,CA    ,CA019,36,-120,110000519582,Coalinga Cogeneration Facility,50131
+9,CA    ,CA011,39,-122,110038892115,Colusa Generating Station,56532
+9,CA    ,CA013,38,-122,110019003790,Contra Costa Generating Station,228
+9,CA    ,CA071,35,-117,110000830904,Coolwater Generating Station,329
+9,CA    ,CA067,38,-121,110040563020,Cosumnes Power Plant,55970
+9,CA    ,CA095,38,-122,110013682498,Creed Energy Center,55625
+9,CA    ,CA073,33,-117,110001187377,Cuyamaca Peak Energy,55512
+9,CA    ,CA077,38,-121,110058932357,DTE Stockton,54238
+9,CA    ,CA107,36,-119,110057112841,"Delano Energy Center, LLC",58122
+9,CA    ,CA013,38,-122,110002936538,"Delta Energy Center, LLC",55333
+9,CA    ,CA085,37,-122,110035420979,Donald Von Raesfeld,56026
+9,CA    ,CA073,33,-117,110000754979,"Dynegy South Bay, LLC",310
+9,CA    ,CA073,33,-117,110043330106,El Cajon Energy Center,57001
+9,CA    ,CA025,33,-116,110002672484,El Centro,389
+9,CA    ,CA037,34,-118,110000520213,El Segundo,330
+9,CA    ,CA029,35,-119,110012191430,Elk Hills Power,55400
+9,CA    ,CA073,33,-117,110012516134,"Escondido Energy Center, LLC",55538
+9,CA    ,CA071,34,-118,110002414138,Etiwanda Generating Station,331
+9,CA    ,CA101,39,-122,110015980385,Feather River Energy Center,55847
+9,CA    ,CA019,37,-120,110001157523,"Fresno Cogeneration Partners, LP",10156
+9,CA    ,CA013,38,-122,110032962293,Gateway Generating Station,56476
+9,CA    ,CA085,37,-122,110001151324,"Gilroy Energy Center, LLC",55810
+9,CA    ,CA053,36,-121,110000529376,"Gilroy Energy Center, LLC for King City",10294
+9,CA    ,CA037,34,-118,110031277669,Glenarm,422
+9,CA    ,CA073,33,-117,110017398163,Goal Line,54749
+9,CA    ,CA095,38,-122,110013682470,Goose Haven Energy Center,55627
+9,CA    ,CA071,34,-118,110040570995,Grapeland Generating Station,56472
+9,CA    ,CA037,34,-118,110013829330,Grayson Power Plant,377
+9,CA    ,CA101,39,-122,110001188116,Greenleaf One,10350
+9,CA    ,CA031,36,-120,110040966078,Hanford Energy Park Peaker,55698
+9,CA    ,CA037,34,-118,110002422815,Harbor Generating Station,399
+9,CA    ,CA037,34,-118,110032907362,Haynes Generating Station,400
+9,CA    ,CA031,36,-120,110015375556,Henrietta Peaker Plant,55807
+9,CA    ,CA027,36,-116,,Hidden Hills Solar Plant 1,57905
+9,CA    ,CA027,36,-116,,Hidden Hills Solar Plant 2,57906
+9,CA    ,CA071,35,-117,110014461420,High Desert Power Project,55518
+9,CA    ,CA023,41,-124,110000610278,Humboldt Bay,246
+9,CA    ,CA075,38,-122,110000786150,Hunters Point,247
+9,CA    ,CA065,34,-117,110015634642,Indigo Generation Facility,55541
+9,CA    ,CA065,34,-117,110030747011,Inland Empire Energy Center,55853
+9,CA    ,CA071,36,-115,110043229976,Ivanpah 1,57074
+9,CA    ,CA071,36,-115,110043229976,Ivanpah 2,57073
+9,CA    ,CA071,36,-115,110043229976,Ivanpah 3,57075
+9,CA    ,CA029,35,-119,110002333369,Kern,251
+9,CA    ,CA019,37,-120,110000522818,Kingsburg Cogen Facility,10405
+9,CA    ,CA029,35,-120,110002932328,La Paloma Generating Plant,55151
+9,CA    ,CA037,34,-118,110055893733,Lake,7987
+9,CA    ,CA095,38,-122,110013666372,Lambie Energy Center,55626
+9,CA    ,CA073,33,-117,110022572410,Larkspur Energy Faciity,55542
+9,CA    ,CA077,38,-121,110057112271,Lodi Energy Center,57978
+9,CA    ,CA037,34,-118,110035420112,Long Beach Generating Station,341
+9,CA    ,CA085,37,-122,110013666425,Los Esteros Critical Energy Facility,55748
+9,CA    ,CA013,38,-122,110002929706,"Los Medanos Energy Center, LLC",55217
+9,CA    ,CA029,,,110058931919,MMC Midsun,55974
+9,CA    ,CA037,34,-118,110000525030,Magnolia,56046
+9,CA    ,CA037,34,-118,110000525030,Magnolia (OLD),375
+9,CA    ,CA019,37,-120,110023013406,Malaga Power,56239
+9,CA    ,CA037,34,-118,110028012219,Malburg Generating Station,56041
+9,CA    ,CA111,34,-119,110000517717,Mandalay Generating Station,345
+9,CA    ,CA059,34,-118,,Margarita Energy Center,56676
+9,CA    ,CA001,38,-122,110043972886,Mariposa Energy Project,57483
+9,CA    ,CA013,38,-122,110058932151,Marsh Landing Generating Station,57267
+9,CA    ,CA013,38,-122,110001134512,Martinez,256
+9,CA    ,CA111,34,-119,110058932053,McGrath Generating Station,56471
+9,CA    ,CA085,37,-122,110023012648,Metcalf Energy Center,55393
+9,CA    ,CA019,37,-121,110040575981,Midway Peaking,56639
+9,CA    ,CA071,34,-118,110040571002,Mira Loma Generating Station,56473
+9,CA    ,CA073,33,-117,110000609994,Miramar Energy Facility,56232
+9,CA    ,CA079,35,-121,110000610287,"Morro Bay Power Plant, LLC",259
+9,CA    ,CA053,37,-122,110000876954,Moss Landing,260
+9,CA    ,CA071,34,-117,110024530364,Mountainview Generating Station,358
+9,CA    ,CA077,38,-121,110000528643,NCPA Combustion Turbine Project #2,7449
+9,CA    ,CA025,33,-115,110040573732,Niland Gas Turbine Plant,56569
+9,CA    ,CA073,33,-117,110024471908,North Island,10812
+9,CA    ,,38,-122,110000786169,Oakland Power Plant,6211
+9,CA    ,CA013,38,-122,,Oakley Generating Station,57552
+9,CA    ,CA013,38,-122,110000908769,Oleum,263
+9,CA    ,CA037,34,-118,110000525030,Olive,6013
+9,CA    ,CA073,33,-117,110043815538,Orange Grove Project,56914
+9,CA    ,CA111,34,-119,110019004780,Ormond Beach Generating Station,350
+9,CA    ,CA073,33,-117,110040565689,"Otay Mesa Energy Center, LLC",55345
+9,CA    ,CA073,33,-117,110045402079,Palomar Energy Center,55985
+9,CA    ,CA019,37,-121,110040546898,Panoche Energy Center,56803
+9,CA    ,CA029,35,-119,110012236507,Pastoria Energy Facility,55656
+9,CA    ,CA071,35,-116,110006529612,Pegasus Project,55550
+9,CA    ,CA073,33,-117,,Pio Pico Energy Center,57555
+9,CA    ,CA013,38,-122,110000610296,Pittsburg Generating Station (CA),271
+9,CA    ,,,,110012509437,Pleasanton Local Reliability,55383
+9,CA    ,CA075,38,-122,110000786178,Potrero Generating Station,273
+9,CA    ,CA103,40,-122,110021333332,Red Bluff,56184
+9,CA    ,CA089,41,-122,110001187876,Redding Power Plant,7307
+9,CA    ,CA099,38,-121,110040565206,Ripon Generation Station,56135
+9,CA    ,CA071,34,-117,110021288836,Riverside Canal Power Company,334
+9,CA    ,CA065,34,-117,110040565242,Riverside Energy Resource Center,56143
+9,CA    ,CA013,38,-122,110013681051,Riverview Energy Center,55963
+9,CA    ,CA061,39,-121,110028038415,Roseville Energy Park,56298
+9,CA    ,CA001,38,-122,110058932044,Russell City Energy Company LLC,56467
+9,CA    ,CA067,39,-121,110000520614,SCA Cogen II,7551
+9,CA    ,CA067,39,-121,110000520614,Sacramento Power Authority Cogen,7552
+9,CA    ,CA053,36,-121,110035420719,Salinas River Cogeneration Facility,50865
+9,CA    ,,,,,San Francisco Electric Reliability Proj,56305
+9,CA    ,,,,,San Francisco Intl Airport CT Project,56306
+9,CA    ,CA053,36,-121,110043089537,Sargent Canyon Cogen Facility,50864
+9,CA    ,CA037,34,-118,110000914734,Scattergood Generating Station,404
+9,CA    ,CA065,34,-117,110058932160,"Sentinel Energy Center, LLC",57482
+9,CA    ,CA073,33,-117,110009555052,Silver Gate,309
+9,CA    ,CA073,33,-117,110002680705,Station B,311
+9,CA    ,CA029,35,-120,110013729251,Sunrise Power Company,55182
+9,CA    ,,,,,Tesla Power Project,55937
+9,CA    ,CA077,38,-121,110018862337,Tracy Combined Cycle Power Plant,55933
+9,CA    ,CA037,34,-118,110012444417,Valley Generating Station,408
+9,CA    ,CA037,34,-118,110045006596,Walnut Creek Energy Park,57515
+9,CA    ,,37,-121,110023013718,Walnut Energy ,4256
+9,CA    ,CA099,37,-121,110023013718,Walnut Energy Center,56078
+9,CA    ,CA019,36,-120,110014324052,"Wellhead Power Gates, LLC",55875
+9,CA    ,CA019,37,-120,,"Wellhead Power Helm, LLC",56955
+9,CA    ,CA029,35,-120,110006480897,Western MSCC Project,52169
+9,CA    ,CA095,38,-122,110013682452,Wolfskill Energy Center,55855
+9,CA    ,CA099,38,-121,110001177994,Woodland Generation Station,7266
+9,CA    ,CA101,39,-122,110000524969,Yuba City Energy Center,10349
+9,HI    ,HI003,21,-158,110027164164,AES Hawaii,10673
+9,HI    ,HI003,21,-158,,Honolulu Generating Station,764
+9,HI    ,HI003,21,-158,,Kahe Generating Station,765
+9,HI    ,HI003,21,-158,,Waiau Generating Station,766
+9,NV    ,NV003,36,-115,110013290928,Apex Generating Station,55514
+9,NV    ,NV003,36,-115,110024419244,Chuck Lenzie Generating Station,55322
+9,NV    ,NV003,36,-115,110004307027,Clark,2322
+9,NV    ,,,,110012512799,Copper Mountain Power,55493
+9,NV    ,NV003,36,-115,110021350946,Desert Star Energy Center,55077
+9,NV    ,NV019,39,-119,110000473014,Fort Churchill,2330
+9,NV    ,NV003,36,-115,110004304011,Harry Allen,7082
+9,NV    ,NV003,36,-115,110006175575,Las Vegas Generating Station,10761
+9,NV    ,NV003,36,-115,110012230718,Moapa Paiute Energy Center,55642
+9,NV    ,NV003,35,-115,110000497891,Mohave,2341
+9,NV    ,NV013,41,-117,110000495508,North Valmy,8224
+9,NV    ,NV003,37,-115,110000497882,Reid Gardner,2324
+9,NV    ,NV003,36,-115,110027827207,Silverhawk,55841
+9,NV    ,NV003,36,-115,110063697334,Sun Peak Generating Station,54854
+9,NV    ,NV003,36,-115,110001559215,Sunrise,2326
+9,NV    ,NV011,41,-117,110039075675,TS Power Plant,56224
+9,NV    ,,,,,Toquop Energy Facility,55844
+9,NV    ,NV029,40,-120,110000853345,Tracy,2336
+9,NV    ,NV029,40,-120,110012186240,Tri-Center Naniwa Energy,55494
+9,NV    ,NV003,36,-115,110027833441,Walter M. Higgins III Generating Station,55687
+9,NV    ,NV031,41,-120,110004292836,Washoe Facility,55378
+9,NV    ,NV029,40,-120,110040592962,Western 102 Power Plant,56500
+10,AK    ,AK068,64,-149,110000602250,Healy Power Plant,6288
+10,ID    ,ID039,43,-116,110015376207,Bennett Mountain Power Project,55733
+10,ID    ,ID039,43,-116,110012152053,Evander Andrews Power Complex,7953
+10,ID    ,ID075,44,-117,110058932115,Langley Gulch Power Plant,57028
+10,ID    ,ID055,48,-117,110005780066,Rathdrum Combustion Turbine Project,7456
+10,ID    ,ID055,48,-117,110046364439,"Rathdrum Power, LLC",55179
+10,OR    ,OR049,46,-120,110000488838,Boardman,6106
+10,OR    ,OR049,46,-120,110012160972,Boardman Power Holdings LLC,55683
+10,OR    ,OR049,46,-120,,Carty Generating Station,58503
+10,OR    ,,,,,Cob Energy Facility,55962
+10,OR    ,OR049,46,-120,110000488847,Coyote Springs,7350
+10,OR    ,,,,,Cre Goble - Peaker,55732
+10,OR    ,OR059,46,-119,110000534100,Hermiston,54761
+10,OR    ,OR059,46,-119,110012534542,Hermiston Power Plant,55328
+10,OR    ,OR035,42,-122,110006911404,Klamath Cogeneration Project,55103
+10,OR    ,OR035,42,-122,,Klamath Falls Bioenergy,57388
+10,OR    ,OR035,42,-122,110006911404,Klamath Generation Peakers,55544
+10,OR    ,,,,110012512183,Nordic Energy AT Goble,55679
+10,OR    ,OR009,,,110006858604,PGE Beaver Plant,8073
+10,OR    ,OR009,46,-123,110006858604,Port Westward,56227
+10,WA    ,,,,110012510210,AES Columbia Power,55676
+10,WA    ,WA063,,,110028047619,Boulder Park,8022
+10,WA    ,WA041,47,-123,110000490665,Centralia,3845
+10,WA    ,WA041,47,-123,110055650371,Chehalis Generation Facility,55662
+10,WA    ,WA073,49,-122,110000490013,Encogen Generating Station,7870
+10,WA    ,WA073,49,-123,110000490166,Ferndale Generating Station,54537
+10,WA    ,WA005,46,-119,110012510158,Finley Combustion Turbine,7945
+10,WA    ,WA053,47,-122,110005307284,Frederickson Power LP,55818
+10,WA    ,WA057,48,-122,110001917007,Fredonia Generating Station,607
+10,WA    ,WA039,46,-121,110041171086,Goldendale Generating Station,55482
+10,WA    ,WA027,47,-123,110012561021,Grays Harbor Energy Center,7999
+10,WA    ,,,,,Hoquiam Diesels,
+10,WA    ,WA065,49,-118,110009748835,Kettle Falls,550
+10,WA    ,WA033,47,-122,110015377153,Lake Union,9907
+10,WA    ,WA015,46,-123,110012144679,Longview Energy Development,55634
+10,WA    ,WA015,46,-123,110036123469,Mint Farm Generating Station,55700
+10,WA    ,,,,,Moses Lake Generating Facility,
+10,WA    ,,,,110012510229,Nordic Energy At Longview,55678
+10,WA    ,,,,110012510167,Northwest Power Company,55379
+10,WA    ,,,,,Olympic View Generating Station,
+10,WA    ,,,,110028045194,Pierce Power Station,55704
+10,WA    ,,,,,Plymouth Generation Facility,55870
+10,WA    ,WA021,,,110018849479,Public Utility Dist No.1 Franklin County,56017
+10,WA    ,,,,,Randolph Road Substation Generators,7994
+10,WA    ,WA011,46,-123,110002058344,River Road,7605
+10,WA    ,,,,110012510185,Sedro Woolley Energy Center,55553
+10,WA    ,WA033,48,-122,110005336270,Shuffleton,3858
+10,WA    ,WA053,47,-122,110000490497,Steam Plant 2,3920
+10,WA    ,WA073,49,-122,110020517662,Sumas Generating Station,54476
