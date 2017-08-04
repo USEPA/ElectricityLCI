@@ -1,0 +1,1856 @@
+, eGRID subregion acronym , Plant primary fuel ,Emissions,Emissions quantity kg/MWh
+0,AKGD,DFO,nitrogen oxides,19.34320405
+1,AKGD,JF,nitrogen oxides,0.7311903040000001
+2,AKGD,LFG,nitrogen oxides,
+3,AKGD,MWH,nitrogen oxides,
+4,AKGD,NG,nitrogen oxides,1.304271397
+5,AKGD,RFO,nitrogen oxides,9.991270984
+6,AKGD,SUB,nitrogen oxides,0.043998424
+7,AKGD,WAT,nitrogen oxides,
+8,AKGD,WC,nitrogen oxides,1.8071105280000002
+9,AKGD,WND,nitrogen oxides,
+10,AKMS,DFO,nitrogen oxides,15.06440214
+11,AKMS,JF,nitrogen oxides,14.64757964
+12,AKMS,MWH,nitrogen oxides,
+13,AKMS,NG,nitrogen oxides,4.702237066
+14,AKMS,WAT,nitrogen oxides,0.324408998
+15,AKMS,WND,nitrogen oxides,
+16,AKMS,WO,nitrogen oxides,
+17,AZNM,BIT,nitrogen oxides,1.38799152
+18,AZNM,DFO,nitrogen oxides,11.19465056
+19,AZNM,GEO,nitrogen oxides,
+20,AZNM,LFG,nitrogen oxides,8.24176664
+21,AZNM,NG,nitrogen oxides,0.76751324
+22,AZNM,NUC,nitrogen oxides,
+23,AZNM,SUB,nitrogen oxides,1.339532775
+24,AZNM,SUN,nitrogen oxides,0.02041164
+25,AZNM,WAT,nitrogen oxides,
+26,AZNM,WDS,nitrogen oxides,1.024664328
+27,AZNM,WND,nitrogen oxides,
+28,CAMX,AB,nitrogen oxides,0.629132104
+29,CAMX,BIT,nitrogen oxides,0.332482936
+30,CAMX,BLQ,nitrogen oxides,
+31,CAMX,DFO,nitrogen oxides,9.68819593
+32,CAMX,GEO,nitrogen oxides,0.058210973
+33,CAMX,JF,nitrogen oxides,
+34,CAMX,LFG,nitrogen oxides,7.417486297999999
+35,CAMX,MSW,nitrogen oxides,1.54561474
+36,CAMX,MWH,nitrogen oxides,
+37,CAMX,NG,nitrogen oxides,1.1777467190000002
+38,CAMX,NUC,nitrogen oxides,
+39,CAMX,OBG,nitrogen oxides,3.783039752
+40,CAMX,OG,nitrogen oxides,0.082326948
+41,CAMX,OTH,nitrogen oxides,21.36554398
+42,CAMX,PRG,nitrogen oxides,0.155128464
+43,CAMX,PUR,nitrogen oxides,
+44,CAMX,SGC,nitrogen oxides,
+45,CAMX,SUN,nitrogen oxides,0.165409883
+46,CAMX,WAT,nitrogen oxides,
+47,CAMX,WDS,nitrogen oxides,0.57187065
+48,CAMX,WH,nitrogen oxides,
+49,CAMX,WND,nitrogen oxides,
+50,ERCT,AB,nitrogen oxides,0.47627159999999996
+51,ERCT,BLQ,nitrogen oxides,0.41322231200000004
+52,ERCT,DFO,nitrogen oxides,13.18864099
+53,ERCT,LFG,nitrogen oxides,7.239161207
+54,ERCT,LIG,nitrogen oxides,0.632631242
+55,ERCT,NG,nitrogen oxides,0.825601102
+56,ERCT,NUC,nitrogen oxides,
+57,ERCT,OBG,nitrogen oxides,
+58,ERCT,OG,nitrogen oxides,
+59,ERCT,OTH,nitrogen oxides,
+60,ERCT,PC,nitrogen oxides,1.500935928
+61,ERCT,PRG,nitrogen oxides,1.73952532
+62,ERCT,PUR,nitrogen oxides,
+63,ERCT,SUB,nitrogen oxides,0.61402749
+64,ERCT,SUN,nitrogen oxides,
+65,ERCT,WAT,nitrogen oxides,
+66,ERCT,WDS,nitrogen oxides,0.569711552
+67,ERCT,WH,nitrogen oxides,
+68,ERCT,WND,nitrogen oxides,
+69,FRCC,AB,nitrogen oxides,0.148324584
+70,FRCC,BIT,nitrogen oxides,0.776902298
+71,FRCC,BLQ,nitrogen oxides,0.12587178
+72,FRCC,DFO,nitrogen oxides,4.011964541
+73,FRCC,LFG,nitrogen oxides,6.312575065
+74,FRCC,MSW,nitrogen oxides,3.173148195
+75,FRCC,NG,nitrogen oxides,0.628284828
+76,FRCC,NUC,nitrogen oxides,0.025401152000000003
+77,FRCC,OBG,nitrogen oxides,18.25038752
+78,FRCC,OBS,nitrogen oxides,0.152406912
+79,FRCC,OTH,nitrogen oxides,0.00907184
+80,FRCC,RFO,nitrogen oxides,1.28820128
+81,FRCC,SGC,nitrogen oxides,0.226342408
+82,FRCC,SUN,nitrogen oxides,
+83,FRCC,WAT,nitrogen oxides,
+84,FRCC,WDS,nitrogen oxides,1.0890743920000001
+85,FRCC,WH,nitrogen oxides,
+86,HIMS,AB,nitrogen oxides,
+87,HIMS,DFO,nitrogen oxides,13.09990706
+88,HIMS,GEO,nitrogen oxides,
+89,HIMS,OTH,nitrogen oxides,0.0018143679999999998
+90,HIMS,RFO,nitrogen oxides,2.061424443
+91,HIMS,SUN,nitrogen oxides,
+92,HIMS,WAT,nitrogen oxides,
+93,HIMS,WND,nitrogen oxides,
+94,HIMS,WO,nitrogen oxides,0.032205032
+95,HIOA,BIT,nitrogen oxides,0.392810672
+96,HIOA,DFO,nitrogen oxides,
+97,HIOA,MSW,nitrogen oxides,1.525883488
+98,HIOA,OBL,nitrogen oxides,
+99,HIOA,RFO,nitrogen oxides,1.72591756
+100,HIOA,SUN,nitrogen oxides,
+101,HIOA,WND,nitrogen oxides,
+102,HIOA,WO,nitrogen oxides,
+103,MROE,BIT,nitrogen oxides,0.612258482
+104,MROE,BLQ,nitrogen oxides,0.775415524
+105,MROE,DFO,nitrogen oxides,20.23780087
+106,MROE,LFG,nitrogen oxides,7.50014372
+107,MROE,NG,nitrogen oxides,1.002562027
+108,MROE,OBG,nitrogen oxides,25.99286277
+109,MROE,PC,nitrogen oxides,0.37693495200000005
+110,MROE,PUR,nitrogen oxides,
+111,MROE,SUB,nitrogen oxides,0.903933257
+112,MROE,WAT,nitrogen oxides,
+113,MROE,WDS,nitrogen oxides,0.126325372
+114,MROE,WND,nitrogen oxides,
+115,MROW,AB,nitrogen oxides,0.523445168
+116,MROW,BIT,nitrogen oxides,0.8826900320000001
+117,MROW,BLQ,nitrogen oxides,0.239345379
+118,MROW,DFO,nitrogen oxides,15.911590300000002
+119,MROW,KER,nitrogen oxides,8.879516992000001
+120,MROW,LFG,nitrogen oxides,7.6457013929999995
+121,MROW,LIG,nitrogen oxides,2.253639453
+122,MROW,MSW,nitrogen oxides,1.2491923679999999
+123,MROW,MWH,nitrogen oxides,
+124,MROW,NG,nitrogen oxides,3.551424645
+125,MROW,NUC,nitrogen oxides,
+126,MROW,OBG,nitrogen oxides,5.347566185
+127,MROW,PC,nitrogen oxides,0.30980333600000004
+128,MROW,PRG,nitrogen oxides,
+129,MROW,PUR,nitrogen oxides,
+130,MROW,RC,nitrogen oxides,0.8155584159999999
+131,MROW,SUB,nitrogen oxides,0.941701245
+132,MROW,SUN,nitrogen oxides,
+133,MROW,WAT,nitrogen oxides,0.358677874
+134,MROW,WDS,nitrogen oxides,1.17253532
+135,MROW,WH,nitrogen oxides,
+136,MROW,WND,nitrogen oxides,0.215274763
+137,NEWE,BIT,nitrogen oxides,0.935760296
+138,NEWE,BLQ,nitrogen oxides,0.283948592
+139,NEWE,DFO,nitrogen oxides,11.78083099
+140,NEWE,JF,nitrogen oxides,0.28803092
+141,NEWE,KER,nitrogen oxides,1.1693601759999999
+142,NEWE,LFG,nitrogen oxides,6.6360226110000005
+143,NEWE,MSW,nitrogen oxides,2.559468459
+144,NEWE,MWH,nitrogen oxides,
+145,NEWE,NG,nitrogen oxides,1.244602288
+146,NEWE,NUC,nitrogen oxides,
+147,NEWE,OBS,nitrogen oxides,
+148,NEWE,PUR,nitrogen oxides,
+149,NEWE,RFO,nitrogen oxides,0.909149565
+150,NEWE,SUB,nitrogen oxides,0.645007824
+151,NEWE,SUN,nitrogen oxides,
+152,NEWE,TDF,nitrogen oxides,
+153,NEWE,WAT,nitrogen oxides,0.287577328
+154,NEWE,WDS,nitrogen oxides,0.707977066
+155,NEWE,WND,nitrogen oxides,
+156,NWPP,BIT,nitrogen oxides,1.501162724
+157,NWPP,BLQ,nitrogen oxides,0.17091346600000001
+158,NWPP,DFO,nitrogen oxides,14.87704001
+159,NWPP,GEO,nitrogen oxides,
+160,NWPP,LFG,nitrogen oxides,6.547751717000001
+161,NWPP,MSW,nitrogen oxides,1.8346284430000002
+162,NWPP,NG,nitrogen oxides,1.2949017090000001
+163,NWPP,NUC,nitrogen oxides,
+164,NWPP,OBG,nitrogen oxides,22.03418394
+165,NWPP,OBS,nitrogen oxides,
+166,NWPP,OG,nitrogen oxides,
+167,NWPP,OTH,nitrogen oxides,0.027669112000000003
+168,NWPP,PC,nitrogen oxides,0.45404559200000005
+169,NWPP,PRG,nitrogen oxides,
+170,NWPP,PUR,nitrogen oxides,
+171,NWPP,SUB,nitrogen oxides,0.9140332390000001
+172,NWPP,SUN,nitrogen oxides,
+173,NWPP,WAT,nitrogen oxides,
+174,NWPP,WC,nitrogen oxides,1.57963414
+175,NWPP,WDL,nitrogen oxides,
+176,NWPP,WDS,nitrogen oxides,0.76821039
+177,NWPP,WND,nitrogen oxides,
+178,NYCW,DFO,nitrogen oxides,1.127629712
+179,NYCW,KER,nitrogen oxides,2.383323565
+180,NYCW,MSW,nitrogen oxides,2.4829626080000002
+181,NYCW,NG,nitrogen oxides,2.297174685
+182,NYCW,NUC,nitrogen oxides,
+183,NYCW,RFO,nitrogen oxides,
+184,NYCW,SUN,nitrogen oxides,
+185,NYCW,WAT,nitrogen oxides,
+186,NYLI,DFO,nitrogen oxides,6.755753889
+187,NYLI,LFG,nitrogen oxides,10.97239048
+188,NYLI,MSW,nitrogen oxides,2.004082854
+189,NYLI,NG,nitrogen oxides,1.1125704570000001
+190,NYLI,RFO,nitrogen oxides,0.352214188
+191,NYLI,SUN,nitrogen oxides,
+192,NYUP,BIT,nitrogen oxides,1.4096127390000002
+193,NYUP,DFO,nitrogen oxides,11.36746911
+194,NYUP,KER,nitrogen oxides,3.9467039919999998
+195,NYUP,LFG,nitrogen oxides,7.437022812
+196,NYUP,MSW,nitrogen oxides,1.292850598
+197,NYUP,MWH,nitrogen oxides,
+198,NYUP,NG,nitrogen oxides,0.754530852
+199,NYUP,NUC,nitrogen oxides,
+200,NYUP,OBG,nitrogen oxides,23.86755745
+201,NYUP,RFO,nitrogen oxides,0.920035773
+202,NYUP,SUB,nitrogen oxides,0.66791422
+203,NYUP,SUN,nitrogen oxides,
+204,NYUP,WAT,nitrogen oxides,
+205,NYUP,WDS,nitrogen oxides,0.732437682
+206,NYUP,WND,nitrogen oxides,
+207,RFCE,BIT,nitrogen oxides,1.1019009659999999
+208,RFCE,BLQ,nitrogen oxides,0.665873056
+209,RFCE,COG,nitrogen oxides,
+210,RFCE,DFO,nitrogen oxides,7.556072668
+211,RFCE,KER,nitrogen oxides,
+212,RFCE,LFG,nitrogen oxides,6.766628757
+213,RFCE,MSW,nitrogen oxides,2.256884795
+214,RFCE,MWH,nitrogen oxides,
+215,RFCE,NG,nitrogen oxides,1.941049766
+216,RFCE,NUC,nitrogen oxides,0.00045359199999999995
+217,RFCE,OBG,nitrogen oxides,14.59137425
+218,RFCE,OG,nitrogen oxides,
+219,RFCE,OTH,nitrogen oxides,
+220,RFCE,PRG,nitrogen oxides,0.08777005199999999
+221,RFCE,RFO,nitrogen oxides,1.320859904
+222,RFCE,SUB,nitrogen oxides,2.246187584
+223,RFCE,SUN,nitrogen oxides,
+224,RFCE,TDF,nitrogen oxides,
+225,RFCE,WAT,nitrogen oxides,
+226,RFCE,WC,nitrogen oxides,0.705998502
+227,RFCE,WDS,nitrogen oxides,0.05896696
+228,RFCE,WND,nitrogen oxides,
+229,RFCM,BIT,nitrogen oxides,1.2190285
+230,RFCM,DFO,nitrogen oxides,25.48540671
+231,RFCM,LFG,nitrogen oxides,6.950639692
+232,RFCM,MSW,nitrogen oxides,2.767364792
+233,RFCM,NG,nitrogen oxides,3.0473748780000003
+234,RFCM,NUC,nitrogen oxides,0.00226796
+235,RFCM,OBG,nitrogen oxides,13.49708355
+236,RFCM,SUB,nitrogen oxides,1.026176301
+237,RFCM,SUN,nitrogen oxides,
+238,RFCM,WAT,nitrogen oxides,0.31615362399999997
+239,RFCM,WDS,nitrogen oxides,1.137699454
+240,RFCM,WND,nitrogen oxides,
+241,RFCW,BFG,nitrogen oxides,0.059420552
+242,RFCW,BIT,nitrogen oxides,1.102183201
+243,RFCW,BLQ,nitrogen oxides,0.6417192820000001
+244,RFCW,COG,nitrogen oxides,0.10659412
+245,RFCW,DFO,nitrogen oxides,16.205018900000002
+246,RFCW,LFG,nitrogen oxides,5.971242859
+247,RFCW,MSW,nitrogen oxides,1.00130434
+248,RFCW,MWH,nitrogen oxides,
+249,RFCW,NG,nitrogen oxides,1.72255143
+250,RFCW,NUC,nitrogen oxides,0.00045359199999999995
+251,RFCW,OBG,nitrogen oxides,18.19867803
+252,RFCW,OG,nitrogen oxides,5.117651741
+253,RFCW,PC,nitrogen oxides,0.5474855439999999
+254,RFCW,PRG,nitrogen oxides,0.039840497
+255,RFCW,SGC,nitrogen oxides,0.67925402
+256,RFCW,SUB,nitrogen oxides,0.824300371
+257,RFCW,SUN,nitrogen oxides,
+258,RFCW,WAT,nitrogen oxides,
+259,RFCW,WC,nitrogen oxides,1.408705555
+260,RFCW,WDS,nitrogen oxides,0.324091484
+261,RFCW,WH,nitrogen oxides,
+262,RFCW,WND,nitrogen oxides,
+263,RMPA,BIT,nitrogen oxides,1.6896301999999999
+264,RMPA,DFO,nitrogen oxides,12.27737466
+265,RMPA,LFG,nitrogen oxides,9.238081467999999
+266,RMPA,NG,nitrogen oxides,2.091890705
+267,RMPA,OBG,nitrogen oxides,0.697624496
+268,RMPA,SUB,nitrogen oxides,0.804704607
+269,RMPA,SUN,nitrogen oxides,
+270,RMPA,WAT,nitrogen oxides,
+271,RMPA,WC,nitrogen oxides,
+272,RMPA,WDS,nitrogen oxides,
+273,RMPA,WH,nitrogen oxides,
+274,RMPA,WND,nitrogen oxides,
+275,RMPA ,SUB,nitrogen oxides,0.649316948
+276,SPNO,BIT,nitrogen oxides,0.9852018240000001
+277,SPNO,DFO,nitrogen oxides,12.88900767
+278,SPNO,LFG,nitrogen oxides,7.0799663310000005
+279,SPNO,MWH,nitrogen oxides,
+280,SPNO,NG,nitrogen oxides,3.111226132
+281,SPNO,NUC,nitrogen oxides,
+282,SPNO,SUB,nitrogen oxides,1.101077134
+283,SPNO,SUN,nitrogen oxides,
+284,SPNO,WAT,nitrogen oxides,
+285,SPNO,WH,nitrogen oxides,
+286,SPNO,WND,nitrogen oxides,
+287,SPSO,BFG,nitrogen oxides,0.07257472
+288,SPSO,BIT,nitrogen oxides,0.40641843200000005
+289,SPSO,BLQ,nitrogen oxides,0.466594971
+290,SPSO,DFO,nitrogen oxides,15.52452639
+291,SPSO,LFG,nitrogen oxides,7.088886972999999
+292,SPSO,LIG,nitrogen oxides,0.8293929720000001
+293,SPSO,MSW,nitrogen oxides,
+294,SPSO,NG,nitrogen oxides,1.8415403209999999
+295,SPSO,PC,nitrogen oxides,0.49033295200000004
+296,SPSO,PRG,nitrogen oxides,0.075296272
+297,SPSO,SUB,nitrogen oxides,0.8188307579999999
+298,SPSO,SUN,nitrogen oxides,
+299,SPSO,WAT,nitrogen oxides,
+300,SPSO,WDS,nitrogen oxides,0.715768176
+301,SPSO,WH,nitrogen oxides,
+302,SPSO,WND,nitrogen oxides,
+303,SRMV,AB,nitrogen oxides,0.43953064799999997
+304,SRMV,BLQ,nitrogen oxides,0.19685892800000002
+305,SRMV,DFO,nitrogen oxides,
+306,SRMV,LFG,nitrogen oxides,7.0633346239999995
+307,SRMV,NG,nitrogen oxides,1.0812544659999999
+308,SRMV,NUC,nitrogen oxides,
+309,SRMV,OBG,nitrogen oxides,3.9244779839999997
+310,SRMV,OBS,nitrogen oxides,0.35108020799999995
+311,SRMV,PC,nitrogen oxides,0.258320644
+312,SRMV,PRG,nitrogen oxides,0.46164325799999995
+313,SRMV,PUR,nitrogen oxides,
+314,SRMV,SUB,nitrogen oxides,0.803583587
+315,SRMV,SUN,nitrogen oxides,
+316,SRMV,WAT,nitrogen oxides,
+317,SRMV,WDS,nitrogen oxides,0.256430677
+318,SRMV,WH,nitrogen oxides,
+319,SRMW,BFG,nitrogen oxides,0.037648136
+320,SRMW,BIT,nitrogen oxides,0.87371899
+321,SRMW,DFO,nitrogen oxides,16.66174157
+322,SRMW,LFG,nitrogen oxides,7.047912496
+323,SRMW,NG,nitrogen oxides,1.8999182000000001
+324,SRMW,NUC,nitrogen oxides,
+325,SRMW,SUB,nitrogen oxides,0.705308878
+326,SRMW,SUN,nitrogen oxides,
+327,SRMW,WAT,nitrogen oxides,0.058513367999999996
+328,SRMW,WND,nitrogen oxides,
+329,SRSO,BIT,nitrogen oxides,1.803965623
+330,SRSO,BLQ,nitrogen oxides,0.308734155
+331,SRSO,DFO,nitrogen oxides,14.93141124
+332,SRSO,LFG,nitrogen oxides,6.88441778
+333,SRSO,MSW,nitrogen oxides,6.179283816
+334,SRSO,NG,nitrogen oxides,0.717537185
+335,SRSO,NUC,nitrogen oxides,
+336,SRSO,OBG,nitrogen oxides,7.357035442999999
+337,SRSO,OBS,nitrogen oxides,0.033565807999999996
+338,SRSO,PC,nitrogen oxides,0.287577328
+339,SRSO,SUB,nitrogen oxides,1.1793392
+340,SRSO,SUN,nitrogen oxides,
+341,SRSO,WAT,nitrogen oxides,
+342,SRSO,WDS,nitrogen oxides,0.652718888
+343,SRSO,WH,nitrogen oxides,
+344,SRTV,BIT,nitrogen oxides,1.107250471
+345,SRTV,BLQ,nitrogen oxides,0.25001991
+346,SRTV,COG,nitrogen oxides,0.039008912
+347,SRTV,DFO,nitrogen oxides,15.68004041
+348,SRTV,LFG,nitrogen oxides,7.106539262
+349,SRTV,LIG,nitrogen oxides,0.7130466240000001
+350,SRTV,NG,nitrogen oxides,0.61688512
+351,SRTV,NUC,nitrogen oxides,
+352,SRTV,PRG,nitrogen oxides,0.257640256
+353,SRTV,SUB,nitrogen oxides,0.7180361359999999
+354,SRTV,SUN,nitrogen oxides,
+355,SRTV,WAT,nitrogen oxides,
+356,SRTV,WDS,nitrogen oxides,0.5216308
+357,SRTV,WND,nitrogen oxides,
+358,SRVC,BIT,nitrogen oxides,0.9321617990000001
+359,SRVC,BLQ,nitrogen oxides,0.20519368100000002
+360,SRVC,DFO,nitrogen oxides,18.34780585
+361,SRVC,LFG,nitrogen oxides,5.392881872
+362,SRVC,MSW,nitrogen oxides,2.5761757640000003
+363,SRVC,NG,nitrogen oxides,0.749142467
+364,SRVC,NUC,nitrogen oxides,
+365,SRVC,OBG,nitrogen oxides,5.260760016
+366,SRVC,OTH,nitrogen oxides,
+367,SRVC,SUN,nitrogen oxides,
+368,SRVC,WAT,nitrogen oxides,0.10644292300000001
+369,SRVC,WDS,nitrogen oxides,0.68777507
+370,SRVC,WND,nitrogen oxides,
+371,AKGD,DFO,sulfur dioxide,1.7465559959999999
+372,AKGD,JF,sulfur dioxide,0.7751887279999999
+373,AKGD,LFG,sulfur dioxide,0.14787099199999998
+374,AKGD,MWH,sulfur dioxide,
+375,AKGD,NG,sulfur dioxide,0.004309124
+376,AKGD,RFO,sulfur dioxide,10.664855099999999
+377,AKGD,SUB,sulfur dioxide,1.5355223180000002
+378,AKGD,WAT,sulfur dioxide,
+379,AKGD,WC,sulfur dioxide,1.6442709999999998
+380,AKGD,WND,sulfur dioxide,
+381,AKMS,DFO,sulfur dioxide,1.37782262
+382,AKMS,JF,sulfur dioxide,2.287010864
+383,AKMS,MWH,sulfur dioxide,
+384,AKMS,NG,sulfur dioxide,0.004082328
+385,AKMS,WAT,sulfur dioxide,0.02893917
+386,AKMS,WND,sulfur dioxide,
+387,AKMS,WO,sulfur dioxide,2.2312190480000003
+388,AZNM,BIT,sulfur dioxide,0.947553688
+389,AZNM,DFO,sulfur dioxide,2.267355211
+390,AZNM,GEO,sulfur dioxide,0.44270579200000004
+391,AZNM,LFG,sulfur dioxide,0.195195757
+392,AZNM,NG,sulfur dioxide,0.019331266
+393,AZNM,NUC,sulfur dioxide,
+394,AZNM,SUB,sulfur dioxide,0.7525091279999999
+395,AZNM,SUN,sulfur dioxide,
+396,AZNM,WAT,sulfur dioxide,
+397,AZNM,WDS,sulfur dioxide,0.18483874
+398,AZNM,WND,sulfur dioxide,
+399,CAMX,AB,sulfur dioxide,0.155582056
+400,CAMX,BIT,sulfur dioxide,2.577423142
+401,CAMX,BLQ,sulfur dioxide,
+402,CAMX,DFO,sulfur dioxide,1.5221791530000002
+403,CAMX,GEO,sulfur dioxide,0.111016642
+404,CAMX,JF,sulfur dioxide,3.3806211760000004
+405,CAMX,LFG,sulfur dioxide,0.190678737
+406,CAMX,MSW,sulfur dioxide,0.863639168
+407,CAMX,MWH,sulfur dioxide,
+408,CAMX,NG,sulfur dioxide,0.013859965
+409,CAMX,NUC,sulfur dioxide,
+410,CAMX,OBG,sulfur dioxide,0.026679457
+411,CAMX,OG,sulfur dioxide,0.001965565
+412,CAMX,OTH,sulfur dioxide,0.016102516
+413,CAMX,PRG,sulfur dioxide,0.00226796
+414,CAMX,PUR,sulfur dioxide,
+415,CAMX,SGC,sulfur dioxide,
+416,CAMX,SUN,sulfur dioxide,0.0009071839999999999
+417,CAMX,WAT,sulfur dioxide,
+418,CAMX,WDS,sulfur dioxide,0.120027422
+419,CAMX,WH,sulfur dioxide,
+420,CAMX,WND,sulfur dioxide,
+421,ERCT,AB,sulfur dioxide,0.06486365599999999
+422,ERCT,BLQ,sulfur dioxide,1.055962176
+423,ERCT,DFO,sulfur dioxide,1.1881842440000001
+424,ERCT,LFG,sulfur dioxide,0.17678151399999997
+425,ERCT,LIG,sulfur dioxide,2.3203174769999997
+426,ERCT,NG,sulfur dioxide,0.018534708
+427,ERCT,NUC,sulfur dioxide,
+428,ERCT,OBG,sulfur dioxide,0.09570791199999999
+429,ERCT,OG,sulfur dioxide,
+430,ERCT,OTH,sulfur dioxide,
+431,ERCT,PC,sulfur dioxide,2.991892832
+432,ERCT,PRG,sulfur dioxide,4.8679493439999995
+433,ERCT,PUR,sulfur dioxide,
+434,ERCT,SUB,sulfur dioxide,1.9785683040000002
+435,ERCT,SUN,sulfur dioxide,
+436,ERCT,WAT,sulfur dioxide,
+437,ERCT,WDS,sulfur dioxide,0.08958442
+438,ERCT,WH,sulfur dioxide,
+439,ERCT,WND,sulfur dioxide,
+440,FRCC,AB,sulfur dioxide,0.069853168
+441,FRCC,BIT,sulfur dioxide,1.2051939440000001
+442,FRCC,BLQ,sulfur dioxide,0.7105518679999999
+443,FRCC,DFO,sulfur dioxide,1.248285184
+444,FRCC,LFG,sulfur dioxide,0.196275738
+445,FRCC,MSW,sulfur dioxide,0.397255874
+446,FRCC,NG,sulfur dioxide,0.06721915099999999
+447,FRCC,NUC,sulfur dioxide,0.01360776
+448,FRCC,OBG,sulfur dioxide,0.031638042000000005
+449,FRCC,OBS,sulfur dioxide,0.18325116800000002
+450,FRCC,OTH,sulfur dioxide,0.029937072000000002
+451,FRCC,RFO,sulfur dioxide,0.005443104
+452,FRCC,SGC,sulfur dioxide,0.574247472
+453,FRCC,SUN,sulfur dioxide,
+454,FRCC,WAT,sulfur dioxide,
+455,FRCC,WDS,sulfur dioxide,0.211978661
+456,FRCC,WH,sulfur dioxide,
+457,HIMS,AB,sulfur dioxide,0.762941744
+458,HIMS,DFO,sulfur dioxide,1.721665135
+459,HIMS,GEO,sulfur dioxide,
+460,HIMS,OTH,sulfur dioxide,0.0009071839999999999
+461,HIMS,RFO,sulfur dioxide,6.5775375920000005
+462,HIMS,SUN,sulfur dioxide,
+463,HIMS,WAT,sulfur dioxide,
+464,HIMS,WND,sulfur dioxide,
+465,HIMS,WO,sulfur dioxide,1.6869086480000002
+466,HIOA,BIT,sulfur dioxide,5.347396088
+467,HIOA,DFO,sulfur dioxide,
+468,HIOA,MSW,sulfur dioxide,0.110222856
+469,HIOA,OBL,sulfur dioxide,0.048987935999999996
+470,HIOA,RFO,sulfur dioxide,4.80864219
+471,HIOA,SUN,sulfur dioxide,
+472,HIOA,WND,sulfur dioxide,
+473,HIOA,WO,sulfur dioxide,0.726654384
+474,MROE,BIT,sulfur dioxide,7.653911408
+475,MROE,BLQ,sulfur dioxide,1.624615347
+476,MROE,DFO,sulfur dioxide,2.8975456960000003
+477,MROE,LFG,sulfur dioxide,0.182071829
+478,MROE,NG,sulfur dioxide,0.040888079
+479,MROE,OBG,sulfur dioxide,0.038668718
+480,MROE,PC,sulfur dioxide,1.4043208319999998
+481,MROE,PUR,sulfur dioxide,
+482,MROE,SUB,sulfur dioxide,2.1504040730000002
+483,MROE,WAT,sulfur dioxide,
+484,MROE,WDS,sulfur dioxide,2.712253364
+485,MROE,WND,sulfur dioxide,
+486,MROW,AB,sulfur dioxide,0.06713161599999999
+487,MROW,BIT,sulfur dioxide,5.725540617999999
+488,MROW,BLQ,sulfur dioxide,1.4962488109999998
+489,MROW,DFO,sulfur dioxide,1.823966007
+490,MROW,KER,sulfur dioxide,5.037592752
+491,MROW,LFG,sulfur dioxide,0.199621716
+492,MROW,LIG,sulfur dioxide,4.479350598
+493,MROW,MSW,sulfur dioxide,0.245121117
+494,MROW,MWH,sulfur dioxide,
+495,MROW,NG,sulfur dioxide,0.337356284
+496,MROW,NUC,sulfur dioxide,
+497,MROW,OBG,sulfur dioxide,0.025753946
+498,MROW,PC,sulfur dioxide,0.146056624
+499,MROW,PRG,sulfur dioxide,0.007711064
+500,MROW,PUR,sulfur dioxide,
+501,MROW,RC,sulfur dioxide,1.6166018880000002
+502,MROW,SUB,sulfur dioxide,2.184323821
+503,MROW,SUN,sulfur dioxide,
+504,MROW,WAT,sulfur dioxide,0.03345241
+505,MROW,WDS,sulfur dioxide,0.664641878
+506,MROW,WH,sulfur dioxide,
+507,MROW,WND,sulfur dioxide,0.019323019
+508,NEWE,BIT,sulfur dioxide,2.137779096
+509,NEWE,BLQ,sulfur dioxide,0.35108020799999995
+510,NEWE,DFO,sulfur dioxide,2.084811256
+511,NEWE,JF,sulfur dioxide,
+512,NEWE,KER,sulfur dioxide,2.126439296
+513,NEWE,LFG,sulfur dioxide,0.20533542800000001
+514,NEWE,MSW,sulfur dioxide,0.485706314
+515,NEWE,MWH,sulfur dioxide,
+516,NEWE,NG,sulfur dioxide,0.070010665
+517,NEWE,NUC,sulfur dioxide,
+518,NEWE,OBS,sulfur dioxide,
+519,NEWE,PUR,sulfur dioxide,
+520,NEWE,RFO,sulfur dioxide,1.942583339
+521,NEWE,SUB,sulfur dioxide,1.0037990959999998
+522,NEWE,SUN,sulfur dioxide,
+523,NEWE,TDF,sulfur dioxide,
+524,NEWE,WAT,sulfur dioxide,0.037874932
+525,NEWE,WDS,sulfur dioxide,0.30899695
+526,NEWE,WND,sulfur dioxide,
+527,NWPP,BIT,sulfur dioxide,2.057644509
+528,NWPP,BLQ,sulfur dioxide,1.168128998
+529,NWPP,DFO,sulfur dioxide,1.3215726909999999
+530,NWPP,GEO,sulfur dioxide,0.44270579200000004
+531,NWPP,LFG,sulfur dioxide,0.18574592399999998
+532,NWPP,MSW,sulfur dioxide,0.103570173
+533,NWPP,NG,sulfur dioxide,0.04373073
+534,NWPP,NUC,sulfur dioxide,
+535,NWPP,OBG,sulfur dioxide,0.033936929
+536,NWPP,OBS,sulfur dioxide,
+537,NWPP,OG,sulfur dioxide,0.004989512
+538,NWPP,OTH,sulfur dioxide,
+539,NWPP,PC,sulfur dioxide,0.44769530399999996
+540,NWPP,PRG,sulfur dioxide,
+541,NWPP,PUR,sulfur dioxide,
+542,NWPP,SUB,sulfur dioxide,1.029427044
+543,NWPP,SUN,sulfur dioxide,
+544,NWPP,WAT,sulfur dioxide,
+545,NWPP,WC,sulfur dioxide,8.419121114
+546,NWPP,WDL,sulfur dioxide,0.088904032
+547,NWPP,WDS,sulfur dioxide,0.10285198599999999
+548,NWPP,WND,sulfur dioxide,
+549,NYCW,DFO,sulfur dioxide,
+550,NYCW,KER,sulfur dioxide,2.35414248
+551,NYCW,MSW,sulfur dioxide,0.09298636
+552,NYCW,NG,sulfur dioxide,0.055136628
+553,NYCW,NUC,sulfur dioxide,
+554,NYCW,RFO,sulfur dioxide,
+555,NYCW,SUN,sulfur dioxide,
+556,NYCW,WAT,sulfur dioxide,
+557,NYLI,DFO,sulfur dioxide,2.133847965
+558,NYLI,LFG,sulfur dioxide,0.263536952
+559,NYLI,MSW,sulfur dioxide,0.078471416
+560,NYLI,NG,sulfur dioxide,0.030759208
+561,NYLI,RFO,sulfur dioxide,0.657028012
+562,NYLI,SUN,sulfur dioxide,
+563,NYUP,BIT,sulfur dioxide,4.629359952
+564,NYUP,DFO,sulfur dioxide,1.0623124640000001
+565,NYUP,KER,sulfur dioxide,1.119011464
+566,NYUP,LFG,sulfur dioxide,0.17590297800000002
+567,NYUP,MSW,sulfur dioxide,0.510472437
+568,NYUP,MWH,sulfur dioxide,
+569,NYUP,NG,sulfur dioxide,0.006900096
+570,NYUP,NUC,sulfur dioxide,
+571,NYUP,OBG,sulfur dioxide,0.035380176
+572,NYUP,RFO,sulfur dioxide,2.076695373
+573,NYUP,SUB,sulfur dioxide,2.373646936
+574,NYUP,SUN,sulfur dioxide,
+575,NYUP,WAT,sulfur dioxide,
+576,NYUP,WDS,sulfur dioxide,0.866474118
+577,NYUP,WND,sulfur dioxide,
+578,RFCE,BIT,sulfur dioxide,4.5143624430000004
+579,RFCE,BLQ,sulfur dioxide,3.4931119919999998
+580,RFCE,COG,sulfur dioxide,
+581,RFCE,DFO,sulfur dioxide,2.29682394
+582,RFCE,KER,sulfur dioxide,
+583,RFCE,LFG,sulfur dioxide,0.20444340800000002
+584,RFCE,MSW,sulfur dioxide,0.14923176800000001
+585,RFCE,MWH,sulfur dioxide,
+586,RFCE,NG,sulfur dioxide,0.038424161
+587,RFCE,NUC,sulfur dioxide,
+588,RFCE,OBG,sulfur dioxide,0.0283495
+589,RFCE,OG,sulfur dioxide,0.20048766399999998
+590,RFCE,OTH,sulfur dioxide,
+591,RFCE,PRG,sulfur dioxide,0.008618248
+592,RFCE,RFO,sulfur dioxide,2.8466299939999997
+593,RFCE,SUB,sulfur dioxide,3.4645356960000004
+594,RFCE,SUN,sulfur dioxide,
+595,RFCE,TDF,sulfur dioxide,
+596,RFCE,WAT,sulfur dioxide,
+597,RFCE,WC,sulfur dioxide,2.244791916
+598,RFCE,WDS,sulfur dioxide,0.046946772000000005
+599,RFCE,WND,sulfur dioxide,
+600,RFCM,BIT,sulfur dioxide,2.528151711
+601,RFCM,DFO,sulfur dioxide,2.8289021069999998
+602,RFCM,LFG,sulfur dioxide,0.185395421
+603,RFCM,MSW,sulfur dioxide,0.09139878800000001
+604,RFCM,NG,sulfur dioxide,0.24761587300000001
+605,RFCM,NUC,sulfur dioxide,0.001360776
+606,RFCM,OBG,sulfur dioxide,0.027669112000000003
+607,RFCM,SUB,sulfur dioxide,3.434749821
+608,RFCM,SUN,sulfur dioxide,
+609,RFCM,WAT,sulfur dioxide,0.029937072000000002
+610,RFCM,WDS,sulfur dioxide,0.20305801899999998
+611,RFCM,WND,sulfur dioxide,
+612,RFCW,BFG,sulfur dioxide,0.00907184
+613,RFCW,BIT,sulfur dioxide,7.011056453999999
+614,RFCW,BLQ,sulfur dioxide,2.954358094
+615,RFCW,COG,sulfur dioxide,0.002419157
+616,RFCW,DFO,sulfur dioxide,1.72142611
+617,RFCW,LFG,sulfur dioxide,0.193896695
+618,RFCW,MSW,sulfur dioxide,0.221579692
+619,RFCW,MWH,sulfur dioxide,
+620,RFCW,NG,sulfur dioxide,0.060146299
+621,RFCW,NUC,sulfur dioxide,
+622,RFCW,OBG,sulfur dioxide,0.030201667
+623,RFCW,OG,sulfur dioxide,0.0015875720000000002
+624,RFCW,PC,sulfur dioxide,1.932755512
+625,RFCW,PRG,sulfur dioxide,0.024267172000000004
+626,RFCW,SGC,sulfur dioxide,4.342689808
+627,RFCW,SUB,sulfur dioxide,3.591665163
+628,RFCW,SUN,sulfur dioxide,
+629,RFCW,WAT,sulfur dioxide,
+630,RFCW,WC,sulfur dioxide,2.213226565
+631,RFCW,WDS,sulfur dioxide,0.174935315
+632,RFCW,WH,sulfur dioxide,
+633,RFCW,WND,sulfur dioxide,
+634,RMPA,BIT,sulfur dioxide,1.06310625
+635,RMPA,DFO,sulfur dioxide,2.80773448
+636,RMPA,LFG,sulfur dioxide,0.18846747600000002
+637,RMPA,NG,sulfur dioxide,0.134610986
+638,RMPA,OBG,sulfur dioxide,0.016782903999999998
+639,RMPA,SUB,sulfur dioxide,1.416276221
+640,RMPA,SUN,sulfur dioxide,
+641,RMPA,WAT,sulfur dioxide,
+642,RMPA,WC,sulfur dioxide,
+643,RMPA,WDS,sulfur dioxide,0.180983208
+644,RMPA,WH,sulfur dioxide,
+645,RMPA,WND,sulfur dioxide,
+646,RMPA ,SUB,sulfur dioxide,0.5481659320000001
+647,SPNO,BIT,sulfur dioxide,17.25554686
+648,SPNO,DFO,sulfur dioxide,1.4793067519999998
+649,SPNO,LFG,sulfur dioxide,0.177808064
+650,SPNO,MWH,sulfur dioxide,
+651,SPNO,NG,sulfur dioxide,0.44268727799999996
+652,SPNO,NUC,sulfur dioxide,
+653,SPNO,SUB,sulfur dioxide,2.051980425
+654,SPNO,SUN,sulfur dioxide,
+655,SPNO,WAT,sulfur dioxide,
+656,SPNO,WH,sulfur dioxide,
+657,SPNO,WND,sulfur dioxide,
+658,SPSO,BFG,sulfur dioxide,0.020865232
+659,SPSO,BIT,sulfur dioxide,1.461927016
+660,SPSO,BLQ,sulfur dioxide,0.829959962
+661,SPSO,DFO,sulfur dioxide,1.861938461
+662,SPSO,LFG,sulfur dioxide,0.175993696
+663,SPSO,LIG,sulfur dioxide,2.477973096
+664,SPSO,MSW,sulfur dioxide,
+665,SPSO,NG,sulfur dioxide,0.05307758
+666,SPSO,PC,sulfur dioxide,1.2532746959999999
+667,SPSO,PRG,sulfur dioxide,0.06486365599999999
+668,SPSO,SUB,sulfur dioxide,2.017577216
+669,SPSO,SUN,sulfur dioxide,
+670,SPSO,WAT,sulfur dioxide,
+671,SPSO,WDS,sulfur dioxide,0.078925008
+672,SPSO,WH,sulfur dioxide,
+673,SPSO,WND,sulfur dioxide,
+674,SRMV,AB,sulfur dioxide,0.1247378
+675,SRMV,BLQ,sulfur dioxide,1.041107038
+676,SRMV,DFO,sulfur dioxide,
+677,SRMV,LFG,sulfur dioxide,0.177808064
+678,SRMV,NG,sulfur dioxide,0.037501025
+679,SRMV,NUC,sulfur dioxide,
+680,SRMV,OBG,sulfur dioxide,0.016329312
+681,SRMV,OBS,sulfur dioxide,0.06486365599999999
+682,SRMV,PC,sulfur dioxide,2.5677843119999997
+683,SRMV,PRG,sulfur dioxide,0.02891649
+684,SRMV,PUR,sulfur dioxide,
+685,SRMV,SUB,sulfur dioxide,2.2146175809999997
+686,SRMV,SUN,sulfur dioxide,
+687,SRMV,WAT,sulfur dioxide,
+688,SRMV,WDS,sulfur dioxide,0.543970206
+689,SRMV,WH,sulfur dioxide,
+690,SRMW,BFG,sulfur dioxide,0.01360776
+691,SRMW,BIT,sulfur dioxide,8.08641138
+692,SRMW,DFO,sulfur dioxide,2.060054773
+693,SRMW,LFG,sulfur dioxide,0.179282238
+694,SRMW,NG,sulfur dioxide,0.750553013
+695,SRMW,NUC,sulfur dioxide,
+696,SRMW,SUB,sulfur dioxide,1.402533146
+697,SRMW,SUN,sulfur dioxide,
+698,SRMW,WAT,sulfur dioxide,0.011339799999999999
+699,SRMW,WND,sulfur dioxide,
+700,SRSO,BIT,sulfur dioxide,6.856315235
+701,SRSO,BLQ,sulfur dioxide,1.129470762
+702,SRSO,DFO,sulfur dioxide,2.447303298
+703,SRSO,LFG,sulfur dioxide,0.17120578
+704,SRSO,MSW,sulfur dioxide,0.641379088
+705,SRSO,NG,sulfur dioxide,0.254449992
+706,SRSO,NUC,sulfur dioxide,
+707,SRSO,OBG,sulfur dioxide,0.162688331
+708,SRSO,OBS,sulfur dioxide,0.19549815199999998
+709,SRSO,PC,sulfur dioxide,0.48806499200000003
+710,SRSO,SUB,sulfur dioxide,2.0500090440000003
+711,SRSO,SUN,sulfur dioxide,
+712,SRSO,WAT,sulfur dioxide,
+713,SRSO,WDS,sulfur dioxide,0.28576296
+714,SRSO,WH,sulfur dioxide,
+715,SRTV,BIT,sulfur dioxide,3.8722339060000004
+716,SRTV,BLQ,sulfur dioxide,0.740987891
+717,SRTV,COG,sulfur dioxide,0.002948348
+718,SRTV,DFO,sulfur dioxide,1.4321713809999999
+719,SRTV,LFG,sulfur dioxide,0.173801335
+720,SRTV,LIG,sulfur dioxide,1.057776544
+721,SRTV,NG,sulfur dioxide,0.024221813
+722,SRTV,NUC,sulfur dioxide,
+723,SRTV,PRG,sulfur dioxide,0.11475877599999999
+724,SRTV,SUB,sulfur dioxide,2.994916779
+725,SRTV,SUN,sulfur dioxide,
+726,SRTV,WAT,sulfur dioxide,
+727,SRTV,WDS,sulfur dioxide,0.143788664
+728,SRTV,WND,sulfur dioxide,
+729,SRVC,BIT,sulfur dioxide,2.151402497
+730,SRVC,BLQ,sulfur dioxide,0.949821648
+731,SRVC,DFO,sulfur dioxide,2.083867797
+732,SRVC,LFG,sulfur dioxide,0.218739812
+733,SRVC,MSW,sulfur dioxide,0.079605396
+734,SRVC,NG,sulfur dioxide,0.275501701
+735,SRVC,NUC,sulfur dioxide,
+736,SRVC,OBG,sulfur dioxide,0.065317248
+737,SRVC,OTH,sulfur dioxide,
+738,SRVC,SUN,sulfur dioxide,
+739,SRVC,WAT,sulfur dioxide,0.018446075
+740,SRVC,WDS,sulfur dioxide,0.8892217570000001
+741,SRVC,WND,sulfur dioxide,
+742,AKGD,DFO,Carbon dioxide,984.9309161
+743,AKGD,JF,Carbon dioxide,424.2142069
+744,AKGD,LFG,Carbon dioxide,0.012246983999999999
+745,AKGD,MWH,Carbon dioxide,
+746,AKGD,NG,Carbon dioxide,579.4235237
+747,AKGD,RFO,Carbon dioxide,1763.5511809999998
+748,AKGD,SUB,Carbon dioxide,814.7683722
+749,AKGD,WAT,Carbon dioxide,
+750,AKGD,WC,Carbon dioxide,1308.255943
+751,AKGD,WND,Carbon dioxide,
+752,AKMS,DFO,Carbon dioxide,783.8406262
+753,AKMS,JF,Carbon dioxide,721.0906512
+754,AKMS,MWH,Carbon dioxide,
+755,AKMS,NG,Carbon dioxide,708.6779282000001
+756,AKMS,WAT,Carbon dioxide,16.36070057
+757,AKMS,WND,Carbon dioxide,
+758,AKMS,WO,Carbon dioxide,867.7038059
+759,AZNM,BIT,Carbon dioxide,1112.216202
+760,AZNM,DFO,Carbon dioxide,997.6167882999999
+761,AZNM,GEO,Carbon dioxide,75.85565561
+762,AZNM,LFG,Carbon dioxide,
+763,AZNM,NG,Carbon dioxide,536.2869622999999
+764,AZNM,NUC,Carbon dioxide,
+765,AZNM,SUB,Carbon dioxide,1013.5572960000001
+766,AZNM,SUN,Carbon dioxide,14.57617892
+767,AZNM,WAT,Carbon dioxide,
+768,AZNM,WDS,Carbon dioxide,5.882407852
+769,AZNM,WND,Carbon dioxide,
+770,CAMX,AB,Carbon dioxide,1.752225896
+771,CAMX,BIT,Carbon dioxide,1011.630475
+772,CAMX,BLQ,Carbon dioxide,
+773,CAMX,DFO,Carbon dioxide,754.0751543
+774,CAMX,GEO,Carbon dioxide,103.1636037
+775,CAMX,JF,Carbon dioxide,1065.907181
+776,CAMX,LFG,Carbon dioxide,91.89652963
+777,CAMX,MSW,Carbon dioxide,826.9317819
+778,CAMX,MWH,Carbon dioxide,
+779,CAMX,NG,Carbon dioxide,478.05660889999996
+780,CAMX,NUC,Carbon dioxide,
+781,CAMX,OBG,Carbon dioxide,34.6090696
+782,CAMX,OG,Carbon dioxide,462.220983
+783,CAMX,OTH,Carbon dioxide,
+784,CAMX,PRG,Carbon dioxide,620.1196846
+785,CAMX,PUR,Carbon dioxide,
+786,CAMX,SGC,Carbon dioxide,
+787,CAMX,SUN,Carbon dioxide,103.280328
+788,CAMX,WAT,Carbon dioxide,
+789,CAMX,WDS,Carbon dioxide,7.765580087999999
+790,CAMX,WH,Carbon dioxide,
+791,CAMX,WND,Carbon dioxide,
+792,ERCT,AB,Carbon dioxide,18.75693638
+793,ERCT,BLQ,Carbon dioxide,26.55962597
+794,ERCT,DFO,Carbon dioxide,672.4138527000001
+795,ERCT,LFG,Carbon dioxide,
+796,ERCT,LIG,Carbon dioxide,1055.609216
+797,ERCT,NG,Carbon dioxide,471.68677419999995
+798,ERCT,NUC,Carbon dioxide,
+799,ERCT,OBG,Carbon dioxide,5.9533949999999995
+800,ERCT,OG,Carbon dioxide,
+801,ERCT,OTH,Carbon dioxide,
+802,ERCT,PC,Carbon dioxide,581.2727049
+803,ERCT,PRG,Carbon dioxide,960.2969016000001
+804,ERCT,PUR,Carbon dioxide,
+805,ERCT,SUB,Carbon dioxide,1011.648551
+806,ERCT,SUN,Carbon dioxide,
+807,ERCT,WAT,Carbon dioxide,
+808,ERCT,WDS,Carbon dioxide,0.0009071839999999999
+809,ERCT,WH,Carbon dioxide,
+810,ERCT,WND,Carbon dioxide,
+811,FRCC,AB,Carbon dioxide,1.9726716080000002
+812,FRCC,BIT,Carbon dioxide,941.2403929999999
+813,FRCC,BLQ,Carbon dioxide,53.85134943
+814,FRCC,DFO,Carbon dioxide,1024.2611980000001
+815,FRCC,LFG,Carbon dioxide,0.0009071839999999999
+816,FRCC,MSW,Carbon dioxide,931.8995023
+817,FRCC,NG,Carbon dioxide,489.2621964
+818,FRCC,NUC,Carbon dioxide,136.7434731
+819,FRCC,OBG,Carbon dioxide,160.9716361
+820,FRCC,OBS,Carbon dioxide,14.16068865
+821,FRCC,OTH,Carbon dioxide,4.774509392
+822,FRCC,RFO,Carbon dioxide,705.244388
+823,FRCC,SGC,Carbon dioxide,862.7551172
+824,FRCC,SUN,Carbon dioxide,
+825,FRCC,WAT,Carbon dioxide,
+826,FRCC,WDS,Carbon dioxide,216.58095699999998
+827,FRCC,WH,Carbon dioxide,
+828,HIMS,AB,Carbon dioxide,182.0441597
+829,HIMS,DFO,Carbon dioxide,786.9478171000001
+830,HIMS,GEO,Carbon dioxide,
+831,HIMS,OTH,Carbon dioxide,
+832,HIMS,RFO,Carbon dioxide,1051.729709
+833,HIMS,SUN,Carbon dioxide,
+834,HIMS,WAT,Carbon dioxide,
+835,HIMS,WND,Carbon dioxide,
+836,HIMS,WO,Carbon dioxide,654.9455711
+837,HIOA,BIT,Carbon dioxide,907.1204971000001
+838,HIOA,DFO,Carbon dioxide,
+839,HIOA,MSW,Carbon dioxide,745.7682973
+840,HIOA,OBL,Carbon dioxide,
+841,HIOA,RFO,Carbon dioxide,740.9707681
+842,HIOA,SUN,Carbon dioxide,
+843,HIOA,WND,Carbon dioxide,
+844,HIOA,WO,Carbon dioxide,382.09251989999996
+845,MROE,BIT,Carbon dioxide,710.0423028
+846,MROE,BLQ,Carbon dioxide,156.1951612
+847,MROE,DFO,Carbon dioxide,1335.560254
+848,MROE,LFG,Carbon dioxide,
+849,MROE,NG,Carbon dioxide,805.7001986
+850,MROE,OBG,Carbon dioxide,
+851,MROE,PC,Carbon dioxide,812.5338644999999
+852,MROE,PUR,Carbon dioxide,
+853,MROE,SUB,Carbon dioxide,938.1687941
+854,MROE,WAT,Carbon dioxide,
+855,MROE,WDS,Carbon dioxide,134.17183319999998
+856,MROE,WND,Carbon dioxide,
+857,MROW,AB,Carbon dioxide,
+858,MROW,BIT,Carbon dioxide,751.8527803999999
+859,MROW,BLQ,Carbon dioxide,91.01278121
+860,MROW,DFO,Carbon dioxide,961.0320533
+861,MROW,KER,Carbon dioxide,1653.070685
+862,MROW,LFG,Carbon dioxide,
+863,MROW,LIG,Carbon dioxide,1308.731591
+864,MROW,MSW,Carbon dioxide,820.9840113
+865,MROW,MWH,Carbon dioxide,
+866,MROW,NG,Carbon dioxide,687.3995878
+867,MROW,NUC,Carbon dioxide,
+868,MROW,OBG,Carbon dioxide,6.416693867999999
+869,MROW,PC,Carbon dioxide,626.6582132
+870,MROW,PRG,Carbon dioxide,298.4961946
+871,MROW,PUR,Carbon dioxide,
+872,MROW,RC,Carbon dioxide,1032.230696
+873,MROW,SUB,Carbon dioxide,934.9866998
+874,MROW,SUN,Carbon dioxide,
+875,MROW,WAT,Carbon dioxide,18.66701177
+876,MROW,WDS,Carbon dioxide,253.1183326
+877,MROW,WH,Carbon dioxide,
+878,MROW,WND,Carbon dioxide,29.7600804
+879,NEWE,BIT,Carbon dioxide,1069.315561
+880,NEWE,BLQ,Carbon dioxide,70.28680196
+881,NEWE,DFO,Carbon dioxide,895.4895649
+882,NEWE,JF,Carbon dioxide,66.35325213
+883,NEWE,KER,Carbon dioxide,496.75226150000003
+884,NEWE,LFG,Carbon dioxide,208.4101019
+885,NEWE,MSW,Carbon dioxide,876.7294701999999
+886,NEWE,MWH,Carbon dioxide,
+887,NEWE,NG,Carbon dioxide,446.0729291
+888,NEWE,NUC,Carbon dioxide,
+889,NEWE,OBS,Carbon dioxide,
+890,NEWE,PUR,Carbon dioxide,
+891,NEWE,RFO,Carbon dioxide,783.9974847
+892,NEWE,SUB,Carbon dioxide,991.8324319
+893,NEWE,SUN,Carbon dioxide,
+894,NEWE,TDF,Carbon dioxide,
+895,NEWE,WAT,Carbon dioxide,16.14424646
+896,NEWE,WDS,Carbon dioxide,67.40830713
+897,NEWE,WND,Carbon dioxide,
+898,NWPP,BIT,Carbon dioxide,885.9061504000001
+899,NWPP,BLQ,Carbon dioxide,47.73978041
+900,NWPP,DFO,Carbon dioxide,820.9970489
+901,NWPP,GEO,Carbon dioxide,75.85555094
+902,NWPP,LFG,Carbon dioxide,38.5612167
+903,NWPP,MSW,Carbon dioxide,668.5255107999999
+904,NWPP,NG,Carbon dioxide,515.4596377
+905,NWPP,NUC,Carbon dioxide,
+906,NWPP,OBG,Carbon dioxide,
+907,NWPP,OBS,Carbon dioxide,
+908,NWPP,OG,Carbon dioxide,410.21499700000004
+909,NWPP,OTH,Carbon dioxide,19.51171347
+910,NWPP,PC,Carbon dioxide,838.8217889
+911,NWPP,PRG,Carbon dioxide,
+912,NWPP,PUR,Carbon dioxide,
+913,NWPP,SUB,Carbon dioxide,1002.661895
+914,NWPP,SUN,Carbon dioxide,
+915,NWPP,WAT,Carbon dioxide,
+916,NWPP,WC,Carbon dioxide,1273.12116
+917,NWPP,WDL,Carbon dioxide,22.89596338
+918,NWPP,WDS,Carbon dioxide,25.765023499999998
+919,NWPP,WND,Carbon dioxide,
+920,NYCW,DFO,Carbon dioxide,501.7376157
+921,NYCW,KER,Carbon dioxide,567.0255314
+922,NYCW,MSW,Carbon dioxide,815.4953667000001
+923,NYCW,NG,Carbon dioxide,521.7174204
+924,NYCW,NUC,Carbon dioxide,
+925,NYCW,RFO,Carbon dioxide,
+926,NYCW,SUN,Carbon dioxide,
+927,NYCW,WAT,Carbon dioxide,
+928,NYLI,DFO,Carbon dioxide,1037.238443
+929,NYLI,LFG,Carbon dioxide,
+930,NYLI,MSW,Carbon dioxide,982.8418982000001
+931,NYLI,NG,Carbon dioxide,487.8976449
+932,NYLI,RFO,Carbon dioxide,632.4614693
+933,NYLI,SUN,Carbon dioxide,
+934,NYUP,BIT,Carbon dioxide,832.2368427
+935,NYUP,DFO,Carbon dioxide,906.7306348999999
+936,NYUP,KER,Carbon dioxide,948.9688948999999
+937,NYUP,LFG,Carbon dioxide,
+938,NYUP,MSW,Carbon dioxide,545.0266217999999
+939,NYUP,MWH,Carbon dioxide,
+940,NYUP,NG,Carbon dioxide,431.2766603
+941,NYUP,NUC,Carbon dioxide,
+942,NYUP,OBG,Carbon dioxide,
+943,NYUP,RFO,Carbon dioxide,611.9154149
+944,NYUP,SUB,Carbon dioxide,1043.8304039999998
+945,NYUP,SUN,Carbon dioxide,
+946,NYUP,WAT,Carbon dioxide,
+947,NYUP,WDS,Carbon dioxide,213.42199109999999
+948,NYUP,WND,Carbon dioxide,
+949,RFCE,BIT,Carbon dioxide,1020.756514
+950,RFCE,BLQ,Carbon dioxide,190.71411719999998
+951,RFCE,COG,Carbon dioxide,266.05393399999997
+952,RFCE,DFO,Carbon dioxide,1116.609839
+953,RFCE,KER,Carbon dioxide,
+954,RFCE,LFG,Carbon dioxide,42.11590381
+955,RFCE,MSW,Carbon dioxide,764.3287236000001
+956,RFCE,MWH,Carbon dioxide,
+957,RFCE,NG,Carbon dioxide,544.5577034
+958,RFCE,NUC,Carbon dioxide,0.062142104000000004
+959,RFCE,OBG,Carbon dioxide,170.3224352
+960,RFCE,OG,Carbon dioxide,
+961,RFCE,OTH,Carbon dioxide,
+962,RFCE,PRG,Carbon dioxide,214.15257659999997
+963,RFCE,RFO,Carbon dioxide,847.7983746
+964,RFCE,SUB,Carbon dioxide,1197.382183
+965,RFCE,SUN,Carbon dioxide,
+966,RFCE,TDF,Carbon dioxide,
+967,RFCE,WAT,Carbon dioxide,
+968,RFCE,WC,Carbon dioxide,1308.0297050000001
+969,RFCE,WDS,Carbon dioxide,2.37342014
+970,RFCE,WND,Carbon dioxide,
+971,RFCM,BIT,Carbon dioxide,749.6179893
+972,RFCM,DFO,Carbon dioxide,1418.333876
+973,RFCM,LFG,Carbon dioxide,0.0009071839999999999
+974,RFCM,MSW,Carbon dioxide,568.4215364
+975,RFCM,NG,Carbon dioxide,667.4722103999999
+976,RFCM,NUC,Carbon dioxide,0.396439408
+977,RFCM,OBG,Carbon dioxide,
+978,RFCM,SUB,Carbon dioxide,1057.017722
+979,RFCM,SUN,Carbon dioxide,
+980,RFCM,WAT,Carbon dioxide,17.01741106
+981,RFCM,WDS,Carbon dioxide,240.74705350000002
+982,RFCM,WND,Carbon dioxide,
+983,RFCW,BFG,Carbon dioxide,1084.992064
+984,RFCW,BIT,Carbon dioxide,942.2797673
+985,RFCW,BLQ,Carbon dioxide,198.4612418
+986,RFCW,COG,Carbon dioxide,473.5405226
+987,RFCW,DFO,Carbon dioxide,971.3915841
+988,RFCW,LFG,Carbon dioxide,93.00758811
+989,RFCW,MSW,Carbon dioxide,539.2471793
+990,RFCW,MWH,Carbon dioxide,
+991,RFCW,NG,Carbon dioxide,561.7078649
+992,RFCW,NUC,Carbon dioxide,0.057152592
+993,RFCW,OBG,Carbon dioxide,131.1750265
+994,RFCW,OG,Carbon dioxide,320.9655548
+995,RFCW,PC,Carbon dioxide,949.2415037000001
+996,RFCW,PRG,Carbon dioxide,170.9408626
+997,RFCW,SGC,Carbon dioxide,1008.1089
+998,RFCW,SUB,Carbon dioxide,1048.1538779999998
+999,RFCW,SUN,Carbon dioxide,164.5359621
+1000,RFCW,WAT,Carbon dioxide,
+1001,RFCW,WC,Carbon dioxide,1078.5726789999999
+1002,RFCW,WDS,Carbon dioxide,133.4274131
+1003,RFCW,WH,Carbon dioxide,
+1004,RFCW,WND,Carbon dioxide,
+1005,RMPA,BIT,Carbon dioxide,1102.232416
+1006,RMPA,DFO,Carbon dioxide,1117.834166
+1007,RMPA,LFG,Carbon dioxide,
+1008,RMPA,NG,Carbon dioxide,625.6632811000001
+1009,RMPA,OBG,Carbon dioxide,6.96717312
+1010,RMPA,SUB,Carbon dioxide,1042.047691
+1011,RMPA,SUN,Carbon dioxide,
+1012,RMPA,WAT,Carbon dioxide,
+1013,RMPA,WC,Carbon dioxide,
+1014,RMPA,WDS,Carbon dioxide,
+1015,RMPA,WH,Carbon dioxide,
+1016,RMPA,WND,Carbon dioxide,
+1017,RMPA ,SUB,Carbon dioxide,1115.1153359999998
+1018,SPNO,BIT,Carbon dioxide,680.464657
+1019,SPNO,DFO,Carbon dioxide,972.8365479
+1020,SPNO,LFG,Carbon dioxide,
+1021,SPNO,MWH,Carbon dioxide,
+1022,SPNO,NG,Carbon dioxide,770.3506891
+1023,SPNO,NUC,Carbon dioxide,
+1024,SPNO,SUB,Carbon dioxide,1055.945498
+1025,SPNO,SUN,Carbon dioxide,
+1026,SPNO,WAT,Carbon dioxide,
+1027,SPNO,WH,Carbon dioxide,
+1028,SPNO,WND,Carbon dioxide,
+1029,SPSO,BFG,Carbon dioxide,1338.266043
+1030,SPSO,BIT,Carbon dioxide,1129.369691
+1031,SPSO,BLQ,Carbon dioxide,60.81829575
+1032,SPSO,DFO,Carbon dioxide,928.0844421
+1033,SPSO,LFG,Carbon dioxide,
+1034,SPSO,LIG,Carbon dioxide,1002.081797
+1035,SPSO,MSW,Carbon dioxide,
+1036,SPSO,NG,Carbon dioxide,583.2371622000001
+1037,SPSO,PC,Carbon dioxide,1029.227464
+1038,SPSO,PRG,Carbon dioxide,935.7022362
+1039,SPSO,SUB,Carbon dioxide,972.5468663999999
+1040,SPSO,SUN,Carbon dioxide,
+1041,SPSO,WAT,Carbon dioxide,
+1042,SPSO,WDS,Carbon dioxide,
+1043,SPSO,WH,Carbon dioxide,
+1044,SPSO,WND,Carbon dioxide,
+1045,SRMV,AB,Carbon dioxide,3.869366556
+1046,SRMV,BLQ,Carbon dioxide,65.96191562
+1047,SRMV,DFO,Carbon dioxide,
+1048,SRMV,LFG,Carbon dioxide,
+1049,SRMV,NG,Carbon dioxide,501.98375710000005
+1050,SRMV,NUC,Carbon dioxide,
+1051,SRMV,OBG,Carbon dioxide,180.0556124
+1052,SRMV,OBS,Carbon dioxide,
+1053,SRMV,PC,Carbon dioxide,517.0579879
+1054,SRMV,PRG,Carbon dioxide,580.7694447
+1055,SRMV,PUR,Carbon dioxide,
+1056,SRMV,SUB,Carbon dioxide,986.4785041000001
+1057,SRMV,SUN,Carbon dioxide,
+1058,SRMV,WAT,Carbon dioxide,
+1059,SRMV,WDS,Carbon dioxide,17.17798263
+1060,SRMV,WH,Carbon dioxide,
+1061,SRMW,BFG,Carbon dioxide,1241.535735
+1062,SRMW,BIT,Carbon dioxide,707.3985468
+1063,SRMW,DFO,Carbon dioxide,1030.245551
+1064,SRMW,LFG,Carbon dioxide,
+1065,SRMW,NG,Carbon dioxide,671.163973
+1066,SRMW,NUC,Carbon dioxide,
+1067,SRMW,SUB,Carbon dioxide,987.9604105000001
+1068,SRMW,SUN,Carbon dioxide,
+1069,SRMW,WAT,Carbon dioxide,4.6152986
+1070,SRMW,WND,Carbon dioxide,
+1071,SRSO,BIT,Carbon dioxide,1043.807241
+1072,SRSO,BLQ,Carbon dioxide,99.32546829
+1073,SRSO,DFO,Carbon dioxide,1137.628554
+1074,SRSO,LFG,Carbon dioxide,164.180346
+1075,SRSO,MSW,Carbon dioxide,1330.570402
+1076,SRSO,NG,Carbon dioxide,568.0281916
+1077,SRSO,NUC,Carbon dioxide,
+1078,SRSO,OBG,Carbon dioxide,6.218292728
+1079,SRSO,OBS,Carbon dioxide,285.19733080000003
+1080,SRSO,PC,Carbon dioxide,523.593039
+1081,SRSO,SUB,Carbon dioxide,969.0478252999999
+1082,SRSO,SUN,Carbon dioxide,
+1083,SRSO,WAT,Carbon dioxide,
+1084,SRSO,WDS,Carbon dioxide,40.30799949
+1085,SRSO,WH,Carbon dioxide,
+1086,SRTV,BIT,Carbon dioxide,995.4549352
+1087,SRTV,BLQ,Carbon dioxide,40.18133392
+1088,SRTV,COG,Carbon dioxide,288.33029080000006
+1089,SRTV,DFO,Carbon dioxide,932.7179637
+1090,SRTV,LFG,Carbon dioxide,
+1091,SRTV,LIG,Carbon dioxide,1237.860733
+1092,SRTV,NG,Carbon dioxide,532.0308968999999
+1093,SRTV,NUC,Carbon dioxide,
+1094,SRTV,PRG,Carbon dioxide,1143.053201
+1095,SRTV,SUB,Carbon dioxide,1176.177513
+1096,SRTV,SUN,Carbon dioxide,
+1097,SRTV,WAT,Carbon dioxide,
+1098,SRTV,WDS,Carbon dioxide,0.0009071839999999999
+1099,SRTV,WND,Carbon dioxide,
+1100,SRVC,BIT,Carbon dioxide,884.8767521
+1101,SRVC,BLQ,Carbon dioxide,80.40472591
+1102,SRVC,DFO,Carbon dioxide,1083.6737369999998
+1103,SRVC,LFG,Carbon dioxide,72.44615187
+1104,SRVC,MSW,Carbon dioxide,678.6427292000001
+1105,SRVC,NG,Carbon dioxide,595.6907829
+1106,SRVC,NUC,Carbon dioxide,
+1107,SRVC,OBG,Carbon dioxide,
+1108,SRVC,OTH,Carbon dioxide,
+1109,SRVC,SUN,Carbon dioxide,
+1110,SRVC,WAT,Carbon dioxide,7.7954321129999995
+1111,SRVC,WDS,Carbon dioxide,160.7051131
+1112,SRVC,WND,Carbon dioxide,
+1113,AKGD,DFO,Methane,0.039884685
+1114,AKGD,JF,Methane,0.026094241
+1115,AKGD,LFG,Methane,
+1116,AKGD,MWH,Methane,
+1117,AKGD,NG,Methane,0.012080743
+1118,AKGD,RFO,Methane,0.07148065599999999
+1119,AKGD,SUB,Methane,0.09152534
+1120,AKGD,WAT,Methane,
+1121,AKGD,WC,Methane,0.084804014
+1122,AKGD,WND,Methane,
+1123,AKMS,DFO,Methane,0.031597492000000005
+1124,AKMS,JF,Methane,0.029954015
+1125,AKMS,MWH,Methane,
+1126,AKMS,NG,Methane,0.013368868
+1127,AKMS,WAT,Methane,0.000662607
+1128,AKMS,WND,Methane,
+1129,AKMS,WO,Methane,0.35513169200000005
+1130,AZNM,BIT,Methane,0.126475965
+1131,AZNM,DFO,Methane,0.038555925
+1132,AZNM,GEO,Methane,
+1133,AZNM,LFG,Methane,
+1134,AZNM,NG,Methane,0.010353560999999999
+1135,AZNM,NUC,Methane,
+1136,AZNM,SUB,Methane,0.104203086
+1137,AZNM,SUN,Methane,0.00027487700000000003
+1138,AZNM,WAT,Methane,
+1139,AZNM,WDS,Methane,0.522645712
+1140,AZNM,WND,Methane,
+1141,CAMX,AB,Methane,0.43846334600000003
+1142,CAMX,BIT,Methane,0.112288401
+1143,CAMX,BLQ,Methane,
+1144,CAMX,DFO,Methane,0.029875988
+1145,CAMX,GEO,Methane,
+1146,CAMX,JF,Methane,0.044277383
+1147,CAMX,LFG,Methane,0.002975745
+1148,CAMX,MSW,Methane,0.577613578
+1149,CAMX,MWH,Methane,
+1150,CAMX,NG,Methane,0.01084138
+1151,CAMX,NUC,Methane,
+1152,CAMX,OBG,Methane,0.008779393
+1153,CAMX,OG,Methane,0.008719095999999999
+1154,CAMX,OTH,Methane,0.006998244
+1155,CAMX,PRG,Methane,0.011697684
+1156,CAMX,PUR,Methane,
+1157,CAMX,SGC,Methane,
+1158,CAMX,SUN,Methane,0.001936384
+1159,CAMX,WAT,Methane,
+1160,CAMX,WDS,Methane,0.415421169
+1161,CAMX,WH,Methane,
+1162,CAMX,WND,Methane,
+1163,ERCT,AB,Methane,0.180505122
+1164,ERCT,BLQ,Methane,0.060317757
+1165,ERCT,DFO,Methane,0.027229128
+1166,ERCT,LFG,Methane,
+1167,ERCT,LIG,Methane,0.119423775
+1168,ERCT,NG,Methane,0.009328577
+1169,ERCT,NUC,Methane,
+1170,ERCT,OBG,Methane,0.004360833
+1171,ERCT,OG,Methane,
+1172,ERCT,OTH,Methane,
+1173,ERCT,PC,Methane,0.013239443
+1174,ERCT,PRG,Methane,0.024885569
+1175,ERCT,PUR,Methane,
+1176,ERCT,SUB,Methane,0.101552899
+1177,ERCT,SUN,Methane,
+1178,ERCT,WAT,Methane,
+1179,ERCT,WDS,Methane,0.45929070299999997
+1180,ERCT,WH,Methane,
+1181,ERCT,WND,Methane,
+1182,FRCC,AB,Methane,0.18067113699999998
+1183,FRCC,BIT,Methane,0.09927223800000001
+1184,FRCC,BLQ,Methane,0.04458628
+1185,FRCC,DFO,Methane,0.039738685
+1186,FRCC,LFG,Methane,
+1187,FRCC,MSW,Methane,0.667391818
+1188,FRCC,NG,Methane,0.014535157
+1189,FRCC,NUC,Methane,0.002577763
+1190,FRCC,OBG,Methane,0.012494871999999999
+1191,FRCC,OBS,Methane,0.171631502
+1192,FRCC,OTH,Methane,0.000193684
+1193,FRCC,RFO,Methane,0.013166415
+1194,FRCC,SGC,Methane,0.027689524
+1195,FRCC,SUN,Methane,
+1196,FRCC,WAT,Methane,
+1197,FRCC,WDS,Methane,0.5040601579999999
+1198,FRCC,WH,Methane,
+1199,HIMS,AB,Methane,0.170271179
+1200,HIMS,DFO,Methane,0.034708305
+1201,HIMS,GEO,Methane,
+1202,HIMS,OTH,Methane,1.4499999999999998e-05
+1203,HIMS,RFO,Methane,0.042628728
+1204,HIMS,SUN,Methane,
+1205,HIMS,WAT,Methane,
+1206,HIMS,WND,Methane,
+1207,HIMS,WO,Methane,0.265901981
+1208,HIOA,BIT,Methane,0.108970035
+1209,HIOA,DFO,Methane,
+1210,HIOA,MSW,Methane,0.532634488
+1211,HIOA,OBL,Methane,0.052740956
+1212,HIOA,RFO,Methane,0.031184563999999998
+1213,HIOA,SUN,Methane,
+1214,HIOA,WND,Methane,
+1215,HIOA,WO,Methane,0.10824837
+1216,MROE,BIT,Methane,0.071116422
+1217,MROE,BLQ,Methane,0.064120219
+1218,MROE,DFO,Methane,0.054083135
+1219,MROE,LFG,Methane,
+1220,MROE,NG,Methane,0.01382621
+1221,MROE,OBG,Methane,0.01385236
+1222,MROE,PC,Methane,0.170307013
+1223,MROE,PUR,Methane,
+1224,MROE,SUB,Methane,0.10963333800000001
+1225,MROE,WAT,Methane,
+1226,MROE,WDS,Methane,0.152445241
+1227,MROE,WND,Methane,
+1228,MROW,AB,Methane,0.34169901799999997
+1229,MROW,BIT,Methane,0.08148130099999999
+1230,MROW,BLQ,Methane,0.055558820999999994
+1231,MROW,DFO,Methane,0.037972291
+1232,MROW,KER,Methane,0.06594683400000001
+1233,MROW,LFG,Methane,
+1234,MROW,LIG,Methane,0.12033563300000001
+1235,MROW,MSW,Methane,0.56393787
+1236,MROW,MWH,Methane,
+1237,MROW,NG,Methane,0.025201757999999998
+1238,MROW,NUC,Methane,
+1239,MROW,OBG,Methane,0.009293596
+1240,MROW,PC,Methane,0.0337858
+1241,MROW,PRG,Methane,0.00623054
+1242,MROW,PUR,Methane,
+1243,MROW,RC,Methane,0.11578208
+1244,MROW,SUB,Methane,0.106973635
+1245,MROW,SUN,Methane,
+1246,MROW,WAT,Methane,0.000661602
+1247,MROW,WDS,Methane,0.286957138
+1248,MROW,WH,Methane,
+1249,MROW,WND,Methane,0.000790792
+1250,NEWE,BIT,Methane,0.10681592599999999
+1251,NEWE,BLQ,Methane,0.082432181
+1252,NEWE,DFO,Methane,0.040323285
+1253,NEWE,JF,Methane,0.042201292
+1254,NEWE,KER,Methane,0.038907761
+1255,NEWE,LFG,Methane,0.004855702
+1256,NEWE,MSW,Methane,0.6310581160000001
+1257,NEWE,MWH,Methane,
+1258,NEWE,NG,Methane,0.011620153000000001
+1259,NEWE,NUC,Methane,
+1260,NEWE,OBS,Methane,
+1261,NEWE,PUR,Methane,
+1262,NEWE,RFO,Methane,0.030512529
+1263,NEWE,SUB,Methane,0.12050578699999999
+1264,NEWE,SUN,Methane,
+1265,NEWE,TDF,Methane,
+1266,NEWE,WAT,Methane,0.000787587
+1267,NEWE,WDS,Methane,0.45985608200000005
+1268,NEWE,WND,Methane,
+1269,NWPP,BIT,Methane,0.10311605199999999
+1270,NWPP,BLQ,Methane,0.051059231
+1271,NWPP,DFO,Methane,0.031432176
+1272,NWPP,GEO,Methane,
+1273,NWPP,LFG,Methane,0.002008052
+1274,NWPP,MSW,Methane,0.481228605
+1275,NWPP,NG,Methane,0.010528487
+1276,NWPP,NUC,Methane,
+1277,NWPP,OBG,Methane,0.012141751000000001
+1278,NWPP,OBS,Methane,
+1279,NWPP,OG,Methane,0.00773828
+1280,NWPP,OTH,Methane,0.000367863
+1281,NWPP,PC,Methane,0.02460782
+1282,NWPP,PRG,Methane,
+1283,NWPP,PUR,Methane,
+1284,NWPP,SUB,Methane,0.114076075
+1285,NWPP,SUN,Methane,
+1286,NWPP,WAT,Methane,
+1287,NWPP,WC,Methane,0.014098547
+1288,NWPP,WDL,Methane,0.059193302
+1289,NWPP,WDS,Methane,0.28483709399999996
+1290,NWPP,WND,Methane,
+1291,NYCW,DFO,Methane,0.034163189
+1292,NYCW,KER,Methane,0.043403462000000004
+1293,NYCW,MSW,Methane,0.58717938
+1294,NYCW,NG,Methane,0.011051581000000001
+1295,NYCW,NUC,Methane,
+1296,NYCW,RFO,Methane,
+1297,NYCW,SUN,Methane,
+1298,NYCW,WAT,Methane,
+1299,NYLI,DFO,Methane,0.042990951
+1300,NYLI,LFG,Methane,
+1301,NYLI,MSW,Methane,0.702761766
+1302,NYLI,NG,Methane,0.009565405
+1303,NYLI,RFO,Methane,0.015099623999999999
+1304,NYLI,SUN,Methane,
+1305,NYUP,BIT,Methane,0.096638532
+1306,NYUP,DFO,Methane,0.029120833
+1307,NYUP,KER,Methane,0.022382044
+1308,NYUP,LFG,Methane,
+1309,NYUP,MSW,Methane,0.36354246700000004
+1310,NYUP,MWH,Methane,
+1311,NYUP,NG,Methane,0.008957224
+1312,NYUP,NUC,Methane,
+1313,NYUP,OBG,Methane,0.012586271000000001
+1314,NYUP,RFO,Methane,0.036716005
+1315,NYUP,SUB,Methane,0.12536852
+1316,NYUP,SUN,Methane,
+1317,NYUP,WAT,Methane,
+1318,NYUP,WDS,Methane,0.342636706
+1319,NYUP,WND,Methane,
+1320,RFCE,BIT,Methane,0.10384291699999999
+1321,RFCE,BLQ,Methane,0.048361525
+1322,RFCE,COG,Methane,0.0056798790000000005
+1323,RFCE,DFO,Methane,0.043412022
+1324,RFCE,KER,Methane,
+1325,RFCE,LFG,Methane,0.005073653
+1326,RFCE,MSW,Methane,0.548722664
+1327,RFCE,MWH,Methane,
+1328,RFCE,NG,Methane,0.010959345
+1329,RFCE,NUC,Methane,2.72e-06
+1330,RFCE,OBG,Methane,0.011457054
+1331,RFCE,OG,Methane,0.000225889
+1332,RFCE,OTH,Methane,
+1333,RFCE,PRG,Methane,0.0068424359999999995
+1334,RFCE,RFO,Methane,0.026412209
+1335,RFCE,SUB,Methane,0.126323104
+1336,RFCE,SUN,Methane,
+1337,RFCE,TDF,Methane,
+1338,RFCE,WAT,Methane,
+1339,RFCE,WC,Methane,0.020351103
+1340,RFCE,WDS,Methane,0.240027505
+1341,RFCE,WND,Methane,
+1342,RFCM,BIT,Methane,0.110498527
+1343,RFCM,DFO,Methane,0.054458822999999996
+1344,RFCM,LFG,Methane,
+1345,RFCM,MSW,Methane,0.405252474
+1346,RFCM,NG,Methane,0.018575668
+1347,RFCM,NUC,Methane,1.59e-05
+1348,RFCM,OBG,Methane,0.009869028
+1349,RFCM,SUB,Methane,0.116032613
+1350,RFCM,SUN,Methane,
+1351,RFCM,WAT,Methane,0.000689006
+1352,RFCM,WDS,Methane,0.42261249799999995
+1353,RFCM,WND,Methane,
+1354,RFCW,BFG,Methane,0.003107105
+1355,RFCW,BIT,Methane,0.108667301
+1356,RFCW,BLQ,Methane,0.062002965
+1357,RFCW,COG,Methane,0.010288676
+1358,RFCW,DFO,Methane,0.037031829
+1359,RFCW,LFG,Methane,0.003047798
+1360,RFCW,MSW,Methane,0.383052774
+1361,RFCW,MWH,Methane,
+1362,RFCW,NG,Methane,0.013052356999999999
+1363,RFCW,NUC,Methane,2.27e-06
+1364,RFCW,OBG,Methane,0.011313227
+1365,RFCW,OG,Methane,0.007730115
+1366,RFCW,PC,Methane,0.027247952000000002
+1367,RFCW,PRG,Methane,0.0027811990000000003
+1368,RFCW,SGC,Methane,0.024021325
+1369,RFCW,SUB,Methane,0.11907256
+1370,RFCW,SUN,Methane,0.003103476
+1371,RFCW,WAT,Methane,
+1372,RFCW,WC,Methane,0.012359324
+1373,RFCW,WDS,Methane,0.37749559200000005
+1374,RFCW,WH,Methane,
+1375,RFCW,WND,Methane,
+1376,RMPA,BIT,Methane,0.11953124400000001
+1377,RMPA,DFO,Methane,0.04526576
+1378,RMPA,LFG,Methane,
+1379,RMPA,NG,Methane,0.014132931999999999
+1380,RMPA,OBG,Methane,0.006168398
+1381,RMPA,SUB,Methane,0.11364187099999999
+1382,RMPA,SUN,Methane,
+1383,RMPA,WAT,Methane,
+1384,RMPA,WC,Methane,
+1385,RMPA,WDS,Methane,0.510393058
+1386,RMPA,WH,Methane,
+1387,RMPA,WND,Methane,
+1388,RMPA ,SUB,Methane,0.128288292
+1389,SPNO,BIT,Methane,0.17437664100000003
+1390,SPNO,DFO,Methane,0.03347201
+1391,SPNO,LFG,Methane,
+1392,SPNO,MWH,Methane,
+1393,SPNO,NG,Methane,0.018046869
+1394,SPNO,NUC,Methane,
+1395,SPNO,SUB,Methane,0.12664124699999998
+1396,SPNO,SUN,Methane,
+1397,SPNO,WAT,Methane,
+1398,SPNO,WH,Methane,
+1399,SPNO,WND,Methane,
+1400,SPSO,BFG,Methane,0.00104553
+1401,SPSO,BIT,Methane,0.130929784
+1402,SPSO,BLQ,Methane,0.059477250999999995
+1403,SPSO,DFO,Methane,0.03707661
+1404,SPSO,LFG,Methane,
+1405,SPSO,LIG,Methane,0.119826759
+1406,SPSO,MSW,Methane,
+1407,SPSO,NG,Methane,0.013276418
+1408,SPSO,PC,Methane,0.067633289
+1409,SPSO,PRG,Methane,0.017650625
+1410,SPSO,SUB,Methane,0.11066692300000001
+1411,SPSO,SUN,Methane,
+1412,SPSO,WAT,Methane,
+1413,SPSO,WDS,Methane,0.223220788
+1414,SPSO,WH,Methane,
+1415,SPSO,WND,Methane,
+1416,SRMV,AB,Methane,0.351995557
+1417,SRMV,BLQ,Methane,0.047615594000000004
+1418,SRMV,DFO,Methane,
+1419,SRMV,LFG,Methane,
+1420,SRMV,NG,Methane,0.011385813
+1421,SRMV,NUC,Methane,
+1422,SRMV,OBG,Methane,0.00860963
+1423,SRMV,OBS,Methane,0.18138373
+1424,SRMV,PC,Methane,0.046108232
+1425,SRMV,PRG,Methane,0.011708457
+1426,SRMV,PUR,Methane,
+1427,SRMV,SUB,Methane,0.11282919599999999
+1428,SRMV,SUN,Methane,
+1429,SRMV,WAT,Methane,
+1430,SRMV,WDS,Methane,0.22755656
+1431,SRMV,WH,Methane,
+1432,SRMW,BFG,Methane,0.00059602
+1433,SRMW,BIT,Methane,0.088573515
+1434,SRMW,DFO,Methane,0.040395196
+1435,SRMW,LFG,Methane,
+1436,SRMW,NG,Methane,0.017969238999999998
+1437,SRMW,NUC,Methane,
+1438,SRMW,SUB,Methane,0.11730596199999999
+1439,SRMW,SUN,Methane,
+1440,SRMW,WAT,Methane,0.00018914799999999999
+1441,SRMW,WND,Methane,
+1442,SRSO,BIT,Methane,0.106568606
+1443,SRSO,BLQ,Methane,0.055019963
+1444,SRSO,DFO,Methane,0.044858748
+1445,SRSO,LFG,Methane,0.0028499190000000002
+1446,SRSO,MSW,Methane,0.9580466320000001
+1447,SRSO,NG,Methane,0.019371057
+1448,SRSO,NUC,Methane,
+1449,SRSO,OBG,Methane,0.015124873999999998
+1450,SRSO,OBS,Methane,0.1062317
+1451,SRSO,PC,Methane,0.030048656
+1452,SRSO,SUB,Methane,0.09651972800000001
+1453,SRSO,SUN,Methane,
+1454,SRSO,WAT,Methane,
+1455,SRSO,WDS,Methane,0.252798955
+1456,SRSO,WH,Methane,
+1457,SRTV,BIT,Methane,0.110537665
+1458,SRTV,BLQ,Methane,0.064535891
+1459,SRTV,COG,Methane,0.00578534
+1460,SRTV,DFO,Methane,0.035052863999999996
+1461,SRTV,LFG,Methane,
+1462,SRTV,LIG,Methane,0.123732187
+1463,SRTV,NG,Methane,0.017131901
+1464,SRTV,NUC,Methane,
+1465,SRTV,PRG,Methane,0.012130864
+1466,SRTV,SUB,Methane,0.109273941
+1467,SRTV,SUN,Methane,
+1468,SRTV,WAT,Methane,
+1469,SRTV,WDS,Methane,0.405465662
+1470,SRTV,WND,Methane,
+1471,SRVC,BIT,Methane,0.10365776199999999
+1472,SRVC,BLQ,Methane,0.051616955
+1473,SRVC,DFO,Methane,0.044287890999999996
+1474,SRVC,LFG,Methane,0.003772928
+1475,SRVC,MSW,Methane,0.486992549
+1476,SRVC,NG,Methane,0.015319656000000001
+1477,SRVC,NUC,Methane,
+1478,SRVC,OBG,Methane,0.023375864
+1479,SRVC,OTH,Methane,
+1480,SRVC,SUN,Methane,
+1481,SRVC,WAT,Methane,0.00039235699999999997
+1482,SRVC,WDS,Methane,0.341114055
+1483,SRVC,WND,Methane,
+1484,AKGD,DFO,Dinitrogen monoxide,0.007976981999999999
+1485,AKGD,JF,Dinitrogen monoxide,0.00521903
+1486,AKGD,LFG,Dinitrogen monoxide,
+1487,AKGD,MWH,Dinitrogen monoxide,
+1488,AKGD,NG,Dinitrogen monoxide,0.00120973
+1489,AKGD,RFO,Dinitrogen monoxide,0.014296313
+1490,AKGD,SUB,Dinitrogen monoxide,0.013324265
+1491,AKGD,WAT,Dinitrogen monoxide,
+1492,AKGD,WC,Dinitrogen monoxide,0.021625452000000003
+1493,AKGD,WND,Dinitrogen monoxide,
+1494,AKMS,DFO,Dinitrogen monoxide,0.006293894
+1495,AKMS,JF,Dinitrogen monoxide,0.005990776
+1496,AKMS,MWH,Dinitrogen monoxide,
+1497,AKMS,NG,Dinitrogen monoxide,0.001337189
+1498,AKMS,WAT,Dinitrogen monoxide,0.000132442
+1499,AKMS,WND,Dinitrogen monoxide,
+1500,AKMS,WO,Dinitrogen monoxide,0.047350922000000004
+1501,AZNM,BIT,Dinitrogen monoxide,0.018392248
+1502,AZNM,DFO,Dinitrogen monoxide,0.0076191359999999994
+1503,AZNM,GEO,Dinitrogen monoxide,
+1504,AZNM,LFG,Dinitrogen monoxide,
+1505,AZNM,NG,Dinitrogen monoxide,0.001082562
+1506,AZNM,NUC,Dinitrogen monoxide,
+1507,AZNM,SUB,Dinitrogen monoxide,0.015092745
+1508,AZNM,SUN,Dinitrogen monoxide,2.7699999999999996e-05
+1509,AZNM,WAT,Dinitrogen monoxide,
+1510,AZNM,WDS,Dinitrogen monoxide,0.068595585
+1511,AZNM,WND,Dinitrogen monoxide,
+1512,CAMX,AB,Dinitrogen monoxide,0.057547217000000005
+1513,CAMX,BIT,Dinitrogen monoxide,0.016596138
+1514,CAMX,BLQ,Dinitrogen monoxide,
+1515,CAMX,DFO,Dinitrogen monoxide,0.005845062
+1516,CAMX,GEO,Dinitrogen monoxide,
+1517,CAMX,JF,Dinitrogen monoxide,0.008855476999999999
+1518,CAMX,LFG,Dinitrogen monoxide,0.000371946
+1519,CAMX,MSW,Dinitrogen monoxide,0.075819037
+1520,CAMX,MWH,Dinitrogen monoxide,
+1521,CAMX,NG,Dinitrogen monoxide,0.001150888
+1522,CAMX,NUC,Dinitrogen monoxide,
+1523,CAMX,OBG,Dinitrogen monoxide,0.000880135
+1524,CAMX,OG,Dinitrogen monoxide,0.0008701410000000001
+1525,CAMX,OTH,Dinitrogen monoxide,0.000699893
+1526,CAMX,PRG,Dinitrogen monoxide,0.001167546
+1527,CAMX,PUR,Dinitrogen monoxide,
+1528,CAMX,SGC,Dinitrogen monoxide,
+1529,CAMX,SUN,Dinitrogen monoxide,0.000193533
+1530,CAMX,WAT,Dinitrogen monoxide,
+1531,CAMX,WDS,Dinitrogen monoxide,0.054522125
+1532,CAMX,WH,Dinitrogen monoxide,
+1533,CAMX,WND,Dinitrogen monoxide,
+1534,ERCT,AB,Dinitrogen monoxide,0.023682038
+1535,ERCT,BLQ,Dinitrogen monoxide,0.014276355
+1536,ERCT,DFO,Dinitrogen monoxide,0.005445826
+1537,ERCT,LFG,Dinitrogen monoxide,
+1538,ERCT,LIG,Dinitrogen monoxide,0.017371666
+1539,ERCT,NG,Dinitrogen monoxide,0.0009650230000000001
+1540,ERCT,NUC,Dinitrogen monoxide,
+1541,ERCT,OBG,Dinitrogen monoxide,0.00043590199999999995
+1542,ERCT,OG,Dinitrogen monoxide,
+1543,ERCT,OTH,Dinitrogen monoxide,
+1544,ERCT,PC,Dinitrogen monoxide,0.002458015
+1545,ERCT,PRG,Dinitrogen monoxide,0.004333618
+1546,ERCT,PUR,Dinitrogen monoxide,
+1547,ERCT,SUB,Dinitrogen monoxide,0.014772085
+1548,ERCT,SUN,Dinitrogen monoxide,
+1549,ERCT,WAT,Dinitrogen monoxide,
+1550,ERCT,WDS,Dinitrogen monoxide,0.060281923
+1551,ERCT,WH,Dinitrogen monoxide,
+1552,ERCT,WND,Dinitrogen monoxide,
+1553,FRCC,AB,Dinitrogen monoxide,0.023718779
+1554,FRCC,BIT,Dinitrogen monoxide,0.014479715
+1555,FRCC,BLQ,Dinitrogen monoxide,0.012070991000000001
+1556,FRCC,DFO,Dinitrogen monoxide,0.007372910999999999
+1557,FRCC,LFG,Dinitrogen monoxide,
+1558,FRCC,MSW,Dinitrogen monoxide,0.087592516
+1559,FRCC,NG,Dinitrogen monoxide,0.00171375
+1560,FRCC,NUC,Dinitrogen monoxide,0.000263991
+1561,FRCC,OBG,Dinitrogen monoxide,0.0012494189999999999
+1562,FRCC,OBS,Dinitrogen monoxide,0.022753989
+1563,FRCC,OTH,Dinitrogen monoxide,3.86e-05
+1564,FRCC,RFO,Dinitrogen monoxide,0.001339004
+1565,FRCC,SGC,Dinitrogen monoxide,0.003953054
+1566,FRCC,SUN,Dinitrogen monoxide,
+1567,FRCC,WAT,Dinitrogen monoxide,
+1568,FRCC,WDS,Dinitrogen monoxide,0.066473605
+1569,FRCC,WH,Dinitrogen monoxide,
+1570,HIMS,AB,Dinitrogen monoxide,0.022651477000000003
+1571,HIMS,DFO,Dinitrogen monoxide,0.006930886
+1572,HIMS,GEO,Dinitrogen monoxide,
+1573,HIMS,OTH,Dinitrogen monoxide,2.72e-06
+1574,HIMS,RFO,Dinitrogen monoxide,0.008525867
+1575,HIMS,SUN,Dinitrogen monoxide,
+1576,HIMS,WAT,Dinitrogen monoxide,
+1577,HIMS,WND,Dinitrogen monoxide,
+1578,HIMS,WO,Dinitrogen monoxide,0.035469534
+1579,HIOA,BIT,Dinitrogen monoxide,0.015809949
+1580,HIOA,DFO,Dinitrogen monoxide,
+1581,HIOA,MSW,Dinitrogen monoxide,0.069926196
+1582,HIOA,OBL,Dinitrogen monoxide,0.010548281999999999
+1583,HIOA,RFO,Dinitrogen monoxide,0.00623689
+1584,HIOA,SUN,Dinitrogen monoxide,
+1585,HIOA,WND,Dinitrogen monoxide,
+1586,HIOA,WO,Dinitrogen monoxide,0.014428308
+1587,MROE,BIT,Dinitrogen monoxide,0.010376461
+1588,MROE,BLQ,Dinitrogen monoxide,0.01388551
+1589,MROE,DFO,Dinitrogen monoxide,0.010816582
+1590,MROE,LFG,Dinitrogen monoxide,
+1591,MROE,NG,Dinitrogen monoxide,0.0014266679999999999
+1592,MROE,OBG,Dinitrogen monoxide,0.00138527
+1593,MROE,PC,Dinitrogen monoxide,0.024006357000000002
+1594,MROE,PUR,Dinitrogen monoxide,
+1595,MROE,SUB,Dinitrogen monoxide,0.015911553999999998
+1596,MROE,WAT,Dinitrogen monoxide,
+1597,MROE,WDS,Dinitrogen monoxide,0.020936673
+1598,MROE,WND,Dinitrogen monoxide,
+1599,MROW,AB,Dinitrogen monoxide,0.044856847000000005
+1600,MROW,BIT,Dinitrogen monoxide,0.011837693
+1601,MROW,BLQ,Dinitrogen monoxide,0.012512183999999999
+1602,MROW,DFO,Dinitrogen monoxide,0.007544251
+1603,MROW,KER,Dinitrogen monoxide,0.013189548
+1604,MROW,LFG,Dinitrogen monoxide,
+1605,MROW,LIG,Dinitrogen monoxide,0.017505703
+1606,MROW,MSW,Dinitrogen monoxide,0.07401033900000001
+1607,MROW,MWH,Dinitrogen monoxide,
+1608,MROW,NG,Dinitrogen monoxide,0.0034998940000000004
+1609,MROW,NUC,Dinitrogen monoxide,
+1610,MROW,OBG,Dinitrogen monoxide,0.00092941
+1611,MROW,PC,Dinitrogen monoxide,0.005560130999999999
+1612,MROW,PRG,Dinitrogen monoxide,0.00064274
+1613,MROW,PUR,Dinitrogen monoxide,
+1614,MROW,RC,Dinitrogen monoxide,0.016841417
+1615,MROW,SUB,Dinitrogen monoxide,0.015517966999999999
+1616,MROW,SUN,Dinitrogen monoxide,
+1617,MROW,WAT,Dinitrogen monoxide,0.000132268
+1618,MROW,WDS,Dinitrogen monoxide,0.037844217
+1619,MROW,WH,Dinitrogen monoxide,
+1620,MROW,WND,Dinitrogen monoxide,0.00012302
+1621,NEWE,BIT,Dinitrogen monoxide,0.015653097
+1622,NEWE,BLQ,Dinitrogen monoxide,0.016062903
+1623,NEWE,DFO,Dinitrogen monoxide,0.008044169
+1624,NEWE,JF,Dinitrogen monoxide,0.00844044
+1625,NEWE,KER,Dinitrogen monoxide,0.0077784230000000005
+1626,NEWE,LFG,Dinitrogen monoxide,0.000671316
+1627,NEWE,MSW,Dinitrogen monoxide,0.082835939
+1628,NEWE,MWH,Dinitrogen monoxide,
+1629,NEWE,NG,Dinitrogen monoxide,0.001502059
+1630,NEWE,NUC,Dinitrogen monoxide,
+1631,NEWE,OBS,Dinitrogen monoxide,
+1632,NEWE,PUR,Dinitrogen monoxide,
+1633,NEWE,RFO,Dinitrogen monoxide,0.0059960330000000004
+1634,NEWE,SUB,Dinitrogen monoxide,0.01754766
+1635,NEWE,SUN,Dinitrogen monoxide,
+1636,NEWE,TDF,Dinitrogen monoxide,
+1637,NEWE,WAT,Dinitrogen monoxide,0.000157548
+1638,NEWE,WDS,Dinitrogen monoxide,0.060412558
+1639,NEWE,WND,Dinitrogen monoxide,
+1640,NWPP,BIT,Dinitrogen monoxide,0.014995109
+1641,NWPP,BLQ,Dinitrogen monoxide,0.013623765
+1642,NWPP,DFO,Dinitrogen monoxide,0.006159196
+1643,NWPP,GEO,Dinitrogen monoxide,
+1644,NWPP,LFG,Dinitrogen monoxide,0.000401429
+1645,NWPP,MSW,Dinitrogen monoxide,0.063161174
+1646,NWPP,NG,Dinitrogen monoxide,0.0011052619999999999
+1647,NWPP,NUC,Dinitrogen monoxide,
+1648,NWPP,OBG,Dinitrogen monoxide,0.0012142239999999999
+1649,NWPP,OBS,Dinitrogen monoxide,
+1650,NWPP,OG,Dinitrogen monoxide,0.0007720139999999999
+1651,NWPP,OTH,Dinitrogen monoxide,3.6700000000000004e-05
+1652,NWPP,PC,Dinitrogen monoxide,0.004921473
+1653,NWPP,PRG,Dinitrogen monoxide,
+1654,NWPP,PUR,Dinitrogen monoxide,
+1655,NWPP,SUB,Dinitrogen monoxide,0.016591579
+1656,NWPP,SUN,Dinitrogen monoxide,
+1657,NWPP,WAT,Dinitrogen monoxide,
+1658,NWPP,WC,Dinitrogen monoxide,0.021083637000000002
+1659,NWPP,WDL,Dinitrogen monoxide,0.00886092
+1660,NWPP,WDS,Dinitrogen monoxide,0.037385138
+1661,NWPP,WND,Dinitrogen monoxide,
+1662,NYCW,DFO,Dinitrogen monoxide,0.0058726559999999995
+1663,NYCW,KER,Dinitrogen monoxide,0.008680693
+1664,NYCW,MSW,Dinitrogen monoxide,0.077067095
+1665,NYCW,NG,Dinitrogen monoxide,0.00128903
+1666,NYCW,NUC,Dinitrogen monoxide,
+1667,NYCW,RFO,Dinitrogen monoxide,
+1668,NYCW,SUN,Dinitrogen monoxide,
+1669,NYCW,WAT,Dinitrogen monoxide,
+1670,NYLI,DFO,Dinitrogen monoxide,0.008598245
+1671,NYLI,LFG,Dinitrogen monoxide,
+1672,NYLI,MSW,Dinitrogen monoxide,0.09224314900000001
+1673,NYLI,NG,Dinitrogen monoxide,0.001052617
+1674,NYLI,RFO,Dinitrogen monoxide,0.002109884
+1675,NYLI,SUN,Dinitrogen monoxide,
+1676,NYUP,BIT,Dinitrogen monoxide,0.014055304
+1677,NYUP,DFO,Dinitrogen monoxide,0.005268018
+1678,NYUP,KER,Dinitrogen monoxide,0.003702672
+1679,NYUP,LFG,Dinitrogen monoxide,
+1680,NYUP,MSW,Dinitrogen monoxide,0.047706900999999996
+1681,NYUP,MWH,Dinitrogen monoxide,
+1682,NYUP,NG,Dinitrogen monoxide,0.0009186660000000001
+1683,NYUP,NUC,Dinitrogen monoxide,
+1684,NYUP,OBG,Dinitrogen monoxide,0.001258718
+1685,NYUP,RFO,Dinitrogen monoxide,0.007488804
+1686,NYUP,SUB,Dinitrogen monoxide,0.018239842
+1687,NYUP,SUN,Dinitrogen monoxide,
+1688,NYUP,WAT,Dinitrogen monoxide,
+1689,NYUP,WDS,Dinitrogen monoxide,0.045279028
+1690,NYUP,WND,Dinitrogen monoxide,
+1691,RFCE,BIT,Dinitrogen monoxide,0.015103325
+1692,RFCE,BLQ,Dinitrogen monoxide,0.011394231000000001
+1693,RFCE,COG,Dinitrogen monoxide,0.00056699
+1694,RFCE,DFO,Dinitrogen monoxide,0.008549395
+1695,RFCE,KER,Dinitrogen monoxide,
+1696,RFCE,LFG,Dinitrogen monoxide,0.000968872
+1697,RFCE,MSW,Dinitrogen monoxide,0.072022908
+1698,RFCE,MWH,Dinitrogen monoxide,
+1699,RFCE,NG,Dinitrogen monoxide,0.00126814
+1700,RFCE,NUC,Dinitrogen monoxide,4.5399999999999996e-07
+1701,RFCE,OBG,Dinitrogen monoxide,0.001145774
+1702,RFCE,OG,Dinitrogen monoxide,2.27e-05
+1703,RFCE,OTH,Dinitrogen monoxide,
+1704,RFCE,PRG,Dinitrogen monoxide,0.00068311
+1705,RFCE,RFO,Dinitrogen monoxide,0.00472915
+1706,RFCE,SUB,Dinitrogen monoxide,0.01838363
+1707,RFCE,SUN,Dinitrogen monoxide,
+1708,RFCE,TDF,Dinitrogen monoxide,
+1709,RFCE,WAT,Dinitrogen monoxide,
+1710,RFCE,WC,Dinitrogen monoxide,0.020198033
+1711,RFCE,WDS,Dinitrogen monoxide,0.031503325
+1712,RFCE,WND,Dinitrogen monoxide,
+1713,RFCM,BIT,Dinitrogen monoxide,0.015808078
+1714,RFCM,DFO,Dinitrogen monoxide,0.010730739
+1715,RFCM,LFG,Dinitrogen monoxide,
+1716,RFCM,MSW,Dinitrogen monoxide,0.053190693
+1717,RFCM,NG,Dinitrogen monoxide,0.002393077
+1718,RFCM,NUC,Dinitrogen monoxide,3.18e-06
+1719,RFCM,OBG,Dinitrogen monoxide,0.000987017
+1720,RFCM,SUB,Dinitrogen monoxide,0.016883677
+1721,RFCM,SUN,Dinitrogen monoxide,
+1722,RFCM,WAT,Dinitrogen monoxide,0.000137892
+1723,RFCM,WDS,Dinitrogen monoxide,0.05546659
+1724,RFCM,WND,Dinitrogen monoxide,
+1725,RFCW,BFG,Dinitrogen monoxide,0.000639565
+1726,RFCW,BIT,Dinitrogen monoxide,0.01593111
+1727,RFCW,BLQ,Dinitrogen monoxide,0.014115783
+1728,RFCW,COG,Dinitrogen monoxide,0.00102663
+1729,RFCW,DFO,Dinitrogen monoxide,0.007365266999999999
+1730,RFCW,LFG,Dinitrogen monoxide,0.000413565
+1731,RFCW,MSW,Dinitrogen monoxide,0.050272280999999995
+1732,RFCW,MWH,Dinitrogen monoxide,
+1733,RFCW,NG,Dinitrogen monoxide,0.0014583620000000002
+1734,RFCW,NUC,Dinitrogen monoxide,4.5399999999999996e-07
+1735,RFCW,OBG,Dinitrogen monoxide,0.001131296
+1736,RFCW,OG,Dinitrogen monoxide,0.00077156
+1737,RFCW,PC,Dinitrogen monoxide,0.005449681
+1738,RFCW,PRG,Dinitrogen monoxide,0.000686965
+1739,RFCW,SGC,Dinitrogen monoxide,0.0034380009999999996
+1740,RFCW,SUB,Dinitrogen monoxide,0.017325029
+1741,RFCW,SUN,Dinitrogen monoxide,0.000310257
+1742,RFCW,WAT,Dinitrogen monoxide,
+1743,RFCW,WC,Dinitrogen monoxide,0.016621577
+1744,RFCW,WDS,Dinitrogen monoxide,0.04956929
+1745,RFCW,WH,Dinitrogen monoxide,
+1746,RFCW,WND,Dinitrogen monoxide,
+1747,RMPA,BIT,Dinitrogen monoxide,0.017374728
+1748,RMPA,DFO,Dinitrogen monoxide,0.009053016
+1749,RMPA,LFG,Dinitrogen monoxide,
+1750,RMPA,NG,Dinitrogen monoxide,0.00164449
+1751,RMPA,OBG,Dinitrogen monoxide,0.000616885
+1752,RMPA,SUB,Dinitrogen monoxide,0.016520306999999998
+1753,RMPA,SUN,Dinitrogen monoxide,
+1754,RMPA,WAT,Dinitrogen monoxide,
+1755,RMPA,WC,Dinitrogen monoxide,
+1756,RMPA,WDS,Dinitrogen monoxide,0.066989188
+1757,RMPA,WH,Dinitrogen monoxide,
+1758,RMPA,WND,Dinitrogen monoxide,
+1759,RMPA ,SUB,Dinitrogen monoxide,0.018660322
+1760,SPNO,BIT,Dinitrogen monoxide,0.025349443
+1761,SPNO,DFO,Dinitrogen monoxide,0.006385883
+1762,SPNO,LFG,Dinitrogen monoxide,
+1763,SPNO,MWH,Dinitrogen monoxide,
+1764,SPNO,NG,Dinitrogen monoxide,0.002252164
+1765,SPNO,NUC,Dinitrogen monoxide,
+1766,SPNO,SUB,Dinitrogen monoxide,0.0183822
+1767,SPNO,SUN,Dinitrogen monoxide,
+1768,SPNO,WAT,Dinitrogen monoxide,
+1769,SPNO,WH,Dinitrogen monoxide,
+1770,SPNO,WND,Dinitrogen monoxide,
+1771,SPSO,BFG,Dinitrogen monoxide,0.000563815
+1772,SPSO,BIT,Dinitrogen monoxide,0.019044514
+1773,SPSO,BLQ,Dinitrogen monoxide,0.013617286000000001
+1774,SPSO,DFO,Dinitrogen monoxide,0.007389977
+1775,SPSO,LFG,Dinitrogen monoxide,
+1776,SPSO,LIG,Dinitrogen monoxide,0.017427912
+1777,SPSO,MSW,Dinitrogen monoxide,
+1778,SPSO,NG,Dinitrogen monoxide,0.001587905
+1779,SPSO,PC,Dinitrogen monoxide,0.010634918
+1780,SPSO,PRG,Dinitrogen monoxide,0.001761298
+1781,SPSO,SUB,Dinitrogen monoxide,0.016085992
+1782,SPSO,SUN,Dinitrogen monoxide,
+1783,SPSO,WAT,Dinitrogen monoxide,
+1784,SPSO,WDS,Dinitrogen monoxide,0.029297961
+1785,SPSO,WH,Dinitrogen monoxide,
+1786,SPSO,WND,Dinitrogen monoxide,
+1787,SRMV,AB,Dinitrogen monoxide,0.046197892000000004
+1788,SRMV,BLQ,Dinitrogen monoxide,0.012381247
+1789,SRMV,DFO,Dinitrogen monoxide,
+1790,SRMV,LFG,Dinitrogen monoxide,
+1791,SRMV,NG,Dinitrogen monoxide,0.001388433
+1792,SRMV,NUC,Dinitrogen monoxide,
+1793,SRMV,OBG,Dinitrogen monoxide,0.000860918
+1794,SRMV,OBS,Dinitrogen monoxide,0.024184617999999998
+1795,SRMV,PC,Dinitrogen monoxide,0.008963432
+1796,SRMV,PRG,Dinitrogen monoxide,0.001169133
+1797,SRMV,PUR,Dinitrogen monoxide,
+1798,SRMV,SUB,Dinitrogen monoxide,0.016415313
+1799,SRMV,SUN,Dinitrogen monoxide,
+1800,SRMV,WAT,Dinitrogen monoxide,
+1801,SRMV,WDS,Dinitrogen monoxide,0.032070655
+1802,SRMV,WH,Dinitrogen monoxide,
+1803,SRMW,BFG,Dinitrogen monoxide,0.000492601
+1804,SRMW,BIT,Dinitrogen monoxide,0.012787463999999998
+1805,SRMW,DFO,Dinitrogen monoxide,0.008039171
+1806,SRMW,LFG,Dinitrogen monoxide,
+1807,SRMW,NG,Dinitrogen monoxide,0.00229967
+1808,SRMW,NUC,Dinitrogen monoxide,
+1809,SRMW,SUB,Dinitrogen monoxide,0.017063943999999998
+1810,SRMW,SUN,Dinitrogen monoxide,
+1811,SRMW,WAT,Dinitrogen monoxide,3.76e-05
+1812,SRMW,WND,Dinitrogen monoxide,
+1813,SRSO,BIT,Dinitrogen monoxide,0.015902737
+1814,SRSO,BLQ,Dinitrogen monoxide,0.013935173
+1815,SRSO,DFO,Dinitrogen monoxide,0.008971771
+1816,SRSO,LFG,Dinitrogen monoxide,0.000284856
+1817,SRSO,MSW,Dinitrogen monoxide,0.125743413
+1818,SRSO,NG,Dinitrogen monoxide,0.0026786690000000003
+1819,SRSO,NUC,Dinitrogen monoxide,
+1820,SRSO,OBG,Dinitrogen monoxide,0.00256219
+1821,SRSO,OBS,Dinitrogen monoxide,0.014049559
+1822,SRSO,PC,Dinitrogen monoxide,0.0048820109999999995
+1823,SRSO,SUB,Dinitrogen monoxide,0.014004993
+1824,SRSO,SUN,Dinitrogen monoxide,
+1825,SRSO,WAT,Dinitrogen monoxide,
+1826,SRSO,WDS,Dinitrogen monoxide,0.034331358
+1827,SRSO,WH,Dinitrogen monoxide,
+1828,SRTV,BIT,Dinitrogen monoxide,0.016245008999999998
+1829,SRTV,BLQ,Dinitrogen monoxide,0.014526919
+1830,SRTV,COG,Dinitrogen monoxide,0.000577196
+1831,SRTV,DFO,Dinitrogen monoxide,0.00677485
+1832,SRTV,LFG,Dinitrogen monoxide,
+1833,SRTV,LIG,Dinitrogen monoxide,0.017995808999999998
+1834,SRTV,NG,Dinitrogen monoxide,0.003296287
+1835,SRTV,NUC,Dinitrogen monoxide,
+1836,SRTV,PRG,Dinitrogen monoxide,0.004646143
+1837,SRTV,SUB,Dinitrogen monoxide,0.015894166
+1838,SRTV,SUN,Dinitrogen monoxide,
+1839,SRTV,WAT,Dinitrogen monoxide,
+1840,SRTV,WDS,Dinitrogen monoxide,0.053217227
+1841,SRTV,WND,Dinitrogen monoxide,
+1842,SRVC,BIT,Dinitrogen monoxide,0.014996553000000001
+1843,SRVC,BLQ,Dinitrogen monoxide,0.013916858
+1844,SRVC,DFO,Dinitrogen monoxide,0.008845639
+1845,SRVC,LFG,Dinitrogen monoxide,0.000754575
+1846,SRVC,MSW,Dinitrogen monoxide,0.063917917
+1847,SRVC,NG,Dinitrogen monoxide,0.00221343
+1848,SRVC,NUC,Dinitrogen monoxide,
+1849,SRVC,OBG,Dinitrogen monoxide,0.002337813
+1850,SRVC,OTH,Dinitrogen monoxide,
+1851,SRVC,SUN,Dinitrogen monoxide,
+1852,SRVC,WAT,Dinitrogen monoxide,7.85e-05
+1853,SRVC,WDS,Dinitrogen monoxide,0.045351262
+1854,SRVC,WND,Dinitrogen monoxide,
