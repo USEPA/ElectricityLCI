@@ -10,7 +10,7 @@ import numpy as np
 
 #Reading the TRI main File. We need to repeat all these operations for a variety of emissionsin TRI. TO reduce complication I will be using Separate Runs for Each.THe list will be provided
 # Please find and replace the names of the different emissions in the code and run the code to get different emissions. 
-#LIST OF columns being compiled to be presented in different sheets - TOTAL SOIL RELEASE, TOTAL SOIL RELEASE, 
+#LIST OF columns being compiled to be presented in different sheets - TOTAL SOIL RELEASE, TOTAL SURFACE WATER DISCHARGE, TOTAL AIR EMISSIONS.
 
 tri = pd.read_csv("TRI.csv", header=0,usecols=['TRIFID', 'FACILITY NAME', 'CAS NUMBER', 'CHEMICAL NAME','UNIT OF MEASURE','TOTAL SOIL RELEASE'], nrows= 82444, error_bad_lines=False)
 
