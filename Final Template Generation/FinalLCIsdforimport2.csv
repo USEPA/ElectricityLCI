@@ -1,0 +1,1081 @@
+, eGRID subregion acronym , Plant primary coal/oil/gas/ other fossil fuel category ,Emissions,Emissions quantity kg/MWh
+0,AKGD,BIOMASS,nitrogen oxides,
+1,AKGD,COAL,nitrogen oxides,1.018788265
+2,AKGD,GAS,nitrogen oxides,1.089084463
+3,AKGD,HYDRO,nitrogen oxides,
+4,AKGD,OIL,nitrogen oxides,10.8304452
+5,AKGD,OTHF,nitrogen oxides,
+6,AKGD,WIND,nitrogen oxides,
+7,AKMS,GAS,nitrogen oxides,6.158671438
+8,AKMS,HYDRO,nitrogen oxides,0.294307009
+9,AKMS,OIL,nitrogen oxides,3.904410817
+10,AKMS,OTHF,nitrogen oxides,
+11,AKMS,WIND,nitrogen oxides,
+12,AZNM,BIOMASS,nitrogen oxides,4.127563839
+13,AZNM,COAL,nitrogen oxides,0.475115976
+14,AZNM,GAS,nitrogen oxides,1.508316496
+15,AZNM,GEOTHERMAL,nitrogen oxides,
+16,AZNM,HYDRO,nitrogen oxides,
+17,AZNM,NUCLEAR,nitrogen oxides,
+18,AZNM,OIL,nitrogen oxides,4.283287389
+19,AZNM,SOLAR,nitrogen oxides,
+20,AZNM,WIND,nitrogen oxides,
+21,CAMX,BIOMASS,nitrogen oxides,4.489794472
+22,CAMX,COAL,nitrogen oxides,0.186981531
+23,CAMX,GAS,nitrogen oxides,3.9589816339999997
+24,CAMX,GEOTHERMAL,nitrogen oxides,0.067416041
+25,CAMX,HYDRO,nitrogen oxides,
+26,CAMX,NUCLEAR,nitrogen oxides,
+27,CAMX,OFSL,nitrogen oxides,0.010584353000000001
+28,CAMX,OIL,nitrogen oxides,7.975365647
+29,CAMX,OTHF,nitrogen oxides,12.24615527
+30,CAMX,SOLAR,nitrogen oxides,0.0027341229999999998
+31,CAMX,WIND,nitrogen oxides,
+32,ERCT,BIOMASS,nitrogen oxides,2.613958502
+33,ERCT,COAL,nitrogen oxides,0.382428129
+34,ERCT,GAS,nitrogen oxides,2.41580691
+35,ERCT,HYDRO,nitrogen oxides,
+36,ERCT,NUCLEAR,nitrogen oxides,
+37,ERCT,OFSL,nitrogen oxides,
+38,ERCT,OIL,nitrogen oxides,7.48563551
+39,ERCT,OTHF,nitrogen oxides,2.928559025
+40,ERCT,SOLAR,nitrogen oxides,
+41,ERCT,WIND,nitrogen oxides,
+42,FRCC,BIOMASS,nitrogen oxides,6.579717402999999
+43,FRCC,COAL,nitrogen oxides,0.46191447
+44,FRCC,GAS,nitrogen oxides,1.392213462
+45,FRCC,HYDRO,nitrogen oxides,
+46,FRCC,NUCLEAR,nitrogen oxides,
+47,FRCC,OIL,nitrogen oxides,3.114934457
+48,FRCC,OTHF,nitrogen oxides,
+49,FRCC,SOLAR,nitrogen oxides,
+50,HIMS,BIOMASS,nitrogen oxides,
+51,HIMS,GEOTHERMAL,nitrogen oxides,
+52,HIMS,HYDRO,nitrogen oxides,
+53,HIMS,OIL,nitrogen oxides,7.085655318
+54,HIMS,OTHF,nitrogen oxides,
+55,HIMS,SOLAR,nitrogen oxides,
+56,HIMS,WIND,nitrogen oxides,
+57,HIOA,BIOMASS,nitrogen oxides,
+58,HIOA,COAL,nitrogen oxides,
+59,HIOA,OIL,nitrogen oxides,0.47316915
+60,HIOA,SOLAR,nitrogen oxides,
+61,HIOA,WIND,nitrogen oxides,
+62,MROE,BIOMASS,nitrogen oxides,11.744931
+63,MROE,COAL,nitrogen oxides,0.557116547
+64,MROE,GAS,nitrogen oxides,1.333851134
+65,MROE,HYDRO,nitrogen oxides,
+66,MROE,OIL,nitrogen oxides,13.26127447
+67,MROE,OTHF,nitrogen oxides,
+68,MROE,WIND,nitrogen oxides,
+69,MROW,BIOMASS,nitrogen oxides,5.339232288
+70,MROW,COAL,nitrogen oxides,0.741615275
+71,MROW,GAS,nitrogen oxides,5.30881299
+72,MROW,HYDRO,nitrogen oxides,0.444858278
+73,MROW,NUCLEAR,nitrogen oxides,
+74,MROW,OIL,nitrogen oxides,6.557503576
+75,MROW,OTHF,nitrogen oxides,
+76,MROW,SOLAR,nitrogen oxides,
+77,MROW,WIND,nitrogen oxides,0.192540214
+78,NEWE,BIOMASS,nitrogen oxides,3.2346286380000002
+79,NEWE,COAL,nitrogen oxides,0.305592093
+80,NEWE,GAS,nitrogen oxides,3.2046490960000003
+81,NEWE,HYDRO,nitrogen oxides,0.225079005
+82,NEWE,NUCLEAR,nitrogen oxides,
+83,NEWE,OFSL,nitrogen oxides,
+84,NEWE,OIL,nitrogen oxides,7.805338237000001
+85,NEWE,OTHF,nitrogen oxides,
+86,NEWE,SOLAR,nitrogen oxides,
+87,NEWE,WIND,nitrogen oxides,
+88,NWPP,BIOMASS,nitrogen oxides,9.533274876
+89,NWPP,COAL,nitrogen oxides,0.552105584
+90,NWPP,GAS,nitrogen oxides,3.074128247
+91,NWPP,GEOTHERMAL,nitrogen oxides,
+92,NWPP,HYDRO,nitrogen oxides,
+93,NWPP,NUCLEAR,nitrogen oxides,
+94,NWPP,OFSL,nitrogen oxides,
+95,NWPP,OIL,nitrogen oxides,7.206853925
+96,NWPP,OTHF,nitrogen oxides,
+97,NWPP,SOLAR,nitrogen oxides,
+98,NWPP,WIND,nitrogen oxides,
+99,NYCW,BIOMASS,nitrogen oxides,
+100,NYCW,GAS,nitrogen oxides,4.279283658
+101,NYCW,HYDRO,nitrogen oxides,
+102,NYCW,NUCLEAR,nitrogen oxides,
+103,NYCW,OIL,nitrogen oxides,1.3546882
+104,NYCW,SOLAR,nitrogen oxides,
+105,NYLI,BIOMASS,nitrogen oxides,4.078554722
+106,NYLI,GAS,nitrogen oxides,2.9100057360000005
+107,NYLI,OIL,nitrogen oxides,7.2553552439999995
+108,NYLI,SOLAR,nitrogen oxides,
+109,NYUP,BIOMASS,nitrogen oxides,4.599366657
+110,NYUP,COAL,nitrogen oxides,0.417487836
+111,NYUP,GAS,nitrogen oxides,1.728917297
+112,NYUP,HYDRO,nitrogen oxides,
+113,NYUP,NUCLEAR,nitrogen oxides,
+114,NYUP,OIL,nitrogen oxides,8.807616384
+115,NYUP,OTHF,nitrogen oxides,
+116,NYUP,SOLAR,nitrogen oxides,
+117,NYUP,WIND,nitrogen oxides,
+118,RFCE,BIOMASS,nitrogen oxides,4.789342555
+119,RFCE,COAL,nitrogen oxides,0.604356863
+120,RFCE,GAS,nitrogen oxides,3.820722415
+121,RFCE,HYDRO,nitrogen oxides,
+122,RFCE,NUCLEAR,nitrogen oxides,
+123,RFCE,OFSL,nitrogen oxides,
+124,RFCE,OIL,nitrogen oxides,6.860111845
+125,RFCE,OTHF,nitrogen oxides,0.041375199
+126,RFCE,SOLAR,nitrogen oxides,
+127,RFCE,WIND,nitrogen oxides,
+128,RFCM,BIOMASS,nitrogen oxides,2.945319418
+129,RFCM,COAL,nitrogen oxides,0.5519658270000001
+130,RFCM,GAS,nitrogen oxides,6.511129107
+131,RFCM,HYDRO,nitrogen oxides,
+132,RFCM,NUCLEAR,nitrogen oxides,
+133,RFCM,OIL,nitrogen oxides,16.18126637
+134,RFCM,SOLAR,nitrogen oxides,
+135,RFCM,WIND,nitrogen oxides,
+136,RFCW,BIOMASS,nitrogen oxides,7.070806042999999
+137,RFCW,COAL,nitrogen oxides,0.606325388
+138,RFCW,GAS,nitrogen oxides,3.772676432
+139,RFCW,HYDRO,nitrogen oxides,
+140,RFCW,NUCLEAR,nitrogen oxides,
+141,RFCW,OFSL,nitrogen oxides,5.6901757129999995
+142,RFCW,OIL,nitrogen oxides,6.337134423999999
+143,RFCW,OTHF,nitrogen oxides,0.016931604
+144,RFCW,SOLAR,nitrogen oxides,
+145,RFCW,WIND,nitrogen oxides,
+146,RMPA,BIOMASS,nitrogen oxides,5.184084619
+147,RMPA,COAL,nitrogen oxides,0.542378029
+148,RMPA,GAS,nitrogen oxides,3.8325077210000003
+149,RMPA,HYDRO,nitrogen oxides,
+150,RMPA,OIL,nitrogen oxides,6.500075884
+151,RMPA,OTHF,nitrogen oxides,
+152,RMPA,SOLAR,nitrogen oxides,
+153,RMPA,WIND,nitrogen oxides,
+154,RMPA ,COAL ,nitrogen oxides,0.631533081
+155,SPNO,BIOMASS,nitrogen oxides,0.495334579
+156,SPNO,COAL,nitrogen oxides,0.755907102
+157,SPNO,GAS,nitrogen oxides,6.600518227
+158,SPNO,HYDRO,nitrogen oxides,
+159,SPNO,NUCLEAR,nitrogen oxides,
+160,SPNO,OIL,nitrogen oxides,10.0670318
+161,SPNO,OTHF,nitrogen oxides,
+162,SPNO,SOLAR,nitrogen oxides,
+163,SPNO,WIND,nitrogen oxides,
+164,SPSO,BIOMASS,nitrogen oxides,3.5396118239999996
+165,SPSO,COAL,nitrogen oxides,0.327092914
+166,SPSO,GAS,nitrogen oxides,3.460744745
+167,SPSO,HYDRO,nitrogen oxides,
+168,SPSO,OFSL,nitrogen oxides,
+169,SPSO,OIL,nitrogen oxides,7.47840805
+170,SPSO,OTHF,nitrogen oxides,
+171,SPSO,SOLAR,nitrogen oxides,
+172,SPSO,WIND,nitrogen oxides,
+173,SRMV,BIOMASS,nitrogen oxides,2.71973386
+174,SRMV,COAL,nitrogen oxides,0.49550058700000005
+175,SRMV,GAS,nitrogen oxides,2.215349713
+176,SRMV,HYDRO,nitrogen oxides,
+177,SRMV,NUCLEAR,nitrogen oxides,
+178,SRMV,OIL,nitrogen oxides,0.033677488
+179,SRMV,OTHF,nitrogen oxides,0.177330834
+180,SRMV,SOLAR,nitrogen oxides,
+181,SRMW,BIOMASS,nitrogen oxides,0.49496713
+182,SRMW,COAL,nitrogen oxides,0.58843998
+183,SRMW,GAS,nitrogen oxides,3.80476899
+184,SRMW,HYDRO,nitrogen oxides,
+185,SRMW,NUCLEAR,nitrogen oxides,
+186,SRMW,OFSL,nitrogen oxides,
+187,SRMW,OIL,nitrogen oxides,6.193927744
+188,SRMW,SOLAR,nitrogen oxides,
+189,SRMW,WIND,nitrogen oxides,
+190,SRSO,BIOMASS,nitrogen oxides,3.797563751
+191,SRSO,COAL,nitrogen oxides,1.299179205
+192,SRSO,GAS,nitrogen oxides,2.075230878
+193,SRSO,HYDRO,nitrogen oxides,
+194,SRSO,NUCLEAR,nitrogen oxides,
+195,SRSO,OIL,nitrogen oxides,9.520018475
+196,SRSO,OTHF,nitrogen oxides,
+197,SRSO,SOLAR,nitrogen oxides,
+198,SRTV,BIOMASS,nitrogen oxides,3.3822481819999997
+199,SRTV,COAL,nitrogen oxides,0.789683025
+200,SRTV,GAS,nitrogen oxides,0.9964893509999999
+201,SRTV,HYDRO,nitrogen oxides,
+202,SRTV,NUCLEAR,nitrogen oxides,
+203,SRTV,OIL,nitrogen oxides,11.83055885
+204,SRTV,OTHF,nitrogen oxides,
+205,SRTV,SOLAR,nitrogen oxides,
+206,SRTV,WIND,nitrogen oxides,
+207,SRVC,BIOMASS,nitrogen oxides,3.550350033
+208,SRVC,COAL,nitrogen oxides,0.679368729
+209,SRVC,GAS,nitrogen oxides,1.001935373
+210,SRVC,HYDRO,nitrogen oxides,0.047664585
+211,SRVC,NUCLEAR,nitrogen oxides,
+212,SRVC,OIL,nitrogen oxides,9.122351697000001
+213,SRVC,OTHF,nitrogen oxides,
+214,SRVC,SOLAR,nitrogen oxides,
+215,SRVC,WIND,nitrogen oxides,
+216,AKGD,BIOMASS,sulfur dioxide,
+217,AKGD,COAL,sulfur dioxide,0.518919299
+218,AKGD,GAS,sulfur dioxide,0.002312874
+219,AKGD,HYDRO,sulfur dioxide,
+220,AKGD,OIL,sulfur dioxide,3.7998273830000002
+221,AKGD,OTHF,sulfur dioxide,
+222,AKGD,WIND,sulfur dioxide,
+223,AKMS,GAS,sulfur dioxide,0.001200092
+224,AKMS,HYDRO,sulfur dioxide,0.026797269
+225,AKMS,OIL,sulfur dioxide,0.558031387
+226,AKMS,OTHF,sulfur dioxide,
+227,AKMS,WIND,sulfur dioxide,
+228,AZNM,BIOMASS,sulfur dioxide,0.030158581
+229,AZNM,COAL,sulfur dioxide,0.510402864
+230,AZNM,GAS,sulfur dioxide,0.11657129699999999
+231,AZNM,GEOTHERMAL,sulfur dioxide,0.0
+232,AZNM,HYDRO,sulfur dioxide,
+233,AZNM,NUCLEAR,sulfur dioxide,
+234,AZNM,OIL,sulfur dioxide,1.861238393
+235,AZNM,SOLAR,sulfur dioxide,
+236,AZNM,WIND,sulfur dioxide,
+237,CAMX,BIOMASS,sulfur dioxide,0.175109796
+238,CAMX,COAL,sulfur dioxide,4.390618975
+239,CAMX,GAS,sulfur dioxide,0.125157085
+240,CAMX,GEOTHERMAL,sulfur dioxide,0.200016083
+241,CAMX,HYDRO,sulfur dioxide,
+242,CAMX,NUCLEAR,sulfur dioxide,
+243,CAMX,OFSL,sulfur dioxide,0.001047526
+244,CAMX,OIL,sulfur dioxide,1.3717070669999998
+245,CAMX,OTHF,sulfur dioxide,0.01477427
+246,CAMX,SOLAR,sulfur dioxide,0.0
+247,CAMX,WIND,sulfur dioxide,
+248,ERCT,BIOMASS,sulfur dioxide,0.187261747
+249,ERCT,COAL,sulfur dioxide,1.878229943
+250,ERCT,GAS,sulfur dioxide,0.118955401
+251,ERCT,HYDRO,sulfur dioxide,
+252,ERCT,NUCLEAR,sulfur dioxide,
+253,ERCT,OFSL,sulfur dioxide,
+254,ERCT,OIL,sulfur dioxide,1.0786176459999999
+255,ERCT,OTHF,sulfur dioxide,8.429178659
+256,ERCT,SOLAR,sulfur dioxide,
+257,ERCT,WIND,sulfur dioxide,
+258,FRCC,BIOMASS,sulfur dioxide,0.38548566
+259,FRCC,COAL,sulfur dioxide,0.759410171
+260,FRCC,GAS,sulfur dioxide,0.2163837
+261,FRCC,HYDRO,sulfur dioxide,
+262,FRCC,NUCLEAR,sulfur dioxide,
+263,FRCC,OIL,sulfur dioxide,2.054787845
+264,FRCC,OTHF,sulfur dioxide,
+265,FRCC,SOLAR,sulfur dioxide,
+266,HIMS,BIOMASS,sulfur dioxide,
+267,HIMS,GEOTHERMAL,sulfur dioxide,
+268,HIMS,HYDRO,sulfur dioxide,
+269,HIMS,OIL,sulfur dioxide,2.227976832
+270,HIMS,OTHF,sulfur dioxide,
+271,HIMS,SOLAR,sulfur dioxide,
+272,HIMS,WIND,sulfur dioxide,
+273,HIOA,BIOMASS,sulfur dioxide,0.043299627
+274,HIOA,COAL,sulfur dioxide,
+275,HIOA,OIL,sulfur dioxide,2.620319046
+276,HIOA,SOLAR,sulfur dioxide,
+277,HIOA,WIND,sulfur dioxide,
+278,MROE,BIOMASS,sulfur dioxide,1.4907588269999998
+279,MROE,COAL,sulfur dioxide,5.957490588
+280,MROE,GAS,sulfur dioxide,0.12382631599999999
+281,MROE,HYDRO,sulfur dioxide,
+282,MROE,OIL,sulfur dioxide,1.499688498
+283,MROE,OTHF,sulfur dioxide,
+284,MROE,WIND,sulfur dioxide,
+285,MROW,BIOMASS,sulfur dioxide,0.49118482700000005
+286,MROW,COAL,sulfur dioxide,2.6437951969999998
+287,MROW,GAS,sulfur dioxide,0.7526999740000001
+288,MROW,HYDRO,sulfur dioxide,0.041660353
+289,MROW,NUCLEAR,sulfur dioxide,
+290,MROW,OIL,sulfur dioxide,1.211096043
+291,MROW,OTHF,sulfur dioxide,
+292,MROW,SOLAR,sulfur dioxide,
+293,MROW,WIND,sulfur dioxide,0.0171815
+294,NEWE,BIOMASS,sulfur dioxide,0.4905812
+295,NEWE,COAL,sulfur dioxide,1.764750696
+296,NEWE,GAS,sulfur dioxide,0.19085381699999998
+297,NEWE,HYDRO,sulfur dioxide,0.00160369
+298,NEWE,NUCLEAR,sulfur dioxide,
+299,NEWE,OFSL,sulfur dioxide,
+300,NEWE,OIL,sulfur dioxide,1.490153674
+301,NEWE,OTHF,sulfur dioxide,
+302,NEWE,SOLAR,sulfur dioxide,
+303,NEWE,WIND,sulfur dioxide,
+304,NWPP,BIOMASS,sulfur dioxide,0.367127528
+305,NWPP,COAL,sulfur dioxide,3.214429752
+306,NWPP,GAS,sulfur dioxide,0.259355116
+307,NWPP,GEOTHERMAL,sulfur dioxide,0.0
+308,NWPP,HYDRO,sulfur dioxide,
+309,NWPP,NUCLEAR,sulfur dioxide,
+310,NWPP,OFSL,sulfur dioxide,
+311,NWPP,OIL,sulfur dioxide,0.5432571420000001
+312,NWPP,OTHF,sulfur dioxide,
+313,NWPP,SOLAR,sulfur dioxide,
+314,NWPP,WIND,sulfur dioxide,
+315,NYCW,BIOMASS,sulfur dioxide,
+316,NYCW,GAS,sulfur dioxide,0.12666994
+317,NYCW,HYDRO,sulfur dioxide,
+318,NYCW,NUCLEAR,sulfur dioxide,
+319,NYCW,OIL,sulfur dioxide,
+320,NYCW,SOLAR,sulfur dioxide,
+321,NYLI,BIOMASS,sulfur dioxide,0.10539042
+322,NYLI,GAS,sulfur dioxide,0.053941789000000004
+323,NYLI,OIL,sulfur dioxide,1.721494446
+324,NYLI,SOLAR,sulfur dioxide,
+325,NYUP,BIOMASS,sulfur dioxide,0.47622785700000003
+326,NYUP,COAL,sulfur dioxide,2.744067897
+327,NYUP,GAS,sulfur dioxide,0.016875267
+328,NYUP,HYDRO,sulfur dioxide,
+329,NYUP,NUCLEAR,sulfur dioxide,
+330,NYUP,OIL,sulfur dioxide,1.1116135329999999
+331,NYUP,OTHF,sulfur dioxide,
+332,NYUP,SOLAR,sulfur dioxide,
+333,NYUP,WIND,sulfur dioxide,
+334,RFCE,BIOMASS,sulfur dioxide,0.433795531
+335,RFCE,COAL,sulfur dioxide,4.124589594
+336,RFCE,GAS,sulfur dioxide,0.187719862
+337,RFCE,HYDRO,sulfur dioxide,
+338,RFCE,NUCLEAR,sulfur dioxide,
+339,RFCE,OFSL,sulfur dioxide,
+340,RFCE,OIL,sulfur dioxide,1.881479051
+341,RFCE,OTHF,sulfur dioxide,
+342,RFCE,SOLAR,sulfur dioxide,
+343,RFCE,WIND,sulfur dioxide,
+344,RFCM,BIOMASS,sulfur dioxide,0.085003908
+345,RFCM,COAL,sulfur dioxide,1.610346083
+346,RFCM,GAS,sulfur dioxide,0.6552857089999999
+347,RFCM,HYDRO,sulfur dioxide,
+348,RFCM,NUCLEAR,sulfur dioxide,
+349,RFCM,OIL,sulfur dioxide,1.309602063
+350,RFCM,SOLAR,sulfur dioxide,
+351,RFCM,WIND,sulfur dioxide,
+352,RFCW,BIOMASS,sulfur dioxide,0.8092687470000001
+353,RFCW,COAL,sulfur dioxide,9.508491093
+354,RFCW,GAS,sulfur dioxide,0.215676962
+355,RFCW,HYDRO,sulfur dioxide,
+356,RFCW,NUCLEAR,sulfur dioxide,
+357,RFCW,OFSL,sulfur dioxide,0.004467363
+358,RFCW,OIL,sulfur dioxide,1.011148631
+359,RFCW,OTHF,sulfur dioxide,0.027377575
+360,RFCW,SOLAR,sulfur dioxide,
+361,RFCW,WIND,sulfur dioxide,
+362,RMPA,BIOMASS,sulfur dioxide,0.084726951
+363,RMPA,COAL,sulfur dioxide,1.590930753
+364,RMPA,GAS,sulfur dioxide,0.341149221
+365,RMPA,HYDRO,sulfur dioxide,
+366,RMPA,OIL,sulfur dioxide,1.918013115
+367,RMPA,OTHF,sulfur dioxide,
+368,RMPA,SOLAR,sulfur dioxide,
+369,RMPA,WIND,sulfur dioxide,
+370,RMPA ,COAL ,sulfur dioxide,0.386489265
+371,SPNO,BIOMASS,sulfur dioxide,0.017236496
+372,SPNO,COAL,sulfur dioxide,4.359093618
+373,SPNO,GAS,sulfur dioxide,1.954365599
+374,SPNO,HYDRO,sulfur dioxide,
+375,SPNO,NUCLEAR,sulfur dioxide,
+376,SPNO,OIL,sulfur dioxide,1.562879699
+377,SPNO,OTHF,sulfur dioxide,
+378,SPNO,SOLAR,sulfur dioxide,
+379,SPNO,WIND,sulfur dioxide,
+380,SPSO,BIOMASS,sulfur dioxide,0.40086817799999996
+381,SPSO,COAL,sulfur dioxide,1.0952873840000001
+382,SPSO,GAS,sulfur dioxide,0.192666447
+383,SPSO,HYDRO,sulfur dioxide,
+384,SPSO,OFSL,sulfur dioxide,
+385,SPSO,OIL,sulfur dioxide,0.989676854
+386,SPSO,OTHF,sulfur dioxide,
+387,SPSO,SOLAR,sulfur dioxide,
+388,SPSO,WIND,sulfur dioxide,
+389,SRMV,BIOMASS,sulfur dioxide,0.499598647
+390,SRMV,COAL,sulfur dioxide,0.946304053
+391,SRMV,GAS,sulfur dioxide,0.173929377
+392,SRMV,HYDRO,sulfur dioxide,
+393,SRMV,NUCLEAR,sulfur dioxide,
+394,SRMV,OIL,sulfur dioxide,2.799088705
+395,SRMV,OTHF,sulfur dioxide,0.050412522
+396,SRMV,SOLAR,sulfur dioxide,
+397,SRMW,BIOMASS,sulfur dioxide,0.009492203000000001
+398,SRMW,COAL,sulfur dioxide,4.57819836
+399,SRMW,GAS,sulfur dioxide,2.610870203
+400,SRMW,HYDRO,sulfur dioxide,
+401,SRMW,NUCLEAR,sulfur dioxide,
+402,SRMW,OFSL,sulfur dioxide,
+403,SRMW,OIL,sulfur dioxide,1.1544360470000001
+404,SRMW,SOLAR,sulfur dioxide,
+405,SRMW,WIND,sulfur dioxide,
+406,SRSO,BIOMASS,sulfur dioxide,0.585511308
+407,SRSO,COAL,sulfur dioxide,6.61795409
+408,SRSO,GAS,sulfur dioxide,1.0896976859999998
+409,SRSO,HYDRO,sulfur dioxide,
+410,SRSO,NUCLEAR,sulfur dioxide,
+411,SRSO,OIL,sulfur dioxide,2.334239548
+412,SRSO,OTHF,sulfur dioxide,
+413,SRSO,SOLAR,sulfur dioxide,
+414,SRTV,BIOMASS,sulfur dioxide,0.36282965100000003
+415,SRTV,COAL,sulfur dioxide,5.492178591
+416,SRTV,GAS,sulfur dioxide,0.077356278
+417,SRTV,HYDRO,sulfur dioxide,
+418,SRTV,NUCLEAR,sulfur dioxide,
+419,SRTV,OIL,sulfur dioxide,1.071063487
+420,SRTV,OTHF,sulfur dioxide,
+421,SRTV,SOLAR,sulfur dioxide,
+422,SRTV,WIND,sulfur dioxide,
+423,SRVC,BIOMASS,sulfur dioxide,0.846847468
+424,SRVC,COAL,sulfur dioxide,2.481297262
+425,SRVC,GAS,sulfur dioxide,0.652632781
+426,SRVC,HYDRO,sulfur dioxide,0.012967761000000001
+427,SRVC,NUCLEAR,sulfur dioxide,
+428,SRVC,OIL,sulfur dioxide,1.194399137
+429,SRVC,OTHF,sulfur dioxide,
+430,SRVC,SOLAR,sulfur dioxide,
+431,SRVC,WIND,sulfur dioxide,
+432,AKGD,BIOMASS,Carbon dioxide,
+433,AKGD,COAL,Carbon dioxide,475.2983666999999
+434,AKGD,GAS,Carbon dioxide,279.5461092
+435,AKGD,HYDRO,Carbon dioxide,
+436,AKGD,OIL,Carbon dioxide,571.3258717
+437,AKGD,OTHF,Carbon dioxide,
+438,AKGD,WIND,Carbon dioxide,
+439,AKMS,GAS,Carbon dioxide,198.9207262
+440,AKMS,HYDRO,Carbon dioxide,14.96871697
+441,AKMS,OIL,Carbon dioxide,182.68596430000002
+442,AKMS,OTHF,Carbon dioxide,
+443,AKMS,WIND,Carbon dioxide,
+444,AZNM,BIOMASS,Carbon dioxide,5.1000546060000005
+445,AZNM,COAL,Carbon dioxide,125.70666820000001
+446,AZNM,GAS,Carbon dioxide,196.6353711
+447,AZNM,GEOTHERMAL,Carbon dioxide,0.000198912
+448,AZNM,HYDRO,Carbon dioxide,
+449,AZNM,NUCLEAR,Carbon dioxide,
+450,AZNM,OIL,Carbon dioxide,370.91744950000003
+451,AZNM,SOLAR,Carbon dioxide,
+452,AZNM,WIND,Carbon dioxide,
+453,CAMX,BIOMASS,Carbon dioxide,210.03622000000001
+454,CAMX,COAL,Carbon dioxide,357.382291
+455,CAMX,GAS,Carbon dioxide,227.6797787
+456,CAMX,GEOTHERMAL,Carbon dioxide,16.46737543
+457,CAMX,HYDRO,Carbon dioxide,
+458,CAMX,NUCLEAR,Carbon dioxide,
+459,CAMX,OFSL,Carbon dioxide,246.7917215
+460,CAMX,OIL,Carbon dioxide,346.9363963
+461,CAMX,OTHF,Carbon dioxide,462.4547722
+462,CAMX,SOLAR,Carbon dioxide,4.780940602
+463,CAMX,WIND,Carbon dioxide,
+464,ERCT,BIOMASS,Carbon dioxide,12.04856726
+465,ERCT,COAL,Carbon dioxide,72.21022175
+466,ERCT,GAS,Carbon dioxide,163.4704011
+467,ERCT,HYDRO,Carbon dioxide,
+468,ERCT,NUCLEAR,Carbon dioxide,
+469,ERCT,OFSL,Carbon dioxide,
+470,ERCT,OIL,Carbon dioxide,171.6730344
+471,ERCT,OTHF,Carbon dioxide,1186.946804
+472,ERCT,SOLAR,Carbon dioxide,
+473,ERCT,WIND,Carbon dioxide,
+474,FRCC,BIOMASS,Carbon dioxide,441.4956545
+475,FRCC,COAL,Carbon dioxide,125.9640591
+476,FRCC,GAS,Carbon dioxide,176.073803
+477,FRCC,HYDRO,Carbon dioxide,
+478,FRCC,NUCLEAR,Carbon dioxide,
+479,FRCC,OIL,Carbon dioxide,385.48710780000005
+480,FRCC,OTHF,Carbon dioxide,
+481,FRCC,SOLAR,Carbon dioxide,
+482,HIMS,BIOMASS,Carbon dioxide,
+483,HIMS,GEOTHERMAL,Carbon dioxide,
+484,HIMS,HYDRO,Carbon dioxide,
+485,HIMS,OIL,Carbon dioxide,192.11881519999997
+486,HIMS,OTHF,Carbon dioxide,
+487,HIMS,SOLAR,Carbon dioxide,
+488,HIMS,WIND,Carbon dioxide,
+489,HIOA,BIOMASS,Carbon dioxide,
+490,HIOA,COAL,Carbon dioxide,
+491,HIOA,OIL,Carbon dioxide,335.5444463
+492,HIOA,SOLAR,Carbon dioxide,
+493,HIOA,WIND,Carbon dioxide,
+494,MROE,BIOMASS,Carbon dioxide,76.16852824
+495,MROE,COAL,Carbon dioxide,360.5566251
+496,MROE,GAS,Carbon dioxide,363.8842798
+497,MROE,HYDRO,Carbon dioxide,
+498,MROE,OIL,Carbon dioxide,474.22710480000006
+499,MROE,OTHF,Carbon dioxide,
+500,MROE,WIND,Carbon dioxide,
+501,MROW,BIOMASS,Carbon dioxide,364.900098
+502,MROW,COAL,Carbon dioxide,388.1757242
+503,MROW,GAS,Carbon dioxide,309.45531869999996
+504,MROW,HYDRO,Carbon dioxide,23.41165064
+505,MROW,NUCLEAR,Carbon dioxide,
+506,MROW,OIL,Carbon dioxide,372.7778004
+507,MROW,OTHF,Carbon dioxide,
+508,MROW,SOLAR,Carbon dioxide,
+509,MROW,WIND,Carbon dioxide,44.31366633
+510,NEWE,BIOMASS,Carbon dioxide,433.7457387
+511,NEWE,COAL,Carbon dioxide,395.23398599999996
+512,NEWE,GAS,Carbon dioxide,160.1893554
+513,NEWE,HYDRO,Carbon dioxide,8.879638034
+514,NEWE,NUCLEAR,Carbon dioxide,
+515,NEWE,OFSL,Carbon dioxide,
+516,NEWE,OIL,Carbon dioxide,501.723903
+517,NEWE,OTHF,Carbon dioxide,
+518,NEWE,SOLAR,Carbon dioxide,
+519,NEWE,WIND,Carbon dioxide,
+520,NWPP,BIOMASS,Carbon dioxide,280.9977663
+521,NWPP,COAL,Carbon dioxide,201.34357450000002
+522,NWPP,GAS,Carbon dioxide,241.39131129999998
+523,NWPP,GEOTHERMAL,Carbon dioxide,0.0
+524,NWPP,HYDRO,Carbon dioxide,
+525,NWPP,NUCLEAR,Carbon dioxide,
+526,NWPP,OFSL,Carbon dioxide,
+527,NWPP,OIL,Carbon dioxide,87.8979926
+528,NWPP,OTHF,Carbon dioxide,
+529,NWPP,SOLAR,Carbon dioxide,
+530,NWPP,WIND,Carbon dioxide,
+531,NYCW,BIOMASS,Carbon dioxide,
+532,NYCW,GAS,Carbon dioxide,165.3679326
+533,NYCW,HYDRO,Carbon dioxide,
+534,NYCW,NUCLEAR,Carbon dioxide,
+535,NYCW,OIL,Carbon dioxide,149.9568409
+536,NYCW,SOLAR,Carbon dioxide,
+537,NYLI,BIOMASS,Carbon dioxide,267.7362316
+538,NYLI,GAS,Carbon dioxide,126.441469
+539,NYLI,OIL,Carbon dioxide,333.7748791
+540,NYLI,SOLAR,Carbon dioxide,
+541,NYUP,BIOMASS,Carbon dioxide,309.34347280000003
+542,NYUP,COAL,Carbon dioxide,215.855461
+543,NYUP,GAS,Carbon dioxide,117.5119663
+544,NYUP,HYDRO,Carbon dioxide,
+545,NYUP,NUCLEAR,Carbon dioxide,
+546,NYUP,OIL,Carbon dioxide,352.1821174
+547,NYUP,OTHF,Carbon dioxide,
+548,NYUP,SOLAR,Carbon dioxide,
+549,NYUP,WIND,Carbon dioxide,
+550,RFCE,BIOMASS,Carbon dioxide,397.4552567
+551,RFCE,COAL,Carbon dioxide,376.74856189999997
+552,RFCE,GAS,Carbon dioxide,253.0102102
+553,RFCE,HYDRO,Carbon dioxide,
+554,RFCE,NUCLEAR,Carbon dioxide,
+555,RFCE,OFSL,Carbon dioxide,
+556,RFCE,OIL,Carbon dioxide,469.72047069999996
+557,RFCE,OTHF,Carbon dioxide,185.063248
+558,RFCE,SOLAR,Carbon dioxide,
+559,RFCE,WIND,Carbon dioxide,
+560,RFCM,BIOMASS,Carbon dioxide,312.5987967
+561,RFCM,COAL,Carbon dioxide,323.60470699999996
+562,RFCM,GAS,Carbon dioxide,376.0894228
+563,RFCM,HYDRO,Carbon dioxide,
+564,RFCM,NUCLEAR,Carbon dioxide,
+565,RFCM,OIL,Carbon dioxide,704.5808264
+566,RFCM,SOLAR,Carbon dioxide,
+567,RFCM,WIND,Carbon dioxide,
+568,RFCW,BIOMASS,Carbon dioxide,221.820454
+569,RFCW,COAL,Carbon dioxide,293.308222
+570,RFCW,GAS,Carbon dioxide,203.059176
+571,RFCW,HYDRO,Carbon dioxide,
+572,RFCW,NUCLEAR,Carbon dioxide,
+573,RFCW,OFSL,Carbon dioxide,477.60520589999993
+574,RFCW,OIL,Carbon dioxide,394.8296597
+575,RFCW,OTHF,Carbon dioxide,42.73664311
+576,RFCW,SOLAR,Carbon dioxide,
+577,RFCW,WIND,Carbon dioxide,
+578,RMPA,BIOMASS,Carbon dioxide,
+579,RMPA,COAL,Carbon dioxide,224.5180889
+580,RMPA,GAS,Carbon dioxide,231.4666316
+581,RMPA,HYDRO,Carbon dioxide,
+582,RMPA,OIL,Carbon dioxide,323.56336
+583,RMPA,OTHF,Carbon dioxide,
+584,RMPA,SOLAR,Carbon dioxide,
+585,RMPA,WIND,Carbon dioxide,
+586,RMPA ,COAL ,Carbon dioxide,69.29768573
+587,SPNO,BIOMASS,Carbon dioxide,
+588,SPNO,COAL,Carbon dioxide,140.1617709
+589,SPNO,GAS,Carbon dioxide,338.93437339999997
+590,SPNO,HYDRO,Carbon dioxide,
+591,SPNO,NUCLEAR,Carbon dioxide,
+592,SPNO,OIL,Carbon dioxide,495.6669823
+593,SPNO,OTHF,Carbon dioxide,
+594,SPNO,SOLAR,Carbon dioxide,
+595,SPNO,WIND,Carbon dioxide,
+596,SPSO,BIOMASS,Carbon dioxide,26.56193912
+597,SPSO,COAL,Carbon dioxide,119.9562466
+598,SPSO,GAS,Carbon dioxide,230.13344640000003
+599,SPSO,HYDRO,Carbon dioxide,
+600,SPSO,OFSL,Carbon dioxide,
+601,SPSO,OIL,Carbon dioxide,270.3317298
+602,SPSO,OTHF,Carbon dioxide,
+603,SPSO,SOLAR,Carbon dioxide,
+604,SPSO,WIND,Carbon dioxide,
+605,SRMV,BIOMASS,Carbon dioxide,57.39433296
+606,SRMV,COAL,Carbon dioxide,28.54717076
+607,SRMV,GAS,Carbon dioxide,244.4872503
+608,SRMV,HYDRO,Carbon dioxide,
+609,SRMV,NUCLEAR,Carbon dioxide,
+610,SRMV,OIL,Carbon dioxide,411.76614910000006
+611,SRMV,OTHF,Carbon dioxide,494.2797393
+612,SRMV,SOLAR,Carbon dioxide,
+613,SRMW,BIOMASS,Carbon dioxide,
+614,SRMW,COAL,Carbon dioxide,258.05468959999996
+615,SRMW,GAS,Carbon dioxide,292.01802230000004
+616,SRMW,HYDRO,Carbon dioxide,
+617,SRMW,NUCLEAR,Carbon dioxide,
+618,SRMW,OFSL,Carbon dioxide,
+619,SRMW,OIL,Carbon dioxide,368.5608095
+620,SRMW,SOLAR,Carbon dioxide,
+621,SRMW,WIND,Carbon dioxide,
+622,SRSO,BIOMASS,Carbon dioxide,298.21751869999997
+623,SRSO,COAL,Carbon dioxide,209.6144017
+624,SRSO,GAS,Carbon dioxide,258.693597
+625,SRSO,HYDRO,Carbon dioxide,
+626,SRSO,NUCLEAR,Carbon dioxide,
+627,SRSO,OIL,Carbon dioxide,731.611807
+628,SRSO,OTHF,Carbon dioxide,
+629,SRSO,SOLAR,Carbon dioxide,
+630,SRTV,BIOMASS,Carbon dioxide,35.53795008
+631,SRTV,COAL,Carbon dioxide,293.924983
+632,SRTV,GAS,Carbon dioxide,246.03592149999997
+633,SRTV,HYDRO,Carbon dioxide,
+634,SRTV,NUCLEAR,Carbon dioxide,
+635,SRTV,OIL,Carbon dioxide,435.0767404
+636,SRTV,OTHF,Carbon dioxide,
+637,SRTV,SOLAR,Carbon dioxide,
+638,SRTV,WIND,Carbon dioxide,
+639,SRVC,BIOMASS,Carbon dioxide,234.92962020000002
+640,SRVC,COAL,Carbon dioxide,291.97581030000003
+641,SRVC,GAS,Carbon dioxide,223.38055209999996
+642,SRVC,HYDRO,Carbon dioxide,3.357141522
+643,SRVC,NUCLEAR,Carbon dioxide,
+644,SRVC,OIL,Carbon dioxide,462.15168880000004
+645,SRVC,OTHF,Carbon dioxide,
+646,SRVC,SOLAR,Carbon dioxide,
+647,SRVC,WIND,Carbon dioxide,
+648,AKGD,BIOMASS,Methane,
+649,AKGD,COAL,Methane,0.048363827000000005
+650,AKGD,GAS,Methane,0.00448486
+651,AKGD,HYDRO,Methane,
+652,AKGD,OIL,Methane,0.021518400000000003
+653,AKGD,OTHF,Methane,
+654,AKGD,WIND,Methane,
+655,AKMS,GAS,Methane,0.0037540790000000004
+656,AKMS,HYDRO,Methane,0.000606151
+657,AKMS,OIL,Methane,0.042203792000000004
+658,AKMS,OTHF,Methane,
+659,AKMS,WIND,Methane,
+660,AZNM,BIOMASS,Methane,0.011825289
+661,AZNM,COAL,Methane,0.028516142
+662,AZNM,GAS,Methane,0.004506813
+663,AZNM,GEOTHERMAL,Methane,
+664,AZNM,HYDRO,Methane,
+665,AZNM,NUCLEAR,Methane,
+666,AZNM,OIL,Methane,0.017253458
+667,AZNM,SOLAR,Methane,
+668,AZNM,WIND,Methane,
+669,CAMX,BIOMASS,Methane,0.249357422
+670,CAMX,COAL,Methane,0.043067352999999996
+671,CAMX,GAS,Methane,0.030990606
+672,CAMX,GEOTHERMAL,Methane,
+673,CAMX,HYDRO,Methane,
+674,CAMX,NUCLEAR,Methane,
+675,CAMX,OFSL,Methane,0.004655703
+676,CAMX,OIL,Methane,0.015001008
+677,CAMX,OTHF,Methane,0.006699318
+678,CAMX,SOLAR,Methane,0.00017569299999999999
+679,CAMX,WIND,Methane,
+680,ERCT,BIOMASS,Methane,0.217973356
+681,ERCT,COAL,Methane,0.028999677999999997
+682,ERCT,GAS,Methane,0.00364766
+683,ERCT,HYDRO,Methane,
+684,ERCT,NUCLEAR,Methane,
+685,ERCT,OFSL,Methane,
+686,ERCT,OIL,Methane,0.01044135
+687,ERCT,OTHF,Methane,0.033600873999999996
+688,ERCT,SOLAR,Methane,
+689,ERCT,WIND,Methane,
+690,FRCC,BIOMASS,Methane,0.297482135
+691,FRCC,COAL,Methane,0.027683602
+692,FRCC,GAS,Methane,0.025400531
+693,FRCC,HYDRO,Methane,
+694,FRCC,NUCLEAR,Methane,
+695,FRCC,OIL,Methane,0.018711646999999998
+696,FRCC,OTHF,Methane,
+697,FRCC,SOLAR,Methane,
+698,HIMS,BIOMASS,Methane,
+699,HIMS,GEOTHERMAL,Methane,
+700,HIMS,HYDRO,Methane,
+701,HIMS,OIL,Methane,0.063928287
+702,HIMS,OTHF,Methane,
+703,HIMS,SOLAR,Methane,
+704,HIMS,WIND,Methane,
+705,HIOA,BIOMASS,Methane,0.339335971
+706,HIOA,COAL,Methane,
+707,HIOA,OIL,Methane,0.047244432
+708,HIOA,SOLAR,Methane,
+709,HIOA,WIND,Methane,
+710,MROE,BIOMASS,Methane,0.06720222099999999
+711,MROE,COAL,Methane,0.044298569
+712,MROE,GAS,Methane,0.005585555999999999
+713,MROE,HYDRO,Methane,
+714,MROE,OIL,Methane,0.054595497
+715,MROE,OTHF,Methane,
+716,MROE,WIND,Methane,
+717,MROW,BIOMASS,Methane,0.254135712
+718,MROW,COAL,Methane,0.029992696
+719,MROW,GAS,Methane,0.040414566
+720,MROW,HYDRO,Methane,0.000847876
+721,MROW,NUCLEAR,Methane,
+722,MROW,OIL,Methane,0.015485321000000002
+723,MROW,OTHF,Methane,
+724,MROW,SOLAR,Methane,
+725,MROW,WIND,Methane,0.0009888339999999999
+726,NEWE,BIOMASS,Methane,0.200683306
+727,NEWE,COAL,Methane,0.026190388
+728,NEWE,GAS,Methane,0.013514202
+729,NEWE,HYDRO,Methane,0.00012952799999999998
+730,NEWE,NUCLEAR,Methane,
+731,NEWE,OFSL,Methane,
+732,NEWE,OIL,Methane,0.014668846999999999
+733,NEWE,OTHF,Methane,
+734,NEWE,SOLAR,Methane,
+735,NEWE,WIND,Methane,
+736,NWPP,BIOMASS,Methane,0.187455705
+737,NWPP,COAL,Methane,0.033625461
+738,NWPP,GAS,Methane,0.006798399
+739,NWPP,GEOTHERMAL,Methane,
+740,NWPP,HYDRO,Methane,
+741,NWPP,NUCLEAR,Methane,
+742,NWPP,OFSL,Methane,
+743,NWPP,OIL,Methane,0.007653806
+744,NWPP,OTHF,Methane,
+745,NWPP,SOLAR,Methane,
+746,NWPP,WIND,Methane,
+747,NYCW,BIOMASS,Methane,
+748,NYCW,GAS,Methane,0.004960375
+749,NYCW,HYDRO,Methane,
+750,NYCW,NUCLEAR,Methane,
+751,NYCW,OIL,Methane,0.011937856
+752,NYCW,SOLAR,Methane,
+753,NYLI,BIOMASS,Methane,0.188076078
+754,NYLI,GAS,Methane,0.002655845
+755,NYLI,OIL,Methane,0.015726781000000002
+756,NYLI,SOLAR,Methane,
+757,NYUP,BIOMASS,Methane,0.224888237
+758,NYUP,COAL,Methane,0.030647769
+759,NYUP,GAS,Methane,0.0025464570000000002
+760,NYUP,HYDRO,Methane,
+761,NYUP,NUCLEAR,Methane,
+762,NYUP,OIL,Methane,0.015549489
+763,NYUP,OTHF,Methane,
+764,NYUP,SOLAR,Methane,
+765,NYUP,WIND,Methane,
+766,RFCE,BIOMASS,Methane,0.284686131
+767,RFCE,COAL,Methane,0.048157754000000004
+768,RFCE,GAS,Methane,0.007321409
+769,RFCE,HYDRO,Methane,
+770,RFCE,NUCLEAR,Methane,
+771,RFCE,OFSL,Methane,
+772,RFCE,OIL,Methane,0.015985127
+773,RFCE,OTHF,Methane,0.00095644
+774,RFCE,SOLAR,Methane,
+775,RFCE,WIND,Methane,
+776,RFCM,BIOMASS,Methane,0.20727104699999999
+777,RFCM,COAL,Methane,0.039140761
+778,RFCM,GAS,Methane,0.027018961
+779,RFCM,HYDRO,Methane,
+780,RFCM,NUCLEAR,Methane,
+781,RFCM,OIL,Methane,0.031756677999999997
+782,RFCM,SOLAR,Methane,
+783,RFCM,WIND,Methane,
+784,RFCW,BIOMASS,Methane,0.171412593
+785,RFCW,COAL,Methane,0.040835404
+786,RFCW,GAS,Methane,0.014429366
+787,RFCW,HYDRO,Methane,
+788,RFCW,NUCLEAR,Methane,
+789,RFCW,OFSL,Methane,0.003207375
+790,RFCW,OIL,Methane,0.012160886999999999
+791,RFCW,OTHF,Methane,0.0023716139999999998
+792,RFCW,SOLAR,Methane,
+793,RFCW,WIND,Methane,
+794,RMPA,BIOMASS,Methane,0.356540676
+795,RMPA,COAL,Methane,0.029211322999999997
+796,RMPA,GAS,Methane,0.006933612
+797,RMPA,HYDRO,Methane,
+798,RMPA,OIL,Methane,0.01310407
+799,RMPA,OTHF,Methane,
+800,RMPA,SOLAR,Methane,
+801,RMPA,WIND,Methane,
+802,RMPA ,COAL ,Methane,0.0030017859999999998
+803,SPNO,BIOMASS,Methane,
+804,SPNO,COAL,Methane,0.029422102000000002
+805,SPNO,GAS,Methane,0.013071006000000001
+806,SPNO,HYDRO,Methane,
+807,SPNO,NUCLEAR,Methane,
+808,SPNO,OIL,Methane,0.023385961
+809,SPNO,OTHF,Methane,
+810,SPNO,SOLAR,Methane,
+811,SPNO,WIND,Methane,
+812,SPSO,BIOMASS,Methane,0.074879316
+813,SPSO,COAL,Methane,0.01486553
+814,SPSO,GAS,Methane,0.011003071000000001
+815,SPSO,HYDRO,Methane,
+816,SPSO,OFSL,Methane,
+817,SPSO,OIL,Methane,0.015110974
+818,SPSO,OTHF,Methane,
+819,SPSO,SOLAR,Methane,
+820,SPSO,WIND,Methane,
+821,SRMV,BIOMASS,Methane,0.168678745
+822,SRMV,COAL,Methane,0.0029793709999999998
+823,SRMV,GAS,Methane,0.009045475
+824,SRMV,HYDRO,Methane,
+825,SRMV,NUCLEAR,Methane,
+826,SRMV,OIL,Methane,0.029643047000000002
+827,SRMV,OTHF,Methane,0.008629801
+828,SRMV,SOLAR,Methane,
+829,SRMW,BIOMASS,Methane,
+830,SRMW,COAL,Methane,0.020548586
+831,SRMW,GAS,Methane,0.011932251999999999
+832,SRMW,HYDRO,Methane,
+833,SRMW,NUCLEAR,Methane,
+834,SRMW,OFSL,Methane,
+835,SRMW,OIL,Methane,0.013321593999999999
+836,SRMW,SOLAR,Methane,
+837,SRMW,WIND,Methane,
+838,SRSO,BIOMASS,Methane,0.19373038
+839,SRSO,COAL,Methane,0.031961998
+840,SRSO,GAS,Methane,0.029132217000000002
+841,SRSO,HYDRO,Methane,
+842,SRSO,NUCLEAR,Methane,
+843,SRSO,OIL,Methane,0.028399916
+844,SRSO,OTHF,Methane,
+845,SRSO,SOLAR,Methane,
+846,SRTV,BIOMASS,Methane,0.209998225
+847,SRTV,COAL,Methane,0.034501371
+848,SRTV,GAS,Methane,0.034385692999999995
+849,SRTV,HYDRO,Methane,
+850,SRTV,NUCLEAR,Methane,
+851,SRTV,OIL,Methane,0.020663422
+852,SRTV,OTHF,Methane,
+853,SRTV,SOLAR,Methane,
+854,SRTV,WIND,Methane,
+855,SRVC,BIOMASS,Methane,0.210235908
+856,SRVC,COAL,Methane,0.028995128
+857,SRVC,GAS,Methane,0.009481841
+858,SRVC,HYDRO,Methane,0.000249056
+859,SRVC,NUCLEAR,Methane,
+860,SRVC,OIL,Methane,0.020774685
+861,SRVC,OTHF,Methane,
+862,SRVC,SOLAR,Methane,
+863,SRVC,WIND,Methane,
+864,AKGD,BIOMASS,Dinitrogen monoxide,
+865,AKGD,COAL,Dinitrogen monoxide,0.007935403
+866,AKGD,GAS,Dinitrogen monoxide,0.000448525
+867,AKGD,HYDRO,Dinitrogen monoxide,
+868,AKGD,OIL,Dinitrogen monoxide,0.004303752
+869,AKGD,OTHF,Dinitrogen monoxide,
+870,AKGD,WIND,Dinitrogen monoxide,
+871,AKMS,GAS,Dinitrogen monoxide,0.000375903
+872,AKMS,HYDRO,Dinitrogen monoxide,0.000121209
+873,AKMS,OIL,Dinitrogen monoxide,0.0055035940000000005
+874,AKMS,OTHF,Dinitrogen monoxide,
+875,AKMS,WIND,Dinitrogen monoxide,
+876,AZNM,BIOMASS,Dinitrogen monoxide,0.001552693
+877,AZNM,COAL,Dinitrogen monoxide,0.004291937
+878,AZNM,GAS,Dinitrogen monoxide,0.000644072
+879,AZNM,GEOTHERMAL,Dinitrogen monoxide,
+880,AZNM,HYDRO,Dinitrogen monoxide,
+881,AZNM,NUCLEAR,Dinitrogen monoxide,
+882,AZNM,OIL,Dinitrogen monoxide,0.003571488
+883,AZNM,SOLAR,Dinitrogen monoxide,
+884,AZNM,WIND,Dinitrogen monoxide,
+885,CAMX,BIOMASS,Dinitrogen monoxide,0.032856002
+886,CAMX,COAL,Dinitrogen monoxide,0.005996288000000001
+887,CAMX,GAS,Dinitrogen monoxide,0.004072238
+888,CAMX,GEOTHERMAL,Dinitrogen monoxide,
+889,CAMX,HYDRO,Dinitrogen monoxide,
+890,CAMX,NUCLEAR,Dinitrogen monoxide,
+891,CAMX,OFSL,Dinitrogen monoxide,0.00046437800000000005
+892,CAMX,OIL,Dinitrogen monoxide,0.003194652
+893,CAMX,OTHF,Dinitrogen monoxide,0.000668533
+894,CAMX,SOLAR,Dinitrogen monoxide,1.77e-05
+895,CAMX,WIND,Dinitrogen monoxide,
+896,ERCT,BIOMASS,Dinitrogen monoxide,0.027509482000000002
+897,ERCT,COAL,Dinitrogen monoxide,0.004218665999999999
+898,ERCT,GAS,Dinitrogen monoxide,0.00054693
+899,ERCT,HYDRO,Dinitrogen monoxide,
+900,ERCT,NUCLEAR,Dinitrogen monoxide,
+901,ERCT,OFSL,Dinitrogen monoxide,
+902,ERCT,OIL,Dinitrogen monoxide,0.00217429
+903,ERCT,OTHF,Dinitrogen monoxide,0.006555938000000001
+904,ERCT,SOLAR,Dinitrogen monoxide,
+905,ERCT,WIND,Dinitrogen monoxide,
+906,FRCC,BIOMASS,Dinitrogen monoxide,0.038417225
+907,FRCC,COAL,Dinitrogen monoxide,0.004002686
+908,FRCC,GAS,Dinitrogen monoxide,0.00355646
+909,FRCC,HYDRO,Dinitrogen monoxide,
+910,FRCC,NUCLEAR,Dinitrogen monoxide,
+911,FRCC,OIL,Dinitrogen monoxide,0.004441098
+912,FRCC,OTHF,Dinitrogen monoxide,
+913,FRCC,SOLAR,Dinitrogen monoxide,
+914,HIMS,BIOMASS,Dinitrogen monoxide,
+915,HIMS,GEOTHERMAL,Dinitrogen monoxide,
+916,HIMS,HYDRO,Dinitrogen monoxide,
+917,HIMS,OIL,Dinitrogen monoxide,0.007921127
+918,HIMS,OTHF,Dinitrogen monoxide,
+919,HIMS,SOLAR,Dinitrogen monoxide,
+920,HIMS,WIND,Dinitrogen monoxide,
+921,HIOA,BIOMASS,Dinitrogen monoxide,0.041986525999999996
+922,HIOA,COAL,Dinitrogen monoxide,
+923,HIOA,OIL,Dinitrogen monoxide,0.005656438000000001
+924,HIOA,SOLAR,Dinitrogen monoxide,
+925,HIOA,WIND,Dinitrogen monoxide,
+926,MROE,BIOMASS,Dinitrogen monoxide,0.009576899
+927,MROE,COAL,Dinitrogen monoxide,0.0064581809999999995
+928,MROE,GAS,Dinitrogen monoxide,0.000599683
+929,MROE,HYDRO,Dinitrogen monoxide,
+930,MROE,OIL,Dinitrogen monoxide,0.006779108000000001
+931,MROE,OTHF,Dinitrogen monoxide,
+932,MROE,WIND,Dinitrogen monoxide,
+933,MROW,BIOMASS,Dinitrogen monoxide,0.033068485
+934,MROW,COAL,Dinitrogen monoxide,0.004319045
+935,MROW,GAS,Dinitrogen monoxide,0.005558831
+936,MROW,HYDRO,Dinitrogen monoxide,0.000169498
+937,MROW,NUCLEAR,Dinitrogen monoxide,
+938,MROW,OIL,Dinitrogen monoxide,0.00315255
+939,MROW,OTHF,Dinitrogen monoxide,
+940,MROW,SOLAR,Dinitrogen monoxide,
+941,MROW,WIND,Dinitrogen monoxide,0.00013218
+942,NEWE,BIOMASS,Dinitrogen monoxide,0.025492382999999997
+943,NEWE,COAL,Dinitrogen monoxide,0.0038285629999999997
+944,NEWE,GAS,Dinitrogen monoxide,0.00236548
+945,NEWE,HYDRO,Dinitrogen monoxide,2.58e-05
+946,NEWE,NUCLEAR,Dinitrogen monoxide,
+947,NEWE,OFSL,Dinitrogen monoxide,
+948,NEWE,OIL,Dinitrogen monoxide,0.0029566909999999996
+949,NEWE,OTHF,Dinitrogen monoxide,
+950,NEWE,SOLAR,Dinitrogen monoxide,
+951,NEWE,WIND,Dinitrogen monoxide,
+952,NWPP,BIOMASS,Dinitrogen monoxide,0.024029184
+953,NWPP,COAL,Dinitrogen monoxide,0.003385858
+954,NWPP,GAS,Dinitrogen monoxide,0.000924131
+955,NWPP,GEOTHERMAL,Dinitrogen monoxide,
+956,NWPP,HYDRO,Dinitrogen monoxide,
+957,NWPP,NUCLEAR,Dinitrogen monoxide,
+958,NWPP,OFSL,Dinitrogen monoxide,
+959,NWPP,OIL,Dinitrogen monoxide,0.0017998270000000002
+960,NWPP,OTHF,Dinitrogen monoxide,
+961,NWPP,SOLAR,Dinitrogen monoxide,
+962,NWPP,WIND,Dinitrogen monoxide,
+963,NYCW,BIOMASS,Dinitrogen monoxide,
+964,NYCW,GAS,Dinitrogen monoxide,0.000822978
+965,NYCW,HYDRO,Dinitrogen monoxide,
+966,NYCW,NUCLEAR,Dinitrogen monoxide,
+967,NYCW,OIL,Dinitrogen monoxide,0.002611192
+968,NYCW,SOLAR,Dinitrogen monoxide,
+969,NYLI,BIOMASS,Dinitrogen monoxide,0.024675201
+970,NYLI,GAS,Dinitrogen monoxide,0.000357351
+971,NYLI,OIL,Dinitrogen monoxide,0.003399519
+972,NYLI,SOLAR,Dinitrogen monoxide,
+973,NYUP,BIOMASS,Dinitrogen monoxide,0.02954684
+974,NYUP,COAL,Dinitrogen monoxide,0.004468107
+975,NYUP,GAS,Dinitrogen monoxide,0.000273475
+976,NYUP,HYDRO,Dinitrogen monoxide,
+977,NYUP,NUCLEAR,Dinitrogen monoxide,
+978,NYUP,OIL,Dinitrogen monoxide,0.003881463
+979,NYUP,OTHF,Dinitrogen monoxide,
+980,NYUP,SOLAR,Dinitrogen monoxide,
+981,NYUP,WIND,Dinitrogen monoxide,
+982,RFCE,BIOMASS,Dinitrogen monoxide,0.036574932000000004
+983,RFCE,COAL,Dinitrogen monoxide,0.005693541999999999
+984,RFCE,GAS,Dinitrogen monoxide,0.001351068
+985,RFCE,HYDRO,Dinitrogen monoxide,
+986,RFCE,NUCLEAR,Dinitrogen monoxide,
+987,RFCE,OFSL,Dinitrogen monoxide,
+988,RFCE,OIL,Dinitrogen monoxide,0.0034136279999999997
+989,RFCE,OTHF,Dinitrogen monoxide,9.620000000000001e-05
+990,RFCE,SOLAR,Dinitrogen monoxide,
+991,RFCE,WIND,Dinitrogen monoxide,
+992,RFCM,BIOMASS,Dinitrogen monoxide,0.027310837
+993,RFCM,COAL,Dinitrogen monoxide,0.0056796830000000005
+994,RFCM,GAS,Dinitrogen monoxide,0.00406248
+995,RFCM,HYDRO,Dinitrogen monoxide,
+996,RFCM,NUCLEAR,Dinitrogen monoxide,
+997,RFCM,OIL,Dinitrogen monoxide,0.0065310130000000004
+998,RFCM,SOLAR,Dinitrogen monoxide,
+999,RFCM,WIND,Dinitrogen monoxide,
+1000,RFCW,BIOMASS,Dinitrogen monoxide,0.022527308
+1001,RFCW,COAL,Dinitrogen monoxide,0.005412467
+1002,RFCW,GAS,Dinitrogen monoxide,0.00197333
+1003,RFCW,HYDRO,Dinitrogen monoxide,
+1004,RFCW,NUCLEAR,Dinitrogen monoxide,
+1005,RFCW,OFSL,Dinitrogen monoxide,0.00019303400000000002
+1006,RFCW,OIL,Dinitrogen monoxide,0.002454397
+1007,RFCW,OTHF,Dinitrogen monoxide,0.000149256
+1008,RFCW,SOLAR,Dinitrogen monoxide,
+1009,RFCW,WIND,Dinitrogen monoxide,
+1010,RMPA,BIOMASS,Dinitrogen monoxide,0.04693230599999999
+1011,RMPA,COAL,Dinitrogen monoxide,0.004273902
+1012,RMPA,GAS,Dinitrogen monoxide,0.001247693
+1013,RMPA,HYDRO,Dinitrogen monoxide,
+1014,RMPA,OIL,Dinitrogen monoxide,0.00262075
+1015,RMPA,OTHF,Dinitrogen monoxide,
+1016,RMPA,SOLAR,Dinitrogen monoxide,
+1017,RMPA,WIND,Dinitrogen monoxide,
+1018,RMPA ,COAL ,Dinitrogen monoxide,0.00043812800000000003
+1019,SPNO,BIOMASS,Dinitrogen monoxide,
+1020,SPNO,COAL,Dinitrogen monoxide,0.0041852470000000004
+1021,SPNO,GAS,Dinitrogen monoxide,0.00250242
+1022,SPNO,HYDRO,Dinitrogen monoxide,
+1023,SPNO,NUCLEAR,Dinitrogen monoxide,
+1024,SPNO,OIL,Dinitrogen monoxide,0.004898917
+1025,SPNO,OTHF,Dinitrogen monoxide,
+1026,SPNO,SOLAR,Dinitrogen monoxide,
+1027,SPNO,WIND,Dinitrogen monoxide,
+1028,SPSO,BIOMASS,Dinitrogen monoxide,0.007256381
+1029,SPSO,COAL,Dinitrogen monoxide,0.0021713039999999998
+1030,SPSO,GAS,Dinitrogen monoxide,0.0023696470000000003
+1031,SPSO,HYDRO,Dinitrogen monoxide,
+1032,SPSO,OFSL,Dinitrogen monoxide,
+1033,SPSO,OIL,Dinitrogen monoxide,0.00249843
+1034,SPSO,OTHF,Dinitrogen monoxide,
+1035,SPSO,SOLAR,Dinitrogen monoxide,
+1036,SPSO,WIND,Dinitrogen monoxide,
+1037,SRMV,BIOMASS,Dinitrogen monoxide,0.02051049
+1038,SRMV,COAL,Dinitrogen monoxide,0.00043483300000000003
+1039,SRMV,GAS,Dinitrogen monoxide,0.001965895
+1040,SRMV,HYDRO,Dinitrogen monoxide,
+1041,SRMV,NUCLEAR,Dinitrogen monoxide,
+1042,SRMV,OIL,Dinitrogen monoxide,0.003219193
+1043,SRMV,OTHF,Dinitrogen monoxide,0.0008610639999999999
+1044,SRMV,SOLAR,Dinitrogen monoxide,
+1045,SRMW,BIOMASS,Dinitrogen monoxide,
+1046,SRMW,COAL,Dinitrogen monoxide,0.003021684
+1047,SRMW,GAS,Dinitrogen monoxide,0.002028741
+1048,SRMW,HYDRO,Dinitrogen monoxide,
+1049,SRMW,NUCLEAR,Dinitrogen monoxide,
+1050,SRMW,OFSL,Dinitrogen monoxide,
+1051,SRMW,OIL,Dinitrogen monoxide,0.002651991
+1052,SRMW,SOLAR,Dinitrogen monoxide,
+1053,SRMW,WIND,Dinitrogen monoxide,
+1054,SRSO,BIOMASS,Dinitrogen monoxide,0.024185432000000003
+1055,SRSO,COAL,Dinitrogen monoxide,0.003934566
+1056,SRSO,GAS,Dinitrogen monoxide,0.004499545
+1057,SRSO,HYDRO,Dinitrogen monoxide,
+1058,SRSO,NUCLEAR,Dinitrogen monoxide,
+1059,SRSO,OIL,Dinitrogen monoxide,0.005729832
+1060,SRSO,OTHF,Dinitrogen monoxide,
+1061,SRSO,SOLAR,Dinitrogen monoxide,
+1062,SRTV,BIOMASS,Dinitrogen monoxide,0.025269719
+1063,SRTV,COAL,Dinitrogen monoxide,0.004898789000000001
+1064,SRTV,GAS,Dinitrogen monoxide,0.011392161999999999
+1065,SRTV,HYDRO,Dinitrogen monoxide,
+1066,SRTV,NUCLEAR,Dinitrogen monoxide,
+1067,SRTV,OIL,Dinitrogen monoxide,0.004475909
+1068,SRTV,OTHF,Dinitrogen monoxide,
+1069,SRTV,SOLAR,Dinitrogen monoxide,
+1070,SRTV,WIND,Dinitrogen monoxide,
+1071,SRVC,BIOMASS,Dinitrogen monoxide,0.026379726000000003
+1072,SRVC,COAL,Dinitrogen monoxide,0.004042154
+1073,SRVC,GAS,Dinitrogen monoxide,0.0019573679999999997
+1074,SRVC,HYDRO,Dinitrogen monoxide,4.970000000000001e-05
+1075,SRVC,NUCLEAR,Dinitrogen monoxide,
+1076,SRVC,OIL,Dinitrogen monoxide,0.004164372
+1077,SRVC,OTHF,Dinitrogen monoxide,
+1078,SRVC,SOLAR,Dinitrogen monoxide,
+1079,SRVC,WIND,Dinitrogen monoxide,

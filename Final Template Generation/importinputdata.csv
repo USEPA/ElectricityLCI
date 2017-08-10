@@ -1,0 +1,17 @@
+,kg/MWh,input,quantity kg/MWh
+0,BIT,Water (municipal) [Water],780.92
+1,SUB,Water (municipal) [Water],749.76
+2,LIG,Water (municipal) [Water],709.32
+3,GAS,Water (municipal) [Water],488.0
+4,BIT,Limestone [Minerals],24.61
+5,SUB,Limestone [Minerals],10.13
+6,LIG,Limestone [Minerals],12.02
+7,GAS,Limestone [Minerals],
+8,BIT,Power Plant [Construction],8.3418879e-09
+9,SUB,Power Plant [Construction],8.3418879e-09
+10,LIG,Power Plant [Construction],8.3418879e-09
+11,GAS,Power Plant [Construction],8.059999999999999e-09
+12,BIT,Natural gas USA [Natural gas (resource)],0.14
+13,SUB,Natural gas USA [Natural gas (resource)],0.14
+14,LIG,Natural gas USA [Natural gas (resource)],0.15
+15,GAS,Natural gas USA [Natural gas (resource)],137.0
