@@ -1,0 +1,26 @@
+AKGD,Alaska
+AKMS,Alaskan regions except the South (Anchorage area) and Central (Fairbanks area) Alaskan regions
+FRCC,Florida except for the panhandle (SRSO)
+HIMS,Misc Hawaii electricity grid that includes all of Hawaii except for Oahu (HIOA)
+HIOA,Oahu
+MROE,Wisconsin and northern Michigan
+MROW,"Minnesota, Iowa, most of the Dakotas (less RMPA) and Nebraska (less RMPA) and parts of Montana (less NWPP) and Wisconsin (less MROE)"
+NEWE,"Maine, New Hampshire, Vermont,Massachusetts, Rhode Island and Connecticut"
+NYCW,"New York City and Westchester County, NY"
+NYLI,"Long Island, NY"
+NYUP,"Most of NY state less Long Island, Westchester County and New York City"
+RFCE,New Jersey and Delaware and most of Pennsylvania and Maryland (less RFCW)
+RFCM,Michigan less the upper pennisula and a small south west portion of lower peninsula
+RFCW,"Indiana, Ohio, West Virginia, and portions of Illinois, Michigan, Minnesota, Kentucky, West Virginia, Maryland and Pennsylvania."
+SRMV,"Eastern Arkansas (less SPSO),  western Mississippi (less SRTV and SRSO), most of Louisiana (less SPSO) and a small portion of Texas"
+SRMW,Eastern Missouri (less SPNO) and Southern Illinois (less RFCW)
+SRSO,Georgia (less SRTV) and Alabama (less STRV) and southeast Mississippi and the panhandle of Florida
+SRTV,"Tennessee, most of Kentucky (less RFCW) and a small portions of West Virginia, North Carolina, Georgia, Alabama and Mississippi"
+SRVC,North and South Carolina and most of Virginia (less RFCW)
+SPNO,Kansas and western Missouri (less SRMW)
+SPSO,"Oklahoma, and portions of Arkansas, Louisiana, Texas and New Mexico"
+ERCT,"Texas except for small portions in the panhandle (SPSO), western Texas (AZNM) and eastern Texas (SRMV)"
+AZNM,"Southwest US (Arizona and New Mexico and small portions of southern California, southern Nevada and western Texas. )"
+CAMX,California (except for small portions in the north and south that are part of the NWPP and AZNM grids repsectively. )
+NWPP,"Washington, Oregon, Idaho, Utah, most of Montana (less NROW), Wyoming (less RMPA), Nevada (less AZNM) and northern parts of California, Arizona and New Mexico"
+RMPA,"Colorado, eastern Wyoming (less NWPP) and small portions of South Dakota, Nebraska and New Mexico"

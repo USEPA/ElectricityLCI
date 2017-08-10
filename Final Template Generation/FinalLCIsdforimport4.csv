@@ -1,0 +1,36 @@
+, eGRID subregion acronym ,Geo type,Emissions,Emissions quantity kg/MWh
+0,AZNM,GEOTHERMAL BT,nitrogen oxides,
+1,AZNM,GEOTHERMAL FT,nitrogen oxides,
+2,CAMX,GEOTHERMAL BT,nitrogen oxides,
+3,CAMX,GEOTHERMAL FT,nitrogen oxides,0.067416041
+4,HIMS,GEOTHERMAL BT,nitrogen oxides,
+5,NWPP,GEOTHERMAL BT,nitrogen oxides,
+6,NWPP,GEOTHERMAL FT,nitrogen oxides,
+7,AZNM,GEOTHERMAL BT,sulfur dioxide,
+8,AZNM,GEOTHERMAL FT,sulfur dioxide,0.0
+9,CAMX,GEOTHERMAL BT,sulfur dioxide,
+10,CAMX,GEOTHERMAL FT,sulfur dioxide,0.200016083
+11,HIMS,GEOTHERMAL BT,sulfur dioxide,
+12,NWPP,GEOTHERMAL BT,sulfur dioxide,
+13,NWPP,GEOTHERMAL FT,sulfur dioxide,0.0
+14,AZNM,GEOTHERMAL BT,Carbon dioxide,
+15,AZNM,GEOTHERMAL FT,Carbon dioxide,0.000198912
+16,CAMX,GEOTHERMAL BT,Carbon dioxide,
+17,CAMX,GEOTHERMAL FT,Carbon dioxide,16.46737543
+18,HIMS,GEOTHERMAL BT,Carbon dioxide,
+19,NWPP,GEOTHERMAL BT,Carbon dioxide,
+20,NWPP,GEOTHERMAL FT,Carbon dioxide,0.0
+21,AZNM,GEOTHERMAL BT,Methane,
+22,AZNM,GEOTHERMAL FT,Methane,
+23,CAMX,GEOTHERMAL BT,Methane,
+24,CAMX,GEOTHERMAL FT,Methane,
+25,HIMS,GEOTHERMAL BT,Methane,
+26,NWPP,GEOTHERMAL BT,Methane,
+27,NWPP,GEOTHERMAL FT,Methane,
+28,AZNM,GEOTHERMAL BT,Dinitrogen monoxide,
+29,AZNM,GEOTHERMAL FT,Dinitrogen monoxide,
+30,CAMX,GEOTHERMAL BT,Dinitrogen monoxide,
+31,CAMX,GEOTHERMAL FT,Dinitrogen monoxide,
+32,HIMS,GEOTHERMAL BT,Dinitrogen monoxide,
+33,NWPP,GEOTHERMAL BT,Dinitrogen monoxide,
+34,NWPP,GEOTHERMAL FT,Dinitrogen monoxide,
