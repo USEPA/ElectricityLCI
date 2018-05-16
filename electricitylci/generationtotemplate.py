@@ -43,7 +43,7 @@ def egrid_func(a,b):
        
         #Dropping less than 10%
         egrid_new1 = egrid[(egrid['Efficiency'] >= a) & (egrid['Efficiency'] <= b)]
-        egrid_new = egrid_new1.drop(['Heat input','Net generation','Efficiency'],axis = 1)
+        egrid_new = egrid_new1.drop(['Heat input','Efficiency'],axis = 1).reset_index()
         
         
         return egrid_new
@@ -74,9 +74,18 @@ def merge(a,b):
         egrid = egrid_func(a,b)
         tri = tri_func()
         database = egrid.merge(tri, how = 'left', left_on ='FacilityID', right_on = 'EGRID_ID')
-        database = database.drop(columns = ['EGRID_ID'])
+        
+        database = database.drop(columns = ['EGRID_ID','index'])
+        database = database.dropna(axis = 1, how = 'all')
+        
+        database.iloc[:,14:] = database.iloc[:,14:].apply(pd.to_numeric,errors = 'coerce')
+        database[['Net generation']] = database[['Net generation']].apply(pd.to_numeric,errors = 'coerce')
+        database.to_csv('chk.csv')
+        for i in range(14,len(database.axes[1])):
+         database.iloc[:,i] = database.iloc[:,i]/database.iloc[:,10]
+        database = database.drop(columns = ['Net generation'])
+        
         return database
-
 
 
 
@@ -101,18 +110,25 @@ def createblnkrow(br,io):
 def generator(a,b):
     
             database = merge(a,b)
-            #Reg = 'AZNM'
-            Reg = input('Please enter 4 lettered region here in uppercase: ')  
-            database = database[database['eGRID subregion acronym'] == Reg]            
+            
+            Reg = 'AZNM'
+            #Reg = input('Please enter 4 lettered region here in uppercase: ')  
+            database = database[database['eGRID subregion acronym'] == Reg]
+            
+            
+                
+            
             fuel_name = pd.read_csv("fuelname.csv", header=0, error_bad_lines=False)
             for row in fuel_name.itertuples():
-              #assuming the starting row to fill in the emissions is the 5th row Blank    
+              #assuming the starting row to fill in the emissions is the 5th row Blank
+              
               global blank_row;    
               blank_row = 6;
               index = 2;
               for roww in database.itertuples():
+                
                 #The fuels and their types are in two different columns
-                if row[1] == roww[8] or row[1] == roww[7]:              
+                if row[1] == roww[7] or row[1] == roww[8]:              
                     
                     fuelname = row[2]
                     print(fuelname)
@@ -171,7 +187,7 @@ def generator(a,b):
                     gi['D24'].value = 'database subregion definitions:<https://www.epa.gov/energy/emissions-generation-resource-integrated-database-database>\nNERC region: '+v+'\nStates totally or partially included: '+v1
                     '''
                     for rowww in database.itertuples():
-                        if row[1] == roww[8]:
+                        if row[1] == roww[6]:
                             v1.append(rowww[2])
                             
                     v2 = list(set(v1))        
@@ -179,7 +195,7 @@ def generator(a,b):
                     
                     gi['D24'].value = 'database subregion definitions:<https://www.epa.gov/energy/emissions-generation-resource-integrated-database-database>\nNERC region: '+v+'\nStates totally or partially included: '+str1
                    
-                    
+        
                     '''
                     #This is for printing the Prime Movers. Written to a output file and reread back. 
                     def pm(fn,rg):
@@ -198,8 +214,8 @@ def generator(a,b):
                     #linestring = open('out.txt', 'r').read()
                     
                     gi['D26'].value = 'This is an aggregation of technology types within this database subregion.  List of prime movers:'+linestring
-                    '''
                     
+                    '''
                     
                
                     #croppping the database according to the current fuel being considered
@@ -245,4 +261,6 @@ def generator(a,b):
                     data_dir = os.path.dirname(os.path.realpath(__file__))+"\\results\\"
                     wbook.save(data_dir+filename)
                     break;
-generator(10,100)
+
+
+p = generator(10,100)
