@@ -226,7 +226,8 @@ def generator(a,b):
 
 
                     #Fillin up with information emission only
-                    io['D5'].value =  'Electricity from '+fuelname;  
+                    io['D5'].value =  'Electricity from '+fuelname;
+                    io['F5'].value = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+str(fuelname)
                     io['G5'].value =  1 
                     io['H5'].value =  'MJ'
                     row1 = blank_row;

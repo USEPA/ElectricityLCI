@@ -9,7 +9,7 @@ datadir = globals.datadir
 outputdir = globals.outputdir
 
 
-egrid = pd.read_csv(datadir+"egrid.csv", header=0, error_bad_lines=False)
+egrid = pd.read_csv(datadir+"eGRID_2014.csv", header=0, error_bad_lines=False)
 temp = egrid[['NERC region acronym',' eGRID subregion acronym ']]
 temp = temp.drop_duplicates()
 
@@ -24,7 +24,6 @@ fuellist = fuellist.dropna(axis = 0, subset = [' eGRID subregion acronym '])
 #THis is for inputting the region name from the user for which the templates will be built. 
 
 Reg = input('Please enter 4 lettered eGRID subregion here in uppercase: ')
-ASCC
 print('Let the magic begin ---- ')
 #Read the template files. 
 
