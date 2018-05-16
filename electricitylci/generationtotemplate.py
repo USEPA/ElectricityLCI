@@ -4,6 +4,7 @@ import pandas as pd
 from copy import copy, deepcopy
 import openpyxl
 import numpy as np
+import os
 
 def gen1(a,b):
 
@@ -56,6 +57,7 @@ def gen1(a,b):
         #egrid_new1.loc[:,'Nitrogen oxides'] = egrid_new1['Nitrogen oxides'].values/egrid['Net generation'].values
       
         egrid_new = egrid_new1.drop(['Heat input','Net generation','Efficiency'],axis = 1)
+        #egrid_new.to_excel('chk.xlsx')
         
         return egrid_new
 
@@ -104,7 +106,7 @@ def standdev(d1,em):
 def generator(a,b):
     
             egrid = gen1(a,b)
-            Reg = 'AZNM'
+            Reg = 'CAMX'
             #Reg = input('Please enter 4 lettered region here in uppercase: ')  
             egrid = egrid[egrid['eGRID subregion acronym'] == Reg]
             
@@ -227,7 +229,7 @@ def generator(a,b):
 
                     #Fillin up with information emission only
                     io['D5'].value =  'Electricity from '+fuelname;
-                    io['F5'].value = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+str(fuelname)
+                    io['E5'].value = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+str(fuelname)
                     io['G5'].value =  1 
                     io['H5'].value =  'MJ'
                     row1 = blank_row;
@@ -255,7 +257,8 @@ def generator(a,b):
                             index = index+1;
 
                     filename = fuelname+"_"+Reg+".xlsx"
-                    wbook.save(filename)
+                    data_dir = os.path.dirname(os.path.realpath(__file__))+'\\results\\'
+                    wbook.save(data_dir+filename)
                     break;
 generator(10,100)
 

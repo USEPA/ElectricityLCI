@@ -18,3 +18,5 @@ SGC,synthetic coal
 LIG,lignite coal
 RC,refined coal
 COG,Coal gas
+SOLAR,Solar
+GEOTHERMAL,Geothermal
