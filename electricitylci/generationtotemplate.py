@@ -72,17 +72,18 @@ def merge(a,b):
         
         #Merging Egrid and TRI based on a left biased merging so as not to lose egrid facilities
         egrid = egrid_func(a,b)
+        
         tri = tri_func()
         database = egrid.merge(tri, how = 'left', left_on ='FacilityID', right_on = 'EGRID_ID')
         
         database = database.drop(columns = ['EGRID_ID','index'])
         database = database.dropna(axis = 1, how = 'all')
         
-        database.iloc[:,14:] = database.iloc[:,14:].apply(pd.to_numeric,errors = 'coerce')
+        
         database[['Net generation']] = database[['Net generation']].apply(pd.to_numeric,errors = 'coerce')
         database.to_csv('chk.csv')
-        for i in range(14,len(database.axes[1])):
-         database.iloc[:,i] = database.iloc[:,i]/database.iloc[:,10]
+        for i in range(15,len(database.axes[1])):
+         database.iloc[:,i] = database.iloc[:,i]/database.iloc[:,11]
         database = database.drop(columns = ['Net generation'])
         
         return database
@@ -115,8 +116,7 @@ def generator(a,b):
             #Reg = input('Please enter 4 lettered region here in uppercase: ')  
             database = database[database['eGRID subregion acronym'] == Reg]
             
-            
-                
+                            
             
             fuel_name = pd.read_csv("fuelname.csv", header=0, error_bad_lines=False)
             for row in fuel_name.itertuples():
@@ -170,9 +170,9 @@ def generator(a,b):
                     
                     gi['D18'].value = '2014'
                     
-                    gi['D20'].value = 'US-database-'+Reg
+                    gi['D20'].value = 'US-eGRID-'+Reg
                 
-                    v= '' ;
+                    v= [];
                     v1= [];
                     '''
                     #THis function is used for finding the NERC regions. THese input files are built manually. 
@@ -187,13 +187,16 @@ def generator(a,b):
                     gi['D24'].value = 'database subregion definitions:<https://www.epa.gov/energy/emissions-generation-resource-integrated-database-database>\nNERC region: '+v+'\nStates totally or partially included: '+v1
                     '''
                     for rowww in database.itertuples():
-                        if row[1] == roww[6]:
+                        if row[1] == roww[7] or row[1] == roww[8]:
                             v1.append(rowww[2])
+                            v.append(roww[9])
                             
                     v2 = list(set(v1))        
                     str1 = ','.join(v2)
                     
-                    gi['D24'].value = 'database subregion definitions:<https://www.epa.gov/energy/emissions-generation-resource-integrated-database-database>\nNERC region: '+v+'\nStates totally or partially included: '+str1
+                    v2 = list(set(v))
+                    str2 = ','.join(v2)
+                    gi['D24'].value = 'database subregion definitions:<https://www.epa.gov/energy/emissions-generation-resource-integrated-database-database>\nNERC region: '+str2+'\nStates totally or partially included: '+str1
                    
         
                     '''
@@ -213,7 +216,7 @@ def generator(a,b):
                     
                     #linestring = open('out.txt', 'r').read()
                     
-                    gi['D26'].value = 'This is an aggregation of technology types within this database subregion.  List of prime movers:'+linestring
+                    gi['D26'].value = 'This is an aggregation of technology types within this eGRID subregion.  List of prime movers:'+linestring
                     
                     '''
                     
@@ -227,7 +230,7 @@ def generator(a,b):
                     #This block is used for filling up the InputOutput Sheet ONLY EMISSIONS
                     io = wbook['InputsOutputs']
                     
-
+                    
 
                     #Fillin up with information emission only
                     io['D5'].value =  'Electricity from '+fuelname;
@@ -235,11 +238,12 @@ def generator(a,b):
                     io['G5'].value =  1 
                     io['H5'].value =  'MJ'
                     row1 = blank_row;
-                
+                    
 
                     #Gets emission list
-                    flownames = list(database_f1.columns.values)                    
-                    for i in range(8,len(flownames)):
+                    flownames = list(database_f1.columns.values) 
+                    
+                    for i in range(9,len(flownames)):
                     
                         if np.isnan(database_f1[flownames[i]].mean()) == False:
                             
@@ -264,3 +268,4 @@ def generator(a,b):
 
 
 p = generator(10,100)
+
