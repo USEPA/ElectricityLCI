@@ -24,14 +24,6 @@ def egrid_func(a,b):
         egrid = egrid1.merge(egrid3, left_on = 'FacilityID', right_on = 'FacilityID')
         egrid[['Heat input','Net generation']] = egrid[['Heat input','Net generation']].apply(pd.to_numeric,errors = 'coerce')
         
-        #Going back to per MJ units
-        egrid['Carbon dioxide'] = egrid['Carbon dioxide']/egrid['Net generation']
-        egrid['Sulfur dioxide'] = egrid['Sulfur dioxide']/egrid['Net generation']
-        egrid['Methane'] = egrid['Methane']/egrid['Net generation']
-        egrid['Nitrogen oxides'] = egrid['Nitrogen oxides']/egrid['Net generation']
-        egrid['Nitrous oxide'] =  egrid['Nitrous oxide']/egrid['Net generation']
-        
-        
         
         
         #Calculating efficiency
@@ -45,8 +37,21 @@ def egrid_func(a,b):
         #Dropping less than 10%
         egrid_new1 = egrid[(egrid['Efficiency'] >= a) & (egrid['Efficiency'] <= b)]
         
-        col = list(egrid_new1['Heat input']/egrid_new1['Net generation'])
+        egrid_new1.to_csv('chk.csv')
         
+        #Going back to per MJ units
+        #egrid_new1['Carbon dioxide'] = egrid_new1['Carbon dioxide']/egrid_new1['Net generation']
+        #egrid_new1['Sulfur dioxide'] = egrid_new1['Sulfur dioxide']/egrid_new1['Net generation']
+        #egrid_new1['Methane'] = egrid_new1['Methane']/egrid_new1['Net generation']
+        #egrid_new1['Nitrogen oxides'] = egrid_new1['Nitrogen oxides']/egrid_new1['Net generation']
+        #egrid_new1['Nitrous oxide'] =  egrid_new1['Nitrous oxide']/egrid_new1['Net generation']
+        
+        
+        
+        
+
+        
+        col = list(egrid_new1['Heat input'])        
         egrid_new1['HeatInput'] = col;
         cols = egrid_new1.columns.tolist()
         egrid_new1 = egrid_new1[[cols[-1]] + cols[:-1]] 
@@ -88,20 +93,25 @@ def merge(a,b):
         
         tri = tri_func()
         
-        database = egrid.merge(tri, how = 'left', left_on ='FacilityID', right_on = 'EGRID_ID')
+        database = egrid.merge(tri, how = 'left',left_on ='FacilityID', right_on = 'EGRID_ID')
         
         database = database.drop(columns = ['EGRID_ID'])
         database = database.dropna(axis = 1, how = 'all')
         database[['Compartment']] = database[['Compartment']].fillna(value = 'air')
         
-        )
+        
         
         database[['Net generation']] = database[['Net generation']].apply(pd.to_numeric,errors = 'coerce')
         
-        for i in range(17,len(database.axes[1])):
-         database.iloc[:,i] = database.iloc[:,i]/database.iloc[:,12]
-        database = database.drop(columns = ['Net generation'])
+        #for i in range(17,len(database.axes[1])):
+        # database.iloc[:,i] = database.iloc[:,i]/database.iloc[:,12]
         
+        col = list(database['Net generation'])         
+        database['NetGen'] = col;
+        cols = database.columns.tolist()
+        database = database[[cols[-1]] + cols[:-1]] 
+        database = database.drop(columns = ['Net generation'])
+        #database.to_csv('chk.csv')
         return database
 
 
@@ -144,7 +154,7 @@ def generator(a,b,Reg):
                 
                 
                 #The fuels and their types are in two different columns
-                if row[1] == roww[8] or row[1] == roww[9]:              
+                if row[1] == roww[9] or row[1] == roww[10]:              
                     
                     fuelname = row[2]
                     fuelheat = row[3]
@@ -205,9 +215,9 @@ def generator(a,b,Reg):
                     '''
                     
                     for rowww in database.itertuples():
-                        if row[1] == roww[8] or row[1] == roww[9]:
-                            v1.append(rowww[3])
-                            v.append(roww[10])
+                        if row[1] == roww[9] or row[1] == roww[10]:
+                            v1.append(rowww[4])
+                            v.append(roww[11])
                             
                     v2 = list(set(v1)) 
                     
@@ -270,11 +280,11 @@ def generator(a,b,Reg):
                         io[row1][1].value = 5;
                         io[row1][3].value = fuelname;
                         io[row1][4].value = 'Input Fuel'
-                        io[row1][6].value = database_f1['HeatInput'].mean()/fuelheat;
+                        io[row1][6].value = np.sum(database_f1['HeatInput'])/np.sum(database_f1['NetGen']);
                         io[row1][7].value = 'kg';
                         io[row1][21].value = 'database data with plants over 10% efficiency';
                         io[row1][26].value = 'Normal';
-                        io[row1][27].value = database_f1['HeatInput'].mean();
+                        io[row1][27].value = np.sum(database_f1['HeatInput'])/np.sum(database_f1['NetGen']);
                         io[row1][28].value = database_f1['HeatInput'].std();
                         io[row1][29].value = database_f1['HeatInput'].min();
                         io[row1][30].value = database_f1['HeatInput'].max();
@@ -289,6 +299,7 @@ def generator(a,b,Reg):
                     #air 
                     d1 = database_f1[database_f1['Compartment']=='air']
                     d1 = d1.drop(columns = ['Compartment'])
+                    d1.to_csv('chk.csv')
                     (blank_row,row1,index) = flowwriter(d1,io,row1,index,blank_row,'air')
                     
                     #water
@@ -320,9 +331,9 @@ def generator(a,b,Reg):
 def flowwriter(database_f1,io,row1,index,blank_row,comp):
     
     flownames = list(database_f1.columns.values) 
-    u = 16;             
+    u = 17;             
     if comp == 'air':
-        u = 10
+        u = 11
         
     for i in range(u,len(flownames)):
     
@@ -333,11 +344,11 @@ def flowwriter(database_f1,io,row1,index,blank_row,comp):
             io[row1][2].value = 4;
             io[row1][3].value = flownames[i];
             io[row1][4].value = 'Elementary Flows/'+str(comp)+'/unspecified'
-            io[row1][6].value = database_f1[flownames[i]].mean();
+            io[row1][6].value = np.sum(database_f1[flownames[i]])/np.sum(database_f1['NetGen']);
             io[row1][7].value = 'kg';
             io[row1][21].value = 'database data with plants over 10% efficiency';
             io[row1][26].value = 'Normal';
-            io[row1][27].value = database_f1[flownames[i]].mean();
+            io[row1][27].value = np.sum(database_f1[flownames[i]])/np.sum(database_f1['NetGen']);
             io[row1][28].value = database_f1[flownames[i]].std();
             io[row1][29].value = database_f1[flownames[i]].min();
             io[row1][30].value = database_f1[flownames[i]].max();
