@@ -1,5 +1,3 @@
-#Writes out generation processes. Not currently working because relies on inventory from old sources
-
 import pandas as pd
 from copy import copy, deepcopy
 import openpyxl
@@ -10,14 +8,18 @@ import sys
 def egrid_func(a,b):
 
         #Reading the facility file
-        egrid1 = pd.read_csv("egrid_2016_1.csv", header=0, error_bad_lines=False)
+        egrid1 = pd.read_csv("egrid_2014_1.csv", header=0, error_bad_lines=False)
         
         
         #Reading the flow by facility file
-        egrid2 = pd.read_csv("egrid_2016.csv", header=0, error_bad_lines=False)
+        egrid2 = pd.read_csv("egrid2014_trircrainfoneiegrid.csv", header=0, error_bad_lines=False)
+        
+        egrid2 = egrid2[egrid2['Source'] == 'eGRID']
+        
+        egrid2 = egrid2.drop_duplicates(keep = 'first')
         
         
-        egrid3 = egrid2.pivot(index = 'FacilityID',columns = 'FlowName', values = 'FlowAmount').reset_index()
+        egrid3 = pd.pivot_table(egrid2,index = 'FacilityID' ,columns = 'FlowName', values = 'FlowAmount').reset_index()
         
         
         #Merging dataframes together
@@ -32,90 +34,89 @@ def egrid_func(a,b):
        
         #Replace inf
         egrid = egrid.replace([np.inf, -np.inf], np.nan)
+        #Replacing all the facilities with no net generation or Heat input reported
         egrid = egrid.dropna(subset = ['Efficiency'])
        
         #Dropping less than 10%
         egrid_new1 = egrid[(egrid['Efficiency'] >= a) & (egrid['Efficiency'] <= b)]
         
-        egrid_new1.to_csv('chk.csv')
-        
-        #Going back to per MJ units
-        #egrid_new1['Carbon dioxide'] = egrid_new1['Carbon dioxide']/egrid_new1['Net generation']
-        #egrid_new1['Sulfur dioxide'] = egrid_new1['Sulfur dioxide']/egrid_new1['Net generation']
-        #egrid_new1['Methane'] = egrid_new1['Methane']/egrid_new1['Net generation']
-        #egrid_new1['Nitrogen oxides'] = egrid_new1['Nitrogen oxides']/egrid_new1['Net generation']
-        #egrid_new1['Nitrous oxide'] =  egrid_new1['Nitrous oxide']/egrid_new1['Net generation']
         
         
-        
-        
-
+       
         
         col = list(egrid_new1['Heat input'])        
         egrid_new1['HeatInput'] = col;
         cols = egrid_new1.columns.tolist()
         egrid_new1 = egrid_new1[[cols[-1]] + cols[:-1]] 
+        
+        
+        col = list(egrid_new1['Net generation'])         
+        egrid_new1['NetGen'] = col;
+        cols = egrid_new1.columns.tolist()
+        egrid_new1 = egrid_new1[[cols[-1]] + cols[:-1]] 
+        egrid_new1 = egrid_new1.drop(columns = ['Net generation'])       
         egrid_new1 = egrid_new1.drop(['Heat input','Efficiency'],axis = 1)
-        
-        
+        egrid_new1['NetGen'] = egrid_new1['NetGen']*0.277778/1000
+        #egrid_new1.to_csv('chk.csv')
         return egrid_new1
+    
+def compilation(db):
+        #Troy Method
+        #Creating copy of database by substitution the NA emissions with zero
+        db1 = db.fillna(value = 0)
+        
+        #Removing all rows here emissions are not reported for second dataframe
+        #db2 = db.dropna(how = db[db.columns[1]])
+        db2 = db.dropna()
+        
+        
+        #keeping the unreported emissions and facilities in separate database
+        #db3 = db[pd.isnull(db.iloc[:,1])]
+        
+        if db2.empty == True:
+            ef1 = np.sum(db1.iloc[:,1])/np.sum(db1.iloc[:,0])
+            return ef1
+    
+        ef1 = np.sum(db1.iloc[:,1])/np.sum(db1.iloc[:,0])
+        
+        ef2 = np.sum(db2.iloc[:,1])/np.sum(db2.iloc[:,0])
+        
+        weight = np.sum(db2.iloc[:,0])/np.sum(db1.iloc[:,0])
+        final_ef = ef2*weight + (1-weight)*ef1
+        return final_ef
 
 
-def tri_func():
+def tri_func(egrid):
         
         #READING tri database
-        tri = pd.read_csv("TRI_2016.csv", header=0, error_bad_lines=False)  
+        stewi_combo = pd.read_csv("tri_nei_rcrainfo_combined_for_egrid.csv", header=0, error_bad_lines=False)  
         
-        tri = tri.drop_duplicates(keep = 'first')
-        tri = tri[['FacilityID','FlowName','Compartment','FlowAmount']]
-        tri2 = tri.groupby(['FacilityID','FlowName','Compartment'])['FlowAmount'].sum()
-        tri2 = tri2.reset_index()
-        tri2 = tri2.dropna(axis = 0, how = 'any')
-        #TRI reshaping pivot not working so using pivot table
-        tri3 = pd.pivot_table(tri2,index = ['FacilityID','Compartment'], columns = 'FlowName', values = 'FlowAmount')
+        #Droppping duplicates in STEWI
+        stewi_combo = stewi_combo.drop_duplicates(keep = 'first')
+        stewi_combo = stewi_combo[['eGRID_ID','FlowName','Compartment','FlowAmount','Source','ReliabilityScore']]
+        stewi_combo2 = stewi_combo.groupby(['eGRID_ID','FlowName','Compartment','Source','ReliabilityScore'])['FlowAmount'].sum()
+        stewi_combo2 = stewi_combo2.reset_index()
         
-        tri3 = tri3.reset_index()
-        #print(tri2[['ReleaseType']])
+        #stewi_combo2 = stewi_combo2.dropna(axis = 0, how = 'any')
+        #stewi_combo reshaping pivot not working so using pivot table
+        stewi_combo3 = pd.pivot_table(stewi_combo2,index = ['eGRID_ID','Compartment','Source','ReliabilityScore'], columns = 'FlowName', values = 'FlowAmount')
         
-        tri2egrid = pd.read_csv("tri_egrid.csv", usecols = ['EGRID_ID','TRI_ID1'],header=0, error_bad_lines=False)
-        
-        #Merging with the bridge file with EGRID
-        tri4 = tri2egrid.merge(tri3, left_on = 'TRI_ID1', right_on = 'FacilityID')
-        tri4 = tri4.drop(columns = ['FacilityID','TRI_ID1'])
-        return tri4
-        
+        stewi_combo3 = stewi_combo3.reset_index()
 
-
-def merge(a,b):
+        egrid = egrid[['NetGen','FacilityID']]
+                
+        #Merging egrid and TRI
+        database = egrid.merge(stewi_combo3,left_on ='FacilityID', right_on = 'eGRID_ID')
         
-        #Merging Egrid and TRI based on a left biased merging so as not to lose egrid facilities
-        egrid = egrid_func(a,b)
-        
-        tri = tri_func()
-        
-        database = egrid.merge(tri, how = 'left',left_on ='FacilityID', right_on = 'EGRID_ID')
-        
-        database = database.drop(columns = ['EGRID_ID'])
-        database = database.dropna(axis = 1, how = 'all')
-        database[['Compartment']] = database[['Compartment']].fillna(value = 'air')
-        
-        
-        
-        database[['Net generation']] = database[['Net generation']].apply(pd.to_numeric,errors = 'coerce')
-        
-        #for i in range(17,len(database.axes[1])):
-        # database.iloc[:,i] = database.iloc[:,i]/database.iloc[:,12]
-        
-        col = list(database['Net generation'])         
-        database['NetGen'] = col;
-        cols = database.columns.tolist()
-        database = database[[cols[-1]] + cols[:-1]] 
-        database = database.drop(columns = ['Net generation'])
-        #database.to_csv('chk.csv')
-        return database
-
-
-
+        database = database.drop(columns = ['FacilityID','eGRID_ID'])
+        return database              
+       #database.to_csv('chk.csv')
+                
+    
+    
+    
+    
+    
 #This function is necessary to creates new line in the template for writing input and output flows. 
 def createblnkrow(br,io):
     
@@ -127,20 +128,20 @@ def createblnkrow(br,io):
       io.cell(row = br+1 ,column = i).font = copy(io.cell(row = br,column = i).font)
       io.cell(row = br+1 ,column = i).border = copy(io.cell(row = br,column = i).border)
       io.cell(row = br+1 ,column = i).fill = copy(io.cell(row = br,column = i).fill)
+    
     br = br + 1;
       #print(io.cell(row = 6,column = 4).value);
     return br
 
 
-
-def generator(a,b,Reg):
     
-            database = merge(a,b)
+def generator(a,b,Reg):
             
-            #Reg = 'AZNM'
-            #Reg = input('Please enter 4 lettered EGRID region here in uppercase: ')  
+            global year; 
+            year = '2016'
+            database = egrid_func(a,b)
             database = database[database['eGRID subregion acronym'] == Reg]
-            
+            d_list = ['eGRID','NEI','TRI','RCRAInfo']
                             
             
             fuel_name = pd.read_csv("fuelname.csv", header=0, error_bad_lines=False)
@@ -172,7 +173,8 @@ def generator(a,b,Reg):
                     
                     gi['D6'].value = 'at generating facility';
                     
-                    gi['D7'].value = 'Production Mix'; 
+                    #Mix type
+                    #gi['D7'].value = 'Production Mix'; 
                     
                     
                     
@@ -195,10 +197,11 @@ def generator(a,b,Reg):
                     
                     gi['D17'].value = '12/31/2017'
                     
-                    gi['D18'].value = '2014'
+                    gi['D18'].value = year
                     
                     gi['D20'].value = 'US-eGRID-'+Reg
                 
+                    gi['D21'].value = 'F'
                     v= [];
                     v1= [];
                     '''
@@ -265,10 +268,10 @@ def generator(a,b,Reg):
                     #Fillin up with reference only only
                     io['A5'].value = 1
                     io['C5'].value =  0;
-                    io['D5'].value =  'Electricity from '+fuelname;
+                    io['D5'].value =  'Electricity 100 - 120V';
                     io['E5'].value = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+str(fuelname)
                     io['G5'].value =  1 
-                    io['H5'].value =  'MJ'
+                    io['H5'].value =  'MWh'
                     row1 = blank_row;
                     
                     blank_row = createblnkrow(blank_row,io)
@@ -288,35 +291,61 @@ def generator(a,b,Reg):
                         io[row1][28].value = database_f1['HeatInput'].std();
                         io[row1][29].value = database_f1['HeatInput'].min();
                         io[row1][30].value = database_f1['HeatInput'].max();
+                        io[row1][33].value = 'eGRID '+year;
                         row1 = blank_row;
                         index = index + 1;
                     
                     
                     
-                    
-                    
-                    
-                    #air 
-                    d1 = database_f1[database_f1['Compartment']=='air']
-                    d1 = d1.drop(columns = ['Compartment'])
-                    d1.to_csv('chk.csv')
-                    (blank_row,row1,index) = flowwriter(d1,io,row1,index,blank_row,'air')
-                    
-                    #water
-                    d1 = database_f1[database_f1['Compartment']=='water']
-                    d1 = d1.drop(columns = ['Compartment'])
-                    (blank_row,row1,index) = flowwriter(d1,io,row1,index,blank_row,'water')
-                    
-                    #soil
-                    d1 = database_f1[database_f1['Compartment']=='soil']
-                    d1 = d1.drop(columns = ['Compartment'])
-                    (blank_row,row1,index) = flowwriter(d1,io,row1,index,blank_row,'soil')
-                    
-                    
+                    for x in d_list:
+                        if x == 'eGRID': 
+                            database_f3 = database_f1[['NetGen','Carbon dioxide', 'Nitrous oxide', 'Nitrogen oxides', 'Sulfur dioxide', 'Methane']]
+                            (blank_row,row1,index) = flowwriter(database_f3,io,row1,index,blank_row,'air',x)
+                        
+                        elif x != 'eGRID':
+                            database_f3 = tri_func(database_f1);
+                            if x == 'TRI':                     
+                                database_f3 = database_f3[database_f3['Source']=='TRI']
+                            elif x == 'NEI':
+                                database_f3 = database_f3[database_f3['Source']=='NEI']
+                            elif x == 'RCRAInfo':
+                                database_f3 = database_f3[database_f3['Source']=='RCRAInfo']
+                            
+                            if database_f3.empty != True:
+                                                      
+                                #water
+                                d1 = database_f3[database_f3['Compartment']=='air']
+                                d1 = d1.drop(columns = ['Compartment','Source'])
+                                
+                                if d1.empty != True:
+                                  (blank_row,row1,index) = flowwriter(d1,io,row1,index,blank_row,'air',x)                            
+                                
+                                
+                                #water
+                                d1 = database_f3[database_f3['Compartment']=='water']
+                                d1 = d1.drop(columns = ['Compartment','Source'])
+                                
+                                if d1.empty != True:
+                                  (blank_row,row1,index) = flowwriter(d1,io,row1,index,blank_row,'water',x)
+                                
+                                #soil
+                                d1 = database_f3[database_f3['Compartment']=='soil']
+                                d1 = d1.drop(columns = ['Compartment','Source'])
+                                
+                                if d1.empty != True:
+                                  (blank_row,row1,index) = flowwriter(d1,io,row1,index,blank_row,'soil',x)
+                                
+                                
+                                
+                                #waste
+                                d1 = database_f3[database_f3['Compartment']=='waste']
+                                d1 = d1.drop(columns = ['Compartment','Source'])
+                                
+                                if d1.empty != True:
+                                  (blank_row,row1,index) = flowwriter(d1,io,row1,index,blank_row,'waste',x)
 
-                            
-                            
-                            
+                             
+                        
                             
                             
                             
@@ -328,40 +357,37 @@ def generator(a,b,Reg):
                     break;
 
 
-def flowwriter(database_f1,io,row1,index,blank_row,comp):
+def flowwriter(database_f1,io,row1,index,blank_row,comp,y):
     
     flownames = list(database_f1.columns.values) 
-    u = 17;             
-    if comp == 'air':
-        u = 11
-        
-    for i in range(u,len(flownames)):
-    
-        if np.isnan(database_f1[flownames[i]].mean()) == False:
-            
+    for i in database_f1.iteritems():
+           
+      if str(i[0]) != 'NetGen' and str(i[0]) != 'ReliabilityScore': 
+        database_f2 = database_f1[['NetGen',i[0]]] 
+        if(compilation(database_f2) != 0 and compilation(database_f2)!= None):
             blank_row = createblnkrow(blank_row,io)
             io[row1][0].value = index;
             io[row1][2].value = 4;
-            io[row1][3].value = flownames[i];
+            io[row1][3].value = i[0];
             io[row1][4].value = 'Elementary Flows/'+str(comp)+'/unspecified'
-            io[row1][6].value = np.sum(database_f1[flownames[i]])/np.sum(database_f1['NetGen']);
+            io[row1][6].value = compilation(database_f2);
             io[row1][7].value = 'kg';
             io[row1][21].value = 'database data with plants over 10% efficiency';
             io[row1][26].value = 'Normal';
-            io[row1][27].value = np.sum(database_f1[flownames[i]])/np.sum(database_f1['NetGen']);
-            io[row1][28].value = database_f1[flownames[i]].std();
-            io[row1][29].value = database_f1[flownames[i]].min();
-            io[row1][30].value = database_f1[flownames[i]].max();
+            io[row1][27].value = compilation(database_f2);
+            io[row1][28].value = database_f1[i[0]].std();
+            io[row1][29].value = database_f1[i[0]].min();
+            io[row1][30].value = database_f1[i[0]].max();
+            io[row1][33].value = y+' '+year;
+            print(i[0])
             row1 = row1+1;
             index = index+1;
             
     return (blank_row,row1,index)
-
-
-
-
-
-#p = egrid_func(10,100)
-p = generator(10,100,'AZNM')
-#p = merge(10,100)                  
-#p = tri_func()
+#egrid = egrid_func(10,100)
+#p = tri_func(egrid)
+region = pd.read_excel('Region.xlsx')
+for ind in region.itertuples():
+    print(ind[1])
+    
+    generator(10,100,str(ind[1]))  
