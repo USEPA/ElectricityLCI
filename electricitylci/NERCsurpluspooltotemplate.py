@@ -4,9 +4,9 @@ import pandas as pd
 from copy import copy
 import openpyxl
 
-import globals
-datadir = globals.datadir
-outputdir = globals.outputdir
+#import globals
+#datadir = globals.datadir
+#outputdir = globals.outputdir
 
 egrid = pd.read_csv(datadir+"egrid.csv", header=0, error_bad_lines=False)
 temp = egrid[['NERC region acronym',' eGRID subregion acronym ']]
@@ -193,7 +193,7 @@ for i in range(0,26):
                            blank_row = createblnkrow(blank_row)
                            io[row][0].value = index;
                            io[row][2].value = 5;
-                           io[row][3].value = 'US-eGRID'+matrix[0][j].value+'electricity';
+                           io[row][3].value = 'Electricity 100 - 120V - '+matrix[0][j].value;
                            io[row][4].value = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'
                            io[row][6].value =  matrix[i+1][j].value
                            io[row][7].value = 'MWh';
