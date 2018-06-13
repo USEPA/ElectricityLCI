@@ -156,14 +156,14 @@ def generator(a,b,Reg):
           str1 = ','.join(v2)
         
           v2 = list(set(v))
-          print(v2)
+          
           str2 = ','.join(v2)
         
           gi['D24'].value = 'database subregion definitions:<https://www.epa.gov/energy/emissions-generation-resource-integrated-database-database>\nNERC region: '+str2+'\nStates totally or partially included: '+str1
        
           gi['D26'].value = 'This is an aggregation of technology types within this EGRID subregion'
-        
           
+                    
           for row in fuel_name.itertuples():
                 
                 fuelname = row[2]
@@ -186,7 +186,7 @@ def generator(a,b,Reg):
                     #Fillin up with reference only only
                     io['A5'].value =  1
                     io['C5'].value =  0;
-                    io['D5'].value =  'Electricity 100 - 120V';
+                    io['D5'].value =  str(names.iloc[0,0])
                     io['E5'].value = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'
                     io['F5'].value = str(Reg)
                     io['H5'].value =  'MWh'
@@ -205,8 +205,9 @@ def generator(a,b,Reg):
                     io[row1][5].value = Reg
                     io[row1][6].value = np.sum(database_f1['NetGen'])/np.sum((database['NetGen']))
                     io[row1][7].value = 'MWh';
+                    io[row1][9].value = 'Electricity; from '+ fuelname+'; at generating facility';
                     io[row1][21].value = 'database data with plants over 10% efficiency';
-                    io[row1][26].value = 'Normal';
+                    #io[row1][26].value = 'Normal';
                     io[row1][27].value = np.sum(database_f1['NetGen'])/np.sum((database['NetGen']))
                     #io[row1][28].value = database_f1[i[0]].std();
                     #io[row1][29].value = database_f1[i[0]].min();
