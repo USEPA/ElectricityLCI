@@ -20,18 +20,20 @@ warnings.filterwarnings("ignore")
 
 #Reading the name of flow file
 names = pd.read_csv('Name of flows.csv')
+
+#26 egrid regions in an array
 ar = ["AKMS","AZNM","CAMX","ERCT","FRCC","HIMS","HIOA","MROE","MROW","NEWE","NWPP","NYCW","NYLI","NYUP","RFCE","RFCM","RFCW","RMPA","SPNO","SPSO","SRMV","SRMW","SRSO","SRTV","SRVC"]
 
 
 
-#Reading the elementary flow list file
+#Reading the elementary flow list file WILL COME FROM FEDERAL LCA ELEMENTARY FLOW DATABASE. CALL FUNCTION FOR THAT> 
 elem_flow_map_orig = pd.read_csv('USEEIO_FlowMapping.csv', header = 0)
 
 
-#Reading the facility file
+#Reading the facility file from STEWI (will be replaaced with a call to STEWI )
 egrid1_orig = pd.read_csv("eGRID_2014_1.csv", header=0, error_bad_lines=False)
 
-#Reading the Stewi combo file. (double reading of same file needs to be corrected)
+#Reading the Stewi combo file. (double reading of same file needs to be corrected) Replaced by call to STEWI COMBO
 stewi_combo_orig = pd.read_csv("egrid2014_trircrainfoneiegrid.csv", header=0, error_bad_lines=False)  
 
 
@@ -40,7 +42,7 @@ egrid2_2_orig = pd.read_csv("egrid2014_trircrainfoneiegrid.csv", header=0, error
 
 #Reading eia from pickle file as main file is too slow. 
 #eia_orig = pd.read_csv('EIA923_Schedules_2_3_4_5_M_12_2015_Final_Revision.csv',skipinitialspace = True)
-eia_orig = pickle.load( open( "save.p", "rb" ))
+eia_orig = pickle.load(open( "save.p", "rb" ))
 
 
 #Reading the fuel name file
@@ -48,10 +50,34 @@ fuel_name = pd.read_csv("fuelname.csv", header=0, error_bad_lines=False)
 
 
 
-#This is the name changer function that helps to replace the chemical names with the names from the elementary flows list. 
+
+#This is a small function to check for year and decide what years need to be downloaded. Could be simpler because
+#if we specify the eGRID year as a parameter,an specify the years for the inventories, then we dont need this function. This will make it faster
+def year_check():
+    
+    global odd_year;
+    global odd_database;
+    global stewi_combo_orig;
+    global year;
+    egrid_years = [2014,2016];
+    egrid_time = pd.DataFrame() 
+    egrid_time[['Year','Source']]= stewi_combo_orig[['Year','Source']]
+    
+    egrid_time1 = egrid_time.groupby(by = ['Source'])['Year'].mean()
+    egrid_time1 = egrid_time1.reset_index()
+    
+    for row in egrid_time1[['Year']].itertuples():
+        if(row[1] != 2014 and row[1] != 2016):
+             odd_year = row[1]
+             odd_database = row[0]
+             
+        else:
+             year = row[1]
+
+#This is the name changer function that helps to replace the chemical names with the names from the elementary flows list. GLOBALS - Change names to something understandable
 def name_changer(inventory):
         
-         
+
         elem_flow_map = elem_flow_map_orig[['OriginalName', 'OriginalCategory','Source','NewName']]
         #Category name has starting letter capital. Reducing to lower case. 
         elem_flow_map['OriginalCategory'] = elem_flow_map['OriginalCategory'].str.lower()
@@ -67,7 +93,8 @@ def name_changer(inventory):
         new_data['FlowName'] = np.where(new_data['NewName'] != 'wrong',new_data['NewName'],new_data['FlowName'])
         #Dropping unnecessary columns
         new_data1 = new_data.drop(['OriginalName', 'OriginalCategory','NewName','index'],axis = 1)
-                
+        
+              
         return new_data1
 
 #This is the function for processing the eGRID dataset. 
@@ -130,7 +157,7 @@ def egrid_func(a,b):
         return egrid_new1
 
 
-#THis is for processing the EIA 923 data
+#THis is for processing the EIA 923 data So this can be reduced to one function call for efficiencies.
 def egrid_func2(a,b):
         
         #Extracing out few columns necessary
@@ -177,9 +204,8 @@ def egrid_func2(a,b):
         return egrid_new2
 
 
-#TRoy weight based method to compute emissions factors.    
+#TRoy weight based method to compute emissions factors.  Rename calculation of emission factors. descriptive of the varaible.  
 def compilation(db):
-    
         #Troy Method
         #Creating copy of database by substitution the NA emissions with zero
         db1 = db.fillna(value = 0)
@@ -244,6 +270,10 @@ def tri_func(data,a,b):
         #Merging egrid and other databases. 
         database = data.merge(stewi_combo3,left_on ='FacilityID', right_on = 'eGRID_ID')
         
+        
+        global odd_year;
+        
+        
         #Calling the EIA for replacing those emissiosn generation that are not there in the eGRID YEAR and needs to be obtained from EIA. 
         eia = egrid_func2(a,b);
         
@@ -252,7 +282,7 @@ def tri_func(data,a,b):
         
         #need to figure out how to know 2015 is the odd one out, 
         #Reaplcing the odd year Net generations with the EIA net generations. 
-        database['NetGen']= np.where(database['Year'] == 2015, database['NetGen_new'],database['NetGen'])
+        database['NetGen']= np.where(database['Year'] == odd_year, database['NetGen_new'],database['NetGen'])
         
         #Dropping unnecessary columns
         database = database.drop(columns = ['FacilityID','eGRID_ID','Plant Id','Year','NetGen_new'])
@@ -260,7 +290,10 @@ def tri_func(data,a,b):
         return database  
                    
          
-    
+# A major refactor template writer py file separate from everything. Starting to store the data in some dataframes.     
+#have the dataframe in same types of table. 
+        #easier to write JSONLD
+
 #This function is necessary to creates new line in the template for writing input and output flows. 
 def createblnkrow(br,io):
     
@@ -335,13 +368,14 @@ def uncertainty(db):
 def generator(l_limit,u_limit,Reg):
         
         
-        #The year is decided as 2014. However this needs to be changed. 
-        year = '2014'
+        
         database = egrid_func(l_limit,u_limit)
         
         #Extracing out only part of the database that belongs to a specific eGRID region. 
         database = database[database['eGRID subregion acronym'] == Reg]
         
+        
+        #Dictionary of lists 
         d_list = ['eGRID','NEI','TRI','RCRAInfo']
                             
         global fuel_name;
@@ -430,133 +464,134 @@ def generator(l_limit,u_limit,Reg):
                   database_f1 = database[database['Plant primary fuel'] == row[1]]              
             
             
-          
-            #This block is used for filling up the InputOutput Sheet ONLY EMISSIONS
-            io = wbook['InputsOutputs']
+            if database_f1.empty != True:
+                    #This block is used for filling up the InputOutput Sheet ONLY EMISSIONS
+                    io = wbook['InputsOutputs']
+                    
+                    
             
+                    #Fillin up with reference only only
+                    io['A5'].value = 1
+                    io['C5'].value =  0;
+                    io['D5'].value =  str(names.iloc[0,0])+' '+fuelname
+                    #io['E5'].value = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+str(fuelname)
+                    io['F5'].value = str(Reg)
+                    io['G5'].value =  1 
+                    io['H5'].value =  'MWh'
+                    row1 = blank_row;
+                    
+                    blank_row = createblnkrow(blank_row,io)
+                    
+                    #This part is used for writing the input fuel flow informationn
+                    if database_f1['HeatInput'].mean() != 0 and fuelheat != 0:
+                    #Fillin up the fuel flow
+                        io[row1][0].value = index;
+                        io[row1][1].value = 5;
+                        io[row1][3].value = fuelname;
+                        io[row1][4].value = 'Input Fuel'
+                        if str(fuelheat)!='nan':
+                          io[row1][6].value = (np.sum(database_f1['HeatInput'])/np.sum(database_f1['NetGen']))/fuelheat;
+                          io[row1][7].value = 'kg';
+                        else:
+                          io[row1][6].value = (np.sum(database_f1['HeatInput'])/np.sum(database_f1['NetGen']));
+                          io[row1][7].value = 'MJ';  
+                        
+                        io[row1][21].value = 'database data with plants over 10% efficiency';
+                        io[row1][26].value = 'LogNormal';
+                        temp_data = database_f1[['NetGen','HeatInput']]
+                        #uncertianty calculations only if database length is more than 3
+                        l,b = temp_data.shape
+                        if l > 3:
+                           u,s = uncertainty(temp_data)
+                           if str(fuelheat)!='nan':
+                             io[row1][27].value = str(round(math.exp(u),3)/fuelheat);
+                           else:
+                             io[row1][27].value = str(round(math.exp(u),3));  
+                            
+                           io[row1][28].value = str(round(math.exp(s),3));                        
+                        
+                        
+                        io[row1][29].value = database_f1['HeatInput'].min();
+                        io[row1][30].value = database_f1['HeatInput'].max();
+                        io[row1][33].value = 'eGRID '+year;
+                        row1 = blank_row;
+                        index = index + 1;
+                        
+                    
+            
+                    #This part is used for filling up the emission information from the different databases. 
+                    for x in d_list:
+                        
+                        if x == 'eGRID': 
+                            database_f3 = database_f1[['NetGen','Carbon dioxide', 'Nitrous oxide', 'Nitrogen oxides', 'Sulfur dioxide', 'Methane']]
+                            (blank_row,row1,index) = flowwriter(database_f3,io,row1,index,blank_row,'air',x)
+                            
+                        elif x != 'eGRID':  
+                            database_f3 = tri_func(database_f1,l_limit,u_limit);
+                            
+                            #This is for extracing only the database being considered fro the d list names. 
+                            if x == 'TRI':                     
+                                database_f3 = database_f3[database_f3['Source']=='TRI']
+                           
+                            elif x == 'NEI':
+                                database_f3 = database_f3[database_f3['Source']=='NEI']
+                           
+                            elif x == 'RCRAInfo':
+                                database_f3 = database_f3[database_f3['Source']=='RCRAInfo']
+                            
+                            #CHecking if its not empty and differentiating intp the different Compartments that are possible, air , water soil and wastes. 
+                            if database_f3.empty != True:
+                                                      
+                                #water
+                                d1 = database_f3[database_f3['Compartment']=='air']
+                                d1 = d1.drop(columns = ['Compartment','Source'])
+                                
+                                if d1.empty != True:
+                                  
+                                  (blank_row,row1,index) = flowwriter(d1,io,row1,index,blank_row,'air',x)                            
+                                
+                                
+                                #water
+                                d1 = database_f3[database_f3['Compartment']=='water']
+                                d1 = d1.drop(columns = ['Compartment','Source'])
+                                
+                                if d1.empty != True:
+                                  (blank_row,row1,index) = flowwriter(d1,io,row1,index,blank_row,'water',x)
+                                
+                                #soil
+                                d1 = database_f3[database_f3['Compartment']=='soil']
+                                d1 = d1.drop(columns = ['Compartment','Source'])
+                                
+                                if d1.empty != True:
+                                  (blank_row,row1,index) = flowwriter(d1,io,row1,index,blank_row,'soil',x)
+                                
+                                                        
+                                #waste
+                                d1 = database_f3[database_f3['Compartment']=='waste']
+                                d1 = d1.drop(columns = ['Compartment','Source'])
+                                
+                                if d1.empty != True:
+                                  (blank_row,row1,index) = flowwriter(d1,io,row1,index,blank_row,'waste',x)
+            
+                             
+                        
+                            
+                            
+                    #Writing final file. 
+                    
+                    filename = fuelname+"_"+Reg+".xlsx"
+                    data_dir = os.path.dirname(os.path.realpath(__file__))+"\\results\\"
+                    wbook.save(data_dir+filename)
+                    print(filename+' File written Successfully')
             
 
-            #Fillin up with reference only only
-            io['A5'].value = 1
-            io['C5'].value =  0;
-            io['D5'].value =  str(names.iloc[0,0])+' '+fuelname
-            #io['E5'].value = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+str(fuelname)
-            io['F5'].value = str(Reg)
-            io['G5'].value =  1 
-            io['H5'].value =  'MWh'
-            row1 = blank_row;
-            
-            blank_row = createblnkrow(blank_row,io)
-            
-            #This part is used for writing the input fuel flow informationn
-            if database_f1['HeatInput'].mean() != 0 and fuelheat != 0:
-            #Fillin up the fuel flow
-                io[row1][0].value = index;
-                io[row1][1].value = 5;
-                io[row1][3].value = fuelname;
-                io[row1][4].value = 'Input Fuel'
-                if str(fuelheat)!='nan':
-                  io[row1][6].value = (np.sum(database_f1['HeatInput'])/np.sum(database_f1['NetGen']))/fuelheat;
-                  io[row1][7].value = 'kg';
-                else:
-                  io[row1][6].value = (np.sum(database_f1['HeatInput'])/np.sum(database_f1['NetGen']));
-                  io[row1][7].value = 'MJ';  
-                
-                io[row1][21].value = 'database data with plants over 10% efficiency';
-                io[row1][26].value = 'LogNormal';
-                temp_data = database_f1[['NetGen','HeatInput']]
-                #uncertianty calculations only if database length is more than 3
-                l,b = temp_data.shape
-                if l > 3:
-                   u,s = uncertainty(temp_data)
-                   if str(fuelheat)!='nan':
-                     io[row1][27].value = str(round(math.exp(u),3)/fuelheat);
-                   else:
-                     io[row1][27].value = str(round(math.exp(u),3));  
-                    
-                   io[row1][28].value = str(round(math.exp(s),3));                        
-                
-                
-                io[row1][29].value = database_f1['HeatInput'].min();
-                io[row1][30].value = database_f1['HeatInput'].max();
-                io[row1][33].value = 'eGRID '+year;
-                row1 = blank_row;
-                index = index + 1;
-                
-            
-
-            #This part is used for filling up the emission information from the different databases. 
-            for x in d_list:
-                
-                if x == 'eGRID': 
-                    database_f3 = database_f1[['NetGen','Carbon dioxide', 'Nitrous oxide', 'Nitrogen oxides', 'Sulfur dioxide', 'Methane']]
-                    (blank_row,row1,index) = flowwriter(database_f3,io,row1,index,blank_row,'air',x)
-                    
-                elif x != 'eGRID':  
-                    database_f3 = tri_func(database_f1,l_limit,u_limit);
-                    
-                    #This is for extracing only the database being considered fro the d list names. 
-                    if x == 'TRI':                     
-                        database_f3 = database_f3[database_f3['Source']=='TRI']
-                   
-                    elif x == 'NEI':
-                        database_f3 = database_f3[database_f3['Source']=='NEI']
-                   
-                    elif x == 'RCRAInfo':
-                        database_f3 = database_f3[database_f3['Source']=='RCRAInfo']
-                    
-                    #CHecking if its not empty and differentiating intp the different Compartments that are possible, air , water soil and wastes. 
-                    if database_f3.empty != True:
-                                              
-                        #water
-                        d1 = database_f3[database_f3['Compartment']=='air']
-                        d1 = d1.drop(columns = ['Compartment','Source'])
-                        
-                        if d1.empty != True:
-                          
-                          (blank_row,row1,index) = flowwriter(d1,io,row1,index,blank_row,'air',x)                            
-                        
-                        
-                        #water
-                        d1 = database_f3[database_f3['Compartment']=='water']
-                        d1 = d1.drop(columns = ['Compartment','Source'])
-                        
-                        if d1.empty != True:
-                          (blank_row,row1,index) = flowwriter(d1,io,row1,index,blank_row,'water',x)
-                        
-                        #soil
-                        d1 = database_f3[database_f3['Compartment']=='soil']
-                        d1 = d1.drop(columns = ['Compartment','Source'])
-                        
-                        if d1.empty != True:
-                          (blank_row,row1,index) = flowwriter(d1,io,row1,index,blank_row,'soil',x)
-                        
-                                                
-                        #waste
-                        d1 = database_f3[database_f3['Compartment']=='waste']
-                        d1 = d1.drop(columns = ['Compartment','Source'])
-                        
-                        if d1.empty != True:
-                          (blank_row,row1,index) = flowwriter(d1,io,row1,index,blank_row,'waste',x)
-
-                     
-                
-                    
-                    
-            #Writing final file. 
-            
-            filename = fuelname+"_"+Reg+".xlsx"
-            data_dir = os.path.dirname(os.path.realpath(__file__))+"\\results\\"
-            wbook.save(data_dir+filename)
-            print(filename+' File written Successfully')
-            
-year = '2014'
             
 def flowwriter(database_f1,io,row1,index,blank_row,comp,y):
     
     global year;
+    global odd_year;
+    global odd_database;
     
-    flownames = list(database_f1.columns.values) 
     for i in database_f1.iteritems():
       
       #Only writng the emissions. NOt any other flows or columns in the template files.   
@@ -585,9 +620,9 @@ def flowwriter(database_f1,io,row1,index,blank_row,comp,y):
             io[row1][29].value = database_f2[i[0]].min();
             io[row1][30].value = database_f2[i[0]].max();
             
-            if y == 'RCRAInfo':
+            if y == odd_database:
                  
-                 io[row1][33].value = y+' 2015';
+                 io[row1][33].value = y+' '+str(odd_year);
                  
             else: 
                  
@@ -607,28 +642,23 @@ def flowwriter(database_f1,io,row1,index,blank_row,comp,y):
 import concurrent.futures
 
 def function(x):
-    
+    print(x)
     generator(10,100,x)
     
-ar=['AZNM']
-
+'''    
 def main():
+     
      if __name__ == '__main__':     
        with concurrent.futures.ProcessPoolExecutor() as executor:
         zip(ar, executor.map(function, ar))
 
-main()
+from multiprocessing import Process
 
-
-
-
-
-'''
 Pros = []
 
 def main():
-  for i in range(0,4):
-     
+  for i in range(0,2):
+     year_check()
      if __name__ == '__main__':
          p = Process(target=function, args=(ar[i],))
          p.start()
@@ -637,8 +667,13 @@ def main():
   for p in Pros:
      p.join()      
 
+
+
+main()
   # block until all the threads finish (i.e. block until all function_x calls finish)    
   #for th in Pros:
   #   th.join()
-
 '''
+
+
+function('AZNM')
