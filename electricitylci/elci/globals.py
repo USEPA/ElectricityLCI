@@ -20,11 +20,12 @@ def directory_pointer():
     os.chdir(data_dir)
 
     
-
-
+    
 
 def read_eLCI_base_data():
-
+    
+    global names;
+    global fuel_name;
     
     directory_pointer()    
     names = pd.read_excel('eLCI_data.xlsx',sheet_name = 'generation_elecname')
@@ -32,17 +33,30 @@ def read_eLCI_base_data():
     #Reading the fuel name file
     fuel_name = pd.read_excel('eLCI_data.xlsx',sheet_name = 'fuelname')
     
-    return names,fuel_name
+
     
-    
-read_eLCI_base_data()
+
 
 
 def read_all_databases():
     
+    
+    
+    global egrid2_2_orig;
+    global elem_flow_map_orig;
+    global egrid1_orig;
+    global stewi_combo_orig;
+    global ar;
+    global fuel_name;
+    global eia_orig;
+    
+    
     data_dir = os.path.dirname(os.path.realpath(__file__))+'\data'
     
     os.chdir(data_dir)
+    
+    #Reading the fuel name file
+    fuel_name = pd.read_excel('eLCI_data.xlsx',sheet_name = 'fuelname')
 
     #Reading the name of flow file
     
@@ -65,6 +79,7 @@ def read_all_databases():
     
     #Reading the flow by facility file coming from STEWI Combo. 
     egrid2_2_orig = pd.read_csv("egrid2014_trircrainfoneiegrid.csv", header=0, error_bad_lines=False)
+
     
     #Reading eia from pickle file as main file is too slow. 
     #eia_orig = pd.read_csv('EIA923_Schedules_2_3_4_5_M_12_2015_Final_Revision.csv',skipinitialspace = True)
@@ -72,8 +87,20 @@ def read_all_databases():
     eia_orig = pickle.load(open( "save.p", "rb" ))
     
     
-    #Reading the fuel name file
-    fuel_name = pd.read_excel('eLCI_data.xlsx',sheet_name = 'fuelname')
+
+def infrastructure_writer():
+     directory_pointer()
+     global infrastructure;
+     infrastructure = pd.read_excel('other_inputs.xlsx',sheet_name = 'infrastructure')
+     
+    
+read_eLCI_base_data()
+read_all_databases()
+infrastructure_writer()
+
+
+
+
 
 
 '''

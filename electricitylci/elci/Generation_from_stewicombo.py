@@ -11,10 +11,20 @@ from sympy import *
 import pickle
 import time
 import warnings
-from stewi import globals 
+
+
+warnings.filterwarnings("ignore")
+
+from globals import *
 
 
 
+
+
+
+
+
+'''
 
 warnings.filterwarnings("ignore")
 
@@ -48,7 +58,7 @@ eia_orig = pickle.load(open( "save.p", "rb" ))
 #Reading the fuel name file
 fuel_name = pd.read_csv("fuelname.csv", header=0, error_bad_lines=False)
 
-
+'''
 
 
 #This is a small function to check for year and decide what years need to be downloaded. Could be simpler because
@@ -367,19 +377,22 @@ def uncertainty(db):
 #The main generator function that generates the scripts.   
 def generator(l_limit,u_limit,Reg):
         
-        
+        year_check()
         
         database = egrid_func(l_limit,u_limit)
         
         #Extracing out only part of the database that belongs to a specific eGRID region. 
         database = database[database['eGRID subregion acronym'] == Reg]
         
-        
+        data_dir = os.path.dirname(os.path.realpath(__file__))   
+        os.chdir(data_dir)
         #Dictionary of lists 
         d_list = ['eGRID','NEI','TRI','RCRAInfo']
                             
         global fuel_name;
         global names;
+        global year;
+        global fuelname;
             
         for row in fuel_name.itertuples():
         #assuming the starting row to fill in the emissions is the 5th row Blank
@@ -513,11 +526,11 @@ def generator(l_limit,u_limit,Reg):
                         
                         io[row1][29].value = database_f1['HeatInput'].min();
                         io[row1][30].value = database_f1['HeatInput'].max();
-                        io[row1][33].value = 'eGRID '+year;
+                        io[row1][33].value = 'eGRID'+str(year);
                         row1 = blank_row;
                         index = index + 1;
                         
-                    
+                    (blank_row,row1,index) = flowwriter_infrastructure(io,row1,index,blank_row)
             
                     #This part is used for filling up the emission information from the different databases. 
                     for x in d_list:
@@ -586,6 +599,39 @@ def generator(l_limit,u_limit,Reg):
             
 
             
+def flowwriter_infrastructure(io,row1,index,blank_row):
+    global infrastructure;
+    global year;
+    global fuelname
+    
+    for i in infrastructure.iteritems():
+        if i[0] != 'Description' and i[0] != 'Fuel':
+            blank_row = createblnkrow(blank_row,io)
+            io[row1][0].value = index;
+            io[row1][1].value = 5;
+            io[row1][3].value = i[0];
+            io[row1][4].value = 'Category Input Flows'
+            for j in infrastructure.itertuples():
+                
+                if j[2] == fuelname:
+
+                 io[row1][6].value =j[infrastructure.columns.get_loc(i[0])+1]
+
+            io[row1][7].value = 'kg';
+            io[row1][21].value = 'database data with plants over 10% efficiency';
+            io[row1][26].value = 'LogNormal';
+            
+                            
+            io[row1][33].value = str(year);
+                 
+            
+            row1 = row1+1;
+            index = index+1;
+            
+    return (blank_row,row1,index)
+
+
+
 def flowwriter(database_f1,io,row1,index,blank_row,comp,y):
     
     global year;
@@ -626,13 +672,16 @@ def flowwriter(database_f1,io,row1,index,blank_row,comp,y):
                  
             else: 
                  
-                 io[row1][33].value = y+' '+year;
+                 io[row1][33].value = y+' '+str(year);
                  
             
             row1 = row1+1;
             index = index+1;
             
     return (blank_row,row1,index)
+
+
+
 
 
  
@@ -676,4 +725,4 @@ main()
 '''
 
 
-#function('AZNM')
+function('AZNM')
