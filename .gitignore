@@ -1,0 +1,5 @@
+*.xlsx 
+*.csv
+
+electricitylci/generationtemplate(old).py
+electricitylci/generationtemplate_(old).py
