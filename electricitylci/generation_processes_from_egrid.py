@@ -1,5 +1,7 @@
 ###Creates the data for electricity generation processes by fuel type and eGRID subregion
 ###Uses global variables set in the globals file that define filters
+
+
 from electricitylci.globals import include_only_egrid_facilities_with_positive_generation
 from electricitylci.globals import egrid_facility_efficiency_filters
 from electricitylci.globals import egrid_year
@@ -12,6 +14,9 @@ from electricitylci.egrid_energy import list_egrid_facilities_in_efficiency_rang
 from electricitylci.egrid_emissions_and_waste_by_facility import emissions_and_wastes_by_facility
 from electricitylci.egrid_emissions_and_waste_by_facility import years_in_emissions_and_wastes_by_facility
 from electricitylci.egrid_FRS_matches import list_FRS_ids_filtered_for_NAICS
+
+
+
 
 #Get lists of egrid facilities
 all_egrid_facility_ids = list(egrid_facilities['FacilityID'])
@@ -50,10 +55,14 @@ len(egrid_facilities_to_include)
 emissions_and_waste_by_facility_for_selected_egrid_facilities = emissions_and_wastes_by_facility[emissions_and_wastes_by_facility['eGRID_ID'].isin(egrid_facilities_to_include)]
 #for egrid 2016,TRI 2016,NEI 2016,RCRAInfo 2015: 118415
 
-#Set aside the egrid emissions because these are not filtered
-egrid_emissions_for_selected_egrid_facilities = emissions_and_waste_by_facility_for_selected_egrid_facilities[emissions_and_waste_by_facility_for_selected_egrid_facilities['Source'] == 'eGRID']
-len(egrid_emissions_for_selected_egrid_facilities)
-#2016: 34328
+
+
+
+'''
+
+
+NAICS Filtering part is left for Wes to Finish
+
 #keep only air emission from egrid
 egrid_emissions_for_selected_egrid_facilities = egrid_emissions_for_selected_egrid_facilities[egrid_emissions_for_selected_egrid_facilities['Compartment'] == 'air']
 #2016: 22842
@@ -66,6 +75,9 @@ frs_ids_meeting_NAICS_criteria = list_FRS_ids_filtered_for_NAICS()
 
 #includes only the non_egrid_emissions for facilities not filtered out with NAICS
 nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities_NAICS_filtered = nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities[nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities['FRS_ID'].isin(frs_ids_meeting_NAICS_criteria)]
+
+
+
 
 #TJ to take over to further divide by source
 
@@ -103,3 +115,4 @@ nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities_NAICS_fil
 #Write generation inventory into dictionaries
 
 
+'''
