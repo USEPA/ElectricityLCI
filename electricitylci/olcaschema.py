@@ -289,7 +289,7 @@ def exchange_table_creation_output(data,y,comp):
     global d;
     global odd_year;
     
-    data.to_csv('chk.csv')
+    
     ar = {'':''}
     
     ar['internalId']=''
