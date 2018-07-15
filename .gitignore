@@ -3,3 +3,8 @@
 *.csv
 *.csv
 electricitylci/chk.csv
+*.pyc
+electricitylci/__pycache__/elci_database_generator.cpython-36.pyc
+*.pyc
+*.xlsx
+*.xlsx

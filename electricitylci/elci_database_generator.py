@@ -1,5 +1,7 @@
 #Dictionary Creator
 #This is themain file that creates the dictionary with all the regions and fuel. This is essentially the database generator in a dictionary format.
+
+
 import sys
 import pandas as pd
 import warnings
@@ -71,10 +73,12 @@ for reg in egrid_subregions:
         
                     print(fuelname)             
                     final_elci_database[fuelname+'_'+reg] = olcaschema(database_f1,fuelname,fuelheat,d_list,odd_year,odd_database)
-                    
-                    
-                    
-                                                 
+        #del final_elci_database['']
+        
+del final_elci_database['']    
+
+#from electricitylci import egrid_template_generator                   
+                                       
                    
                         
                   

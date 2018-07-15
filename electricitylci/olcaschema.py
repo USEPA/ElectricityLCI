@@ -114,7 +114,7 @@ def olcaschema(database,fuelname_p,fuelheat_p,d_list_p,odd_year_p,odd_database_p
    final = process_table_creation()
     
    del final['']
-   print(fuelname+'_'+region+' File written Successfully')
+   print(fuelname+'_'+region+' Process Created')
    return final
 
 
@@ -320,7 +320,8 @@ def exchange_table_creation_output(data,y,comp):
 
 def exchange_table_creation_ref():
     
-
+    
+    data=pd.DataFrame(columns = ['Electricity','Heat'])
     ar = {'':''}
     
     ar['internalId']=''
@@ -335,6 +336,8 @@ def exchange_table_creation_ref():
     ar['amount']=1.0
     ar['amountFormula']=''
     ar['unit']=unit('MWh');
+    #ar['uncertainty']=uncertainty_table_creation(data)   
+    #ar['uncertainty'] = ''
     del ar['']
     return ar
     #ar['pedigreeUncertainty']=''
