@@ -1,4 +1,4 @@
-from electricitylci.elci_database_generator import final_elci_database
+#from electricitylci.elci_database_generator import final_elci_database
 from electricitylci.egrid_facilities import egrid_subregions
 from egrid_databasefile_setup import fuel_name
 import os
@@ -119,10 +119,17 @@ for Reg in egrid_subregions:
         io[row1][0].value = index+1;
         if final_elci_database[fuelname+'_'+Reg]['exchanges'][index]['input'] == True:
           io[row1][1].value = 5
-        else:          
-          io[row1][2].value = 5
+        else: 
+          if  index == 0: 
+             io[row1][2].value = 0
+          else:
+             io[row1][2].value = 4
         
-        io[row1][3].value = final_elci_database[fuelname+'_'+Reg]['exchanges'][index]['flow']['name']
+        name = final_elci_database[fuelname+'_'+Reg]['exchanges'][index]['flow']['name']
+        
+        #Making the string flow name within limits accepted by OpenLCA. 
+        io[row1][3].value  = name[0:10]
+        
         if index == 0:
           io[row1][4].value = final_elci_database[fuelname+'_'+Reg]['category']
         else:
