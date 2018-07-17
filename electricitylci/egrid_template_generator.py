@@ -5,8 +5,6 @@ import os
 import openpyxl
 from copy import copy, deepcopy
 
-#print(final_elci_database['natural gas_AKMS'])
-
 
 #This function is necessary to creates new line in the template for writing input and output flows. 
 def createblnkrow(br,io):
@@ -128,7 +126,7 @@ for Reg in egrid_subregions:
         name = final_elci_database[fuelname+'_'+Reg]['exchanges'][index]['flow']['name']
         
         #Making the string flow name within limits accepted by OpenLCA. 
-        io[row1][3].value  = name[0:10]
+        io[row1][3].value  = name[0:255]
         
         if index == 0:
           io[row1][4].value = final_elci_database[fuelname+'_'+Reg]['category']

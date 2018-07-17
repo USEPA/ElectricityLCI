@@ -11,10 +11,7 @@ from electricitylci.globals import egrid_year
 from electricitylci.eia923_generation import eia_download_extract
 from electricitylci.generation_processes_from_egrid import emissions_and_waste_by_facility_for_selected_egrid_facilities
 
-
-
-
-        
+     
        
         
 data_dir = os.path.dirname(os.path.realpath(__file__))+"\\data\\"

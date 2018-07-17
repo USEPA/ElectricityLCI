@@ -14,6 +14,7 @@ from electricitylci.egrid_energy import list_egrid_facilities_in_efficiency_rang
 from electricitylci.egrid_emissions_and_waste_by_facility import emissions_and_wastes_by_facility
 from electricitylci.egrid_emissions_and_waste_by_facility import years_in_emissions_and_wastes_by_facility
 from electricitylci.egrid_FRS_matches import list_FRS_ids_filtered_for_NAICS
+from electricitylci.elci_database_generator import create_process_dict
 
 
 
@@ -55,7 +56,7 @@ len(egrid_facilities_to_include)
 emissions_and_waste_by_facility_for_selected_egrid_facilities = emissions_and_wastes_by_facility[emissions_and_wastes_by_facility['eGRID_ID'].isin(egrid_facilities_to_include)]
 #for egrid 2016,TRI 2016,NEI 2016,RCRAInfo 2015: 118415
 
-
+generation_process_dict = create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facilities)
 
 
 '''
