@@ -37,7 +37,7 @@ def create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facil
     egrid_emissions_for_selected_egrid_facilities = emissions_and_waste_by_facility_for_selected_egrid_facilities[emissions_and_waste_by_facility_for_selected_egrid_facilities['Source'] == 'eGRID']
     
     #Set aside the other emissions sources
-    non_egrid_emissions_for_selected_egrid_facilities = emissions_and_waste_by_facility_for_selected_egrid_facilities[emissions_and_waste_by_facility_for_selected_egrid_facilities['Source'] != 'eGRID']
+    #non_egrid_emissions_for_selected_egrid_facilities = emissions_and_waste_by_facility_for_selected_egrid_facilities[emissions_and_waste_by_facility_for_selected_egrid_facilities['Source'] != 'eGRID']
     
     #print(list(egrid_emissions_for_selected_egrid_facilities.columns.get_values()))
     #['FacilityID', 'FlowAmount', 'FlowName', 'Compartment', 'ReliabilityScore', 'Source', 'Year', 'FRS_ID', 'eGRID_ID', 'FlowID', 'SRS_CAS', 'SRS_ID', 'Waste Code Type']
@@ -47,7 +47,7 @@ def create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facil
     
     
     #pivoting the database from a list format to a table format
-    egrid_emissions_for_selected_egrid_facilities_pivot = pd.pivot_table(egrid_emissions_for_selected_egrid_facilities,index = ['FacilityID', 'FRS_ID','eGRID_ID','Year','Source','ReliabilityScore'] ,columns = 'FlowName', values = 'FlowAmount').reset_index()
+    #egrid_emissions_for_selected_egrid_facilities_pivot = pd.pivot_table(egrid_emissions_for_selected_egrid_facilities,index = ['FacilityID', 'FRS_ID','eGRID_ID','Year','Source','ReliabilityScore'] ,columns = 'FlowName', values = 'FlowAmount').reset_index()
     emissions_for_selected_egrid_facilities_pivot = pd.pivot_table(emissions_and_waste_by_facility_for_selected_egrid_facilities,index = ['eGRID_ID','Year','Source','ReliabilityScore','Compartment'] ,columns = 'FlowName', values = 'FlowAmount').reset_index()
     emissions_for_selected_egrid_facilities_pivot =  emissions_for_selected_egrid_facilities_pivot.drop_duplicates()
     
@@ -66,6 +66,8 @@ def create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facil
     emissions_for_selected_egrid_facilities_final[['Electricity']] = emissions_for_selected_egrid_facilities_final[['Electricity_1']]*0.00027778
     emissions_for_selected_egrid_facilities_final  = emissions_for_selected_egrid_facilities_final.drop(columns = ['Electricity_1','eGRID_ID_1'])
     
+    
+    database_for_genmix =  emissions_for_selected_egrid_facilities_final[ emissions_for_selected_egrid_facilities_final['Source'] == 'eGRID']
     
     
     #Checking the odd year
@@ -134,6 +136,7 @@ def create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facil
         
         #Cropping out based on regions
         database = emissions_corrected_final_data[emissions_corrected_final_data['Subregion'] == reg]
+        database_for_genmix_reg_specific = database_for_genmix[database_for_genmix['Subregion'] == reg]
         
         
         print(reg)   
@@ -182,8 +185,8 @@ def create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facil
                         print(fuelname)             
                         generation_process_dict[fuelname+'_'+reg] = olcaschema_genprocess(database_f1,fuelname,fuelheat,d_list,odd_year,odd_database)
                         print('\n')
-        if database.empty != True:
-          generation_mix_dict[reg] = olcaschema_genmix(database,fuel_name)
+        if database_for_genmix_reg_specific.empty != True:
+          generation_mix_dict[reg] = olcaschema_genmix(database_for_genmix_reg_specific,fuel_name)
             
           
     del generation_mix_dict['']  
