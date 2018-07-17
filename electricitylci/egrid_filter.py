@@ -1,6 +1,7 @@
 ###Creates the data for electricity generation processes by fuel type and eGRID subregion
 ###Uses global variables set in the globals file that define filters
-
+import warnings
+warnings.filterwarnings("ignore")
 
 from electricitylci.globals import include_only_egrid_facilities_with_positive_generation
 from electricitylci.globals import egrid_facility_efficiency_filters
@@ -14,7 +15,9 @@ from electricitylci.egrid_energy import list_egrid_facilities_in_efficiency_rang
 from electricitylci.egrid_emissions_and_waste_by_facility import emissions_and_wastes_by_facility
 from electricitylci.egrid_emissions_and_waste_by_facility import years_in_emissions_and_wastes_by_facility
 from electricitylci.egrid_FRS_matches import list_FRS_ids_filtered_for_NAICS
-from electricitylci.elci_database_generator import create_process_dict
+from electricitylci.egrid_database_generator import create_process_dict
+from electricitylci.egrid_template_generator import *
+from electricitylci.globals import efficiency_of_distribution_grid
 
 
 
@@ -56,7 +59,18 @@ len(egrid_facilities_to_include)
 emissions_and_waste_by_facility_for_selected_egrid_facilities = emissions_and_wastes_by_facility[emissions_and_wastes_by_facility['eGRID_ID'].isin(egrid_facilities_to_include)]
 #for egrid 2016,TRI 2016,NEI 2016,RCRAInfo 2015: 118415
 
-generation_process_dict = create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facilities)
+generation_process_dict,generation_mix_dict = create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facilities)
+
+#The distribution mix dictionary does not require any new information and it will be fine to use the GEN mix dictionary to write these templates.
+#Only extra infomration required is the efficiency
+distribution_dict = generation_mix_dict
+
+
+gen_process_template_generator(generation_process_dict)
+
+gen_mix_template_generator(generation_mix_dict)
+
+distribution_template_generator(distribution_dict,efficiency_of_distribution_grid)
 
 
 '''

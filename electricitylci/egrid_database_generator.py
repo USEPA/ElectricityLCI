@@ -9,7 +9,8 @@ import numpy as np
 warnings.filterwarnings("ignore")
 
 
-from electricitylci.process_dictionary_writer import olcaschema
+from electricitylci.process_dictionary_writer import olcaschema_genmix
+from electricitylci.process_dictionary_writer import olcaschema_genprocess
 from electricitylci.egrid_facilities import egrid_subregions
 from electricitylci.egrid_facilities import egrid_facilities
 from electricitylci.egrid_emissions_and_waste_by_facility import years_in_emissions_and_wastes_by_facility
@@ -83,6 +84,7 @@ def create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facil
         EIA_923_gen_data = eia_download_extract(odd_year)
     
     
+    
     EIA_923_gen_data['Plant Id'] = EIA_923_gen_data['Plant Id'].apply(pd.to_numeric,errors = 'coerce')
     
     #Merging database with EIA 923 data
@@ -107,6 +109,8 @@ def create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facil
     
     #Choosing only those columns needed
     egrid_facilities = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory']]
+    
+    #Converting to numeric for better mergind and code stability
     egrid_facilities[['FacilityID']] = egrid_facilities[['FacilityID']].apply(pd.to_numeric,errors = 'coerce')
     emissions_corrected_gen[['eGRID_ID']] = emissions_corrected_gen[['eGRID_ID']].apply(pd.to_numeric,errors = 'coerce')
     
@@ -116,13 +120,14 @@ def create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facil
     
     emissions_corrected_final_data  = emissions_corrected_final_data.sort_values(by = ['FacilityID'])
     #store the total elci data in a csv file just for checking
-    emissions_corrected_final_data.to_csv('elci_summary.csv')
+    #emissions_corrected_final_data.to_csv('elci_summary.csv')
     
     #storing the list of databases used in the elci calculations
     d_list = list(pd.unique(emissions_corrected_final_data['Source']))
     
     #this is the final database with all the information in the form of olca schema dictionary
-    final_elci_database = {'':''}
+    generation_process_dict = {'':''}
+    generation_mix_dict = {'':''}
     
     #Looping through different subregions to create the files
     for reg in egrid_subregions:
@@ -175,12 +180,15 @@ def create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facil
             if database_f1.empty != True:       
             
                         print(fuelname)             
-                        final_elci_database[fuelname+'_'+reg] = olcaschema(database_f1,fuelname,fuelheat,d_list,odd_year,odd_database)
+                        generation_process_dict[fuelname+'_'+reg] = olcaschema_genprocess(database_f1,fuelname,fuelheat,d_list,odd_year,odd_database)
+                        print('\n')
+        if database.empty != True:
+          generation_mix_dict[reg] = olcaschema_genmix(database,fuel_name)
             
-        
-           
-    del final_elci_database['']    
-    return final_elci_database
+          
+    del generation_mix_dict['']  
+    del generation_process_dict['']
+    return generation_process_dict,generation_mix_dict
                   
                                            
                    

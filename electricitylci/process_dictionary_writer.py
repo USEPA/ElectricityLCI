@@ -13,7 +13,7 @@ from electricitylci.globals import egrid_year
 
 year = egrid_year
 
-def olcaschema(database,fuelname_p,fuelheat_p,d_list_p,odd_year_p,odd_database_p):
+def olcaschema_genprocess(database,fuelname_p,fuelheat_p,d_list_p,odd_year_p,odd_database_p):
    
     
    global region;
@@ -24,9 +24,8 @@ def olcaschema(database,fuelname_p,fuelheat_p,d_list_p,odd_year_p,odd_database_p
    global odd_year
    global odd_database
    global d_list
-   global process
-   process = {'':''}  
    
+      
    exchanges_list = []
    fuelname = fuelname_p
    fuelheat = fuelheat_p
@@ -110,7 +109,7 @@ def olcaschema(database,fuelname_p,fuelheat_p,d_list_p,odd_year_p,odd_database_p
             
                 
                 
-    #Writing final file       
+   #Writing final file       
    final = process_table_creation()
     
    del final['']
@@ -118,17 +117,6 @@ def olcaschema(database,fuelname_p,fuelheat_p,d_list_p,odd_year_p,odd_database_p
    return final
 
 
-
-
-
-
-def exchange(flw):
-    global exchanges_list;    
-    exchanges_list.append(flw)
-    
-    
-    
-    
 
 
 def flowwriter(database_f1,y,comp):
@@ -146,16 +134,118 @@ def flowwriter(database_f1,y,comp):
             
             ra = exchange_table_creation_output(database_f2,y,comp)
             exchange(ra)
+
+
+
+
+def olcaschema_genmix(database_total,fuel_name):
+
+   global region;
+   global exchanges_list;  
+   global year
+   global fuelname
+
+   
+      
+   exchanges_list = []
+   
+
+   region = pd.unique(database_total['Subregion'])[0]
+   
+     
+   #Creating the reference output            
+   exchange(exchange_table_creation_ref())
+   
+   #print(database['FuelCategory'])
+   for row in fuel_name.itertuples():
+           fuelname = row[2]
+           #croppping the database according to the current fuel being considered
+           database_f1 = database_total[database_total['FuelCategory'] == row[1]]
+           if database_f1.empty == True:
+                  database_f1 = database_total[database_total['PrimaryFuel'] == row[1]]  
+            
             
             
            
-        
-            
-            
+             
+           if database_f1.empty != True:   
+               
+                 database_f1 = database_f1[['eGRID_ID','Electricity']].drop_duplicates()
+                 database = database_total[['eGRID_ID','Electricity']].drop_duplicates()        
+                 
+                 
+                 exchange(exchange_table_creation_input_genmix(database_f1,database))
+                 
+   #Writing final file       
+   final = process_table_creation_genmix()
+    
+   del final['']
+   print(region+' Process Created')
+   return final                                      
 
 
 
 
+
+def exchange_table_creation_input_genmix(database_f1,database):
+    
+    global fuelname;
+    global year;
+    global fuelheat; 
+    
+
+    ar = {'':''}
+    
+    ar['internalId']=''
+    ar['@type']='Exchange'
+    ar['avoidedProduct']=False
+    ar['flow']=flow_table_creation('Electricity from '+fuelname,None)
+    ar['flowProperty']=''
+    ar['input']=True
+    ar['quantitativeReference']='True'
+    ar['baseUncertainty']=''
+    ar['provider']=''
+    ar['amount']=(np.sum(database_f1['Electricity'])/np.sum(database['Electricity']))
+    ar['unit'] = unit('MWh')    
+    ar['pedigreeUncertainty']=''
+    ar['uncertainty']=''
+    ar['comment']='eGRID '+str(year);
+    del ar['']
+    
+    return ar;
+
+def process_table_creation_genmix():
+    
+    global exchanges_list;
+    global region;
+    global fuelname;
+                              
+    ar = {'':''}
+    
+    ar['@type'] = 'Process'
+    ar['allocationFactors']=''
+    ar['defaultAllocationMethod']=''
+    ar['exchanges']=exchanges_list;
+    ar['location']=region
+    ar['parameters']=''
+    ar['processDocumentation']=process_doc_creation();
+    ar['processType']=''
+    ar['name'] = 'Electricity; from Generation; at region '+str(region)+'; Production Mix'
+    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'
+    ar['description'] = 'Electricity from generation mix using power plants in the '+str(region)+' region'
+    
+    
+    return ar;
+
+
+
+
+def exchange(flw):
+    global exchanges_list;    
+    exchanges_list.append(flw)
+    
+    
+    
 def process_table_creation():
     
     global exchanges_list;
@@ -172,9 +262,9 @@ def process_table_creation():
     ar['parameters']=''
     ar['processDocumentation']=process_doc_creation();
     ar['processType']=''
-    ar['name'] = 'Electricity from '+fuelname+' at generating facility';
+    ar['name'] = 'Electricity; from '+str(fuelname)+' ; at generating facility'
     ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+str(fuelname)
-    ar['description'] = 'Electricity from '+fuelname+' using power plants in the '+region+' region'
+    ar['description'] = 'Electricity from '+str(fuelname)+' using power plants in the '+str(region)+' region'
     
     
     return ar;
@@ -187,7 +277,7 @@ def category():
     ar = {'':''}   
     ar['@id'] = ''
     ar['@type'] = 'Category'
-    ar['name'] = fuelname;
+    ar['name'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+str(fuelname)
     del ar['']
     return ar
     
@@ -264,9 +354,14 @@ def exchange_table_creation_input(data):
     ar['provider']=''
     if fuelheat != None:
       ar['amount']=(np.sum(data['Heat'])/np.sum(data['Electricity']))/fuelheat;
-    ar['amount']=(np.sum(data['Heat'])/np.sum(data['Electricity']));
+    else:
+      ar['amount']=(np.sum(data['Heat'])/np.sum(data['Electricity']));
     ar['amountFormula']=''
-    ar['unit']=unit('kg');
+    if fuelheat != None:        
+      ar['unit']=unit('kg');
+    else:
+      ar['unit'] - unit('MJ')
+    
     ar['pedigreeUncertainty']=''
     ar['uncertainty']=uncertainty_table_creation(data)
     ar['comment']='eGRID '+str(year);
@@ -383,9 +478,9 @@ def uncertainty_table_creation(data):
     if fuelheat != None:
         ar['minimum']=((data.iloc[:,1]/data.iloc[:,0]).min())/fuelheat;
         ar['maximum']=((data.iloc[:,1]/data.iloc[:,0]).max())/fuelheat;
-    
-    ar['minimum']=(data.iloc[:,1]/data.iloc[:,0]).min();
-    ar['maximum']=(data.iloc[:,1]/data.iloc[:,0]).max();
+    else:
+        ar['minimum']=(data.iloc[:,1]/data.iloc[:,0]).min();
+        ar['maximum']=(data.iloc[:,1]/data.iloc[:,0]).max();
     ar['minimumFormula']=''
     ar['sd']=''
     ar['sdFormula']=''    
@@ -413,6 +508,8 @@ def flow_table_creation(fl,comp):
     ar['name'] = str(fl);
     if comp!=None:
      ar['category'] = 'Elementary Flows/'+str(comp)+'/unspecified'
+    else:
+     ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'
     ar['description'] = ''
     del ar['']
     
