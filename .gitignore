@@ -3,3 +3,5 @@
 
 electricitylci/generationtemplate(old).py
 electricitylci/generationtemplate_(old).py
+*.txt
+*.json
