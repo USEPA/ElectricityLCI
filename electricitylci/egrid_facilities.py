@@ -6,7 +6,7 @@ from electricitylci.globals import min_plant_percent_generation_from_primary_fue
 #get egrid facility file from stewi
 egrid_facilities = stewi.getInventoryFacilities("eGRID",egrid_year)
 egrid_facilities.rename(columns={'Plant primary coal/oil/gas/ other fossil fuel category':'FuelCategory','Plant primary fuel':'PrimaryFuel','eGRID subregion acronym':'Subregion'},inplace=True)
-egrid_facilities.head()
+
 len(egrid_facilities)
 #2016:9709
 
