@@ -3,6 +3,7 @@
 #This dictionary can be used for writing json files or templates
 import numpy as np
 import math
+import sys
 import pandas as pd
 from electricitylci.process_exchange_uncertainty import compilation,uncertainty
 from electricitylci.globals import egrid_year
@@ -55,8 +56,10 @@ def olcaschema_genprocess(database,fuelname_p,fuelheat_p,d_list_p,odd_year_p,odd
    for x in d_list:
                             
             if x == 'eGRID': 
-                database_f3 = database[['Electricity','Carbon dioxide', 'Nitrous oxide', 'Nitrogen oxides', 'Sulfur dioxide', 'Methane']]
-                flowwriter(database_f3,x,'air')
+                #database_f3 = database[['Electricity','Carbon dioxide', 'Nitrous oxide', 'Nitrogen oxides', 'Sulfur dioxide', 'Methane']]
+                d1 = database[database['Source']=='eGRID']
+                d1 = d1.drop(columns = ['Compartment','Source'])
+                flowwriter(d1,x,'air')
                 
                 
             elif x != 'eGRID':  
@@ -125,14 +128,24 @@ def flowwriter(database_f1,y,comp):
     for i in database_f1.iteritems():
       
       #Only writng the emissions. NOt any other flows or columns in the template files.   
+
       if str(i[0]) != 'Electricity' and str(i[0]) != 'ReliabilityScore': 
-        database_f2 = database_f1[['Electricity',i[0]]] 
-            
-        if(compilation(database_f2) != 0 and compilation(database_f2)!= None) and math.isnan(compilation(database_f2)) != True:
-            
-            
-            
-            ra = exchange_table_creation_output(database_f2,y,comp)
+
+        #This is very important. When the database comes here, it has multiple instances of the same egrid id or plants to preserve individual flow information for the reliability scores. 
+        #So we need to make sure that information for a single plant is collaposed to one instance.
+        #Along with that we also need ot make sure that the None are also preserved. These correction is very essential. 
+        database_f3 = database_f1[['Electricity',i[0]]] 
+        database_f3 = database_f3.dropna()
+          
+        
+        database_reliability = database_f1[[i[0],'ReliabilityScore']]
+        database_reliability = database_reliability.dropna()
+               
+
+        if(compilation(database_f3) != 0 and compilation(database_f3)!= None) and math.isnan(compilation(database_f3)) != True:
+            global reliability
+            reliability = np.average(database_reliability[['ReliabilityScore']],weights = database_reliability[[i[0]]])
+            ra = exchange_table_creation_output(database_f3,y,comp)
             exchange(ra)
 
 
@@ -349,18 +362,20 @@ def exchange_table_creation_input(data):
     ar['flow']=flow_table_creation(fuelname,'Input Fuel')
     ar['flowProperty']=''
     ar['input']=True
-    ar['quantitativeReference']='True'
     ar['baseUncertainty']=''
     ar['provider']=''
-    if fuelheat != None:
+    if math.isnan(fuelheat) != True:
       ar['amount']=(np.sum(data['Heat'])/np.sum(data['Electricity']))/fuelheat;
-    else:
+    else:     
+      
+      print('\n')
       ar['amount']=(np.sum(data['Heat'])/np.sum(data['Electricity']));
+    
     ar['amountFormula']=''
-    if fuelheat != None:        
+    if math.isnan(fuelheat) != True:        
       ar['unit']=unit('kg');
     else:
-      ar['unit'] - unit('MJ')
+      ar['unit']=unit('MJ')
     
     ar['pedigreeUncertainty']=''
     ar['uncertainty']=uncertainty_table_creation(data)
@@ -475,7 +490,7 @@ def uncertainty_table_creation(data):
     ar['meanFormula']=''
     
     ar['geomMeanFormula']=''
-    if fuelheat != None:
+    if math.isnan(fuelheat) != True:
         ar['minimum']=((data.iloc[:,1]/data.iloc[:,0]).min())/fuelheat;
         ar['maximum']=((data.iloc[:,1]/data.iloc[:,0]).max())/fuelheat;
     else:
@@ -517,4 +532,218 @@ def flow_table_creation(fl,comp):
 
 
 
+def exchange_table_creation_input_con_mix(generation,name):
+    
+    global region;
+    global year;
+    global fuelheat; 
+    
 
+    ar = {'':''}
+    
+    ar['internalId']=''
+    ar['@type']='Exchange'
+    ar['avoidedProduct']=False
+    ar['flow']=flow_table_creation(name,None)
+    ar['flowProperty']=''
+    ar['input']=True
+    ar['baseUncertainty']=''
+    ar['provider']=''
+    ar['amount'] = generation
+    ar['unit'] = unit('MWh')    
+    ar['pedigreeUncertainty']=''
+    ar['uncertainty']=''
+    ar['comment']='eGRID '+str(year);
+    del ar['']
+    
+    return ar;
+
+
+def process_table_creation_con_mix():
+    
+    global exchanges_list;
+    global region;
+    global fuelname;
+                              
+    ar = {'':''}
+    
+    ar['@type'] = 'Process'
+    ar['allocationFactors']=''
+    ar['defaultAllocationMethod']=''
+    ar['exchanges']=exchanges_list;
+    ar['location']=region
+    ar['parameters']=''
+    ar['processDocumentation']=process_doc_creation();
+    ar['processType']=''
+    ar['name'] = 'Electricity; at region '+str(region)+'; Consumption Mix'
+    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'
+    ar['description'] = 'Electricity showing Consumption mix using power plants in the '+str(region)+' region'
+    
+    
+    return ar;
+
+
+def process_table_creation_surplus():
+    
+    global exchanges_list;
+    global region;
+    global fuelname;
+                              
+    ar = {'':''}
+    
+    ar['@type'] = 'Process'
+    ar['allocationFactors']=''
+    ar['defaultAllocationMethod']=''
+    ar['exchanges']=exchanges_list;
+    ar['location']=region
+    ar['parameters']=''
+    ar['processDocumentation']=process_doc_creation();
+    ar['processType']=''
+    ar['name'] = 'Electricity; at region '+str(region)+'; Surplus Pool'
+    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'
+    ar['description'] = 'Electricity showing surplus in the '+str(region)+' region'
+    
+    
+    return ar;
+
+
+def process_table_creation_distribution():
+    
+    global exchanges_list;
+    global region;
+    global fuelname;
+                              
+    ar = {'':''}
+    
+    ar['@type'] = 'Process'
+    ar['allocationFactors']=''
+    ar['defaultAllocationMethod']=''
+    ar['exchanges']=exchanges_list;
+    ar['location']=region
+    ar['parameters']=''
+    ar['processDocumentation']=process_doc_creation();
+    ar['processType']=''
+    ar['name'] = 'Electricity; at region '+str(region)+'; Distribution Mix'
+    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'
+    ar['description'] = 'Electricity from distribution mix in the '+str(region)+' region'
+    
+    
+    return ar;
+
+
+def consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,gen_quantity, eGRID_region,nerc_region2):
+
+   
+   global exchanges_list; 
+   global region
+   consumption_dict = {'':''}
+   for reg in range(0,len(eGRID_region)):
+           region = eGRID_region[reg][0].value
+           exchanges_list = []
+           exchange(exchange_table_creation_ref())
+           
+           
+           y  = len(trade_matrix[0])
+           chk = 0;
+           for nerc in range(0,len(nerc_region2)):
+            
+             if nerc_region[reg][0].value == nerc_region2[nerc][0].value: 
+                 
+                 if surplus_pool_trade_in[reg][0].value != 0:
+                   
+                   for  j in range(0,y):
+                         
+                        name = 'Electricity from surplus pool '+str(nerc_region[reg][0].value)
+                        
+                        if trade_matrix[nerc+1][j].value != None and trade_matrix[nerc+1][j].value !=0:
+                            
+                            exchange(exchange_table_creation_input_con_mix(surplus_pool_trade_in[reg][0].value,name))
+                            chk=1;
+                            break;
+           name = 'Electricity from generation mix '+eGRID_region[reg][0].value   
+           if chk == 1:
+               exchange(exchange_table_creation_input_con_mix(gen_quantity[reg][0].value,name))
+           else:
+               exchange(exchange_table_creation_input_con_mix(1,name))
+           
+           final = process_table_creation_con_mix()
+           del final['']
+           print(region+' Process Created')
+           consumption_dict[eGRID_region[reg][0].value] = final;
+           #del consumption_dict['']
+   return consumption_dict
+
+
+def surplus_pool_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,gen_quantity, eGRID_region,nerc_region2):
+    
+     global exchanges_list; 
+     global region     
+     surplus_dict = {'':''}
+     for i in range(0,len(nerc_region2)):
+         
+           region = nerc_region2[i][0].value
+           exchanges_list = []
+           exchange(exchange_table_creation_ref())
+           y  = len(trade_matrix[0])
+           
+           chk=0;
+           for j in range(0,7):
+               
+               if trade_matrix[i+1][j].value != None and trade_matrix[i+1][j].value != 0:
+                   
+                   name = 'Canada Provinces - '+trade_matrix[0][j].value+' electricity';
+                   exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,name))
+                   chk = 1;
+           
+           for j in range(7,8):
+               
+               if trade_matrix[i+1][j].value != None and trade_matrix[i+1][j].value != 0:
+                   name = trade_matrix[0][j].value+' electricity';
+                   exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,name))
+                   chk = 1;
+                   
+           for j in range(8,34):
+               
+               if trade_matrix[i+1][j].value != None and trade_matrix[i+1][j].value != 0:
+                   name = 'Electricity from generation '+trade_matrix[0][j].value;
+                   exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,name))
+                   chk = 1;
+        
+           final = process_table_creation_surplus()
+           del final['']
+           print(region+' Process Created')
+           surplus_dict[region] = final;
+           #del consumption_dict['']
+     return surplus_dict
+
+
+
+
+
+def distribution_mix_dictionary(eGRID_subregions,efficiency_of_distribution):
+    
+    distribution_dict = {'':''}
+    for reg in eGRID_subregions:
+            global region;
+            region = reg
+            global exchanges_list; 
+            exchanges_list = [];
+            exchange(exchange_table_creation_ref())
+            name = 'Electricity from Generation Mix at region '+region
+            exchange(exchange_table_creation_input_con_mix(1/efficiency_of_distribution,name))
+        
+            final = process_table_creation_distribution()
+            del final['']
+            print(region+' Process Created')
+            distribution_dict[region] = final;
+           #del consumption_dict['']
+    return distribution_dict
+            
+            
+            
+            
+            
+        
+        
+    
+     
