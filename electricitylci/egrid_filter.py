@@ -1,6 +1,7 @@
 ###Creates the data for electricity generation processes by fuel type and eGRID subregion
 ###Uses global variables set in the globals file that define fifile:///C:/Users/TGhosh/Dropbox/Electricity_LCI/2. Electric_Refactor after July/ElectricityLCI/electricitylci/%23%23_____code%23for%23developer.pylters
 import warnings
+import pandas as pd
 warnings.filterwarnings("ignore")
 
 from electricitylci.globals import include_only_egrid_facilities_with_positive_generation
@@ -57,11 +58,16 @@ len(egrid_facilities_to_include)
 ###Emissions and wastes filtering
 #Start with all emissions and wastes; these are in this file
 emissions_and_waste_by_facility_for_selected_egrid_facilities = emissions_and_wastes_by_facility[emissions_and_wastes_by_facility['eGRID_ID'].isin(egrid_facilities_to_include)]
+
+len(emissions_and_waste_by_facility_for_selected_egrid_facilities.drop_duplicates())
+
+emissions_and_waste_by_facility_for_selected_egrid_facilities['eGRID_ID'] = emissions_and_waste_by_facility_for_selected_egrid_facilities['eGRID_ID'].apply(pd.to_numeric, errors = 'coerce')
+
 #for egrid 2016,TRI 2016,NEI 2016,RCRAInfo 2015: 118415
 #emissions_and_waste_by_facility_for_selected_egrid_facilities.to_excel('Mainfile.xlsx')
 generation_process_dict,generation_mix_dict = create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facilities)
 
-gen_process_template_generator(generation_process_dict)
+#gen_process_template_generator(generation_process_dict)
 
 gen_mix_template_generator(generation_mix_dict)
 

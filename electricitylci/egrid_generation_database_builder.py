@@ -65,7 +65,10 @@ def create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facil
     emissions_for_selected_egrid_facilities_final  = emissions_for_selected_egrid_facilities_final.drop(columns = ['Electricity_1','eGRID_ID_1'])
     
     
+    
     database_for_genmix =  emissions_for_selected_egrid_facilities_final[ emissions_for_selected_egrid_facilities_final['Source'] == 'eGRID']
+    
+    
     #Converting to numeric for better mergind and code stability
     egrid_facilities[['FacilityID']] = egrid_facilities[['FacilityID']].apply(pd.to_numeric,errors = 'coerce')
     database_for_genmix_final = egrid_facilities.merge(database_for_genmix, left_on = ['FacilityID'], right_on = ['eGRID_ID'], how = 'right')
@@ -194,10 +197,12 @@ def create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facil
                         generation_process_dict[fuelname+'_'+reg] = olcaschema_genprocess(database_f1,fuelheat,d_list,fuelname)
                         print('\n')
                         
+                        
         if database_for_genmix_reg_specific.empty != True:
           data_transfer(database_for_genmix_reg_specific,fuelname,fuelheat,d_list,odd_year,odd_database)
-          generation_mix_dict[reg] = olcaschema_genmix(database_for_genmix_reg_specific,fuel_name)
-          break; 
+          generation_mix_dict[reg] = olcaschema_genmix(database_for_genmix_reg_specific)
+          
+          
         
         
     del generation_mix_dict['']  
@@ -218,6 +223,9 @@ def olcaschema_genprocess(database,fuelheat,d_list,fuelname):
    if database['Heat'].mean() != 0 and fuelheat != 0:
      #Heat input
      database2 = database[['Electricity','Heat']]
+     #THIS CHANGE WAS DONE BECASUE OF THE PRESENCE OF DUPLICATES EGRIDS DUE TO ONE MANY ERRORS IN THE INPUT FILE FROM STEWI COMBO. 
+     #THIS DROPS DUPLICATES IF BOTH ELECTRICITY AND FLOW IS SAME. 
+     database2.drop_duplicates()
      ra1 = exchange_table_creation_input(database2);
      exchange(ra1)
    
@@ -296,6 +304,11 @@ def olcaschema_genprocess(database,fuelheat,d_list,fuelname):
 
 def flowwriter(database_f1,y,comp):
 
+    
+     #THIS CHANGE WAS DONE BECASUE OF THE PRESENCE OF DUPLICATES EGRIDS DUE TO ONE MANY ERRORS IN THE INPUT FILE FROM STEWI COMBO. 
+     #THIS DROPS DUPLICATES IF BOTH ELECTRICITY AND FLOW IS SAME.
+    database_f1 = database_f1.drop_duplicates()
+    
                          
     for i in database_f1.iteritems():
       
@@ -321,37 +334,30 @@ def flowwriter(database_f1,y,comp):
             exchange(ra)
 
                   
-def olcaschema_genmix(database_total,fuel_name):
+def olcaschema_genmix(database_total):
 
      
    exchanges_list = []
-   
 
    region = pd.unique(database_total['Subregion'])[0]
    
-     
+    
    #Creating the reference output            
+   #exchange_list_creator()
    exchange(exchange_table_creation_ref())
    
-   #print(database['FuelCategory'])
+   database_total = database_total[['eGRID_ID','Electricity', 'FuelCategory', 'PrimaryFuel']].drop_duplicates()
    for row in fuel_name.itertuples():
            fuelname = row[2]
            #croppping the database according to the current fuel being considered
            database_f1 = database_total[database_total['FuelCategory'] == row[1]]
            if database_f1.empty == True:
-                  database_f1 = database_total[database_total['PrimaryFuel'] == row[1]]  
-            
-            
-            
+                  database_f1 = database_total[database_total['PrimaryFuel'] == row[1]]           
            
              
-           if database_f1.empty != True:   
+           if database_f1.empty != True:                
                
-                 database_f1 = database_f1[['eGRID_ID','Electricity']].drop_duplicates()
-                 database = database_total[['eGRID_ID','Electricity']].drop_duplicates()        
-                 
-                 
-                 exchange(exchange_table_creation_input_genmix(database_f1,database))
+                exchange(exchange_table_creation_input_genmix(database_f1,database_total,fuelname))
                  
    #Writing final file       
    final = process_table_creation_genmix()

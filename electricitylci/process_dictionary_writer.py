@@ -37,8 +37,10 @@ def data_transfer(database,fuelname_p,fuelheat_p,d_list_p,odd_year_p,odd_databas
 
 
 
-def exchange_list_creator():
-    global exchanges_list; 
+def exchange_list_creator(region_p):
+    global exchanges_list;
+    global region 
+    region = region_p
     exchanges_list = [] 
 
 
@@ -46,11 +48,13 @@ def exchange_list_creator():
 
 
 
-def exchange_table_creation_input_genmix(database_f1,database):
+def exchange_table_creation_input_genmix(database_f1,database,fuelname_p):
     
-    global fuelname;
+    
     global year;
-    global fuelheat; 
+    global fuelname
+    fuelname = fuelname_p 
+    
     
 
     ar = {'':''}
@@ -67,8 +71,9 @@ def exchange_table_creation_input_genmix(database_f1,database):
     ar['amount']=(np.sum(database_f1['Electricity'])/np.sum(database['Electricity']))
     ar['unit'] = unit('MWh')    
     ar['pedigreeUncertainty']=''
-    ar['uncertainty']=''
+    ar['category']='22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+fuelname
     ar['comment']='eGRID '+str(year);
+    ar['uncertainty'] = ''
     del ar['']
     
     return ar;
@@ -85,7 +90,7 @@ def process_table_creation_genmix():
     ar['allocationFactors']=''
     ar['defaultAllocationMethod']=''
     ar['exchanges']=exchanges_list;
-    ar['location']=region
+    ar['location']=location()
     ar['parameters']=''
     ar['processDocumentation']=process_doc_creation();
     ar['processType']=''
@@ -117,12 +122,12 @@ def process_table_creation():
     ar['allocationFactors']=''
     ar['defaultAllocationMethod']=''
     ar['exchanges']=exchanges_list;
-    ar['location']=region
+    ar['location']=location()
     ar['parameters']=''
     ar['processDocumentation']=process_doc_creation();
     ar['processType']=''
     ar['name'] = 'Electricity; from '+str(fuelname)+' ; at generating facility'
-    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+str(fuelname)
+    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+fuelname
     ar['description'] = 'Electricity from '+str(fuelname)+' using power plants in the '+str(region)+' region'
     
     
@@ -303,6 +308,8 @@ def exchange_table_creation_ref():
     ar['amount']=1.0
     ar['amountFormula']=''
     ar['unit']=unit('MWh');
+    ar['location'] = location()
+    
     #ar['uncertainty']=uncertainty_table_creation(data)   
     #ar['uncertainty'] = ''
     del ar['']
@@ -370,6 +377,7 @@ def flow_table_creation(fl,comp):
     
     global region;
     
+    
                     
     ar = {'':''}
     ar['flowType']='PRODUCT_FLOW'
@@ -389,7 +397,7 @@ def flow_table_creation(fl,comp):
 
 
 
-def exchange_table_creation_input_con_mix(generation,name):
+def exchange_table_creation_input_con_mix(generation,name,loc):
     
     global region;
     global year;
@@ -411,6 +419,7 @@ def exchange_table_creation_input_con_mix(generation,name):
     ar['pedigreeUncertainty']=''
     ar['uncertainty']=''
     ar['comment']='eGRID '+str(year);
+    ar['location'] = loc
     del ar['']
     
     return ar;

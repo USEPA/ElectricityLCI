@@ -119,15 +119,25 @@ def gen_process_template_generator(generation_process_dict):
                   else:
                      io[row1][2].value = 4
                 
-                name = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['flow']['name']
-                
+                if index == 0:
+                   name = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['flow']['name']+' from '+str(fuelname)
+                else:
+                   name = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['flow']['name']
+                    
+                    
                 #Making the string flow name within limits accepted by OpenLCA. 
                 io[row1][3].value  = name[0:255]
                 
                 if index == 0:
                   io[row1][4].value = generation_process_dict[fuelname+'_'+Reg]['category']
+                  io[row1][5].value = generation_process_dict[fuelname+'_'+Reg]['location']['name']
                 else:
                   io[row1][4].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['flow']['category']
+                
+                
+                
+                
+                
                 io[row1][6].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['amount']
                 io[row1][7].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['unit']['name']
                 
@@ -273,9 +283,12 @@ def gen_mix_template_generator(generation_mix_dict):
                     io[row1][3].value  = name[0:255]
                     
                     if index == 0:
+                      io[row1][3].value  = name[0:255]+' from Generation mix '+str(Reg)
                       io[row1][4].value = generation_mix_dict[Reg]['category']
                     else:
-                      io[row1][4].value = generation_mix_dict[Reg]['exchanges'][index]['flow']['category']
+                      io[row1][4].value = generation_mix_dict[Reg]['exchanges'][index]['category']
+                      
+                    io[row1][5].value = generation_mix_dict[Reg]['location']['name']
                     io[row1][6].value = generation_mix_dict[Reg]['exchanges'][index]['amount']
                     io[row1][7].value = generation_mix_dict[Reg]['exchanges'][index]['unit']['name']
                     io[row1][21].value = 'database data with plants over 10% efficiency';
@@ -435,7 +448,7 @@ def distribution_template_generator(distribution_dict,efficiency):
                         blank_row = createblnkrow(blank_row)
                         io[row][0].value = index;
                         io[row][1].value = 5;
-                        io[row][3].value = distribution_dict[Reg]['name']
+                        io[row][3].value = distribution_dict[Reg]['exchanges'][index-1]['flow']['name']
                         io[row][4].value = distribution_dict[Reg]['category']
                         io[row][5].value = str(Reg)
                         io[row][6].value = 1/efficiency
@@ -580,15 +593,24 @@ def consumption_mix_template_generator(consumption_dict):
                             
                             blank_row = createblnkrow(blank_row)
                             io[row][0].value = index+1;
-                            io[row][1].value = 5;
-                            io[row][1].value = None;
+                            
+                            
+                            
                             if index == 0:
+                               io[row][2].value = 0;
                                io[row][3].value = consumption_dict[Reg]['name']
                             else:
+                                io[row][1].value = 5;
                                 io[row][3].value = consumption_dict[Reg]['exchanges'][index]['flow']['name']
                             
                             io[row][4].value = consumption_dict[Reg]['category']
-                            io[row][5].value = str(Reg)
+                            if len(consumption_dict[Reg]['exchanges']) == 2:
+                               io[row][5].value = str(Reg)
+                            else:
+                               if index == 1: 
+                                  io[row][5].value = consumption_dict[Reg]['exchanges'][index]['flow']['name'][23:27]
+                               else:
+                                  io[row][5].value = str(Reg)
                             io[row][6].value = consumption_dict[Reg]['exchanges'][index]['amount']
                             io[row][7].value = 'MWh';
                             io[row][21].value = consumption_dict[Reg]['description']                         
@@ -727,15 +749,19 @@ def surplus_pool_mix_template_generator(surplus_pool_dict,nerc_region):
                             
                             blank_row = createblnkrow(blank_row)
                             io[row][0].value = index+1;
-                            io[row][1].value = 5;
-                            io[row][1].value = None;
+                            
                             if index == 0:
-                               io[row][3].value = surplus_pool_dict[Reg]['name']
+                                io[row][2].value = 0;
+                                io[row][3].value = surplus_pool_dict[Reg]['name']
                             else:
+                                io[row][1].value = 5;
                                 io[row][3].value = surplus_pool_dict[Reg]['exchanges'][index]['flow']['name']
                             
                             io[row][4].value = surplus_pool_dict[Reg]['category']
-                            io[row][5].value = str(Reg)
+                            if index == 0:
+                                io[row][5].value = str(Reg)
+                            else:
+                                io[row][5].value = surplus_pool_dict[Reg]['exchanges'][index]['location']
                             io[row][6].value = surplus_pool_dict[Reg]['exchanges'][index]['amount']
                             io[row][7].value = 'MWh';
                             io[row][21].value = surplus_pool_dict[Reg]['description']                         
