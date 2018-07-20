@@ -3,9 +3,9 @@
 #This dictionary can be used for writing json files or templates
 import numpy as np
 import math
-import sys
+import time
 import pandas as pd
-from electricitylci.process_exchange_uncertainty import compilation,uncertainty
+from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty
 from electricitylci.globals import egrid_year
 
 
@@ -14,9 +14,8 @@ from electricitylci.globals import egrid_year
 
 year = egrid_year
 
-def olcaschema_genprocess(database,fuelname_p,fuelheat_p,d_list_p,odd_year_p,odd_database_p):
+def data_transfer(database,fuelname_p,fuelheat_p,d_list_p,odd_year_p,odd_database_p):
    
-    
    global region;
    global exchanges_list;  
    global fuelname
@@ -24,7 +23,7 @@ def olcaschema_genprocess(database,fuelname_p,fuelheat_p,d_list_p,odd_year_p,odd
    global year
    global odd_year
    global odd_database
-   global d_list
+
    
       
    exchanges_list = []
@@ -32,169 +31,16 @@ def olcaschema_genprocess(database,fuelname_p,fuelheat_p,d_list_p,odd_year_p,odd
    fuelheat = fuelheat_p
    odd_year = odd_year_p
    odd_database = odd_database_p
-   d_list = d_list_p
-   
 
+   
    region = pd.unique(database['Subregion'])[0]
-   
-     
-   #Creating the reference output            
-   exchange(exchange_table_creation_ref())
-   
-   
-   #This part is used for writing the input fuel flow informationn
-   if database['Heat'].mean() != 0 and fuelheat != 0:
-     #Heat input
-     database2 = database[['Electricity','Heat']]
-     ra1 = exchange_table_creation_input(database2);
-     exchange(ra1)
-   
-    #Dropping not required columns
-   database = database.drop(columns = ['FacilityID','eGRID_ID','Year','Subregion','PrimaryFuel','FuelCategory'])
-   
-   
-   for x in d_list:
-                            
-            if x == 'eGRID': 
-                #database_f3 = database[['Electricity','Carbon dioxide', 'Nitrous oxide', 'Nitrogen oxides', 'Sulfur dioxide', 'Methane']]
-                d1 = database[database['Source']=='eGRID']
-                d1 = d1.drop(columns = ['Compartment','Source'])
-                flowwriter(d1,x,'air')
-                
-                
-            elif x != 'eGRID':  
-                database_f3 = database.drop(columns = ['Carbon dioxide', 'Nitrous oxide', 'Nitrogen oxides', 'Sulfur dioxide', 'Methane'])
-                
-                #This is for extracing only the database being considered fro the d list names. 
-                if x == 'TRI':                     
-                    database_f3 = database_f3[database_f3['Source']=='TRI']
-               
-                elif x == 'NEI':
-                    database_f3 = database_f3[database_f3['Source']=='NEI']
-               
-                elif x == 'RCRAInfo':
-                    database_f3 = database_f3[database_f3['Source']=='RCRAInfo']
-                
-                #CHecking if its not empty and differentiating intp the different Compartments that are possible, air , water soil and wastes. 
-                if database_f3.empty != True:
-                                          
-                    #water
-                    d1 = database_f3[database_f3['Compartment']=='air']
-                    d1 = d1.drop(columns = ['Compartment','Source'])
-                    
-                    if d1.empty != True:                      
-                      flowwriter(d1,x,'air')                           
-                    
-                    
-                    #water
-                    d1 = database_f3[database_f3['Compartment']=='water']
-                    d1 = d1.drop(columns = ['Compartment','Source'])
-                    
-                    if d1.empty != True:
-                      flowwriter(d1,x,'water')  
-                    
-                    #soil
-                    d1 = database_f3[database_f3['Compartment']=='soil']
-                    d1 = d1.drop(columns = ['Compartment','Source'])
-                    
-                    if d1.empty != True:
-                      flowwriter(d1,x,'soil')  
-                    
-                                            
-                    #waste
-                    d1 = database_f3[database_f3['Compartment']=='waste']
-                    d1 = d1.drop(columns = ['Compartment','Source'])
-                    
-                    if d1.empty != True:
-                      flowwriter(d1,x,'waste')  
-
-                 
-            
-                
-                
-   #Writing final file       
-   final = process_table_creation()
-    
-   del final['']
-   print(fuelname+'_'+region+' Process Created')
-   return final
 
 
 
+def exchange_list_creator():
+    global exchanges_list; 
+    exchanges_list = [] 
 
-def flowwriter(database_f1,y,comp):
-
-                         
-    for i in database_f1.iteritems():
-      
-      #Only writng the emissions. NOt any other flows or columns in the template files.   
-
-      if str(i[0]) != 'Electricity' and str(i[0]) != 'ReliabilityScore': 
-
-        #This is very important. When the database comes here, it has multiple instances of the same egrid id or plants to preserve individual flow information for the reliability scores. 
-        #So we need to make sure that information for a single plant is collaposed to one instance.
-        #Along with that we also need ot make sure that the None are also preserved. These correction is very essential. 
-        database_f3 = database_f1[['Electricity',i[0]]] 
-        database_f3 = database_f3.dropna()
-          
-        
-        database_reliability = database_f1[[i[0],'ReliabilityScore']]
-        database_reliability = database_reliability.dropna()
-               
-
-        if(compilation(database_f3) != 0 and compilation(database_f3)!= None) and math.isnan(compilation(database_f3)) != True:
-            global reliability
-            reliability = np.average(database_reliability[['ReliabilityScore']],weights = database_reliability[[i[0]]])
-            ra = exchange_table_creation_output(database_f3,y,comp)
-            exchange(ra)
-
-
-
-
-def olcaschema_genmix(database_total,fuel_name):
-
-   global region;
-   global exchanges_list;  
-   global year
-   global fuelname
-
-   
-      
-   exchanges_list = []
-   
-
-   region = pd.unique(database_total['Subregion'])[0]
-   
-     
-   #Creating the reference output            
-   exchange(exchange_table_creation_ref())
-   
-   #print(database['FuelCategory'])
-   for row in fuel_name.itertuples():
-           fuelname = row[2]
-           #croppping the database according to the current fuel being considered
-           database_f1 = database_total[database_total['FuelCategory'] == row[1]]
-           if database_f1.empty == True:
-                  database_f1 = database_total[database_total['PrimaryFuel'] == row[1]]  
-            
-            
-            
-           
-             
-           if database_f1.empty != True:   
-               
-                 database_f1 = database_f1[['eGRID_ID','Electricity']].drop_duplicates()
-                 database = database_total[['eGRID_ID','Electricity']].drop_duplicates()        
-                 
-                 
-                 exchange(exchange_table_creation_input_genmix(database_f1,database))
-                 
-   #Writing final file       
-   final = process_table_creation_genmix()
-    
-   del final['']
-   print(region+' Process Created')
-   return final                                      
 
 
 
@@ -330,8 +176,8 @@ def process_doc_creation():
     ar['samplingDescription']=''
     ar['sources']=''
     ar['restrictionsDescription']=''
-    ar['copyright']=''
-    ar['creationDate']=''
+    ar['copyright']=False
+    ar['creationDate']=time.time()
     ar['dataDocumentor']='Wes Ingwersen'
     ar['dataGenerator']='Tapajyoti Ghosh'
     ar['dataSetOwner']=''
@@ -339,11 +185,19 @@ def process_doc_creation():
     ar['projectDescription']=''
     ar['publication']=''
     ar['geographyDescription']=''
+    ar['exchangeDqSystem'] = exchangeDqsystem()
     del ar['']
     
     return ar;
 
-
+def exchangeDqsystem():
+    ar = {'':''}
+    ar['@type'] = 'DQSystem'
+    ar['name'] = 'US_EPA - Flow Pedigree Matrix'
+    
+    del ar['']
+    return ar
+    
 
 
 def exchange_table_creation_input(data):
@@ -371,12 +225,14 @@ def exchange_table_creation_input(data):
       print('\n')
       ar['amount']=(np.sum(data['Heat'])/np.sum(data['Electricity']));
     
-    ar['amountFormula']=''
+    ar['amountFormula']='  '
     if math.isnan(fuelheat) != True:        
       ar['unit']=unit('kg');
     else:
       ar['unit']=unit('MJ')
     
+    
+    ar['dqEntry'] = ''
     ar['pedigreeUncertainty']=''
     ar['uncertainty']=uncertainty_table_creation(data)
     ar['comment']='eGRID '+str(year);
@@ -394,7 +250,7 @@ def unit(unt):
     return ar
 
  
-def exchange_table_creation_output(data,y,comp):
+def exchange_table_creation_output(data,y,comp,reliability):
     
     global d;
     global odd_year;
@@ -414,7 +270,8 @@ def exchange_table_creation_output(data,y,comp):
     ar['amount']=compilation(data)
     ar['amountFormula']=''
     ar['unit']=unit('kg');
-    ar['pedigreeUncertainty']=''    
+    ar['pedigreeUncertainty']=''  
+    ar['dqEntry'] = '('+str(round(reliability,1))+';1;1;1)'
     ar['uncertainty']=uncertainty_table_creation(data)
     
     if y == odd_database:
@@ -431,7 +288,7 @@ def exchange_table_creation_output(data,y,comp):
 def exchange_table_creation_ref():
     
     
-    data=pd.DataFrame(columns = ['Electricity','Heat'])
+    #data=pd.DataFrame(columns = ['Electricity','Heat'])
     ar = {'':''}
     
     ar['internalId']=''
@@ -631,113 +488,7 @@ def process_table_creation_distribution():
     return ar;
 
 
-def consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,gen_quantity, eGRID_region,nerc_region2):
 
-   
-   global exchanges_list; 
-   global region
-   consumption_dict = {'':''}
-   for reg in range(0,len(eGRID_region)):
-           region = eGRID_region[reg][0].value
-           exchanges_list = []
-           exchange(exchange_table_creation_ref())
-           
-           
-           y  = len(trade_matrix[0])
-           chk = 0;
-           for nerc in range(0,len(nerc_region2)):
-            
-             if nerc_region[reg][0].value == nerc_region2[nerc][0].value: 
-                 
-                 if surplus_pool_trade_in[reg][0].value != 0:
-                   
-                   for  j in range(0,y):
-                         
-                        name = 'Electricity from surplus pool '+str(nerc_region[reg][0].value)
-                        
-                        if trade_matrix[nerc+1][j].value != None and trade_matrix[nerc+1][j].value !=0:
-                            
-                            exchange(exchange_table_creation_input_con_mix(surplus_pool_trade_in[reg][0].value,name))
-                            chk=1;
-                            break;
-           name = 'Electricity from generation mix '+eGRID_region[reg][0].value   
-           if chk == 1:
-               exchange(exchange_table_creation_input_con_mix(gen_quantity[reg][0].value,name))
-           else:
-               exchange(exchange_table_creation_input_con_mix(1,name))
-           
-           final = process_table_creation_con_mix()
-           del final['']
-           print(region+' Process Created')
-           consumption_dict[eGRID_region[reg][0].value] = final;
-           #del consumption_dict['']
-   return consumption_dict
-
-
-def surplus_pool_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,gen_quantity, eGRID_region,nerc_region2):
-    
-     global exchanges_list; 
-     global region     
-     surplus_dict = {'':''}
-     for i in range(0,len(nerc_region2)):
-         
-           region = nerc_region2[i][0].value
-           exchanges_list = []
-           exchange(exchange_table_creation_ref())
-           y  = len(trade_matrix[0])
-           
-           chk=0;
-           for j in range(0,7):
-               
-               if trade_matrix[i+1][j].value != None and trade_matrix[i+1][j].value != 0:
-                   
-                   name = 'Canada Provinces - '+trade_matrix[0][j].value+' electricity';
-                   exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,name))
-                   chk = 1;
-           
-           for j in range(7,8):
-               
-               if trade_matrix[i+1][j].value != None and trade_matrix[i+1][j].value != 0:
-                   name = trade_matrix[0][j].value+' electricity';
-                   exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,name))
-                   chk = 1;
-                   
-           for j in range(8,34):
-               
-               if trade_matrix[i+1][j].value != None and trade_matrix[i+1][j].value != 0:
-                   name = 'Electricity from generation '+trade_matrix[0][j].value;
-                   exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,name))
-                   chk = 1;
-        
-           final = process_table_creation_surplus()
-           del final['']
-           print(region+' Process Created')
-           surplus_dict[region] = final;
-           #del consumption_dict['']
-     return surplus_dict
-
-
-
-
-
-def distribution_mix_dictionary(eGRID_subregions,efficiency_of_distribution):
-    
-    distribution_dict = {'':''}
-    for reg in eGRID_subregions:
-            global region;
-            region = reg
-            global exchanges_list; 
-            exchanges_list = [];
-            exchange(exchange_table_creation_ref())
-            name = 'Electricity from Generation Mix at region '+region
-            exchange(exchange_table_creation_input_con_mix(1/efficiency_of_distribution,name))
-        
-            final = process_table_creation_distribution()
-            del final['']
-            print(region+' Process Created')
-            distribution_dict[region] = final;
-           #del consumption_dict['']
-    return distribution_dict
             
             
             

@@ -130,6 +130,13 @@ def gen_process_template_generator(generation_process_dict):
                   io[row1][4].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['flow']['category']
                 io[row1][6].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['amount']
                 io[row1][7].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['unit']['name']
+                
+                if index > 1:
+                    
+                    io[row1][12].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['dqEntry'][1:4]
+                    io[row1][13].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['dqEntry'][5]
+                    io[row1][14].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['dqEntry'][7]
+                    io[row1][15].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['dqEntry'][9]
                 io[row1][21].value = 'database data with plants over 10% efficiency';
                 
                 if 'uncertainty' in generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]:
@@ -582,7 +589,7 @@ def consumption_mix_template_generator(consumption_dict):
                             
                             io[row][4].value = consumption_dict[Reg]['category']
                             io[row][5].value = str(Reg)
-                            io[row][6].value = consumption_dict[Reg]['exchanges'][index]['flow']['amount']
+                            io[row][6].value = consumption_dict[Reg]['exchanges'][index]['amount']
                             io[row][7].value = 'MWh';
                             io[row][21].value = consumption_dict[Reg]['description']                         
                             row = row+1;

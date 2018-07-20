@@ -9,12 +9,12 @@ import numpy as np
 warnings.filterwarnings("ignore")
 
 
-from electricitylci.process_dictionary_writer import olcaschema_genmix
-from electricitylci.process_dictionary_writer import olcaschema_genprocess
+from electricitylci.process_dictionary_writer import *
 from electricitylci.egrid_facilities import egrid_subregions
 from electricitylci.egrid_facilities import egrid_facilities
 from electricitylci.egrid_emissions_and_waste_by_facility import years_in_emissions_and_wastes_by_facility
 from electricitylci.globals import egrid_year
+from electricitylci.globals import fuel_name
 from electricitylci.eia923_generation import eia_download_extract
 
 #from electricitylci.generation_processes_from_egrid import emissions_and_waste_by_facility_for_selected_egrid_facilities
@@ -30,8 +30,6 @@ def create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facil
     os.chdir(data_dir)  
     
     
-    #Reading the fuel name file
-    fuel_name = pd.read_excel('eLCI_data.xlsx', sheet_name='fuelname')
     
     #Set aside the egrid emissions because these are not filtered
     egrid_emissions_for_selected_egrid_facilities = emissions_and_waste_by_facility_for_selected_egrid_facilities[emissions_and_waste_by_facility_for_selected_egrid_facilities['Source'] == 'eGRID']
@@ -131,6 +129,14 @@ def create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facil
     #this is the final database with all the information in the form of olca schema dictionary
     generation_process_dict = {'':''}
     generation_mix_dict = {'':''}
+   
+    
+    
+    
+    
+    
+    
+    
     
     #Looping through different subregions to create the files
     for reg in egrid_subregions:
@@ -147,7 +153,7 @@ def create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facil
             
             
             
-    
+            
                        
             #Reading complete fuel name and heat content information       
             fuelname = row[2]
@@ -183,13 +189,15 @@ def create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facil
              
             if database_f1.empty != True:       
             
-                        print(fuelname)             
-                        generation_process_dict[fuelname+'_'+reg] = olcaschema_genprocess(database_f1,fuelname,fuelheat,d_list,odd_year,odd_database)
+                        print(fuelname) 
+                        data_transfer(database_f1,fuelname,fuelheat,d_list,odd_year,odd_database)
+                        generation_process_dict[fuelname+'_'+reg] = olcaschema_genprocess(database_f1,fuelheat,d_list,fuelname)
                         print('\n')
-                        break;
+                        
         if database_for_genmix_reg_specific.empty != True:
+          data_transfer(database_for_genmix_reg_specific,fuelname,fuelheat,d_list,odd_year,odd_database)
           generation_mix_dict[reg] = olcaschema_genmix(database_for_genmix_reg_specific,fuel_name)
-            
+          break; 
         
         
     del generation_mix_dict['']  
@@ -199,5 +207,155 @@ def create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facil
                                            
                    
                         
+def olcaschema_genprocess(database,fuelheat,d_list,fuelname):
+   
+    
+   #Creating the reference output            
+   exchange(exchange_table_creation_ref())
+   region = pd.unique(database['Subregion'])[0]
+   
+   #This part is used for writing the input fuel flow informationn
+   if database['Heat'].mean() != 0 and fuelheat != 0:
+     #Heat input
+     database2 = database[['Electricity','Heat']]
+     ra1 = exchange_table_creation_input(database2);
+     exchange(ra1)
+   
+    #Dropping not required columns
+   database = database.drop(columns = ['FacilityID','eGRID_ID','Year','Subregion','PrimaryFuel','FuelCategory'])
+   
+   
+   for x in d_list:
+                            
+            if x == 'eGRID': 
+                #database_f3 = database[['Electricity','Carbon dioxide', 'Nitrous oxide', 'Nitrogen oxides', 'Sulfur dioxide', 'Methane']]
+                d1 = database[database['Source']=='eGRID']
+                d1 = d1.drop(columns = ['Compartment','Source'])
+                flowwriter(d1,x,'air')
+                
+                
+            elif x != 'eGRID':  
+                database_f3 = database.drop(columns = ['Carbon dioxide', 'Nitrous oxide', 'Nitrogen oxides', 'Sulfur dioxide', 'Methane'])
+                
+                #This is for extracing only the database being considered fro the d list names. 
+                if x == 'TRI':                     
+                    database_f3 = database_f3[database_f3['Source']=='TRI']
+               
+                elif x == 'NEI':
+                    database_f3 = database_f3[database_f3['Source']=='NEI']
+               
+                elif x == 'RCRAInfo':
+                    database_f3 = database_f3[database_f3['Source']=='RCRAInfo']
+                
+                #CHecking if its not empty and differentiating intp the different Compartments that are possible, air , water soil and wastes. 
+                if database_f3.empty != True:
+                                          
+                    #water
+                    d1 = database_f3[database_f3['Compartment']=='air']
+                    d1 = d1.drop(columns = ['Compartment','Source'])
+                    
+                    if d1.empty != True:                      
+                      flowwriter(d1,x,'air')                           
+                    
+                    
+                    #water
+                    d1 = database_f3[database_f3['Compartment']=='water']
+                    d1 = d1.drop(columns = ['Compartment','Source'])
+                    
+                    if d1.empty != True:
+                      flowwriter(d1,x,'water')  
+                    
+                    #soil
+                    d1 = database_f3[database_f3['Compartment']=='soil']
+                    d1 = d1.drop(columns = ['Compartment','Source'])
+                    
+                    if d1.empty != True:
+                      flowwriter(d1,x,'soil')  
+                    
+                                            
+                    #waste
+                    d1 = database_f3[database_f3['Compartment']=='waste']
+                    d1 = d1.drop(columns = ['Compartment','Source'])
+                    
+                    if d1.empty != True:
+                      flowwriter(d1,x,'waste')  
+
+                 
+            
+                
+                
+   #Writing final file       
+   final = process_table_creation()
+    
+   del final['']
+   print(fuelname+'_'+region+' Process Created')
+   return final
+
+
+
+
+def flowwriter(database_f1,y,comp):
+
+                         
+    for i in database_f1.iteritems():
+      
+      #Only writng the emissions. NOt any other flows or columns in the template files.   
+
+      if str(i[0]) != 'Electricity' and str(i[0]) != 'ReliabilityScore': 
+
+        #This is very important. When the database comes here, it has multiple instances of the same egrid id or plants to preserve individual flow information for the reliability scores. 
+        #So we need to make sure that information for a single plant is collaposed to one instance.
+        #Along with that we also need ot make sure that the None are also preserved. These correction is very essential. 
+        database_f3 = database_f1[['Electricity',i[0]]] 
+        database_f3 = database_f3.dropna()
+          
+        
+        database_reliability = database_f1[[i[0],'ReliabilityScore']]
+        database_reliability = database_reliability.dropna()
+               
+
+        if(compilation(database_f3) != 0 and compilation(database_f3)!= None) and math.isnan(compilation(database_f3)) != True:
+            global reliability
+            reliability = np.average(database_reliability[['ReliabilityScore']],weights = database_reliability[[i[0]]])
+            ra = exchange_table_creation_output(database_f3,y,comp,reliability)
+            exchange(ra)
+
                   
-                        
+def olcaschema_genmix(database_total,fuel_name):
+
+     
+   exchanges_list = []
+   
+
+   region = pd.unique(database_total['Subregion'])[0]
+   
+     
+   #Creating the reference output            
+   exchange(exchange_table_creation_ref())
+   
+   #print(database['FuelCategory'])
+   for row in fuel_name.itertuples():
+           fuelname = row[2]
+           #croppping the database according to the current fuel being considered
+           database_f1 = database_total[database_total['FuelCategory'] == row[1]]
+           if database_f1.empty == True:
+                  database_f1 = database_total[database_total['PrimaryFuel'] == row[1]]  
+            
+            
+            
+           
+             
+           if database_f1.empty != True:   
+               
+                 database_f1 = database_f1[['eGRID_ID','Electricity']].drop_duplicates()
+                 database = database_total[['eGRID_ID','Electricity']].drop_duplicates()        
+                 
+                 
+                 exchange(exchange_table_creation_input_genmix(database_f1,database))
+                 
+   #Writing final file       
+   final = process_table_creation_genmix()
+    
+   del final['']
+   print(region+' Process Created')
+   return final                                                              

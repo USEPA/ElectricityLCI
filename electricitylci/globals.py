@@ -34,4 +34,8 @@ data_dir = os.path.dirname(os.path.realpath(__file__))+"\\data\\"
 os.chdir(data_dir)  
 
 #Reading the fuel name file
-fuel_name = pd.read_excel('eLCI_data.xlsx', sheet_name='fuelname')
+fuel_name = pd.read_csv('fuelname.csv')
+
+
+#Trading methodology
+net_trading = True
