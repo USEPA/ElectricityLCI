@@ -1,20 +1,18 @@
-FuelList,fuelname
-OIL,oil
-GAS,natural gas
-SUB,sub-bituminous coal
-WC,waste coal
-BIOMASS,biomass
-WIND,wind
-HYDRO,hydroelectric
-OTHF,other fuel 
-BIT,bituminous
-NUCLEAR,nuclear
-SOLAR PV,solar photovoltaic
-SOLAR THERMAL,solar thermal 
-GEOTHERMAL FT,geothermal (flash turbine)
-GEOTHERMAL BT,geothermal (binary turbine)
-OFSL,other fossil fuel
-SGC,synthetic coal
-LIG,lignite coal
-RC,refined coal
-COG,Coal gas
+FuelList,Fuelname,Heatcontent
+GEOTHERMAL,Geothermal,
+GAS,natural gas,36.36
+BIOMASS,biomass,
+LIG,lignite coal,
+RC,refined coal,
+COG,Coal gas,
+SOLAR,Solar,
+OIL,oil,
+SUB,sub-bituminous coal,22.36
+WC,waste coal,20.36
+WIND,wind,
+HYDRO,hydroelectric,
+OTHF,other fuel ,
+BIT,bituminous,
+NUCLEAR,nuclear,22.36
+OFSL,other fossil fuel,
+SGC,synthetic coal,
