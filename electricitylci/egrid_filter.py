@@ -83,11 +83,8 @@ generation_process_dict,generation_mix_dict = create_process_dict(emissions_and_
 gen_mix_template_generator(generation_mix_dict)
 
 
+
 '''
-'''
-
-
-
 #TJ to take over to further divide by source
 
 #Get a unique set of egrid ids for inventory source to see which are included
