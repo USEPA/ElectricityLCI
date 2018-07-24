@@ -25,11 +25,6 @@ min_plant_percent_generation_from_primary_fuel_category = 90
 
 efficiency_of_distribution_grid = 0.95
 
-##Data quality
-
-def map_inventory_flows_to_FedCommons_elementary_flows():
-    print('Map flows')
-
 data_dir = os.path.dirname(os.path.realpath(__file__))+"\\data\\"
 os.chdir(data_dir)  
 
