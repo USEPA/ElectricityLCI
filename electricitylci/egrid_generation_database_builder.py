@@ -19,12 +19,9 @@ from electricitylci.eia923_generation import eia_download_extract
 
 #from electricitylci.generation_processes_from_egrid import emissions_and_waste_by_facility_for_selected_egrid_facilities
 
-   
 def create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facilities):       
     
-    global egrid_facilities
-    global egrid_subregions
-    
+
     
     data_dir = os.path.dirname(os.path.realpath(__file__))+"/data/"
     os.chdir(data_dir)  
