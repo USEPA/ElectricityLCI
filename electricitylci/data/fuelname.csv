@@ -1,18 +1,18 @@
-FuelList,Fuelname,Heatcontent
-GEOTHERMAL,Geothermal,
-GAS,natural gas,36.36
-BIOMASS,biomass,
-LIG,lignite coal,
-RC,refined coal,
-COG,Coal gas,
-SOLAR,Solar,
-OIL,oil,
-SUB,sub-bituminous coal,22.36
-WC,waste coal,20.36
-WIND,wind,
-HYDRO,hydroelectric,
-OTHF,other fuel ,
-BIT,bituminous,
-NUCLEAR,nuclear,22.36
-OFSL,other fossil fuel,
-SGC,synthetic coal,
+FuelList,Fuelname,Heatcontent,ElementaryFlowInput
+GEOTHERMAL,geothermal,,1
+GAS,natural gas,36.36,0
+BIOMASS,biomass,,0
+LIG,lignite coal,,0
+RC,refined coal,,0
+COG,coal gas,,0
+SOLAR,solar,,1
+OIL,oil,,0
+SUB,sub-bituminous coal,22.36,0
+WC,waste coal,20.36,0
+WIND,wind,,1
+HYDRO,hydroelectric,,1
+OTHF,other fuel,,1
+BIT,bituminous coal,,1
+NUCLEAR,nuclear,22.36,0
+OFSL,other fossil fuel,,0
+SGC,synthetic coal,,0
