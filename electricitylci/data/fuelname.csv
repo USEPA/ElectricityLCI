@@ -11,8 +11,8 @@ SUB,sub-bituminous coal,22.36,0
 WC,waste coal,20.36,0
 WIND,wind,,1
 HYDRO,hydroelectric,,1
-OTHF,other fuel,,1
-BIT,bituminous coal,,1
+OTHF,other fuel,,0
+BIT,bituminous coal,,0
 NUCLEAR,nuclear,22.36,0
 OFSL,other fossil fuel,,0
 SGC,synthetic coal,,0
