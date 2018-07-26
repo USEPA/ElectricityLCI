@@ -5,7 +5,7 @@ from electricitylci.globals import min_plant_percent_generation_from_primary_fue
 
 #get egrid facility file from stewi
 egrid_facilities = stewi.getInventoryFacilities("eGRID",egrid_year)
-egrid_facilities.rename(columns={'Plant primary coal/oil/gas/ other fossil fuel category':'FuelCategory','Plant primary fuel':'PrimaryFuel','eGRID subregion acronym':'Subregion'},inplace=True)
+egrid_facilities.rename(columns={'Plant primary coal/oil/gas/ other fossil fuel category':'FuelCategory','Plant primary fuel':'PrimaryFuel','eGRID subregion acronym':'Subregion','NERC region acronym':'NERC'},inplace=True)
 
 len(egrid_facilities)
 #2016:9709
@@ -15,7 +15,6 @@ egrid_subregions = list(pd.unique(egrid_facilities['Subregion']))
 egrid_subregions = [x for x in egrid_subregions if str(x) != 'nan']
 len(egrid_subregions)
 #2016: 26
-egrid_subregions = ['AZNM','CAMX','NWPP','RMPA']
 
 egrid_primary_fuel_categories = sorted(pd.unique(egrid_facilities['FuelCategory'].dropna()))
 
