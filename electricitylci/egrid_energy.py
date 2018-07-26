@@ -3,7 +3,7 @@ import numpy as np
 from electricitylci.egrid_flowbyfacilty import egrid_flowbyfacility
 
 egrid_net_generation = egrid_flowbyfacility[egrid_flowbyfacility['FlowName']=='Electricity']
-egrid_net_generation.drop(columns=['ReliabilityScore','FlowName'],inplace=True)
+egrid_net_generation.drop(columns=['ReliabilityScore','FlowName','Compartment'],inplace=True)
 egrid_net_generation.rename(columns={'FlowAmount':'NetGeneration(MJ)'},inplace=True)
 
 #Get length
