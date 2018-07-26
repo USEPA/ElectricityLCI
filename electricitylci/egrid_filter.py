@@ -4,16 +4,11 @@ import warnings
 import pandas as pd
 warnings.filterwarnings("ignore")
 
-from electricitylci.globals import include_only_egrid_facilities_with_positive_generation
-from electricitylci.globals import egrid_facility_efficiency_filters
-from electricitylci.egrid_facilities import egrid_facilities
-from electricitylci.egrid_facilities import list_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min
-from electricitylci.egrid_energy import list_egrid_facilities_with_positive_generation
-from electricitylci.egrid_energy import list_egrid_facilities_in_efficiency_range
+from electricitylci.globals import include_only_egrid_facilities_with_positive_generation,egrid_facility_efficiency_filters
+from electricitylci.egrid_facilities import egrid_facilities,list_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min
+from electricitylci.egrid_energy import list_egrid_facilities_with_positive_generation, list_egrid_facilities_in_efficiency_range,egrid_net_generation
 from electricitylci.egrid_emissions_and_waste_by_facility import emissions_and_wastes_by_facility
 from electricitylci.egrid_FRS_matches import list_FRS_ids_filtered_for_NAICS
-from electricitylci.egrid_generation_database_builder import create_process_dict
-from electricitylci.egrid_template_builder import *
 
 #Get lists of egrid facilities
 all_egrid_facility_ids = list(egrid_facilities['FacilityID'])
@@ -47,22 +42,25 @@ egrid_facilities_to_include = list(set(egrid_facilities_selected_on_generation)
 len(egrid_facilities_to_include)
 #2016:7001
 
+#Get the generation data for these facilities only
+electricity_for_selected_egrid_facilities = egrid_net_generation[egrid_net_generation['FacilityID'].isin(egrid_facilities_to_include)]
+
 ###Emissions and wastes filtering
 #Start with all emissions and wastes; these are in this file
-emissions_and_waste_by_facility_for_selected_egrid_facilities = emissions_and_wastes_by_facility[emissions_and_wastes_by_facility['eGRID_ID'].isin(egrid_facilities_to_include)]
+emissions_and_waste_for_selected_egrid_facilities = emissions_and_wastes_by_facility[emissions_and_wastes_by_facility['eGRID_ID'].isin(egrid_facilities_to_include)]
 
-len(emissions_and_waste_by_facility_for_selected_egrid_facilities.drop_duplicates())
+#len(emissions_and_waste_by_facility_for_selected_egrid_facilities.drop_duplicates())
 
-emissions_and_waste_by_facility_for_selected_egrid_facilities['eGRID_ID'] = emissions_and_waste_by_facility_for_selected_egrid_facilities['eGRID_ID'].apply(pd.to_numeric, errors = 'coerce')
+#emissions_and_waste_by_facility_for_selected_egrid_facilities['eGRID_ID'] = emissions_and_waste_by_facility_for_selected_egrid_facilities['eGRID_ID'].apply(pd.to_numeric, errors = 'coerce')
 
 #NAICS Filtering
 #Apply only to the non-egrid data
 #Pull egrid data out first
-egrid_emissions_for_selected_egrid_facilities = emissions_and_waste_by_facility_for_selected_egrid_facilities[emissions_and_waste_by_facility_for_selected_egrid_facilities['Source'] == 'eGRID']
+egrid_emissions_for_selected_egrid_facilities = emissions_and_waste_for_selected_egrid_facilities[emissions_and_waste_for_selected_egrid_facilities['Source'] == 'eGRID']
 #2016: 22842
 
 #Separate out nonegrid emissions and wastes
-nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities = emissions_and_waste_by_facility_for_selected_egrid_facilities[emissions_and_waste_by_facility_for_selected_egrid_facilities['Source'] != 'eGRID']
+nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities = emissions_and_waste_for_selected_egrid_facilities[emissions_and_waste_for_selected_egrid_facilities['Source'] != 'eGRID']
 
 #Get list of facilities meeting NAICS criteria
 frs_ids_meeting_NAICS_criteria = list_FRS_ids_filtered_for_NAICS()
@@ -71,54 +69,11 @@ frs_ids_meeting_NAICS_criteria = list_FRS_ids_filtered_for_NAICS()
 nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities_NAICS_filtered = nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities[nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities['FRS_ID'].isin(frs_ids_meeting_NAICS_criteria)]
 
 #Join the datasets back together
-emissions_and_waste_by_facility_for_selected_egrid_facilities = pd.concat([egrid_emissions_for_selected_egrid_facilities,nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities_NAICS_filtered])
-len(emissions_and_waste_by_facility_for_selected_egrid_facilities)
+emissions_and_waste_for_selected_egrid_facilities = pd.concat([egrid_emissions_for_selected_egrid_facilities, nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities_NAICS_filtered])
+len(emissions_and_waste_for_selected_egrid_facilities)
 #for egrid 2016,TRI 2016,NEI 2016,RCRAInfo 2015: 90792
 
 #emissions_and_waste_by_facility_for_selected_egrid_facilities.to_excel('Mainfile.xlsx')
-generation_process_dict,generation_mix_dict = create_process_dict(emissions_and_waste_by_facility_for_selected_egrid_facilities)
+#generation_process_dict,generation_mix_dict = create_process_dict(emissions_and_waste_for_selected_egrid_facilities)
 
 #gen_process_template_generator(generation_process_dict)
-
-gen_mix_template_generator(generation_mix_dict)
-
-
-
-'''
-#TJ to take over to further divide by source
-
-#Get a unique set of egrid ids for inventory source to see which are included
-#egrid_ids_by_source = {}
-#for s in list(pd.unique(nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities["Source"])):
-#    egrid_ids_for_source = nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities[nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities["Source"]==s]['eGRID_ID']
-#    egrid_ids_by_source[s] = sorted(list(pd.unique(egrid_ids_for_source)))
-
-
-
-#Merge them back together, then join with generation data
-#Gets generation data from EIA_923 if needed because it doesn't match
-#if years_in_emissions_and_wastes_by_facility != egrid_year
-
-
-
-##Add data quality scores
-#Temporal correlation score
-#generation_inventory['Year'] = generation_inventory['Year']
-#age_of_data = (electricity_lci_target_year - generation_inventory['Year']).astype("int",errors='ignore')
-
-#generation_inventory['dqi_temporal'] = age_of_data.apply(lookup_temporal_score)
-
-#Geographic correlation score: All facilities within egrid subregion so assign 1
-#generation_inventory['dqi_geographic'] = 1
-
-#Data collection score  - Sarah C to provide guidance
-
-
-#map_inventory_flows_to_FedCommons_elementary_flows
-#leave this for Wes
-
-
-#Write generation inventory into dictionaries
-
-
-'''
