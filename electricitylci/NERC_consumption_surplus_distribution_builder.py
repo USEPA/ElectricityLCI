@@ -27,7 +27,7 @@ else:
     surplus_pool_trade_in = data['F36':'F61']
     trade_matrix = data['I35':'AP45']
     generation_quantity = data['E36':'E61'] 
-    nerc_region2 = data['H36:H65']         
+    nerc_region2 = data['H36:H45']         
     egrid_regions = data['C36:C61']
 
 
@@ -45,21 +45,14 @@ def surplus_pool_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,gen_q
            y  = len(trade_matrix[0])
            
            chk=0;
-           for j in range(0,7):
+           for j in range(0,8):
                
                if trade_matrix[i+1][j].value != None and trade_matrix[i+1][j].value != 0:
                    
-                   name = 'Canada Provinces - '+trade_matrix[0][j].value+' electricity';
+                   name = 'Electricity; at region '+trade_matrix[0][j].value+'; Trade Mix';
                    exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,name,trade_matrix[0][j].value))
                    chk = 1;
            
-           for j in range(7,8):
-               
-               if trade_matrix[i+1][j].value != None and trade_matrix[i+1][j].value != 0:
-                   name = trade_matrix[0][j].value+' electricity';
-                   exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,name,trade_matrix[0][j].value))
-                   chk = 1;
-                   
            for j in range(8,34):
                
                if trade_matrix[i+1][j].value != None and trade_matrix[i+1][j].value != 0:
