@@ -186,16 +186,6 @@ del distribution_dict['']
 
 
 
-distribution_template_generator(distribution_dict,efficiency_of_distribution_grid)
-
-
-surplus_pool_mix_template_generator(surplus_dict,nerc_region2)
-
-
-consumption_mix_template_generator(consumption_dict)
-
-
-
 
 
 

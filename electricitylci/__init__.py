@@ -18,6 +18,8 @@ def get_consumption_surplus_distribution_df():
     from electricitylci.NERC_consumption_surplus_distribution_builder import consumption_dict
     from electricitylci.NERC_consumption_surplus_distribution_builder import distribution_dict
     from electricitylci.Canada_mexico_process_builder import trade_dict
+   
+    
     
     
 
@@ -28,7 +30,7 @@ if  __name__ == '__main__':
    from electricitylci.egrid_generation_database_builder import olcaschema_genprocess
    from electricitylci.egrid_generation_database_builder import olcaschema_genmix
    from electricitylci.egrid_template_builder import *
-  
+   
     
    #UPSTREAM
    generation_process_dict = olcaschema_genprocess(get_generation_process_df(source='egrid', regions='all'))
@@ -37,8 +39,4 @@ if  __name__ == '__main__':
    gen_mix_template_generator(generation_mix_dict)
    
    #DOWNSTREAM
-   get_consumption_surplus_distribution_df()
-   distribution_template_generator(distribution_dict,efficiency_of_distribution_grid)
-   surplus_pool_mix_template_generator(surplus_dict,nerc_region2)
-   consumption_mix_template_generator(consumption_dict)
-   trade_mix_template_generator(trade_dict)
+   get_consumption_surplus_distribution_df()   
