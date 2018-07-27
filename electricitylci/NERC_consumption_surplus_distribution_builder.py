@@ -41,7 +41,7 @@ def surplus_pool_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,gen_q
          
            region = nerc_region2[i][0].value
            exchange_list_creator(region)
-           exchange(exchange_table_creation_ref())
+           exchange(ref_flow_creator())
            y  = len(trade_matrix[0])
            
            chk=0;
@@ -82,7 +82,7 @@ def consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,ge
    for reg in range(0,len(eGRID_region)):
            region = eGRID_region[reg][0].value
            exchange_list_creator(region)
-           exchange(exchange_table_creation_ref())
+           exchange(ref_flow_creator())
            
            
            y  = len(trade_matrix[0])
@@ -134,7 +134,7 @@ def distribution_mix_dictionary(eGRID_subregions,efficiency_of_distribution):
             global region;
             region = reg
             exchange_list_creator(region)
-            exchange(exchange_table_creation_ref())
+            exchange(ref_flow_creator())
             name =  consumption_dict[reg]['name']
             exchange(exchange_table_creation_input_con_mix(1/efficiency_of_distribution,name,region))
         

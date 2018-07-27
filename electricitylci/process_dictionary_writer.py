@@ -367,7 +367,32 @@ def flow_table_creation(fl,comp):
     
     return ar
 
-
+def ref_flow_creator():
+    
+    
+    #data=pd.DataFrame(columns = ['Electricity','Heat'])
+    ar = {'':''}
+    
+    ar['internalId']=''
+    ar['@type']='Exchange'
+    ar['avoidedProduct']=False
+    ar['flow']=flow_table_creation('Electricity',None)
+    ar['flowProperty']=''
+    ar['input']=False
+    ar['quantitativeReference']=True
+    ar['baseUncertainty']=''
+    ar['provider']=''
+    ar['amount']=1.0
+    ar['amountFormula']=''
+    ar['unit']=unit('MWh');
+    ar['location'] = location()
+    
+    #ar['uncertainty']=uncertainty_table_creation(data)   
+    #ar['uncertainty'] = ''
+    del ar['']
+    return ar
+    #ar['pedigreeUncertainty']=''
+    #ar['uncertainty']=uncertainty_table_creation(data)   
 
 def exchange_table_creation_input_con_mix(generation,name,loc):
     
