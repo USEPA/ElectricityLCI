@@ -31,17 +31,14 @@ if  __name__ == '__main__':
   
     
    #UPSTREAM
-   #generation_process_dict = olcaschema_genprocess(get_generation_process_df(source='egrid', regions='all'))
+   generation_process_dict = olcaschema_genprocess(get_generation_process_df(source='egrid', regions='all'))
    generation_mix_dict = olcaschema_genmix(get_generation_mix_process_df(source='egrid', regions='all'))   
-   #gen_process_template_generator(generation_process_dict)
+   gen_process_template_generator(generation_process_dict)
    gen_mix_template_generator(generation_mix_dict)
-   '''
+   
    #DOWNSTREAM
    get_consumption_surplus_distribution_df()
    distribution_template_generator(distribution_dict,efficiency_of_distribution_grid)
    surplus_pool_mix_template_generator(surplus_dict,nerc_region2)
    consumption_mix_template_generator(consumption_dict)
-   trade_mix_template_generator(trade_dict)  
-   
-   '''
-    
+   trade_mix_template_generator(trade_dict)
