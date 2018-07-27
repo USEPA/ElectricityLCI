@@ -14,28 +14,6 @@ from electricitylci.globals import egrid_year
 
 year = egrid_year
 
-def data_transfer(database,fuelname_p,fuelheat_p,d_list_p,odd_year_p,odd_database_p):
-   
-   global region;
-   global exchanges_list;  
-   global fuelname
-   global fuelheat
-   global year
-   global odd_year
-   global odd_database
-
-   
-      
-   exchanges_list = []
-   fuelname = fuelname_p
-   fuelheat = fuelheat_p
-   odd_year = odd_year_p
-   odd_database = odd_database_p
-
-   
-   region = pd.unique(database['Subregion'])[0]
-
-
 
 def exchange_list_creator(region_p):
     global exchanges_list;
