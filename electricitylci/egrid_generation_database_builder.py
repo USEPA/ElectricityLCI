@@ -345,11 +345,11 @@ def olcaschema_genmix(database):
                ra = exchange_table_creation_input_genmix(database_f1,fuelname)
                exchange(ra)
                #Writing final file
-               final = process_table_creation_genmix()
-               del final['']
+     final = process_table_creation_genmix()
+     del final['']
     
    
-   print(reg +' Process Created')
-   generation_mix_dict[reg] = final
+     print(reg +' Process Created')
+     generation_mix_dict[reg] = final
    return generation_mix_dict                                                            
    

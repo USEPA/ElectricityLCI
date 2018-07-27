@@ -1,5 +1,3 @@
-import pickle
-
 def get_generation_process_df(source='egrid', regions='all'):
     from electricitylci.egrid_filter import electricity_for_selected_egrid_facilities,emissions_and_waste_for_selected_egrid_facilities
     from electricitylci.egrid_generation_database_builder import create_generation_process_df
@@ -14,16 +12,24 @@ def get_generation_mix_process_df(source='egrid',regions='all'):
     generation_mix_process_df = create_generation_mix_process_df(electricity_for_selected_egrid_facilities)
     return generation_mix_process_df
 
+
+def get_consumption_surplus_distribution_df():
+    from electricitylci.NERC_consumption_surplus_distribution_builder import surplus_dict
+    from electricitylci.NERC_consumption_surplus_distribution_builder import consumption_dict
+    from electricitylci.NERC_consumption_surplus_distribution_builder import distribution_dict
+    from electricitylci.Canada_mexico_process_builder import trade_dict
+    
+    
+
+
 if  __name__ == '__main__':
-		#write_generation_templates()
-		#from electricitylci.egrid_template_builder import *
-		#gen_mix_template_generator(generation_mix_dict)
-   #a = get_generation_process_df(source='egrid', regions='all')
-   #b = get_generation_mix_process_df(source='egrid', regions='all')
+
+   ''' 
    from electricitylci.egrid_generation_database_builder import olcaschema_genprocess
    from electricitylci.egrid_generation_database_builder import olcaschema_genmix
-   from electricitylci.egrid_template_builder import gen_process_template_generator
-   from electricitylci.egrid_template_builder import gen_mix_template_generator
+   from electricitylci.egrid_template_builder import *
+  
+    
    
    generation_process_dict = olcaschema_genprocess(get_generation_process_df(source='egrid', regions='all'))
    generation_mix_dict = olcaschema_genmix(get_generation_mix_process_df(source='egrid', regions='all'))
@@ -31,6 +37,10 @@ if  __name__ == '__main__':
    gen_process_template_generator(generation_process_dict)
    gen_mix_template_generator(generation_mix_dict)
    
-		#pickle.dump(a, open( "gen.p", "wb" ) )
-		#pickle.dump(b, open( "gen_mix.p", "wb" ) )
+   '''
+   get_consumption_surplus_distribution_df()
+   distribution_template_generator(distribution_dict,efficiency_of_distribution_grid)
+   surplus_pool_mix_template_generator(surplus_dict,nerc_region2)
+   consumption_mix_template_generator(consumption_dict)
+   
 
