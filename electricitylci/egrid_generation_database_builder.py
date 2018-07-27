@@ -332,8 +332,10 @@ def olcaschema_genmix(database):
    for reg in region:  
      
      database_reg = database[database['Subregion'] == reg]
+     
+     
      #Creating the reference output
-     exchange(exchange_table_creation_ref(database))
+     exchange(exchange_table_creation_ref(database_reg))
      
      for index,row in fuel_name.iterrows():
            # Reading complete fuel name and heat content information
