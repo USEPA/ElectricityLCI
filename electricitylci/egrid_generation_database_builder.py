@@ -16,12 +16,10 @@ from electricitylci.globals import egrid_year, fuel_name
 from electricitylci.eia923_generation import eia_download_extract
 from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty
 
-egrid_subregions = ['CAMX','AZNM']
-
 
 #Get a subset of the egrid_facilities dataset
 egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory']]
-egrid_facilities_w_fuel_region['FacilityID'] = egrid_facilities_w_fuel_region['FacilityID'].apply(pd.to_numeric, errors = 'coerce')
+egrid_facilities_w_fuel_region['FacilityID'] = egrid_facilities_w_fuel_region['FacilityID'].astype(str)
 
 
 def create_generation_process_df(generation_data,emissions_data,subregion='ALL'):
@@ -37,8 +35,8 @@ def create_generation_process_df(generation_data,emissions_data,subregion='ALL')
     generation_data[['Electricity']] = generation_data[['NetGeneration(MJ)']]*0.00027778
     
     #Converting to numeric for better stability and merging
-    emissions_data['eGRID_ID'] = emissions_data['eGRID_ID'].apply(pd.to_numeric,errors = 'coerce')
-    generation_data['eGRID_ID'] = generation_data['FacilityID'].apply(pd.to_numeric,errors = 'coerce')
+    emissions_data['eGRID_ID'] = emissions_data['eGRID_ID'].astype(str)
+    generation_data['eGRID_ID'] = generation_data['FacilityID'].astype(str)
     generation_data = generation_data.drop(columns = ['FacilityID','NetGeneration(MJ)'])
     emissions_data = emissions_data.drop(columns = ['FacilityID'])
     combined_data = generation_data.merge(emissions_data, left_on = ['eGRID_ID'], right_on = ['eGRID_ID'], how = 'right')
@@ -63,11 +61,11 @@ def create_generation_process_df(generation_data,emissions_data,subregion='ALL')
     if odd_year != None:
         EIA_923_gen_data = eia_download_extract(odd_year)
     
-    EIA_923_gen_data['Plant Id'] = EIA_923_gen_data['Plant Id'].apply(pd.to_numeric,errors = 'coerce')
+    EIA_923_gen_data['Plant Id'] = EIA_923_gen_data['Plant Id'].astype(str)
     
     #Merging database with EIA 923 data
     database_with_new_generation = combined_data.merge(EIA_923_gen_data, left_on = ['eGRID_ID'],right_on = ['Plant Id'],how = 'left')
-    database_with_new_generation['Year'] = database_with_new_generation['Year'].apply(pd.to_numeric,errors = 'coerce')
+    database_with_new_generation['Year'] = database_with_new_generation['Year'].astype(str)
     database_with_new_generation = database_with_new_generation.sort_values(by = ['Year'])
 
     #Replacing the odd year Net generations with the EIA net generations. 
@@ -91,14 +89,13 @@ def create_generation_process_df(generation_data,emissions_data,subregion='ALL')
 
     
     final_data = final_data.drop(columns = ['FacilityID'])
-    
-    a = generation_process_builder(final_data,regions)
-    return a
+    b = generation_process_builder_fnc(final_data,regions)
+    return b
     
 
 
-def generation_process_builder(final_database,regions):
-    print(regions)
+def generation_process_builder_fnc(final_database,regions):
+    
     result_database = pd.DataFrame()
     #Looping through different subregions to create the files
     for reg in regions:
@@ -120,6 +117,7 @@ def generation_process_builder(final_database,regions):
                           
                 database_f1  = database_f1.sort_values(by='Source',ascending=False)
                 exchange_list = list(pd.unique(database_f1['FlowName']))
+                database_f1['FuelCategory'].loc[database_f1['FuelCategory'] == 'COAL'] = database_f1['PrimaryFuel']  
                 
                 for exchange in exchange_list:
                     database_f2 = database_f1[database_f1['FlowName'] == exchange]
@@ -134,7 +132,7 @@ def generation_process_builder(final_database,regions):
                     database_f2['Minimum'] = uncertainty_info['minimum']
                     frames = [result_database,database_f2]
                     result_database  = pd.concat(frames)                   
-    result_database = result_database.drop(columns= ['eGRID_ID','Electricity','FlowAmount','ReliabilityScore'])
+    result_database = result_database.drop(columns= ['eGRID_ID','Electricity','FlowAmount','ReliabilityScore','PrimaryFuel'])
     result_database = result_database.drop_duplicates()          
     return result_database
     
@@ -153,11 +151,12 @@ def generation_process_builder(final_database,regions):
      
                                            
 def create_generation_mix_process_df(generation_data,subregion='ALL'):
+   
    #database_for_genmix =  emissions_for_selected_egrid_facilities_final[emissions_for_selected_egrid_facilities_final['Source'] == 'eGRID']
    generation_data[['Electricity']] = generation_data[['NetGeneration(MJ)']]*0.00027778
     
    #Converting to numeric for better stability and merging
-   generation_data['FacilityID'] = generation_data['FacilityID'].apply(pd.to_numeric,errors = 'coerce')
+   generation_data['FacilityID'] = generation_data['FacilityID'].astype(str)
    generation_data = generation_data.drop(columns = ['NetGeneration(MJ)'])
    
    database_for_genmix_final = pd.merge(generation_data,egrid_facilities_w_fuel_region, on='FacilityID')
@@ -167,13 +166,12 @@ def create_generation_mix_process_df(generation_data,subregion='ALL'):
    else:
        regions = [subregion]
    
-
+  
    result_database = pd.DataFrame() 
+
    for reg in regions:
-       
        database = database_for_genmix_final[database_for_genmix_final['Subregion'] == reg]
        total_gen_reg = np.sum(database['Electricity'])
-       print(reg)
        for index,row in fuel_name.iterrows():
            # Reading complete fuel name and heat content information
             fuelname = row['FuelList']
@@ -261,167 +259,89 @@ def uncertainty_creation(data,name,fuelheat):
     return ar;
 
 
-    
-
-
-
 
 
 #HAVE THE CHANGE FROM HERE TO WRITE DICTIONARY
 
-'''
-
-
-
-
-def olcaschema_genprocess(database,fuelheat,d_list,fuelname):
+def olcaschema_genprocess(database):
     
    generation_process_dict = {}
-
+   
+   
+   
    #Creating the reference output
-   exchange(exchange_table_creation_ref())
-   region = pd.unique(database['Subregion'])[0]
-   
-   #This part is used for writing the input fuel flow informationn
-   if database['Heat'].mean() != 0 and fuelheat != 0:
-     #Heat input
-     database2 = database[['Electricity','Heat']]
-     #THIS CHANGE WAS DONE BECASUE OF THE PRESENCE OF DUPLICATES EGRIDS DUE TO ONE MANY ERRORS IN THE INPUT FILE FROM STEWI COMBO. 
-     #THIS DROPS DUPLICATES IF BOTH ELECTRICITY AND FLOW IS SAME. 
-     database2.drop_duplicates()
-     ra1 = exchange_table_creation_input(database2);
-     exchange(ra1)
-   
-    #Dropping not required columns
-   database = database.drop(columns = ['FacilityID','eGRID_ID','Year','Subregion','PrimaryFuel','FuelCategory'])
-   
-   
-   for x in d_list:
-                            
-            if x == 'eGRID': 
-                #database_f3 = database[['Electricity','Carbon dioxide', 'Nitrous oxide', 'Nitrogen oxides', 'Sulfur dioxide', 'Methane']]
-                d1 = database[database['Source']=='eGRID']
-                d1 = d1.drop(columns = ['Compartment','Source'])
-                flowwriter(d1,x,'air')
-                
-                
-            elif x != 'eGRID':  
-                database_f3 = database.drop(columns = ['Carbon dioxide', 'Nitrous oxide', 'Nitrogen oxides', 'Sulfur dioxide', 'Methane'])
-                
-                #This is for extracing only the database being considered fro the d list names. 
-                if x == 'TRI':                     
-                    database_f3 = database_f3[database_f3['Source']=='TRI']
-               
-                elif x == 'NEI':
-                    database_f3 = database_f3[database_f3['Source']=='NEI']
-               
-                elif x == 'RCRAInfo':
-                    database_f3 = database_f3[database_f3['Source']=='RCRAInfo']
-                
-                #CHecking if its not empty and differentiating intp the different Compartments that are possible, air , water soil and wastes. 
-                if database_f3.empty != True:
-                                          
-                    #water
-                    d1 = database_f3[database_f3['Compartment']=='air']
-                    d1 = d1.drop(columns = ['Compartment','Source'])
-                    
-                    if d1.empty != True:                      
-                      flowwriter(d1,x,'air')                           
-                    
-                    
-                    #water
-                    d1 = database_f3[database_f3['Compartment']=='water']
-                    d1 = d1.drop(columns = ['Compartment','Source'])
-                    
-                    if d1.empty != True:
-                      flowwriter(d1,x,'water')  
-                    
-                    #soil
-                    d1 = database_f3[database_f3['Compartment']=='soil']
-                    d1 = d1.drop(columns = ['Compartment','Source'])
-                    
-                    if d1.empty != True:
-                      flowwriter(d1,x,'soil')  
-                    
-                                            
-                    #waste
-                    d1 = database_f3[database_f3['Compartment']=='waste']
-                    d1 = d1.drop(columns = ['Compartment','Source'])
-                    
-                    if d1.empty != True:
-                      flowwriter(d1,x,'waste')  
 
-                 
+   
+   region = list(pd.unique(database['Subregion']))
+   
+   for reg in region: 
+       
+        database_reg = database[database['Subregion'] == reg]
+       
+        for index,row in fuel_name.iterrows():
+           # Reading complete fuel name and heat content information
             
+            fuelname = row['Fuelname']
+            fuelheat = float(row['Heatcontent'])             
+            database_f1 = database_reg[database_reg['FuelCategory'] == row['FuelList']]
+            
+            
+            if database_f1.empty != True:
+                #This part is used for writing the input fuel flow informationn
+                database2 = database_f1[database_f1['FlowName'] == 'Heat']
+                exchange(exchange_table_creation_ref(database2))
+                ra1 = exchange_table_creation_input(database2,fuelname,fuelheat)
+                exchange(ra1)
+                
+                exchange_list = list(pd.unique(database_f1['FlowName']))
+                 
+                for exchange_emissions in exchange_list:
+                    database_f2 = database_f1[database_f1['FlowName'] == exchange_emissions]
+                    ra = exchange_table_creation_output(database_f2)
+                    exchange(ra)
                 
                 
-   #Writing final file       
-   final = process_table_creation()
-    
-   del final['']
-   print(fuelname+'_'+region+' Process Created')
-   return final
-
-
-
-
-
-
-
-
-
-
-def flowwriter(database_f1,y,comp):
-
-    
-     #THIS CHANGE WAS DONE BECASUE OF THE PRESENCE OF DUPLICATES EGRIDS DUE TO ONE MANY ERRORS IN THE INPUT FILE FROM STEWI COMBO. 
-     #THIS DROPS DUPLICATES IF BOTH ELECTRICITY AND FLOW IS SAME.
-    database_f1 = database_f1.drop_duplicates()
-    
-                         
-    for i in database_f1.iteritems():
+                final = process_table_creation(fuelname)
+                del final['']
+                generation_process_dict[reg+"_"+fuelname] = final
+   return generation_process_dict
       
-      #Only writng the emissions. NOt any other flows or columns in the template files.   
+       
+            
 
-      if str(i[0]) != 'Electricity' and str(i[0]) != 'ReliabilityScore': 
 
-        #This is very important. When the database comes here, it has multiple instances of the same egrid id or plants to preserve individual flow information for the reliability scores. 
-        #So we need to make sure that information for a single plant is collaposed to one instance.
-        #Along with that we also need ot make sure that the None are also preserved. These correction is very essential. 
-        database_f3 = database_f1[['Electricity',i[0]]] 
-        database_f3 = database_f3.dropna()
-          
-        
-        database_reliability = database_f1[[i[0],'ReliabilityScore']]
-        database_reliability = database_reliability.dropna()
-               
 
-        if(compilation(database_f3) != 0 and compilation(database_f3)!= None) and math.isnan(compilation(database_f3)) != True:
-            global reliability
-            reliability = np.average(database_reliability[['ReliabilityScore']],weights = database_reliability[[i[0]]])
-            ra = exchange_table_creation_output(database_f3,y,comp,reliability)
-            exchange(ra)
+
+
+
 
                   
-def olcaschema_genmix(database_total):
-   region = pd.unique(database_total['Subregion'])[0]
-   exchanges_list = []
-   #Creating the reference output
-   exchanges_list.append(exchange_table_creation_ref(database_total))
-   database_total = database_total[['FacilityID','NetGeneration(MJ)', 'FuelCategory', 'PrimaryFuel']].drop_duplicates()
-   for row in fuel_name.itertuples():
-           fuelname = row[2]
-           #croppping the database according to the current fuel being considered
-           database_f1 = database_total[database_total['FuelCategory'] == row[1]]
-           if database_f1.empty == True:
-                  database_f1 = database_total[database_total['PrimaryFuel'] == row[1]]           
-           if database_f1.empty != True:
-               exchanges_list.append(exchange_table_creation_input_genmix(database_f1,database_total,fuelname))
-   #Writing final file
-   final = process_table_creation_genmix(exchanges_list,region)
-    
-   del final['']
-   print(region +' Process Created')
-   return final                                                              
+def olcaschema_genmix(database):
+   generation_mix_dict = {}
+
+   region = list(pd.unique(database['Subregion']))
    
-'''
+   for reg in region:  
+     
+     database_reg = database[database['Subregion'] == reg]
+     #Creating the reference output
+     exchange(exchange_table_creation_ref(database))
+     
+     for index,row in fuel_name.iterrows():
+           # Reading complete fuel name and heat content information
+            
+           fuelname = row['Fuelname']
+           #croppping the database according to the current fuel being considered
+           database_f1 = database_reg[database_reg['FuelCategory'] == row['FuelList']]
+           if database_f1.empty != True:               
+               ra = exchange_table_creation_input_genmix(database_f1,fuelname)
+               exchange(ra)
+               #Writing final file
+               final = process_table_creation_genmix()
+               del final['']
+    
+   
+   print(reg +' Process Created')
+   generation_mix_dict[reg] = final
+   return generation_mix_dict                                                            
+   

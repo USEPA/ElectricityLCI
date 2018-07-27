@@ -46,15 +46,45 @@ def exchange_list_creator(region_p):
 
 
 
+def exchange_table_creation_ref(data):
+    
+    
+    global region; 
+    region = data['Subregion'].iloc[0] 
+    global exchanges_list; 
+    exchanges_list = []
+    
+    
+    #data=pd.DataFrame(columns = ['Electricity','Heat'])
+    ar = {'':''}
+    
+    ar['internalId']=''
+    ar['@type']='Exchange'
+    ar['avoidedProduct']=False
+    ar['flow']=flow_table_creation('Electricity',None)
+    ar['flowProperty']=''
+    ar['input']=False
+    ar['quantitativeReference']=True
+    ar['baseUncertainty']=''
+    ar['provider']=''
+    ar['amount']=1.0
+    ar['amountFormula']=''
+    ar['unit']=unit('MWh');
+    ar['location'] = location()
+    
+    #ar['uncertainty']=uncertainty_table_creation(data)   
+    #ar['uncertainty'] = ''
+    del ar['']
+    return ar
+    #ar['pedigreeUncertainty']=''
+    #ar['uncertainty']=uncertainty_table_creation(data)      
 
 
-def exchange_table_creation_input_genmix(database_f1,database,fuelname_p):
+
+
+def exchange_table_creation_input_genmix(database,fuelname):
     
-    
-    global year;
-    global fuelname
-    fuelname = fuelname_p 
-    
+    year = egrid_year 
     
 
     ar = {'':''}
@@ -68,7 +98,7 @@ def exchange_table_creation_input_genmix(database_f1,database,fuelname_p):
     ar['quantitativeReference']='True'
     ar['baseUncertainty']=''
     ar['provider']=''
-    ar['amount']=(np.sum(database_f1['Electricity'])/np.sum(database['Electricity']))
+    ar['amount']=database['Generation_Ratio'].iloc[0]
     ar['unit'] = unit('MWh')    
     ar['pedigreeUncertainty']=''
     ar['category']='22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+fuelname
@@ -80,10 +110,8 @@ def exchange_table_creation_input_genmix(database_f1,database,fuelname_p):
 
 def process_table_creation_genmix():
     
-    global exchanges_list;
-    global region;
-    global fuelname;
-                              
+    global region
+    global exchanges_list                             
     ar = {'':''}
     
     ar['@type'] = 'Process'
@@ -110,11 +138,11 @@ def exchange(flw):
     
     
     
-def process_table_creation():
+def process_table_creation(fuelname):
     
     global exchanges_list;
     global region;
-    global fuelname;
+    
                               
     ar = {'':''}
     
@@ -205,30 +233,28 @@ def exchangeDqsystem():
     
 
 
-def exchange_table_creation_input(data):
+def exchange_table_creation_input(data,fuelname,fuelheat):
     
-    global fuelname;
-    global year;
-    global database_f1;
-    global fuelheat; 
+    global region; 
+    year = data['Year'].iloc[0]
+    region = data['Subregion'].iloc[0]
+   
     
-
     ar = {'':''}
     
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
-    ar['flow']=flow_table_creation(fuelname,'Input Fuel')
+    ar['flow'] = flow_table_creation(fuelname,'Input Fuel')
     ar['flowProperty']=''
-    ar['input']=True
+    ar['input'] = True
     ar['baseUncertainty']=''
     ar['provider']=''
+    
     if math.isnan(fuelheat) != True:
-      ar['amount']=(np.sum(data['Heat'])/np.sum(data['Electricity']))/fuelheat;
-    else:     
-      
-      print('\n')
-      ar['amount']=(np.sum(data['Heat'])/np.sum(data['Electricity']));
+      ar['amount']=data['Emission_factor'].iloc[0]/fuelheat
+    else:          
+      ar['amount']=data['Emission_factor'].iloc[0]
     
     ar['amountFormula']='  '
     if math.isnan(fuelheat) != True:        
@@ -255,97 +281,46 @@ def unit(unt):
     return ar
 
  
-def exchange_table_creation_output(data,y,comp,reliability):
+def exchange_table_creation_output(data):
     
-    global d;
-    global odd_year;
-    
+    year = data['Year'].iloc[0]
+    comp = data['Compartment'].iloc[0]
+    source = data['Source'].iloc[0]
     
     ar = {'':''}
     
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
-    ar['flow']=flow_table_creation(data.columns[1],comp)
+    ar['flow']=flow_table_creation(data['FlowName'].iloc[0],comp)
     ar['flowProperty']=''
     ar['input']=False
     ar['quantitativeReference']=False
     ar['baseUncertainty']=''
     ar['provider']=''
-    ar['amount']=compilation(data)
+    ar['amount']=data['Emission_factor'].iloc[0]
     ar['amountFormula']=''
     ar['unit']=unit('kg');
     ar['pedigreeUncertainty']=''  
-    ar['dqEntry'] = '('+str(round(reliability,1))+';1;1;1)'
+    ar['dqEntry'] = '('+str(data['ReliabilityScoreAvg'].iloc[0])+';1;1;1)'
     ar['uncertainty']=uncertainty_table_creation(data)
-    
-    if y == odd_database:
-         
-         ar['comment'] = str(y)+' '+str(odd_year);
-         
-    else: 
-                         
-         ar['comment'] = str(y)+' '+str(year);
+    ar['comment'] = str(source)+' '+str(year);
+
 
     del ar['']
     return ar;    
 
-def exchange_table_creation_ref():
-    
-    
-    #data=pd.DataFrame(columns = ['Electricity','Heat'])
-    ar = {'':''}
-    
-    ar['internalId']=''
-    ar['@type']='Exchange'
-    ar['avoidedProduct']=False
-    ar['flow']=flow_table_creation('Electricity',None)
-    ar['flowProperty']=''
-    ar['input']=False
-    ar['quantitativeReference']=True
-    ar['baseUncertainty']=''
-    ar['provider']=''
-    ar['amount']=1.0
-    ar['amountFormula']=''
-    ar['unit']=unit('MWh');
-    ar['location'] = location()
-    
-    #ar['uncertainty']=uncertainty_table_creation(data)   
-    #ar['uncertainty'] = ''
-    del ar['']
-    return ar
-    #ar['pedigreeUncertainty']=''
-    #ar['uncertainty']=uncertainty_table_creation(data)        
+  
         
 def uncertainty_table_creation(data):
     
-    global fuelheat;
-    
+  
     
     ar = {'':''}
     
-    if data.columns[1] == 'Heat':
-            
-            temp_data = data
-            #uncertianty calculations only if database length is more than 3
-            l,b = temp_data.shape
-            if l > 3:
-               u,s = uncertainty(temp_data)
-               if str(fuelheat)!='nan':
-                  ar['geomMean'] = str(round(math.exp(u),3)/fuelheat);
-                  ar['geomSd']=str(round(math.exp(s),3)/fuelheat); 
-               else:
-                  ar['geomMean'] = str(round(math.exp(u),3)); 
-                  ar['geomSd']=str(round(math.exp(s),3)); 
-    
-    else:
-    
-            #uncertianty calculations
-                    l,b = data.shape
-                    if l > 3:
-                       u,s = (uncertainty(data))
-                       ar['geomMean'] = str(round(math.exp(u),3)); 
-                       ar['geomSd']=str(round(math.exp(s),3)); 
+
+    ar['geomMean'] = data['GeomMean'].iloc[0]
+    ar['geomSd']= data['GeomSD'].iloc[0] 
 
     
     
@@ -354,12 +329,9 @@ def uncertainty_table_creation(data):
     ar['meanFormula']=''
     
     ar['geomMeanFormula']=''
-    if math.isnan(fuelheat) != True:
-        ar['minimum']=((data.iloc[:,1]/data.iloc[:,0]).min())/fuelheat;
-        ar['maximum']=((data.iloc[:,1]/data.iloc[:,0]).max())/fuelheat;
-    else:
-        ar['minimum']=(data.iloc[:,1]/data.iloc[:,0]).min();
-        ar['maximum']=(data.iloc[:,1]/data.iloc[:,0]).max();
+
+    ar['minimum']=data['Maximum'].iloc[0]
+    ar['maximum']=data['Minimum'].iloc[0]
     ar['minimumFormula']=''
     ar['sd']=''
     ar['sdFormula']=''    

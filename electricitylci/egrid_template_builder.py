@@ -31,13 +31,13 @@ def gen_process_template_generator(generation_process_dict):
         for Reg in egrid_subregions: 
          
             
-         for row in fuel_name.itertuples():
+          for index,row in fuel_name.iterrows(): 
         #assuming the starting row to fill in the emissions is the 5th row Blank
            
            #Reading complete fuel name and heat content information       
-           fuelname = row[2] 
+           fuelname = row['Fuelname'] 
              
-           if (fuelname+'_'+Reg) in generation_process_dict: 
+           if (Reg+'_'+fuelname) in generation_process_dict: 
             global blank_row;    
             blank_row = 6;
             
@@ -68,18 +68,18 @@ def gen_process_template_generator(generation_process_dict):
             #          if row[4] != None:                   
             #             return row[4].capitalize()
             
-            gi['D11'].value = generation_process_dict[fuelname+'_'+Reg]['category']
+            gi['D11'].value = generation_process_dict[Reg+'_'+fuelname]['category']
             
             gi['D12'].value = 'FALSE'
             
             gi['D14'].value = 'Electricity; voltage?'
             
-            gi['D16'].value = generation_process_dict[fuelname+'_'+Reg]['processDocumentation']['validFrom']
+            gi['D16'].value = generation_process_dict[Reg+'_'+fuelname]['processDocumentation']['validFrom']
             
-            gi['D17'].value = generation_process_dict[fuelname+'_'+Reg]['processDocumentation']['validUntil']
+            gi['D17'].value = generation_process_dict[Reg+'_'+fuelname]['processDocumentation']['validUntil']
             
                 
-            gi['D18'].value = generation_process_dict[fuelname+'_'+Reg]['processDocumentation']['validFrom']
+            gi['D18'].value = generation_process_dict[Reg+'_'+fuelname]['processDocumentation']['validFrom']
             
             gi['D20'].value = 'US-eGRID-'+Reg
         
@@ -102,16 +102,16 @@ def gen_process_template_generator(generation_process_dict):
             io = wbook['InputsOutputs']
         
             
-            for index in range(0,len(generation_process_dict[fuelname+'_'+Reg]['exchanges'])):
+            for index in range(0,len(generation_process_dict[Reg+'_'+fuelname]['exchanges'])):
                 
-                #print(generation_process_dict[fuelname+'_'+Reg]['exchanges'][index])
+                #print(generation_process_dict[Reg+'_'+fuelname]['exchanges'][index])
             
         
                 blank_row = createblnkrow(blank_row,io)
                 
                 
                 io[row1][0].value = index+1;
-                if generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['input'] == True:
+                if generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['input'] == True:
                   io[row1][1].value = 5
                 else: 
                   if  index == 0: 
@@ -120,45 +120,45 @@ def gen_process_template_generator(generation_process_dict):
                      io[row1][2].value = 4
                 
                 if index == 0:
-                   name = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['flow']['name']+' from '+str(fuelname)
+                   name = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['flow']['name']+' from '+str(fuelname)
                 else:
-                   name = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['flow']['name']
+                   name = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['flow']['name']
                     
                     
                 #Making the string flow name within limits accepted by OpenLCA. 
                 io[row1][3].value  = name[0:255]
                 
                 if index == 0:
-                  io[row1][4].value = generation_process_dict[fuelname+'_'+Reg]['category']
-                  io[row1][5].value = generation_process_dict[fuelname+'_'+Reg]['location']['name']
+                  io[row1][4].value = generation_process_dict[Reg+'_'+fuelname]['category']
+                  io[row1][5].value = generation_process_dict[Reg+'_'+fuelname]['location']['name']
                 else:
-                  io[row1][4].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['flow']['category']
+                  io[row1][4].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['flow']['category']
                 
                 
                 
                 
                 
-                io[row1][6].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['amount']
-                io[row1][7].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['unit']['name']
+                io[row1][6].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['amount']
+                io[row1][7].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['unit']['name']
                 
                 if index > 1:
                     
-                    io[row1][12].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['dqEntry'][1:4]
-                    io[row1][13].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['dqEntry'][5]
-                    io[row1][14].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['dqEntry'][7]
-                    io[row1][15].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['dqEntry'][9]
+                    io[row1][12].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][1:4]
+                    io[row1][13].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][5]
+                    io[row1][14].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][7]
+                    io[row1][15].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][9]
                 io[row1][21].value = 'database data with plants over 10% efficiency';
                 
-                if 'uncertainty' in generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]:
-                   io[row1][26].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['uncertainty']['distributionType']
-                   if 'geomMean' in generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['uncertainty'] and 'geomSd' in generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['uncertainty']: 
+                if 'uncertainty' in generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]:
+                   io[row1][26].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['uncertainty']['distributionType']
+                   if 'geomMean' in generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['uncertainty'] and 'geomSd' in generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['uncertainty']: 
                     #uncertianty calculations
-                    io[row1][27].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['uncertainty']['geomMean']
-                    io[row1][28].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['uncertainty']['geomSd']
-                   io[row1][29].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['uncertainty']['maximum']
-                   io[row1][30].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['uncertainty']['minimum']
-                if 'comment' in generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]:
-                    io[row1][33].value = generation_process_dict[fuelname+'_'+Reg]['exchanges'][index]['comment']
+                    io[row1][27].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['uncertainty']['geomMean']
+                    io[row1][28].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['uncertainty']['geomSd']
+                   io[row1][29].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['uncertainty']['maximum']
+                   io[row1][30].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['uncertainty']['minimum']
+                if 'comment' in generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]:
+                    io[row1][33].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['comment']
         
                 
                 row1 = blank_row-1
@@ -262,8 +262,7 @@ def gen_mix_template_generator(generation_mix_dict):
                 
                 for index in range(0,len(generation_mix_dict[Reg]['exchanges'])):
                     
-                    #print(generation_mix_dict[fuelname+'_'+Reg]['exchanges'][index])
-                
+              
             
                     blank_row = createblnkrow(blank_row,io)
                     
