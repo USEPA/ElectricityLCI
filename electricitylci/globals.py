@@ -31,6 +31,8 @@ os.chdir(data_dir)
 #Reading the fuel name file
 fuel_name = pd.read_csv('fuelname.csv')
 
-
 #Trading methodology
 net_trading = True
+
+#Flow list
+fedelemflowlist_version = '0.1'
