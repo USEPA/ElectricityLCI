@@ -32,7 +32,7 @@ for reg in Canada.itertuples():
     
     region = reg[0]
     exchange_list_creator(region)
-    exchange(exchange_table_creation_ref())
+    exchange(ref_flow_creator())
     
     
     for fuel in Canada.iteritems():

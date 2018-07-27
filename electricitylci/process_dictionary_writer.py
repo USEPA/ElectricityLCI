@@ -493,7 +493,29 @@ def process_table_creation_distribution():
     
     return ar;
 
+def process_table_creation_trade_mix():
+    
+    global exchanges_list;
+    global region;
+    global fuelname;
+                              
+    ar = {'':''}
+    
+    ar['@type'] = 'Process'
+    ar['allocationFactors']=''
+    ar['defaultAllocationMethod']=''
+    ar['exchanges']=exchanges_list;
+    ar['location']=region
+    ar['parameters']=''
+    ar['processDocumentation']=process_doc_creation();
+    ar['processType']=''
+    ar['name'] = 'Electricity; at region '+str(region)+'; Trade Mix'
+    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'
+    ar['description'] = 'Electricity showing Trade mix using power plants in the '+str(region)+' region'
 
+    
+    return ar;           
+            
 
             
             
