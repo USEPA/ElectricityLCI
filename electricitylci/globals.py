@@ -36,7 +36,7 @@ efficiency_of_distribution_grid = 0.95
 fuel_name = pd.read_csv(data_dir+'fuelname.csv')
 
 #Trading methodology
-net_trading = True
+net_trading = False
 
 #Flow list
 fedelemflowlist_version = '0.1'
