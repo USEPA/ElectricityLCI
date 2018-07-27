@@ -781,7 +781,8 @@ def surplus_pool_mix_template_generator(surplus_pool_dict,nerc_region):
                         
                         
 def trade_mix_template_generator(trade_dict):
-         data_dir = os.path.dirname(os.path.realpath(__file__))   
+    
+        data_dir = os.path.dirname(os.path.realpath(__file__))   
         os.chdir(data_dir+'/data/')            
          
         

@@ -1,11 +1,17 @@
 import os
 import pandas as pd
+
 def set_dir(directory):
     if not os.path.exists(directory): os.makedirs(directory)
     return directory
 
-datadir = 'electricitylci/data/'
-outputdir = set_dir('output/')
+
+try: modulepath = os.path.dirname(os.path.realpath(__file__)).replace('\\', '/') + '/'
+except NameError: modulepath = 'electricitylci/'
+
+output_dir = modulepath + 'output/'
+data_dir = modulepath + 'data/'
+
 
 #Declare target year for LCI (recommend current year by default) and year of eGRID data to use
 electricity_lci_target_year = 2018
@@ -25,11 +31,9 @@ min_plant_percent_generation_from_primary_fuel_category = 90
 
 efficiency_of_distribution_grid = 0.95
 
-data_dir = os.path.dirname(os.path.realpath(__file__))+"\\data\\"
-os.chdir(data_dir)  
 
 #Reading the fuel name file
-fuel_name = pd.read_csv('fuelname.csv')
+fuel_name = pd.read_csv(data_dir+'fuelname.csv')
 
 #Trading methodology
 net_trading = True

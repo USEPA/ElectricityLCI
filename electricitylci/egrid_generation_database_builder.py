@@ -87,8 +87,14 @@ def create_generation_process_df(generation_data,emissions_data,subregion='ALL')
     else:
         regions = [subregion]
 
-    
+    #final_data.to_excel('Main_file.xlsx')
     final_data = final_data.drop(columns = ['FacilityID'])
+    
+    #THIS CHECK AND STAMENT IS BEING PUT BECAUSE OF SAME FLOW VALUE ERROR STILL BEING THERE IN THE DATA
+    final_data = final_data.drop_duplicates(subset = ['Subregion', 'PrimaryFuel','FuelCategory','FlowName','FlowAmount','Compartment'])
+    
+    
+    
     b = generation_process_builder_fnc(final_data,regions)
     return b
     
@@ -102,8 +108,9 @@ def generation_process_builder_fnc(final_database,regions):
         #Cropping out based on regions
         database = final_database[final_database['Subregion'] == reg]
           #database_for_genmix_reg_specific = database_for_genmix_final[database_for_genmix_final['Subregion'] == reg]
+        print('\n')
         print(reg)
-               
+        print('\n')
         for index,row in fuel_name.iterrows():
             #Reading complete fuel name and heat content information
             fuelname = row['FuelList']
@@ -227,6 +234,7 @@ def uncertainty_creation(data,name,fuelheat):
             #uncertianty calculations
                     l,b = data.shape
                     if l > 3:
+                       
                        u,s = (uncertainty(data))
                        ar['geomMean'] = str(round(math.exp(u),3)); 
                        ar['geomSd']=str(round(math.exp(s),3)); 
