@@ -15,7 +15,7 @@ from electricitylci.egrid_emissions_and_waste_by_facility import years_in_emissi
 from electricitylci.globals import egrid_year, fuel_name
 from electricitylci.eia923_generation import eia_download_extract
 from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty
-
+from electricitylci.elementaryflows import map_emissions_to_fedelemflows,map_renewable_heat_flows_to_fedelemflows
 
 #Get a subset of the egrid_facilities dataset
 egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory']]
@@ -274,12 +274,14 @@ def uncertainty_creation(data,name,fuelheat):
 def olcaschema_genprocess(database):
     
    generation_process_dict = {}
-   
-   
-   
-   #Creating the reference output
+
+   #Map emission flows to fed elem flows
+   database = map_emissions_to_fedelemflows(database)
+   #Map heat flows for renewable fuels to energy elementary flows. This must be applied after emission mapping
+   database = map_renewable_heat_flows_to_fedelemflows(database)
 
    
+   #Creating the reference output
    region = list(pd.unique(database['Subregion']))
    
    for reg in region: 
