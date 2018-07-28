@@ -27,7 +27,7 @@ else:
     surplus_pool_trade_in = data['F36':'F61']
     trade_matrix = data['I35':'AP45']
     generation_quantity = data['E36':'E61'] 
-    nerc_region2 = data['H36:H65']         
+    nerc_region2 = data['H36:H45']         
     egrid_regions = data['C36:C61']
 
 
@@ -41,25 +41,18 @@ def surplus_pool_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,gen_q
          
            region = nerc_region2[i][0].value
            exchange_list_creator(region)
-           exchange(exchange_table_creation_ref())
+           exchange(ref_flow_creator())
            y  = len(trade_matrix[0])
            
            chk=0;
-           for j in range(0,7):
+           for j in range(0,8):
                
                if trade_matrix[i+1][j].value != None and trade_matrix[i+1][j].value != 0:
                    
-                   name = 'Canada Provinces - '+trade_matrix[0][j].value+' electricity';
+                   name = 'Electricity; at region '+trade_matrix[0][j].value+'; Trade Mix';
                    exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,name,trade_matrix[0][j].value))
                    chk = 1;
            
-           for j in range(7,8):
-               
-               if trade_matrix[i+1][j].value != None and trade_matrix[i+1][j].value != 0:
-                   name = trade_matrix[0][j].value+' electricity';
-                   exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,name,trade_matrix[0][j].value))
-                   chk = 1;
-                   
            for j in range(8,34):
                
                if trade_matrix[i+1][j].value != None and trade_matrix[i+1][j].value != 0:
@@ -89,7 +82,7 @@ def consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,ge
    for reg in range(0,len(eGRID_region)):
            region = eGRID_region[reg][0].value
            exchange_list_creator(region)
-           exchange(exchange_table_creation_ref())
+           exchange(ref_flow_creator())
            
            
            y  = len(trade_matrix[0])
@@ -141,7 +134,7 @@ def distribution_mix_dictionary(eGRID_subregions,efficiency_of_distribution):
             global region;
             region = reg
             exchange_list_creator(region)
-            exchange(exchange_table_creation_ref())
+            exchange(ref_flow_creator())
             name =  consumption_dict[reg]['name']
             exchange(exchange_table_creation_input_con_mix(1/efficiency_of_distribution,name,region))
         
@@ -194,16 +187,8 @@ del distribution_dict['']
 
 
 distribution_template_generator(distribution_dict,efficiency_of_distribution_grid)
-
-
 surplus_pool_mix_template_generator(surplus_dict,nerc_region2)
-
-
 consumption_mix_template_generator(consumption_dict)
-
-
-
-
 
 
 
