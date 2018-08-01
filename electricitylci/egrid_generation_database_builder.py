@@ -15,7 +15,7 @@ from electricitylci.egrid_emissions_and_waste_by_facility import years_in_emissi
 from electricitylci.globals import egrid_year, fuel_name
 from electricitylci.eia923_generation import eia_download_extract
 from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty
-from electricitylci.elementaryflows import map_emissions_to_fedelemflows,map_renewable_heat_flows_to_fedelemflows
+from electricitylci.elementaryflows import map_emissions_to_fedelemflows,map_renewable_heat_flows_to_fedelemflows,map_compartment_to_flow_type
 
 #Get a subset of the egrid_facilities dataset
 egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory']]
@@ -267,8 +267,6 @@ def uncertainty_creation(data,name,fuelheat):
     return ar;
 
 
-
-
 #HAVE THE CHANGE FROM HERE TO WRITE DICTIONARY
 
 def olcaschema_genprocess(database):
@@ -279,7 +277,8 @@ def olcaschema_genprocess(database):
    database = map_emissions_to_fedelemflows(database)
    #Map heat flows for renewable fuels to energy elementary flows. This must be applied after emission mapping
    database = map_renewable_heat_flows_to_fedelemflows(database)
-
+   #Add flowtype to the database
+   database = map_compartment_to_flow_type(database)
    
    #Creating the reference output
    region = list(pd.unique(database['Subregion']))
@@ -315,17 +314,7 @@ def olcaschema_genprocess(database):
                 del final['']
                 generation_process_dict[reg+"_"+fuelname] = final
    return generation_process_dict
-      
-       
-            
 
-
-
-
-
-
-
-                  
 def olcaschema_genmix(database):
    generation_mix_dict = {}
 
@@ -355,5 +344,5 @@ def olcaschema_genmix(database):
    
      print(reg +' Process Created')
      generation_mix_dict[reg] = final
-   return generation_mix_dict                                                            
-   
+   return generation_mix_dict
+
