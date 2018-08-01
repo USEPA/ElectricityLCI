@@ -74,5 +74,5 @@ def map_compartment_to_flow_type(df_with_compartments):
 def add_flow_direction(df_with_flowtypes):
     df_with_flowtypes['FlowDirection'] = 'output'
     df_with_flowtypes.loc[(df_with_flowtypes['Compartment'] == 'input') |
-                          (df_with_flowtypes['ElementaryFlowPrimeContext'] == 'resource', 'FlowDirection') = 'input'
+                          (df_with_flowtypes['ElementaryFlowPrimeContext'] == 'resource'), 'FlowDirection'] = 'input'
     return df_with_flowtypes
