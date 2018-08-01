@@ -15,7 +15,7 @@ from electricitylci.egrid_emissions_and_waste_by_facility import years_in_emissi
 from electricitylci.globals import egrid_year, fuel_name
 from electricitylci.eia923_generation import eia_download_extract
 from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty
-from electricitylci.elementaryflows import map_emissions_to_fedelemflows,map_renewable_heat_flows_to_fedelemflows,map_compartment_to_flow_type
+from electricitylci.elementaryflows import map_emissions_to_fedelemflows,map_renewable_heat_flows_to_fedelemflows,map_compartment_to_flow_type,add_flow_direction
 
 #Get a subset of the egrid_facilities dataset
 egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory']]
@@ -279,6 +279,8 @@ def olcaschema_genprocess(database):
    database = map_renewable_heat_flows_to_fedelemflows(database)
    #Add flowtype to the database
    database = map_compartment_to_flow_type(database)
+   #Add input-output columns
+   database = add_flow_direction(database)
    
 
    #Creating the reference output
@@ -300,20 +302,21 @@ def olcaschema_genprocess(database):
                 
                 exchanges_list=[]
                 
-                #This part is used for writing the input fuel flow informationn. This NEEDS TO BE CORRECTED. WHEN MORE DATA WILL COME IN
-                database2 = database_f1[database_f1['FlowName'] == 'Heat']
+                #This part is used for writing the input fuel flow informationn. 
+                database2 = database_f1[database_f1['FlowDirection'] == 'input']
                 if database2.empty != True:
-               
-                    
+                                   
                     exchanges_list = exchange(exchange_table_creation_ref(database2),exchanges_list)
                     ra1 = exchange_table_creation_input(database2,fuelname,fuelheat)
                     exchanges_list = exchange(ra1,exchanges_list)
                 
-                exchg_list = list(pd.unique(database_f1['FlowName']))
+                database_f2 = database_f1[database_f1['FlowDirection'] == 'output']
+                exchg_list = list(pd.unique(database_f2['FlowName']))
                  
                 for exchange_emissions in exchg_list:
-                    database_f2 = database_f1[database_f1['FlowName'] == exchange_emissions]
-                    ra = exchange_table_creation_output(database_f2)
+
+                    database_f3 = database_f2[database_f2['FlowName'] == exchange_emissions]                    
+                    ra = exchange_table_creation_output(database_f3)
                     exchanges_list = exchange(ra,exchanges_list)
                 
                 

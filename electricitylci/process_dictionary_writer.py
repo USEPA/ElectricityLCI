@@ -231,7 +231,14 @@ def exchange_table_creation_input(data,fuelname,fuelheat):
     ar['dqEntry'] = ''
     ar['pedigreeUncertainty']=''
     ar['uncertainty']=uncertainty_table_creation(data)
-    ar['comment']='eGRID '+str(year);
+    ar['comment']='eGRID '+str(year)
+    if data['FlowType'].iloc[0] == 'ELEMENTARY_FLOW' or data['FlowType'].iloc[0] == 'WASTE_FLOW':
+        ar['category'] = 'Elementary flows/'+str(data['Directionality'].iloc[0])+'/'+str(data['Compartment'].iloc[0])
+    else:
+        ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+fuelname  
+        
+    
+    
     del ar['']
     
     return ar;
@@ -269,8 +276,11 @@ def exchange_table_creation_output(data):
     ar['pedigreeUncertainty']=''  
     ar['dqEntry'] = '('+str(data['ReliabilityScoreAvg'].iloc[0])+';1;1;1)'
     ar['uncertainty']=uncertainty_table_creation(data)
-    ar['comment'] = str(source)+' '+str(year);
-
+    ar['comment'] = str(source)+' '+str(year)
+    if data['FlowType'].iloc[0] == 'ELEMENTARY_FLOW' or data['FlowType'].iloc[0] == 'WASTE_FLOW':
+      ar['category'] = 'Elementary flows/'+str(data['Directionality'].iloc[0])+'/'+str(data['Compartment'].iloc[0])
+    else:
+      ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+data['FlowName'].iloc[0]
 
     del ar['']
     return ar;    

@@ -132,12 +132,9 @@ def gen_process_template_generator(generation_process_dict):
                   io[row1][4].value = generation_process_dict[Reg+'_'+fuelname]['category']
                   io[row1][5].value = generation_process_dict[Reg+'_'+fuelname]['location']['name']
                 else:
-                  io[row1][4].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['flow']['category']
+                  io[row1][4].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['category']
                 
-                
-                
-                
-                
+               
                 io[row1][6].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['amount']
                 io[row1][7].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['unit']['name']
                 
