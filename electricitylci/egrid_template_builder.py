@@ -130,7 +130,7 @@ def gen_process_template_generator(generation_process_dict):
                 
                 if index == 0:
                   io[row1][4].value = generation_process_dict[Reg+'_'+fuelname]['category']
-                  io[row1][5].value = generation_process_dict[Reg+'_'+fuelname]['location']['name']
+                  io[row1][5].value = 'US-eGRID-'+generation_process_dict[Reg+'_'+fuelname]['location']['name']
                 else:
                   io[row1][4].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['category']
                 
@@ -284,7 +284,7 @@ def gen_mix_template_generator(generation_mix_dict):
                     else:
                       io[row1][4].value = generation_mix_dict[Reg]['exchanges'][index]['category']
                       
-                    io[row1][5].value = generation_mix_dict[Reg]['location']['name']
+                    io[row1][5].value = 'US-eGRID-'+generation_mix_dict[Reg]['location']['name']
                     io[row1][6].value = generation_mix_dict[Reg]['exchanges'][index]['amount']
                     io[row1][7].value = generation_mix_dict[Reg]['exchanges'][index]['unit']['name']
                     io[row1][21].value = 'database data with plants over 10% efficiency';
