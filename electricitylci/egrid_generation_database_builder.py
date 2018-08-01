@@ -120,12 +120,12 @@ def generation_process_builder_fnc(final_database,regions):
             if database_f1.empty == True:
                   database_f1 = database[database['PrimaryFuel'] == row['FuelList']]
             if database_f1.empty != True:
-                print(fuelname)
+                print(row['Fuelname'])
                           
                 database_f1  = database_f1.sort_values(by='Source',ascending=False)
                 exchange_list = list(pd.unique(database_f1['FlowName']))
                 database_f1['FuelCategory'].loc[database_f1['FuelCategory'] == 'COAL'] = database_f1['PrimaryFuel']  
-                
+
                 for exchange in exchange_list:
                     database_f2 = database_f1[database_f1['FlowName'] == exchange]
                     database_f2 = database_f2[['Subregion','FuelCategory','PrimaryFuel','eGRID_ID', 'Electricity','FlowName','FlowAmount','Compartment','Year','Source','ReliabilityScore']]
@@ -280,6 +280,7 @@ def olcaschema_genprocess(database):
    #Add flowtype to the database
    database = map_compartment_to_flow_type(database)
    
+
    #Creating the reference output
    region = list(pd.unique(database['Subregion']))
    
@@ -296,21 +297,27 @@ def olcaschema_genprocess(database):
             
             
             if database_f1.empty != True:
-                #This part is used for writing the input fuel flow informationn
-                database2 = database_f1[database_f1['FlowName'] == 'Heat']
-                exchange(exchange_table_creation_ref(database2))
-                ra1 = exchange_table_creation_input(database2,fuelname,fuelheat)
-                exchange(ra1)
                 
-                exchange_list = list(pd.unique(database_f1['FlowName']))
+                exchanges_list=[]
+                
+                #This part is used for writing the input fuel flow informationn. This NEEDS TO BE CORRECTED. WHEN MORE DATA WILL COME IN
+                database2 = database_f1[database_f1['FlowName'] == 'Heat']
+                if database2.empty != True:
+               
+                    
+                    exchanges_list = exchange(exchange_table_creation_ref(database2),exchanges_list)
+                    ra1 = exchange_table_creation_input(database2,fuelname,fuelheat)
+                    exchanges_list = exchange(ra1,exchanges_list)
+                
+                exchg_list = list(pd.unique(database_f1['FlowName']))
                  
-                for exchange_emissions in exchange_list:
+                for exchange_emissions in exchg_list:
                     database_f2 = database_f1[database_f1['FlowName'] == exchange_emissions]
                     ra = exchange_table_creation_output(database_f2)
-                    exchange(ra)
+                    exchanges_list = exchange(ra,exchanges_list)
                 
                 
-                final = process_table_creation(fuelname)
+                final = process_table_creation(fuelname,exchanges_list,reg)
                 del final['']
                 generation_process_dict[reg+"_"+fuelname] = final
    return generation_process_dict
@@ -322,11 +329,12 @@ def olcaschema_genmix(database):
    
    for reg in region:  
      
+       
      database_reg = database[database['Subregion'] == reg]
-     
+     exchanges_list=[]
      
      #Creating the reference output
-     exchange(exchange_table_creation_ref(database_reg))
+     exchange(exchange_table_creation_ref(database_reg),exchanges_list)
      
      for index,row in fuel_name.iterrows():
            # Reading complete fuel name and heat content information
@@ -336,9 +344,9 @@ def olcaschema_genmix(database):
            database_f1 = database_reg[database_reg['FuelCategory'] == row['FuelList']]
            if database_f1.empty != True:               
                ra = exchange_table_creation_input_genmix(database_f1,fuelname)
-               exchange(ra)
+               exchange(ra,exchanges_list)
                #Writing final file
-     final = process_table_creation_genmix()
+     final = process_table_creation_genmix(reg,exchanges_list)
      del final['']
     
    
