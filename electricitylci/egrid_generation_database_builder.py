@@ -277,9 +277,11 @@ def olcaschema_genprocess(database):
    database = map_emissions_to_fedelemflows(database)
    #Map heat flows for renewable fuels to energy elementary flows. This must be applied after emission mapping
    database = map_renewable_heat_flows_to_fedelemflows(database)
-   #Add flowtype to the database
+   #Add FlowType to the database
    database = map_compartment_to_flow_type(database)
-   
+   #Add FlowDirection
+   database = add_flow_direction(database)
+
    #Creating the reference output
    region = list(pd.unique(database['Subregion']))
    
