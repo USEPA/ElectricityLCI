@@ -10,11 +10,13 @@ for k,v in inventories_of_interest.items():
 stewicombooutputfile = stewicombooutputfile + 'fromstewicombo.csv'
 
 if os.path.exists(data_dir+stewicombooutputfile):
-    emissions_and_wastes_by_facility = pd.read_csv(data_dir+stewicombooutputfile,header=0)
+    emissions_and_wastes_by_facility = pd.read_csv(data_dir+stewicombooutputfile,header=0,dtype={"FacilityID":"str","Year":"str","eGRID_ID":"str"})
 else:
     emissions_and_wastes_by_facility = stewicombo.combineInventoriesforFacilitiesinOneInventory("eGRID",inventories_of_interest)
     #drop SRS fields
     emissions_and_wastes_by_facility = emissions_and_wastes_by_facility.drop(columns=['SRS_ID','SRS_CAS'])
+    #drop 'Electricity' flow
+    emissions_and_wastes_by_facility = emissions_and_wastes_by_facility[emissions_and_wastes_by_facility['FlowName']!= 'Electricity']
     #Save it to a csv for the next call
     emissions_and_wastes_by_facility.to_csv(data_dir+stewicombooutputfile,index=False)
 
