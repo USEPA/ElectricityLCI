@@ -2,17 +2,21 @@ import numpy as np
 
 from electricitylci.egrid_flowbyfacilty import egrid_flowbyfacility
 
+#Get flow by facility data for egrid
 egrid_net_generation = egrid_flowbyfacility[egrid_flowbyfacility['FlowName']=='Electricity']
-egrid_net_generation.drop(columns=['ReliabilityScore','FlowName','Compartment'],inplace=True)
-egrid_net_generation.rename(columns={'FlowAmount':'NetGeneration(MJ)'},inplace=True)
+#Convert flow amount to MWh
+egrid_net_generation['Electricity'] = egrid_net_generation['FlowAmount']*0.00027778
+#drop unneeded columns
+egrid_net_generation.drop(columns=['ReliabilityScore','FlowName','FlowAmount','Compartment','Unit'],inplace=True)
+#Now just has 'FacilityID' and 'Electricity' in MWh
 
 #Get length
 len(egrid_net_generation)
-#2016:8038
+#2016:7715
 
 #Returns list of egrid ids with positive_generation
 def list_egrid_facilities_with_positive_generation():
-    egrid_net_generation_above_min = egrid_net_generation[egrid_net_generation['NetGeneration(MJ)'] > 0]
+    egrid_net_generation_above_min = egrid_net_generation[egrid_net_generation['Electricity'] > 0]
     return list(egrid_net_generation_above_min['FacilityID'])
 
 egrid_efficiency = egrid_flowbyfacility[egrid_flowbyfacility['FlowName'].isin(['Electricity','Heat'])]
