@@ -34,10 +34,9 @@ def create_generation_process_df(generation_data,emissions_data,subregion='ALL')
     #Converting Units from MJ to MWH
     generation_data[['Electricity']] = generation_data[['NetGeneration(MJ)']]*0.00027778
     
-    #Converting to numeric for better stability and merging
     emissions_data['eGRID_ID'] = emissions_data['eGRID_ID'].astype(str)
     generation_data['eGRID_ID'] = generation_data['FacilityID'].astype(str)
-    generation_data = generation_data.drop(columns = ['FacilityID','NetGeneration(MJ)'])
+    generation_data = generation_data.drop(columns = ['FacilityID','NetGeneration(MJ)','Unit'])
     emissions_data = emissions_data.drop(columns = ['FacilityID'])
     combined_data = generation_data.merge(emissions_data, left_on = ['eGRID_ID'], right_on = ['eGRID_ID'], how = 'right')
     
@@ -128,7 +127,7 @@ def generation_process_builder_fnc(final_database,regions):
                 
                 for exchange in exchange_list:
                     database_f2 = database_f1[database_f1['FlowName'] == exchange]
-                    database_f2 = database_f2[['Subregion','FuelCategory','PrimaryFuel','eGRID_ID', 'Electricity','FlowName','FlowAmount','Compartment','Year','Source','ReliabilityScore']]
+                    database_f2 = database_f2[['Subregion','FuelCategory','PrimaryFuel','eGRID_ID', 'Electricity','FlowName','FlowAmount','Compartment','Year','Source','ReliabilityScore','Unit']]
                     #Getting Emisssion_factor
                     database_f2['Emission_factor'] = compilation(database_f2[['Electricity','FlowAmount']])
                     database_f2['ReliabilityScoreAvg'] = np.average(database_f2['ReliabilityScore'], weights = database_f2['FlowAmount'])
