@@ -13,8 +13,8 @@ if os.path.exists(data_dir+stewicombooutputfile):
     emissions_and_wastes_by_facility = pd.read_csv(data_dir+stewicombooutputfile,header=0)
 else:
     emissions_and_wastes_by_facility = stewicombo.combineInventoriesforFacilitiesinOneInventory("eGRID",inventories_of_interest)
-    #drop FRS and SRS fields
-    emissions_and_wastes_by_facility = emissions_and_wastes_by_facility.drop(columns=['FRS_ID','SRS_ID','SRS_CAS'])
+    #drop SRS fields
+    emissions_and_wastes_by_facility = emissions_and_wastes_by_facility.drop(columns=['SRS_ID','SRS_CAS'])
     #Save it to a csv for the next call
     emissions_and_wastes_by_facility.to_csv(data_dir+stewicombooutputfile,index=False)
 
