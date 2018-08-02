@@ -23,29 +23,13 @@ egrid_facilities_w_fuel_region['FacilityID'] = egrid_facilities_w_fuel_region['F
 
 
 def create_generation_process_df(generation_data,emissions_data,subregion='ALL'):
-    
-    
-    
-    #Dropping electricity from emissions data
-    emissions_data = emissions_data[emissions_data['FlowName']!= 'Electricity']
-    
 
-    
-    #Converting Units from MJ to MWH
-    generation_data[['Electricity']] = generation_data[['NetGeneration(MJ)']]*0.00027778
-    
-    emissions_data['eGRID_ID'] = emissions_data['eGRID_ID'].astype(str)
-    generation_data['eGRID_ID'] = generation_data['FacilityID'].astype(str)
-    generation_data = generation_data.drop(columns = ['FacilityID','NetGeneration(MJ)','Unit'])
     emissions_data = emissions_data.drop(columns = ['FacilityID'])
-    combined_data = generation_data.merge(emissions_data, left_on = ['eGRID_ID'], right_on = ['eGRID_ID'], how = 'right')
-    
-    
-    
+    combined_data = generation_data.merge(emissions_data, left_on = ['FacilityID'], right_on = ['eGRID_ID'], how = 'right')
 
     #Checking the odd year
     for year in years_in_emissions_and_wastes_by_facility:
-        
+
         if year != egrid_year:
            odd_year = year;
 
@@ -71,15 +55,15 @@ def create_generation_process_df(generation_data,emissions_data,subregion='ALL')
     database_with_new_generation['Electricity']= np.where(database_with_new_generation['Year'] == int(odd_year), database_with_new_generation['Net Generation\r\n(Megawatthours)'],database_with_new_generation['Electricity'])
    
     #Dropping unnecessary columns
-    emissions_gen_data = database_with_new_generation.drop(columns = ['Plant Id','Plant Name','Plant State','YEAR','Net Generation\r\n(Megawatthours)','Total Fuel Consumption\r\nMMBtu'])
+    emissions_gen_data = database_with_new_generation.drop(columns = ['FacilityID','Plant Id','Plant Name','Plant State','YEAR','Net Generation\r\n(Megawatthours)','Total Fuel Consumption\r\nMMBtu'])
 
        
     #Merging with the egrid_facilites file to get the subregion information in the database!!!
-    final_data = pd.merge(egrid_facilities_w_fuel_region,emissions_gen_data,right_on = ['eGRID_ID'], left_on = ['FacilityID'], how = 'right')
+    final_data = pd.merge(egrid_facilities_w_fuel_region,emissions_gen_data, left_on = ['FacilityID'],right_on = ['eGRID_ID'], how = 'right')
     
     
     #store the total elci data in a csv file just for checking
-    #emissions_corrected_final_data.to_excel('elci_summary.xlsx')
+    #final_data.to_excel('elci_summary.xlsx')
     
     if subregion == 'all':
         regions = egrid_subregions
