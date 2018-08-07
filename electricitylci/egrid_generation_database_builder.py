@@ -131,7 +131,7 @@ def generation_process_builder_fnc(final_database,regions):
                         frames = [result_database,database_f3]
                         result_database  = pd.concat(frames)                   
 
-    result_database = result_database.drop(columns= ['eGRID_ID','Electricity','FlowAmount','ReliabilityScore','PrimaryFuel'])
+    result_database = result_database.drop(columns= ['eGRID_ID','FlowAmount','ReliabilityScore','PrimaryFuel'])
     result_database = result_database.drop_duplicates()   
     
     
