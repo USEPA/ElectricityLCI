@@ -1,5 +1,5 @@
 #Dictionary Creator
-#This is themain file that creates the dictionary with all the regions and fuel. This is essentially the database generator in a dictionary format.
+#This is the main file that creates the dictionary with all the regions and fuel. This is essentially the database generator in a dictionary format.
 
 import sys
 import pandas as pd
@@ -22,14 +22,16 @@ egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','Pri
 egrid_facilities_w_fuel_region['FacilityID'] = egrid_facilities_w_fuel_region['FacilityID'].astype(str)
 
 
+
 def create_generation_process_df(generation_data,emissions_data,subregion='ALL'):  
 
     emissions_data = emissions_data.drop(columns = ['FacilityID'])
     combined_data = generation_data.merge(emissions_data, left_on = ['FacilityID'], right_on = ['eGRID_ID'], how = 'right')   
 
+
     #Checking the odd year
     for year in years_in_emissions_and_wastes_by_facility:
-        
+
         if year != egrid_year:
            odd_year = year;
 
@@ -61,7 +63,7 @@ def create_generation_process_df(generation_data,emissions_data,subregion='ALL')
     
     
     #store the total elci data in a csv file just for checking
-    #emissions_corrected_final_data.to_excel('elci_summary.xlsx')
+    #final_data.to_excel('elci_summary.xlsx')
     
     if subregion == 'all':
         regions = egrid_subregions
@@ -113,6 +115,7 @@ def generation_process_builder_fnc(final_database,regions):
                 for exchange in exchange_list:
                     database_f2 = database_f1[database_f1['FlowName'] == exchange]
                     database_f2 = database_f2[['Subregion','FuelCategory','PrimaryFuel','eGRID_ID', 'Electricity','FlowName','FlowAmount','Compartment','Year','Source','ReliabilityScore','Unit']]
+
                     compartment_list = list(pd.unique(database_f2['Compartment']))
                     for compartment in compartment_list:
                         database_f3 = database_f2[database_f2['Compartment'] == compartment]
@@ -120,13 +123,14 @@ def generation_process_builder_fnc(final_database,regions):
                         #Getting Emisssion_factor
                         database_f3['Emission_factor'] = compilation(database_f3[['Electricity','FlowAmount']])
                         database_f3['ReliabilityScoreAvg'] = np.average(database_f3['ReliabilityScore'], weights = database_f3['FlowAmount'])
-                        uncertainty_info = uncertainty_creation(database_f3[['Electricity','FlowAmount']],exchange,fuelheat)
+                       uncertainty_info = uncertainty_creation(database_f3[['Electricity','FlowAmount']],exchange,fuelheat)
                         database_f3['GeomMean'] = uncertainty_info['geomMean']
                         database_f3['GeomSD'] = uncertainty_info['geomMean']
                         database_f3['Maximum'] = uncertainty_info['maximum']
                         database_f3['Minimum'] = uncertainty_info['minimum']
                         frames = [result_database,database_f3]
                         result_database  = pd.concat(frames)                   
+
     result_database = result_database.drop(columns= ['eGRID_ID','Electricity','FlowAmount','ReliabilityScore','PrimaryFuel'])
     result_database = result_database.drop_duplicates()   
     
@@ -268,11 +272,11 @@ def olcaschema_genprocess(database):
    database = map_emissions_to_fedelemflows(database)
    #Map heat flows for renewable fuels to energy elementary flows. This must be applied after emission mapping
    database = map_renewable_heat_flows_to_fedelemflows(database)
-   #Add flowtype to the database
+   #Add FlowType to the database
    database = map_compartment_to_flow_type(database)
-   #Add input-output columns
+
+   #Add FlowDirection
    database = add_flow_direction(database)
-   
 
    #Creating the reference output
    region = list(pd.unique(database['Subregion']))
@@ -299,7 +303,7 @@ def olcaschema_genprocess(database):
                                    
                     exchanges_list = exchange(exchange_table_creation_ref(database2),exchanges_list)
                     ra1 = exchange_table_creation_input(database2,fuelname,fuelheat)
-                    exchanges_list = exchange(ra1,exchanges_list)
+                   exchanges_list = exchange(ra1,exchanges_list)
                 
                 database_f2 = database_f1[database_f1['FlowDirection'] == 'output']
                 exchg_list = list(pd.unique(database_f2['FlowName']))
