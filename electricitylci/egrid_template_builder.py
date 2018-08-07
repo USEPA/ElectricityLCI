@@ -92,7 +92,7 @@ def gen_process_template_generator(generation_process_dict):
             
             gi['D24'].value = 'database subregion definitions:<https://www.epa.gov/energy/emissions-generation-resource-integrated-database-database>\nNERC region: '
                                   
-            gi['D26'].value = 'This is an aggregation of technology types within this eGRID subregion.  List of prime movers:'
+            gi['D26'].value = 'This is an aggregation of technology types for this fuel type within this eGRID subregion'
             
             
         
@@ -124,7 +124,8 @@ def gen_process_template_generator(generation_process_dict):
                 else:
                    name = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['flow']['name']
                     
-                    
+                if generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['flow']['name'] == 'Steam':
+                   io[row1][2].value = 2 
                 #Making the string flow name within limits accepted by OpenLCA. 
                 io[row1][3].value  = name[0:255]
                 
@@ -133,7 +134,9 @@ def gen_process_template_generator(generation_process_dict):
                   io[row1][5].value = 'US-eGRID-'+generation_process_dict[Reg+'_'+fuelname]['location']['name']
                 else:
                   io[row1][4].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['category']
-                
+                  if generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['category'] == 'Waste flows/':
+                    io[row1][2].value = 3  
+                    
                
                 io[row1][6].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['amount']
                 io[row1][7].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['unit']['name']

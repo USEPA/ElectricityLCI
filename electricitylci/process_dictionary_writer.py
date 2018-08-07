@@ -160,8 +160,8 @@ def process_doc_creation():
 
     ar = {'':''}
     ar['timeDescription']=''
-    ar['validUntil']='12/31'+str(year)
-    ar['validFrom']='1/1/'+str(year)
+    ar['validUntil']='12/31/2018'
+    ar['validFrom']='1/1/2018'
     ar['technologyDescription']=''
     ar['dataCollectionDescription']=''
     ar['completenessDescription']=''
@@ -232,10 +232,12 @@ def exchange_table_creation_input(data,fuelname,fuelheat):
     ar['pedigreeUncertainty']=''
     ar['uncertainty']=uncertainty_table_creation(data)
     ar['comment']='eGRID '+str(year)
-    if data['FlowType'].iloc[0] == 'ELEMENTARY_FLOW' or data['FlowType'].iloc[0] == 'WASTE_FLOW':
-        ar['category'] = 'Elementary flows/'+str(data['Directionality'].iloc[0])+'/'+str(data['Compartment'].iloc[0])
+    if data['FlowType'].iloc[0] == 'ELEMENTARY_FLOW':
+      ar['category'] = 'Elementary flows/'+str(data['ElementaryFlowPrimeContext'].iloc[0])+'/'+str(data['Compartment'].iloc[0])
+    elif data['FlowType'].iloc[0] == 'WASTE_FLOW':
+      ar['category'] = 'Waste flows/'  
     else:
-        ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+fuelname  
+      ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+fuelname  
         
     
     
@@ -277,8 +279,10 @@ def exchange_table_creation_output(data):
     ar['dqEntry'] = '('+str(data['ReliabilityScoreAvg'].iloc[0])+';1;1;1)'
     ar['uncertainty']=uncertainty_table_creation(data)
     ar['comment'] = str(source)+' '+str(year)
-    if data['FlowType'].iloc[0] == 'ELEMENTARY_FLOW' or data['FlowType'].iloc[0] == 'WASTE_FLOW':
-      ar['category'] = 'Elementary flows/'+str(data['Directionality'].iloc[0])+'/'+str(data['Compartment'].iloc[0])
+    if data['FlowType'].iloc[0] == 'ELEMENTARY_FLOW':
+      ar['category'] = 'Elementary flows/'+str(data['ElementaryFlowPrimeContext'].iloc[0])+'/'+str(data['Compartment'].iloc[0])
+    elif data['FlowType'].iloc[0] == 'WASTE_FLOW':
+      ar['category'] = 'Waste flows/'
     else:
       ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+data['FlowName'].iloc[0]
 
