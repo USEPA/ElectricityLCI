@@ -9,9 +9,14 @@ from electricitylci.egrid_template_builder import distribution_template_generato
 from electricitylci.egrid_template_builder import consumption_mix_template_generator
 from electricitylci.egrid_template_builder import surplus_pool_mix_template_generator
 
-data_dir = os.path.dirname(os.path.realpath(__file__))+"/data/"
-os.chdir(data_dir)  
-wb2 = openpyxl.load_workbook('eGRID_Consumption_Mix_new.xlsx',data_only=True)
+
+try: modulepath = os.path.dirname(os.path.realpath(__file__)).replace('\\', '/') + '/'
+except NameError: modulepath = 'electricitylci/'
+
+output_dir = modulepath + 'output/'
+data_dir = modulepath + 'data/'
+
+wb2 = openpyxl.load_workbook(data_dir+'eGRID_Consumption_Mix_new.xlsx',data_only=True)
 data = wb2['ConsumptionMixContributions']
 
 if net_trading == True:
