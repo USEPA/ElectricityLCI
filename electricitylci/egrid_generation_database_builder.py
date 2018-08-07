@@ -123,7 +123,7 @@ def generation_process_builder_fnc(final_database,regions):
                         #Getting Emisssion_factor
                         database_f3['Emission_factor'] = compilation(database_f3[['Electricity','FlowAmount']])
                         database_f3['ReliabilityScoreAvg'] = np.average(database_f3['ReliabilityScore'], weights = database_f3['FlowAmount'])
-                       uncertainty_info = uncertainty_creation(database_f3[['Electricity','FlowAmount']],exchange,fuelheat)
+                        uncertainty_info = uncertainty_creation(database_f3[['Electricity','FlowAmount']],exchange,fuelheat)
                         database_f3['GeomMean'] = uncertainty_info['geomMean']
                         database_f3['GeomSD'] = uncertainty_info['geomMean']
                         database_f3['Maximum'] = uncertainty_info['maximum']
@@ -303,7 +303,7 @@ def olcaschema_genprocess(database):
                                    
                     exchanges_list = exchange(exchange_table_creation_ref(database2),exchanges_list)
                     ra1 = exchange_table_creation_input(database2,fuelname,fuelheat)
-                   exchanges_list = exchange(ra1,exchanges_list)
+                    exchanges_list = exchange(ra1,exchanges_list)
                 
                 database_f2 = database_f1[database_f1['FlowDirection'] == 'output']
                 exchg_list = list(pd.unique(database_f2['FlowName']))
