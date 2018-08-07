@@ -15,22 +15,11 @@ from electricitylci.globals import egrid_year
 year = egrid_year
 
 
-def exchange_list_creator(region_p):
-    global exchanges_list;
-    global region 
-    region = region_p
-    exchanges_list = [] 
-
-
-
-
 def exchange_table_creation_ref(data):
     
     
-    global region; 
     region = data['Subregion'].iloc[0] 
-    global exchanges_list; 
-    exchanges_list = []
+
     
     
     #data=pd.DataFrame(columns = ['Electricity','Heat'])
@@ -39,7 +28,7 @@ def exchange_table_creation_ref(data):
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
-    ar['flow']=flow_table_creation('Electricity',None)
+    ar['flow']=flow_table_creation(region,'Electricity',None)
     ar['flowProperty']=''
     ar['input']=False
     ar['quantitativeReference']=True
@@ -48,7 +37,7 @@ def exchange_table_creation_ref(data):
     ar['amount']=1.0
     ar['amountFormula']=''
     ar['unit']=unit('MWh');
-    ar['location'] = location()
+    ar['location'] = location(region)
     
     #ar['uncertainty']=uncertainty_table_creation(data)   
     #ar['uncertainty'] = ''
@@ -63,14 +52,14 @@ def exchange_table_creation_ref(data):
 def exchange_table_creation_input_genmix(database,fuelname):
     
     year = egrid_year 
-    
+    region = database['Subregion'].iloc[0] 
 
     ar = {'':''}
     
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
-    ar['flow']=flow_table_creation('Electricity from '+fuelname,None)
+    ar['flow']=flow_table_creation(region,'Electricity from '+fuelname,None)
     ar['flowProperty']=''
     ar['input']=True
     ar['quantitativeReference']='True'
@@ -86,17 +75,16 @@ def exchange_table_creation_input_genmix(database,fuelname):
     
     return ar;
 
-def process_table_creation_genmix():
+def process_table_creation_genmix(region,exchanges_list):
     
-    global region
-    global exchanges_list                             
+                        
     ar = {'':''}
     
     ar['@type'] = 'Process'
     ar['allocationFactors']=''
     ar['defaultAllocationMethod']=''
     ar['exchanges']=exchanges_list;
-    ar['location']=location()
+    ar['location']=location(region)
     ar['parameters']=''
     ar['processDocumentation']=process_doc_creation();
     ar['processType']=''
@@ -110,17 +98,16 @@ def process_table_creation_genmix():
 
 
 
-def exchange(flw):
-    global exchanges_list;    
+def exchange(flw,exchanges_list):
+   
     exchanges_list.append(flw)
+    return exchanges_list
     
     
     
-def process_table_creation(fuelname):
+def process_table_creation(fuelname,exchanges_list,region):
     
-    global exchanges_list;
-    global region;
-    
+
                               
     ar = {'':''}
     
@@ -128,7 +115,7 @@ def process_table_creation(fuelname):
     ar['allocationFactors']=''
     ar['defaultAllocationMethod']=''
     ar['exchanges']=exchanges_list;
-    ar['location']=location()
+    ar['location']=location(region)
     ar['parameters']=''
     ar['processDocumentation']=process_doc_creation();
     ar['processType']=''
@@ -153,9 +140,9 @@ def category():
     
 
 #Will be used later
-def location():
+def location(region):
     
-    global region;
+    
     ar = {'':''}   
     ar['@id'] = ''
     ar['@type'] = 'Location'
@@ -173,8 +160,8 @@ def process_doc_creation():
 
     ar = {'':''}
     ar['timeDescription']=''
-    ar['validUntil']='12/31'+str(year)
-    ar['validFrom']='1/1/'+str(year)
+    ar['validUntil']='12/31/2018'
+    ar['validFrom']='1/1/2018'
     ar['technologyDescription']=''
     ar['dataCollectionDescription']=''
     ar['completenessDescription']=''
@@ -213,7 +200,7 @@ def exchangeDqsystem():
 
 def exchange_table_creation_input(data,fuelname,fuelheat):
     
-    global region; 
+
     year = data['Year'].iloc[0]
     region = data['Subregion'].iloc[0]
    
@@ -223,7 +210,7 @@ def exchange_table_creation_input(data,fuelname,fuelheat):
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
-    ar['flow'] = flow_table_creation(fuelname,'Input Fuel')
+    ar['flow'] = flow_table_creation(region,fuelname,'Input Fuel')
     ar['flowProperty']=''
     ar['input'] = True
     ar['baseUncertainty']=''
@@ -244,7 +231,16 @@ def exchange_table_creation_input(data,fuelname,fuelheat):
     ar['dqEntry'] = ''
     ar['pedigreeUncertainty']=''
     ar['uncertainty']=uncertainty_table_creation(data)
-    ar['comment']='eGRID '+str(year);
+    ar['comment']='eGRID '+str(year)
+    if data['FlowType'].iloc[0] == 'ELEMENTARY_FLOW':
+      ar['category'] = 'Elementary flows/'+str(data['ElementaryFlowPrimeContext'].iloc[0])+'/'+str(data['Compartment'].iloc[0])
+    elif data['FlowType'].iloc[0] == 'WASTE_FLOW':
+      ar['category'] = 'Waste flows/'  
+    else:
+      ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+fuelname  
+        
+    
+    
     del ar['']
     
     return ar;
@@ -264,13 +260,13 @@ def exchange_table_creation_output(data):
     year = data['Year'].iloc[0]
     comp = data['Compartment'].iloc[0]
     source = data['Source'].iloc[0]
-    
+    region = data['Subregion'].iloc[0]
     ar = {'':''}
     
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
-    ar['flow']=flow_table_creation(data['FlowName'].iloc[0],comp)
+    ar['flow']=flow_table_creation(region,data['FlowName'].iloc[0],comp)
     ar['flowProperty']=''
     ar['input']=False
     ar['quantitativeReference']=False
@@ -282,8 +278,13 @@ def exchange_table_creation_output(data):
     ar['pedigreeUncertainty']=''  
     ar['dqEntry'] = '('+str(data['ReliabilityScoreAvg'].iloc[0])+';1;1;1)'
     ar['uncertainty']=uncertainty_table_creation(data)
-    ar['comment'] = str(source)+' '+str(year);
-
+    ar['comment'] = str(source)+' '+str(year)
+    if data['FlowType'].iloc[0] == 'ELEMENTARY_FLOW':
+      ar['category'] = 'Elementary flows/'+str(data['ElementaryFlowPrimeContext'].iloc[0])+'/'+str(data['Compartment'].iloc[0])
+    elif data['FlowType'].iloc[0] == 'WASTE_FLOW':
+      ar['category'] = 'Waste flows/'
+    else:
+      ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+data['FlowName'].iloc[0]
 
     del ar['']
     return ar;    
@@ -323,12 +324,9 @@ def uncertainty_table_creation(data):
     return ar;
 
 
-def flow_table_creation(fl,comp):
+def flow_table_creation(region,fl,comp):
     
-    global region;
-    
-    
-                    
+                   
     ar = {'':''}
     ar['flowType']='PRODUCT_FLOW'
     ar['cas']=''
@@ -345,7 +343,7 @@ def flow_table_creation(fl,comp):
     
     return ar
 
-def ref_flow_creator():
+def ref_flow_creator(region):
     
     
     #data=pd.DataFrame(columns = ['Electricity','Heat'])
@@ -354,7 +352,7 @@ def ref_flow_creator():
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
-    ar['flow']=flow_table_creation('Electricity',None)
+    ar['flow']=flow_table_creation(region,'Electricity',None)
     ar['flowProperty']=''
     ar['input']=False
     ar['quantitativeReference']=True
@@ -363,7 +361,7 @@ def ref_flow_creator():
     ar['amount']=1.0
     ar['amountFormula']=''
     ar['unit']=unit('MWh');
-    ar['location'] = location()
+    ar['location'] = location(region)
     
     #ar['uncertainty']=uncertainty_table_creation(data)   
     #ar['uncertainty'] = ''
@@ -374,9 +372,7 @@ def ref_flow_creator():
 
 def exchange_table_creation_input_con_mix(generation,name,loc):
     
-    global region;
-    global year;
-    global fuelheat; 
+    year = egrid_year
     
 
     ar = {'':''}
@@ -384,7 +380,7 @@ def exchange_table_creation_input_con_mix(generation,name,loc):
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
-    ar['flow']=flow_table_creation(name,None)
+    ar['flow']=flow_table_creation(loc,name,None)
     ar['flowProperty']=''
     ar['input']=True
     ar['baseUncertainty']=''
@@ -400,11 +396,8 @@ def exchange_table_creation_input_con_mix(generation,name,loc):
     return ar;
 
 
-def process_table_creation_con_mix():
+def process_table_creation_con_mix(region,exchanges_list):
     
-    global exchanges_list;
-    global region;
-    global fuelname;
                               
     ar = {'':''}
     
@@ -424,11 +417,8 @@ def process_table_creation_con_mix():
     return ar;
 
 
-def process_table_creation_surplus():
+def process_table_creation_surplus(region,exchanges_list):
     
-    global exchanges_list;
-    global region;
-    global fuelname;
                               
     ar = {'':''}
     
@@ -448,11 +438,8 @@ def process_table_creation_surplus():
     return ar;
 
 
-def process_table_creation_distribution():
+def process_table_creation_distribution(region,exchanges_list):
     
-    global exchanges_list;
-    global region;
-    global fuelname;
                               
     ar = {'':''}
     
@@ -471,12 +458,9 @@ def process_table_creation_distribution():
     
     return ar;
 
-def process_table_creation_trade_mix():
+def process_table_creation_trade_mix(region,exchanges_list):
     
-    global exchanges_list;
-    global region;
-    global fuelname;
-                              
+
     ar = {'':''}
     
     ar['@type'] = 'Process'

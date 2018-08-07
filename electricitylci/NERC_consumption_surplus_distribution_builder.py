@@ -40,8 +40,10 @@ def surplus_pool_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,gen_q
      for i in range(0,len(nerc_region2)):
          
            region = nerc_region2[i][0].value
-           exchange_list_creator(region)
-           exchange(ref_flow_creator())
+           
+           exchanges_list = []
+           
+           exchange(ref_flow_creator(region),exchanges_list)
            y  = len(trade_matrix[0])
            
            chk=0;
@@ -50,17 +52,17 @@ def surplus_pool_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,gen_q
                if trade_matrix[i+1][j].value != None and trade_matrix[i+1][j].value != 0:
                    
                    name = 'Electricity; at region '+trade_matrix[0][j].value+'; Trade Mix';
-                   exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,name,trade_matrix[0][j].value))
+                   exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,name,trade_matrix[0][j].value),exchanges_list)
                    chk = 1;
            
            for j in range(8,34):
                
                if trade_matrix[i+1][j].value != None and trade_matrix[i+1][j].value != 0:
                    name = 'Electricity from generation mix '+trade_matrix[0][j].value;
-                   exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,name,trade_matrix[0][j].value))
+                   exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,name,trade_matrix[0][j].value),exchanges_list)
                    chk = 1;
         
-           final = process_table_creation_surplus()
+           final = process_table_creation_surplus(region,exchanges_list)
            del final['']
            print(region+' NERC Surplus Process Created')
            surplus_dict[region] = final;
@@ -81,8 +83,9 @@ def consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,ge
    consumption_dict = {'':''}
    for reg in range(0,len(eGRID_region)):
            region = eGRID_region[reg][0].value
-           exchange_list_creator(region)
-           exchange(ref_flow_creator())
+           
+           exchanges_list = []
+           exchange(ref_flow_creator(region),exchanges_list)
            
            
            y  = len(trade_matrix[0])
@@ -99,16 +102,16 @@ def consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,ge
                         
                         if trade_matrix[nerc+1][j].value != None and trade_matrix[nerc+1][j].value !=0:
                             
-                            exchange(exchange_table_creation_input_con_mix(surplus_pool_trade_in[reg][0].value,name,nerc_region[reg][0].value))
+                            exchange(exchange_table_creation_input_con_mix(surplus_pool_trade_in[reg][0].value,name,nerc_region[reg][0].value),exchanges_list)
                             chk=1;
                             break;
            name = 'Electricity from generation mix '+eGRID_region[reg][0].value   
            if chk == 1:
-               exchange(exchange_table_creation_input_con_mix(gen_quantity[reg][0].value,name,region))
+               exchange(exchange_table_creation_input_con_mix(gen_quantity[reg][0].value,name,region),exchanges_list)
            else:
-               exchange(exchange_table_creation_input_con_mix(1,name,region))
+               exchange(exchange_table_creation_input_con_mix(1,name,region),exchanges_list)
            
-           final = process_table_creation_con_mix()
+           final = process_table_creation_con_mix(region,exchanges_list)
            del final['']
            print(region+' Consumption Mix Process Created')
            consumption_dict[eGRID_region[reg][0].value] = final;
@@ -133,14 +136,17 @@ def distribution_mix_dictionary(eGRID_subregions,efficiency_of_distribution):
     for reg in eGRID_subregions:
             global region;
             region = reg
-            exchange_list_creator(region)
-            exchange(ref_flow_creator())
+            exchanges_list =[]
+
+            exchange(ref_flow_creator(region),exchanges_list)
             name =  consumption_dict[reg]['name']
-            exchange(exchange_table_creation_input_con_mix(1/efficiency_of_distribution,name,region))
+            exchange(exchange_table_creation_input_con_mix(1/efficiency_of_distribution,name,region),exchanges_list)
         
-            final = process_table_creation_distribution()
+            final = process_table_creation_distribution(region,exchanges_list)
+            
             del final['']
             print(region+' Distribution Process Created')
+            
             distribution_dict[region] = final;
            #del consumption_dict['']
     return distribution_dict

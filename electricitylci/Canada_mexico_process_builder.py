@@ -31,8 +31,8 @@ fuelnameslist= list(Canada.columns.get_values())
 for reg in Canada.itertuples():
     
     region = reg[0]
-    exchange_list_creator(region)
-    exchange(ref_flow_creator())
+    exchanges_list =[]
+    exchange(ref_flow_creator(region),exchanges_list)
     
     
     for fuel in Canada.iteritems():
@@ -42,9 +42,9 @@ for reg in Canada.itertuples():
                 
         name = 'Electricity from '+fuel_new_name+' in the region of '+region;
         if Canada.loc[region,fuelname]/100 != 0:
-          exchange(exchange_table_creation_input_con_mix(Canada.loc[region,fuelname]/100,name,region))
+          exchange(exchange_table_creation_input_con_mix(Canada.loc[region,fuelname]/100,name,region),exchanges_list)
     
-    final = process_table_creation_trade_mix()
+    final = process_table_creation_trade_mix(region,exchanges_list)
     del final['']
     print(region+' Trade Mix Process Created')
     trade_dict[region] = final;

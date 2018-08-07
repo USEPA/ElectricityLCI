@@ -4,6 +4,7 @@
 *.csv
 electricitylci/chk.csv
 *.pyc
+*.p
 electricitylci/__pycache__/elci_database_generator.cpython-36.pyc
 *.pyc
 *.xlsx
