@@ -1,9 +1,9 @@
 FuelList,Fuelname,Heatcontent,ElementaryFlowInput
-SUB,sub-bituminous coal,22.36,0
-BIT,bituminous coal,,0
-GAS,natural gas,36.36,0
-GEOTHERMAL,geothermal,,1
 BIOMASS,biomass,,0
+GAS,natural gas,36.36,0
+BIT,bituminous coal,,0
+SUB,sub-bituminous coal,22.36,0
+GEOTHERMAL,geothermal,,1
 LIG,lignite coal,,0
 RC,refined coal,,0
 COG,coal gas,,0
