@@ -12,7 +12,7 @@ stewicombooutputfile = stewicombooutputfile + 'fromstewicombo.csv'
 if os.path.exists(data_dir+stewicombooutputfile):
     emissions_and_wastes_by_facility = pd.read_csv(data_dir+stewicombooutputfile,header=0,dtype={"FacilityID":"str","Year":"str","eGRID_ID":"str"})
 else:
-    emissions_and_wastes_by_facility = stewicombo.combineInventoriesforFacilitiesinOneInventory("eGRID",inventories_of_interest)
+    emissions_and_wastes_by_facility = stewicombo.combineInventoriesforFacilitiesinOneInventory("eGRID",inventories_of_interest,filter_for_LCI=True)
     #drop SRS fields
     emissions_and_wastes_by_facility = emissions_and_wastes_by_facility.drop(columns=['SRS_ID','SRS_CAS'])
     #drop 'Electricity' flow
@@ -21,7 +21,7 @@ else:
     emissions_and_wastes_by_facility.to_csv(data_dir+stewicombooutputfile,index=False)
 
 len(emissions_and_wastes_by_facility)
-#with egrid 2016, tri 2016, nei 2016, rcrainfo 2015: 156855
+#with egrid 2016, tri 2016, nei 2016, rcrainfo 2015: 131733
 
 #Get a list of unique years in the emissions data
 years_in_emissions_and_wastes_by_facility = list(pd.unique(emissions_and_wastes_by_facility['Year']))
