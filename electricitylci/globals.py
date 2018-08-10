@@ -40,3 +40,15 @@ net_trading = False
 
 #Flow list
 fedelemflowlist_version = '0.1'
+
+#
+def join_with_underscore(items):
+    type_cast_to_str = False
+    for x in items:
+        if not isinstance(x, str):
+            # raise TypeError("join_with_underscore()  inputs must be string")
+            type_cast_to_str = True
+    if type_cast_to_str:
+        items = [str(x) for x in items]
+
+    return "_".join(items)
