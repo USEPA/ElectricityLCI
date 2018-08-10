@@ -73,7 +73,7 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
     elif subregion == 'NERC':
         regions = list(pd.unique(final_data['NERC']))
     elif subregion == 'BA':
-        regions = list(pd.unique(final_data['Balancing Authority Name']))   
+        regions = list(pd.unique(final_data['Balancing Authority Name']))  
     else:
         regions = [subregion]
         
@@ -119,19 +119,12 @@ def generation_process_builder_fnc(final_database,regions,subregion):
         #Cropping out based on regions
         if subregion == 'all':
           database = final_database[final_database['Subregion'] == reg]
-
         elif subregion == 'NERC':
           database = final_database[final_database['NERC'] == reg]
         elif subregion == 'BA':
           database = final_database[final_database['Balancing Authority Name'] == reg]
+          
 
-        
-          #database_for_genmix_reg_specific = database_for_genmix_final[database_for_genmix_final['Subregion'] == reg]
-        #print('\n')
-        #print(reg)
-        #print('\n')
-        
-            
         for index,row in fuel_name.iterrows():
             #Reading complete fuel name and heat content information
             fuelname = row['FuelList']
@@ -142,18 +135,17 @@ def generation_process_builder_fnc(final_database,regions,subregion):
             if database_f1.empty == True:
                   database_f1 = database[database['PrimaryFuel'] == row['FuelList']]
             if database_f1.empty != True:
-                #print(row['Fuelname'])
+                print(row['Fuelname'])
 
                 database_f1  = database_f1.sort_values(by='Source',ascending=False)
                 exchange_list = list(pd.unique(database_f1['FlowName']))
                 database_f1['FuelCategory'].loc[database_f1['FuelCategory'] == 'COAL'] = database_f1['PrimaryFuel']  
-
-
                 
                 for exchange in exchange_list:
                     database_f2 = database_f1[database_f1['FlowName'] == exchange]
-                    database_f2 = database_f2[['Subregion','FuelCategory','PrimaryFuel','eGRID_ID', 'Electricity','FlowName','FlowAmount','Compartment','Year','Source','ReliabilityScore','Unit']]
+                    database_f2 = database_f2[['Subregion','FuelCategory','PrimaryFuel','eGRID_ID', 'Electricity','FlowName','FlowAmount','Compartment','Year','Source','ReliabilityScore','Unit','NERC','Balancing Authority Name','Balancing Authority Code']]
 
+                    
                     compartment_list = list(pd.unique(database_f2['Compartment']))
                     for compartment in compartment_list:
                         database_f3 = database_f2[database_f2['Compartment'] == compartment]
@@ -163,7 +155,6 @@ def generation_process_builder_fnc(final_database,regions,subregion):
                         #if len(sources) >1:
                         #    print('Error occured. Duplicate emissions from Different source. Writing an error file error.csv')
                         #    database_f3.to_csv(output_dir+'error'+reg+fuelname+exchange+'.csv')
-
 
                         #Get electricity relevant for this exchange for the denominator in the emissions factors calcs
                         electricity_source_by_facility_for_region_fuel = database_f1[['eGRID_ID','Electricity','Source']].drop_duplicates()
@@ -188,10 +179,15 @@ def generation_process_builder_fnc(final_database,regions,subregion):
                         #database_f3['Electricity'] = total_gen
 
                         frames = [result_database,database_f3]
-                        result_database  = pd.concat(frames)                   
+                        result_database  = pd.concat(frames)    
 
-
-    result_database = result_database.drop(columns= ['eGRID_ID','FlowAmount','Electricity','ReliabilityScore','PrimaryFuel'])
+    if subregion == 'all':
+       result_database = result_database.drop(columns= ['eGRID_ID','FlowAmount','Electricity','ReliabilityScore','PrimaryFuel','NERC','Balancing Authority Name','Balancing Authority Code'])   
+    elif subregion == 'NERC':
+       result_database = result_database.drop(columns= ['eGRID_ID','FlowAmount','Electricity','ReliabilityScore','PrimaryFuel','Balancing Authority Name','Balancing Authority Code','Subregion'])  
+    elif subregion == 'BA':
+       result_database = result_database.drop(columns= ['eGRID_ID','FlowAmount','Electricity','ReliabilityScore','PrimaryFuel','NERC','Balancing Authority Code','Subregion'])      
+    #result_database = result_database.drop(columns= ['eGRID_ID','FlowAmount','Electricity','ReliabilityScore','PrimaryFuel','NERC','Balancing Authority Name','Balancing Authority Code'])
     result_database = result_database.drop_duplicates()   
     #Drop duplicated in total gen database
     total_gen_database = total_gen_database.drop_duplicates()
@@ -314,7 +310,7 @@ def uncertainty_creation(data,name,fuelheat,mean,total_gen,total_facility_consid
 
 #HAVE THE CHANGE FROM HERE TO WRITE DICTIONARY
 
-def olcaschema_genprocess(database):
+def olcaschema_genprocess(database,subregion):
    
 
    generation_process_dict = {}
@@ -331,13 +327,26 @@ def olcaschema_genprocess(database):
    #Add FlowDirection
    database = add_flow_direction(database)
 
-   #Creating the reference output
-   region = list(pd.unique(database['Subregion']))
+   if subregion == 'all':
+        region = egrid_subregions
+   elif subregion == 'NERC':
+        region = list(pd.unique(database['NERC']))
+   elif subregion == 'BA':
+        region = list(pd.unique(database['Balancing Authority Name']))  
+   else:
+        region = [subregion]
 
    for reg in region: 
        
+        if subregion == 'all':
+           database['Subregion'] = database['Subregion']
+        elif subregion == 'NERC':
+           database['Subregion'] = database['NERC']
+        elif subregion == 'BA':
+           database['Subregion'] = database['Balancing Authority Name']  
+        
         database_reg = database[database['Subregion'] == reg]
-       
+     
         for index,row in fuel_name.iterrows():
            # Reading complete fuel name and heat content information
             
@@ -390,9 +399,8 @@ def olcaschema_genmix(database):
    region = list(pd.unique(database['Subregion']))
    
    for reg in region:  
-     
-       
-     database_reg = database[database['Subregion'] == reg]
+
+       database_reg = database[database['Subregion'] == reg]
      exchanges_list=[]
      
      #Creating the reference output
