@@ -18,13 +18,15 @@ from electricitylci.eia923_generation import eia_download_extract
 from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows,map_renewable_heat_flows_to_fedelemflows,map_compartment_to_flow_type,add_flow_direction
 
+
+
 #Get a subset of the egrid_facilities dataset
-egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory']]
+egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory','NERC','Balancing Authority Name','Balancing Authority Code']]
 egrid_facilities_w_fuel_region['FacilityID'] = egrid_facilities_w_fuel_region['FacilityID'].astype(str)
 
 
 
-def create_generation_process_df(generation_data,emissions_data,subregion='ALL'):  
+def create_generation_process_df(generation_data,emissions_data,subregion):  
 
     emissions_data = emissions_data.drop(columns = ['FacilityID'])
     combined_data = generation_data.merge(emissions_data, left_on = ['FacilityID'], right_on = ['eGRID_ID'], how = 'right')   
@@ -68,18 +70,24 @@ def create_generation_process_df(generation_data,emissions_data,subregion='ALL')
     
     if subregion == 'all':
         regions = egrid_subregions
+    elif subregion == 'NERC':
+        regions = list(pd.unique(final_data['NERC']))
+    elif subregion == 'BA':
+        regions = list(pd.unique(final_data['Balancing Authority Name']))   
     else:
         regions = [subregion]
-
+        
+        
     #final_data.to_excel('Main_file.xlsx')
     final_data = final_data.drop(columns = ['FacilityID'])
     
     #THIS CHECK AND STAMENT IS BEING PUT BECAUSE OF SAME FLOW VALUE ERROR STILL BEING THERE IN THE DATA
-    final_data = final_data.drop_duplicates(subset = ['Subregion', 'PrimaryFuel','FuelCategory','FlowName','FlowAmount','Compartment'])
+    final_data = final_data.drop_duplicates(subset = ['Subregion', 'PrimaryFuel','FuelCategory','FlowName','FlowAmount','Compartment','NERC region acronym','Balancing Authority Name','Balancing Authority Code'])
      
     final_data = final_data[final_data['FlowName'] != 'Electricity']
+    
 
-    b = generation_process_builder_fnc(final_data,regions)
+    b = generation_process_builder_fnc(final_data,regions,subregion)
     return b
     
 
@@ -94,7 +102,7 @@ def total_generation_calculator(source,database):
     
 
 
-def generation_process_builder_fnc(final_database,regions):
+def generation_process_builder_fnc(final_database,regions,subregion):
     
     #Map emission flows to fed elem flows
     final_database = map_emissions_to_fedelemflows(final_database)
@@ -103,8 +111,17 @@ def generation_process_builder_fnc(final_database,regions):
     #Looping through different subregions to create the files
     total_gen_database = pd.DataFrame()
     for reg in regions:
+
         #Cropping out based on regions
-        database = final_database[final_database['Subregion'] == reg]
+        if subregion == 'all':
+          database = final_database[final_database['Subregion'] == reg]
+
+        elif subregion == 'NERC':
+          database = final_database[final_database['NERC'] == reg]
+        elif subregion == 'BA':
+          database = final_database[final_database['Balancing Authority Name'] == reg]
+
+        
           #database_for_genmix_reg_specific = database_for_genmix_final[database_for_genmix_final['Subregion'] == reg]
         print('\n')
         print(reg)
@@ -159,7 +176,8 @@ def generation_process_builder_fnc(final_database,regions):
                         database_f3['Minimum'] = uncertainty_info['minimum']
                         frames = [result_database,database_f3]
                         result_database  = pd.concat(frames)                   
-
+    
+    print(result_database)
     result_database = result_database.drop(columns= ['eGRID_ID','Electricity','FlowAmount','ReliabilityScore','PrimaryFuel'])
     result_database = result_database.drop_duplicates()   
     total_gen_database = total_gen_database.drop_duplicates()
