@@ -1,14 +1,10 @@
 import pandas as pd
 import os
 from electricitylci.globals import fuel_name
+from electricitylci.globals import output_dir
+from electricitylci.globals import data_dir
 from electricitylci.process_dictionary_writer import *
 from electricitylci.egrid_template_builder import trade_mix_template_generator
-
-try: modulepath = os.path.dirname(os.path.realpath(__file__)).replace('\\', '/') + '/'
-except NameError: modulepath = 'electricitylci/'
-
-output_dir = modulepath + 'output/'
-data_dir = modulepath + 'data/'
 
 
 def name_change(name):

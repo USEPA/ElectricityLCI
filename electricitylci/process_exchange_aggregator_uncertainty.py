@@ -88,7 +88,6 @@ def uncertainty(db,mean_gen,total_gen,total_facility_considered):
 
             else:#This is a wrong mathematical statement. However, we have to use it if something fails. 
               sd1,sd2 = solve(0.5*x*x -(1.36*np.sqrt(2))*x + (np.log(1+pi3)),x)
-              print(pi3)
            
             #if type(sd1) != float or type(sd2) != float:
             #   return 0,0

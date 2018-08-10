@@ -1,6 +1,7 @@
 #Dictionary Creator
 #This is the main file that creates the dictionary with all the regions and fuel. This is essentially the database generator in a dictionary format.
-
+from electricitylci.globals import output_dir
+from electricitylci.globals import data_dir
 import sys
 import pandas as pd
 import os
@@ -85,10 +86,6 @@ def create_generation_process_df(generation_data,emissions_data,subregion='ALL')
 
 def total_generation_calculator(source,database):
     d2 = database[database['Source'] == source[0]]
-    if len(source) >1:
-        d2.to_csv('chkk.csv')
-        
-
     total_gen = d2['Electricity'].sum()
     mean = d2['Electricity'].mean()
     total_facility_considered = len(d2)
@@ -99,9 +96,12 @@ def total_generation_calculator(source,database):
 
 def generation_process_builder_fnc(final_database,regions):
     
+    #Map emission flows to fed elem flows
+    final_database = map_emissions_to_fedelemflows(final_database)
+   
     result_database = pd.DataFrame()
     #Looping through different subregions to create the files
-
+    total_gen_database = pd.DataFrame()
     for reg in regions:
         #Cropping out based on regions
         database = final_database[final_database['Subregion'] == reg]
@@ -141,9 +141,11 @@ def generation_process_builder_fnc(final_database,regions):
                         source = list(pd.unique(database_f3['Source']))
                         if len(source) >1:
                             print('Error occured. Duplicate emissions from Different source. Writing an error file error.csv')
-                            database_f3.to_csv('error.csv')
+                            database_f3.to_csv(output_dir+'error'+reg+fuelname+exchange+'.csv')
+                            
                         total_gen,mean,total_facility_considered = total_generation_calculator(source,database_f1.drop_duplicates(subset = ['Electricity','Source']))
-                        #print(str(round(total_gen)))
+                        total_gen_database1 = pd.DataFrame([[reg,fuelname,source[0],total_gen]],columns = ['Subregion','FuelCategory','Source','Total Generation'])
+                        total_gen_database = total_gen_database.append(total_gen_database1,ignore_index = True)
                             
                         
                        
@@ -160,22 +162,12 @@ def generation_process_builder_fnc(final_database,regions):
 
     result_database = result_database.drop(columns= ['eGRID_ID','Electricity','FlowAmount','ReliabilityScore','PrimaryFuel'])
     result_database = result_database.drop_duplicates()   
-    
-    
+    total_gen_database = total_gen_database.drop_duplicates()
+    total_gen_database.to_csv(output_dir+'Total Generation Information.csv',index = False)
     return result_database
     
             
                 
-                
-        
-            #Move to separate function
-                #data_transfer(database_f1,fuelname,fuelheat,d_list,odd_year,odd_database)
-                #generation_process_dict[fuelname+'_'+reg] = olcaschema_genprocess(database_f1,fuelheat,d_list,fuelname)
-                #print('\n')
-    #del generation_process_dict['']
-    #return generation_process_dict
-              
-    
      
                                            
 def create_generation_mix_process_df(generation_data,subregion='ALL'):
@@ -343,9 +335,8 @@ def olcaschema_genprocess(database):
                         
                         
                         if len(database_f4) > 1:
-                            print('THIS CHECK DIS DONE TO SEE DUPLICATE FLOWS. DELETE THIS IN LINE 312 to LINE 318\n')
-                            print(database_f4[['FlowName']])
-                            print(database_f4[['Source']])
+                            print('THIS CHECK DIS DONE TO SEE DUPLICATE FLOWS. DELETE THIS IN LINE 333 to LINE 338\n')
+                            print(database_f4[['FlowName','Source','FuelCategory','Subregion']])                        
                             print('\n')
                             
                             

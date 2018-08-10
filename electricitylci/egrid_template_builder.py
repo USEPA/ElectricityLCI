@@ -1,4 +1,6 @@
 from electricitylci.egrid_facilities import egrid_subregions
+from electricitylci.globals import output_dir
+from electricitylci.globals import data_dir
 from electricitylci.globals import fuel_name
 import os
 import openpyxl
@@ -21,11 +23,6 @@ def createblnkrow(br,io):
       #print(io.cell(row = 6,column = 4).value);
     return br
 
-try: modulepath = os.path.dirname(os.path.realpath(__file__)).replace('\\', '/') + '/'
-except NameError: modulepath = 'electricitylci/'
-
-output_dir = modulepath + 'output/'
-data_dir = modulepath + 'data/'
 
 
 def gen_process_template_generator(generation_process_dict):

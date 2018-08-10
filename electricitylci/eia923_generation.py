@@ -3,13 +3,8 @@ import zipfile
 import io
 import os
 import requests
-
-try: modulepath = os.path.dirname(os.path.realpath(__file__)).replace('\\', '/') + '/'
-except NameError: modulepath = 'electricitylci/'
-
-output_dir = modulepath + 'output/'
-data_dir = modulepath + 'data/'
-
+from electricitylci.globals import output_dir
+from electricitylci.globals import data_dir
 
 def eia_download_extract(odd_year):
         
