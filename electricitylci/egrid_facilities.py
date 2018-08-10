@@ -45,6 +45,9 @@ egrid_facilities_fuel_cat_per_gen['PercentGenerationfromDesignatedFuelCategory']
 egrid_facilities_fuel_cat_per_gen = egrid_facilities_fuel_cat_per_gen.apply(add_percent_generation_from_primary_fuel_category_col,axis=1)
 egrid_facilities_fuel_cat_per_gen = egrid_facilities_fuel_cat_per_gen.drop(columns=per_gen_cols)
 
+#Merge back into facilities
+egrid_facilities = pd.merge(egrid_facilities,egrid_facilities_fuel_cat_per_gen,on=['FacilityID','FuelCategory'],how='left')
+
 def add_percent_generation_from_primary_fuel_category_col(x):
     plant_fuel_category = x['FuelCategory']
     x['PercentGenerationfromDesignatedFuelCategory'] = x[fuel_cat_to_per_gen[plant_fuel_category]]
