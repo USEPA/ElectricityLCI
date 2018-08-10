@@ -12,19 +12,19 @@ def map_emissions_to_fedelemflows(df_with_flows_compartments):
                          left_on=['Source','FlowName','Compartment'],
                          right_on=['Source','OriginalName','OriginalCategory'],
                          how='left')
-    #Create a Directionality column
-    mapped_df['Directionality'] = None
     #If a NewName is present there was a match, replace FlowName and Compartment with new names
     mapped_df.loc[mapped_df['NewName'].notnull(), 'FlowName'] = mapped_df['NewName']
     mapped_df.loc[mapped_df['NewName'].notnull(), 'Compartment'] = mapped_df['NewCategory']
-    mapped_df = mapped_df.rename(columns={'NewUnit':'Unit','UUID':'FlowUUID'})
+    mapped_df.loc[mapped_df['NewName'].notnull(), 'Unit'] = mapped_df['NewUnit']
+
+    mapped_df = mapped_df.rename(columns={'UUID':'FlowUUID'})
 
     #If air, soil, or water assigned it directionality of emission. Others will get assigned later as needed
     emission_compartments = ['air','soil','water']
     mapped_df.loc[mapped_df['Compartment'].isin(emission_compartments), 'ElementaryFlowPrimeContext'] = 'emission'
 
     #Drop all unneeded cols
-    mapped_df = mapped_df.drop(columns=['OriginalName','OriginalCategory','OriginalProperty','NewName','NewCategory','NewSubCategory'])
+    mapped_df = mapped_df.drop(columns=['OriginalName','OriginalCategory','OriginalProperty','NewName','NewCategory','NewSubCategory','NewUnit'])
     return mapped_df
 
 #Manually mapping of input 'Heat' to energy types for renewables
