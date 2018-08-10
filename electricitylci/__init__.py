@@ -24,3 +24,7 @@ def write_generation_process_database_to_dict(gen_database):
     from electricitylci.egrid_generation_database_builder import olcaschema_genprocess
     gen_dict = olcaschema_genprocess(gen_database)
     return gen_dict
+
+def write_generation_process_dict_to_template(gen_dict):
+    from electricitylci.egrid_template_builder import gen_process_template_generator
+    gen_process_template_generator(gen_dict)

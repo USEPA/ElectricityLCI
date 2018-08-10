@@ -1,4 +1,6 @@
 from electricitylci.egrid_facilities import egrid_subregions
+from electricitylci.globals import output_dir
+from electricitylci.globals import data_dir
 from electricitylci.globals import fuel_name
 import os
 import openpyxl
@@ -23,11 +25,9 @@ def createblnkrow(br,io):
 
 
 
-
 def gen_process_template_generator(generation_process_dict):
         
-        data_dir = os.path.dirname(os.path.realpath(__file__))   
-        os.chdir(data_dir+'/data/')
+
         for Reg in egrid_subregions: 
          
             
@@ -46,7 +46,7 @@ def gen_process_template_generator(generation_process_dict):
              
       
             #Opening tempalte file for wriitng
-            wbook = openpyxl.load_workbook('template.xlsx')
+            wbook = openpyxl.load_workbook(data_dir+'template.xlsx')
             #Read the template files.                         
         
             gi = wbook['General information']          
@@ -174,22 +174,19 @@ def gen_process_template_generator(generation_process_dict):
             #Writing final file. 
             
             filename = fuelname+"_"+Reg+".xlsx"
-            data_dir = os.path.dirname(os.path.realpath(__file__))+"/output/"
-            wbook.save(data_dir+filename)
+            wbook.save(output_dir+filename)
             print(filename+' File written Successfully')
  
 
 def gen_mix_template_generator(generation_mix_dict):
         
-        data_dir = os.path.dirname(os.path.realpath(__file__))   
-        os.chdir(data_dir+'/data/')
-        
+
 
         
         for Reg in egrid_subregions:       
             
                 #Opening tempalte file for writing
-                wbook = openpyxl.load_workbook('template.xlsx')           
+                wbook = openpyxl.load_workbook(data_dir+'template.xlsx')           
                          
                 global blank_row 
                 blank_row = 6
@@ -309,24 +306,18 @@ def gen_mix_template_generator(generation_mix_dict):
                     #Writing final file. 
                     
                 filename = Reg+"_Generation_Mix.xlsx"
-                data_dir = os.path.dirname(os.path.realpath(__file__))+"/output/"
-                wbook.save(data_dir+filename)
+                wbook.save(output_dir+filename)
                 print(filename+' File written Successfully')
 
 
 
 
 def distribution_template_generator(distribution_dict,efficiency):
-
-        data_dir = os.path.dirname(os.path.realpath(__file__))   
-        os.chdir(data_dir+'/data/')            
-         
-        
     
         for Reg in egrid_subregions:
                         
                             
-                        wb = openpyxl.load_workbook('template.xlsx')
+                        wb = openpyxl.load_workbook(data_dir+'template.xlsx')
                         
                         gi = wb['General information']
                         io = wb['InputsOutputs']
@@ -462,8 +453,8 @@ def distribution_template_generator(distribution_dict,efficiency):
                                         
                              
                         filename = Reg+"_Distribution.xlsx"
-                        data_dir = os.path.dirname(os.path.realpath(__file__))+"/output/"
-                        wb.save(data_dir+filename)
+
+                        wb.save(output_dir+filename)
                         print(filename+' File written Successfully')
                         
                 
@@ -472,15 +463,11 @@ def distribution_template_generator(distribution_dict,efficiency):
 
 def consumption_mix_template_generator(consumption_dict):
 
-        data_dir = os.path.dirname(os.path.realpath(__file__))   
-        os.chdir(data_dir+'/data/')            
-         
-        
     
         for Reg in egrid_subregions:
                         
                             
-                        wb = openpyxl.load_workbook('template.xlsx')
+                        wb = openpyxl.load_workbook(data_dir+'template.xlsx')
                         
                         gi = wb['General information']
                         io = wb['InputsOutputs']
@@ -623,8 +610,8 @@ def consumption_mix_template_generator(consumption_dict):
                                         
                              
                         filename = Reg+"_Consumption.xlsx"
-                        data_dir = os.path.dirname(os.path.realpath(__file__))+"/output/"
-                        wb.save(data_dir+filename)
+
+                        wb.save(output_dir+filename)
                         print(filename+' File written Successfully')
 
 
@@ -632,15 +619,13 @@ def consumption_mix_template_generator(consumption_dict):
 
 def surplus_pool_mix_template_generator(surplus_pool_dict,nerc_region):
 
-        data_dir = os.path.dirname(os.path.realpath(__file__))   
-        os.chdir(data_dir+'/data/')            
-         
+
         nerc_region = [list(i)[0].value for i in nerc_region]
     
         for Reg in nerc_region:
                         
                             
-                        wb = openpyxl.load_workbook('template.xlsx')
+                        wb = openpyxl.load_workbook(data_dir+'template.xlsx')
                         
                         gi = wb['General information']
                         io = wb['InputsOutputs']
@@ -774,23 +759,19 @@ def surplus_pool_mix_template_generator(surplus_pool_dict,nerc_region):
                                         
                              
                         filename = Reg+"_surplus_pool.xlsx"
-                        data_dir = os.path.dirname(os.path.realpath(__file__))+"/output/"
-                        wb.save(data_dir+filename)
+
+                        wb.save(output_dir+filename)
                         print(filename+' File written Successfully')
                         
                         
                         
 def trade_mix_template_generator(trade_dict):
     
-        data_dir = os.path.dirname(os.path.realpath(__file__))   
-        os.chdir(data_dir+'/data/')            
-         
-        
     
         for Reg in trade_dict.keys():
                         
                             
-                        wb = openpyxl.load_workbook('template.xlsx')
+                        wb = openpyxl.load_workbook(data_dir+'template.xlsx')
                         
                         gi = wb['General information']
                         io = wb['InputsOutputs']
@@ -926,6 +907,6 @@ def trade_mix_template_generator(trade_dict):
                                         
                              
                         filename = Reg+"_trade.xlsx"
-                        data_dir = os.path.dirname(os.path.realpath(__file__))+"/output/"
-                        wb.save(data_dir+filename)
+
+                        wb.save(output_dir+filename)
                         print(filename+' File written Successfully')

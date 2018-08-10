@@ -2,6 +2,7 @@
 #Comopilation based on weight factor
 
 import math
+import sys
 import numpy as np
 from scipy.stats import t
 from sympy import var,solve
@@ -10,7 +11,7 @@ import pandas as pd
 
 
 #TRoy weight based method to compute emissions factors.  Rename calculation of emission factors. descriptive of the varaible.  
-def compilation(db):
+def compilation(db,total_gen):
         #Troy Method
         #Creating copy of database by substitution the NA emissions with zero
         db1 = db.fillna(value = 0)
@@ -23,22 +24,22 @@ def compilation(db):
 
         #This check is to make sure that the second database is not empt after droppins all NA. if empty, then we only use first database.  
         if db2.empty == True:
-            ef1 = np.sum(db1.iloc[:,1])/np.sum(db1.iloc[:,0])
+            ef1 = np.sum(db1.iloc[:,1])/total_gen
             return ef1
     
-        ef1 = np.sum(db1.iloc[:,1])/np.sum(db1.iloc[:,0])
+        ef1 = np.sum(db1.iloc[:,1])/total_gen
         
-        ef2 = np.sum(db2.iloc[:,1])/np.sum(db2.iloc[:,0])
+        ef2 = np.sum(db2.iloc[:,1])/total_gen
         
         #weight formula.
-        weight = np.sum(db2.iloc[:,0])/np.sum(db1.iloc[:,0])
+        weight = total_gen/total_gen
         final_ef = ef2*weight + (1-weight)*ef1
         
         return final_ef
 
 
 #This is the function for calculating log normal distribution parameters. 
-def uncertainty(db):
+def uncertainty(db,mean_gen,total_gen,total_facility_considered):
         #Troy Method
         #Creating copy of database by substitution the NA emissions with zero
         db1 = db.fillna(value = 0)
@@ -47,15 +48,23 @@ def uncertainty(db):
         db2 = db.dropna()
         frames = [db1,db2]
         #Here we doubled up the database by combining two databases together
-        data = pd.concat(frames,axis = 0)
+        data_1 = pd.concat(frames,axis = 0)
+        
+        df2 = pd.DataFrame([[0, 0]],columns = ['Electricity','FlowAmount'])
+        
+        for i in range(0,total_facility_considered):
+            
+            data = data_1.append(df2,ignore_index = True)
+            data_1 = data
+            
         
         
         mean = np.mean(data.iloc[:,1])
         l,b = data.shape
         sd = np.std(data.iloc[:,1])/np.sqrt(l)
-        mean_gen = np.mean(data.iloc[:,0])
+        #mean_gen = np.mean(data.iloc[:,0])
         #obtaining the emissions factor from the weight based method
-        ef = compilation(db)
+        ef = compilation(db,total_gen)
         
         #Endpoints of the range that contains alpha percent of the distribution
         pi1,pi2 = t.interval(alpha = 0.90,df = l-2, loc = mean, scale = sd)
@@ -79,8 +88,9 @@ def uncertainty(db):
 
             else:#This is a wrong mathematical statement. However, we have to use it if something fails. 
               sd1,sd2 = solve(0.5*x*x -(1.36*np.sqrt(2))*x + (np.log(1+pi3)),x)
-              print(pi3)
-            
+           
+            #if type(sd1) != float or type(sd2) != float:
+            #   return 0,0
             #always choose lower standard deviation from solving the square root equation. 
             if sd1 < sd2:
                log_mean = np.log(ef)-0.5*(sd1**2)

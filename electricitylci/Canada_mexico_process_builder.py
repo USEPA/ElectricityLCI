@@ -1,12 +1,10 @@
 import pandas as pd
 import os
 from electricitylci.globals import fuel_name
+from electricitylci.globals import output_dir
+from electricitylci.globals import data_dir
 from electricitylci.process_dictionary_writer import *
 from electricitylci.egrid_template_builder import trade_mix_template_generator
-
-data_dir = os.path.dirname(os.path.realpath(__file__))+"/data/"
-os.chdir(data_dir) 
-
 
 
 def name_change(name):
@@ -22,7 +20,7 @@ def name_change(name):
 
 
 
-Canada = pd.read_csv('Trade_regions.csv',index_col=0)
+Canada = pd.read_csv(data_dir+'Trade_regions.csv',index_col=0)
 
 trade_dict = {'':''}
 
