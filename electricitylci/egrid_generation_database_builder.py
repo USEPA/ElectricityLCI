@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore")
 from electricitylci.process_dictionary_writer import *
 from electricitylci.egrid_facilities import egrid_facilities,egrid_subregions
 from electricitylci.egrid_emissions_and_waste_by_facility import years_in_emissions_and_wastes_by_facility
-from electricitylci.globals import egrid_year, fuel_name
+from electricitylci.globals import egrid_year, fuel_name, join_with_underscore
 from electricitylci.eia923_generation import eia_download_extract
 from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows,map_renewable_heat_flows_to_fedelemflows,map_compartment_to_flow_type,add_flow_direction
@@ -84,11 +84,14 @@ def create_generation_process_df(generation_data,emissions_data,subregion='ALL')
     
 
 
-def total_generation_calculator(source,database):
-    d2 = database[database['Source'] == source[0]]
-    total_gen = d2['Electricity'].sum()
-    mean = d2['Electricity'].mean()
-    total_facility_considered = len(d2)
+def total_generation_calculator(source_list,electricity_source_db):
+    electricity_source_by_region = electricity_source_db[electricity_source_db['Source'].isin(source_list)]
+    #drop duplicate facilities
+    electricity_source_by_region = electricity_source_by_region.drop_duplicates(subset='eGRID_ID')
+
+    total_gen = electricity_source_by_region['Electricity'].sum()
+    mean = electricity_source_by_region['Electricity'].mean()
+    total_facility_considered = len(electricity_source_by_region)
 
     return total_gen,mean,total_facility_considered
     
@@ -98,17 +101,18 @@ def generation_process_builder_fnc(final_database,regions):
     
     #Map emission flows to fed elem flows
     final_database = map_emissions_to_fedelemflows(final_database)
-   
+
+    #Create dfs for storing the output
     result_database = pd.DataFrame()
-    #Looping through different subregions to create the files
     total_gen_database = pd.DataFrame()
+    #Looping through different subregions to create the files
     for reg in regions:
         #Cropping out based on regions
         database = final_database[final_database['Subregion'] == reg]
           #database_for_genmix_reg_specific = database_for_genmix_final[database_for_genmix_final['Subregion'] == reg]
-        print('\n')
-        print(reg)
-        print('\n')
+        #print('\n')
+        #print(reg)
+        #print('\n')
         
             
         for index,row in fuel_name.iterrows():
@@ -121,7 +125,7 @@ def generation_process_builder_fnc(final_database,regions):
             if database_f1.empty == True:
                   database_f1 = database[database['PrimaryFuel'] == row['FuelList']]
             if database_f1.empty != True:
-                print(row['Fuelname'])
+                #print(row['Fuelname'])
 
                 database_f1  = database_f1.sort_values(by='Source',ascending=False)
                 exchange_list = list(pd.unique(database_f1['FlowName']))
@@ -138,16 +142,21 @@ def generation_process_builder_fnc(final_database,regions):
                         database_f3 = database_f2[database_f2['Compartment'] == compartment]
                         
                         database_f3 = database_f3.drop_duplicates(subset = ['Subregion','FuelCategory','PrimaryFuel','eGRID_ID', 'Electricity','FlowName','Compartment','Year','Unit'])
-                        source = list(pd.unique(database_f3['Source']))
-                        if len(source) >1:
-                            print('Error occured. Duplicate emissions from Different source. Writing an error file error.csv')
-                            database_f3.to_csv(output_dir+'error'+reg+fuelname+exchange+'.csv')
+                        sources = list(pd.unique(database_f3['Source']))
+                        #if len(sources) >1:
+                        #    print('Error occured. Duplicate emissions from Different source. Writing an error file error.csv')
+                        #    database_f3.to_csv(output_dir+'error'+reg+fuelname+exchange+'.csv')
+
+
+                        #Get electricity relevant for this exchange for the denominator in the emissions factors calcs
+                        electricity_source_by_facility_for_region_fuel = database_f1[['eGRID_ID','Electricity','Source']].drop_duplicates()
+                        total_gen,mean,total_facility_considered = total_generation_calculator(sources,electricity_source_by_facility_for_region_fuel)
+
+                        sources_str = join_with_underscore(sources)
+                        exchange_total_gen = pd.DataFrame([[reg,fuelname,exchange,compartment,sources_str,total_gen]],columns = ['Subregion','FuelCategory','FlowName','Compartment','Source','Total Generation'])
+                        total_gen_database = total_gen_database.append(exchange_total_gen,ignore_index = True)
                             
-                        total_gen,mean,total_facility_considered = total_generation_calculator(source,database_f1.drop_duplicates(subset = ['Electricity','Source']))
-                        total_gen_database1 = pd.DataFrame([[reg,fuelname,source[0],total_gen]],columns = ['Subregion','FuelCategory','Source','Total Generation'])
-                        total_gen_database = total_gen_database.append(total_gen_database1,ignore_index = True)
-                            
-                        
+
                        
                         #Getting Emisssion_factor
                         database_f3['Emission_factor'] = compilation(database_f3[['Electricity','FlowAmount']],total_gen)
@@ -157,11 +166,16 @@ def generation_process_builder_fnc(final_database,regions):
                         database_f3['GeomSD'] = uncertainty_info['geomMean']
                         database_f3['Maximum'] = uncertainty_info['maximum']
                         database_f3['Minimum'] = uncertainty_info['minimum']
+                        database_f3['Source'] = sources_str
+                        #Optionally write out electricity
+                        #database_f3['Electricity'] = total_gen
+
                         frames = [result_database,database_f3]
                         result_database  = pd.concat(frames)                   
 
     result_database = result_database.drop(columns= ['eGRID_ID','FlowAmount','Electricity','ReliabilityScore','PrimaryFuel'])
     result_database = result_database.drop_duplicates()   
+    #Drop duplicated in total gen database
     total_gen_database = total_gen_database.drop_duplicates()
     total_gen_database.to_csv(output_dir+'Total Generation Information.csv',index = False)
     return result_database
@@ -288,7 +302,9 @@ def olcaschema_genprocess(database):
    generation_process_dict = {}
 
    #Map emission flows to fed elem flows
-   database = map_emissions_to_fedelemflows(database)
+   #Moved above!
+   #database = map_emissions_to_fedelemflows(database)
+
    #Map heat flows for renewable fuels to energy elementary flows. This must be applied after emission mapping
    database = map_renewable_heat_flows_to_fedelemflows(database)
    #Add FlowType to the database
