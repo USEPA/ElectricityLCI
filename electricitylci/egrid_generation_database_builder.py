@@ -19,7 +19,7 @@ from electricitylci.process_exchange_aggregator_uncertainty import compilation,u
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows,map_renewable_heat_flows_to_fedelemflows,map_compartment_to_flow_type,add_flow_direction
 
 #Get a subset of the egrid_facilities dataset
-egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory']]
+egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory','PercentGenerationfromDesignatedFuelCategory']]
 egrid_facilities_w_fuel_region['FacilityID'] = egrid_facilities_w_fuel_region['FacilityID'].astype(str)
 
 
@@ -135,7 +135,7 @@ def generation_process_builder_fnc(final_database,regions):
                 
                 for exchange in exchange_list:
                     database_f2 = database_f1[database_f1['FlowName'] == exchange]
-                    database_f2 = database_f2[['Subregion','FuelCategory','PrimaryFuel','eGRID_ID', 'Electricity','FlowName','FlowAmount','Compartment','Year','Source','ReliabilityScore','Unit']]
+                    database_f2 = database_f2[['Subregion','FuelCategory','PrimaryFuel','eGRID_ID', 'Electricity','FlowName','FlowAmount','Compartment','Year','Source','ReliabilityScore','Unit','PercentGenerationfromDesignatedFuelCategory']]
 
                     compartment_list = list(pd.unique(database_f2['Compartment']))
                     for compartment in compartment_list:
@@ -152,15 +152,35 @@ def generation_process_builder_fnc(final_database,regions):
                         electricity_source_by_facility_for_region_fuel = database_f1[['eGRID_ID','Electricity','Source']].drop_duplicates()
                         total_gen,mean,total_facility_considered = total_generation_calculator(sources,electricity_source_by_facility_for_region_fuel)
 
+                        #Add data quality scores
+
+                        database_f3 = add_flow_representativeness_data_quality_scores(database_f3)
+
+                        #Add scores for regions to
                         sources_str = join_with_underscore(sources)
                         exchange_total_gen = pd.DataFrame([[reg,fuelname,exchange,compartment,sources_str,total_gen]],columns = ['Subregion','FuelCategory','FlowName','Compartment','Source','Total Generation'])
                         total_gen_database = total_gen_database.append(exchange_total_gen,ignore_index = True)
-                            
+
+
+
 
                        
                         #Getting Emisssion_factor
                         database_f3['Emission_factor'] = compilation(database_f3[['Electricity','FlowAmount']],total_gen)
-                        database_f3['ReliabilityScoreAvg'] = np.average(database_f3['ReliabilityScore'], weights = database_f3['FlowAmount'])
+
+                        #Data Quality Scores
+                        database_f3['ReliabilityScore'] = np.average(database_f3['ReliabilityScore'],
+                                                                     weights = database_f3['FlowAmount'])
+                        database_f3['TemporalCorrelation'] = np.average(database_f3['TemporalCorrelation'],
+                                                                     weights=database_f3['FlowAmount'])
+                        #Set GeographicalCorrelation 1 for now only
+                        database_f3['GeographicalCorrelation'] = 1
+                        database_f3['TechnologicalCorrelation'] = np.average(database_f3['TechnologicalCorrelation'],
+                                                                     weights=database_f3['FlowAmount'])
+                        database_f3['DataCollection'] = np.average(database_f3['DataCollection'],
+                                                                     weights=database_f3['FlowAmount'])
+
+                        #Uncertainty Calcs
                         uncertainty_info = uncertainty_creation(database_f3[['Electricity','FlowAmount']],exchange,fuelheat,mean,total_gen,total_facility_considered)
                         database_f3['GeomMean'] = uncertainty_info['geomMean']
                         database_f3['GeomSD'] = uncertainty_info['geomMean']
@@ -173,7 +193,7 @@ def generation_process_builder_fnc(final_database,regions):
                         frames = [result_database,database_f3]
                         result_database  = pd.concat(frames)                   
 
-    result_database = result_database.drop(columns= ['eGRID_ID','FlowAmount','Electricity','ReliabilityScore','PrimaryFuel'])
+    result_database = result_database.drop(columns= ['eGRID_ID','FlowAmount','Electricity','PrimaryFuel'])
     result_database = result_database.drop_duplicates()   
     #Drop duplicated in total gen database
     total_gen_database = total_gen_database.drop_duplicates()
@@ -293,6 +313,39 @@ def uncertainty_creation(data,name,fuelheat,mean,total_gen,total_facility_consid
     
     return ar;
 
+def add_flow_representativeness_data_quality_scores(db):
+    from electricitylci.dqi import lookup_score_with_bound_key
+    db = add_technological_correlation_score(db)
+    db = add_temporal_correlation_score(db)
+    db = add_data_collection_score(db)
+    return db
+
+def add_technological_correlation_score(db):
+    #Create col, set to 5 by default
+    db['TechnologicalCorrelation'] = 5
+    from electricitylci.dqi import technological_correlation_lower_bound_to_dqi
+    #convert PercentGen to fraction
+    db['PercentGenerationfromDesignatedFuelCategory'] = db['PercentGenerationfromDesignatedFuelCategory']/100
+    db['TechnologicalCorrelation'] = db['PercentGenerationfromDesignatedFuelCategory'].apply(lambda x: lookup_score_with_bound_key(x,technological_correlation_lower_bound_to_dqi))
+    db = db.drop(columns='PercentGenerationfromDesignatedFuelCategory')
+    return db
+
+def add_temporal_correlation_score(db):
+    db['TemporalCorrelation'] = 5
+    from electricitylci.dqi import temporal_correlation_lower_bound_to_dqi
+    from electricitylci.globals import electricity_lci_target_year
+
+    #Could be more precise here with year
+    db['Age'] =  electricity_lci_target_year - pd.to_numeric(db['Year'])
+    db['TemporalCorrelation'] = db['Age'].apply(
+        lambda x: lookup_score_with_bound_key(x, temporal_correlation_lower_bound_to_dqi))
+    db = db.drop(columns='Age')
+    return db
+
+def add_data_collection_score(db):
+    db['DataCollection'] = 5
+    #Need to add method for this here
+    return db
 
 #HAVE THE CHANGE FROM HERE TO WRITE DICTIONARY
 
