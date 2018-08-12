@@ -447,7 +447,7 @@ def olcaschema_genmix(database):
    
    for reg in region:  
 
-       database_reg = database[database['Subregion'] == reg]
+     database_reg = database[database['Subregion'] == reg]
      exchanges_list=[]
      
      #Creating the reference output
