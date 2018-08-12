@@ -276,7 +276,11 @@ def exchange_table_creation_output(data):
     ar['amountFormula']=''
     ar['unit']=unit('kg');
     ar['pedigreeUncertainty']=''  
-    ar['dqEntry'] = '('+str(data['ReliabilityScoreAvg'].iloc[0])+';1;1;1)'
+    ar['dqEntry'] = '('+str(data['ReliabilityScore'].iloc[0])+\
+                    ';'+str(data['TemporalCorrelation'].iloc[0])+\
+                    ';' + str(data['GeographicalCorrelation'].iloc[0])+\
+                    ';' + str(data['TechnologicalCorrelation'].iloc[0])+ \
+                    ';' + str(data['DataCollection'].iloc[0])+')'
     ar['uncertainty']=uncertainty_table_creation(data)
     ar['comment'] = str(source)+' '+str(year)
     if data['FlowType'].iloc[0] == 'ELEMENTARY_FLOW':

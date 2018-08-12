@@ -43,17 +43,22 @@ cols_to_keep = cols_to_keep + per_gen_cols
 egrid_facilities_fuel_cat_per_gen = egrid_facilities[cols_to_keep]
 egrid_facilities_fuel_cat_per_gen = egrid_facilities_fuel_cat_per_gen[egrid_facilities_fuel_cat_per_gen['FuelCategory'].notnull()]
 
-def plant_fuel_check(x):
+
+#Add the percent generation from primary fuel cat to its own column
+egrid_facilities_fuel_cat_per_gen['PercentGenerationfromDesignatedFuelCategory'] = 0
+egrid_facilities_fuel_cat_per_gen = egrid_facilities_fuel_cat_per_gen.apply(add_percent_generation_from_primary_fuel_category_col,axis=1)
+egrid_facilities_fuel_cat_per_gen = egrid_facilities_fuel_cat_per_gen.drop(columns=per_gen_cols)
+
+#Merge back into facilities
+egrid_facilities = pd.merge(egrid_facilities,egrid_facilities_fuel_cat_per_gen,on=['FacilityID','FuelCategory'],how='left')
+
+def add_percent_generation_from_primary_fuel_category_col(x):
     plant_fuel_category = x['FuelCategory']
-    percent_gen_from_fuel = x[fuel_cat_to_per_gen[plant_fuel_category]]
-    if percent_gen_from_fuel >= min_plant_percent_generation_from_primary_fuel_category:
-        facility_ids_passing.append(x['FacilityID'])
+    x['PercentGenerationfromDesignatedFuelCategory'] = x[fuel_cat_to_per_gen[plant_fuel_category]]
+    return x
 
 def list_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min():
-    global facility_ids_passing
-    facility_ids_passing=[]
-    #Apply plant fuel check to every row of the table
-    egrid_facilities_fuel_cat_per_gen.apply(plant_fuel_check,axis=1)
-    #Delete duplicates
-    facility_ids_passing = list(set(facility_ids_passing))
+    passing_facilties = egrid_facilities_fuel_cat_per_gen[egrid_facilities_fuel_cat_per_gen['PercentGenerationfromDesignatedFuelCategory'] > min_plant_percent_generation_from_primary_fuel_category]
+    #Delete duplicates by creating a set
+    facility_ids_passing = list(set(passing_facilties['FacilityID']))
     return facility_ids_passing
