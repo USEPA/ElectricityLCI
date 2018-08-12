@@ -112,12 +112,12 @@ def generation_process_builder_fnc(final_database,regions):
     #Looping through different subregions to create the files
     for reg in regions:
         #Cropping out based on regions
-        if subregion == 'all':
-          database = final_database[final_database['Subregion'] == reg]
-        elif subregion == 'NERC':
-          database = final_database[final_database['NERC'] == reg]
-        elif subregion == 'BA':
-          database = final_database[final_database['Balancing Authority Name'] == reg]
+          if subregion == 'all':
+             database = final_database[final_database['Subregion'] == reg]
+          elif subregion == 'NERC':
+             database = final_database[final_database['NERC'] == reg]
+          elif subregion == 'BA':
+             database = final_database[final_database['Balancing Authority Name'] == reg]
 
           for index,row in fuel_name.iterrows():
             #Reading complete fuel name and heat content information
