@@ -7,18 +7,6 @@ from electricitylci.globals import min_plant_percent_generation_from_primary_fue
 egrid_facilities = stewi.getInventoryFacilities("eGRID",egrid_year)
 egrid_facilities.rename(columns={'Plant primary coal/oil/gas/ other fossil fuel category':'FuelCategory','Plant primary fuel':'PrimaryFuel','eGRID subregion acronym':'Subregion','NERC region acronym':'NERC'},inplace=True)
 
-
-def add_percent_generation_from_primary_fuel_category_col(x):
-    plant_fuel_category = x['FuelCategory']
-    x['PercentGenerationfromDesignatedFuelCategory'] = x[fuel_cat_to_per_gen[plant_fuel_category]]
-    return x
-
-def list_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min():
-    passing_facilties = egrid_facilities_fuel_cat_per_gen[egrid_facilities_fuel_cat_per_gen['PercentGenerationfromDesignatedFuelCategory'] > min_plant_percent_generation_from_primary_fuel_category]
-    #Delete duplicates by creating a set
-    facility_ids_passing = list(set(passing_facilties['FacilityID']))
-    return facility_ids_passing
-
 len(egrid_facilities)
 #2016:9709
 
@@ -27,9 +15,8 @@ egrid_subregions = list(pd.unique(egrid_facilities['Subregion']))
 egrid_subregions = [x for x in egrid_subregions if str(x) != 'nan']
 len(egrid_subregions)
 
-egrid_subregions = ['AZNM']
-
 #2016: 26
+egrid_subregions = ['AZNM']
 
 egrid_primary_fuel_categories = sorted(pd.unique(egrid_facilities['FuelCategory'].dropna()))
 
@@ -53,13 +40,26 @@ cols_to_keep = cols_to_keep + per_gen_cols
 egrid_facilities_fuel_cat_per_gen = egrid_facilities[cols_to_keep]
 egrid_facilities_fuel_cat_per_gen = egrid_facilities_fuel_cat_per_gen[egrid_facilities_fuel_cat_per_gen['FuelCategory'].notnull()]
 
+def add_percent_generation_from_primary_fuel_category_col(x):
+    plant_fuel_category = x['FuelCategory']
+    x['PercentGenerationfromDesignatedFuelCategory'] = x[fuel_cat_to_per_gen[plant_fuel_category]]
+    return x
+
+def list_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min():
+    passing_facilties = egrid_facilities_fuel_cat_per_gen[egrid_facilities_fuel_cat_per_gen['PercentGenerationfromDesignatedFuelCategory'] > min_plant_percent_generation_from_primary_fuel_category]
+    #Delete duplicates by creating a set
+    facility_ids_passing = list(set(passing_facilties['FacilityID']))
+    return facility_ids_passing
 
 #Add the percent generation from primary fuel cat to its own column
 egrid_facilities_fuel_cat_per_gen['PercentGenerationfromDesignatedFuelCategory'] = 0
 egrid_facilities_fuel_cat_per_gen = egrid_facilities_fuel_cat_per_gen.apply(add_percent_generation_from_primary_fuel_category_col,axis=1)
 egrid_facilities_fuel_cat_per_gen = egrid_facilities_fuel_cat_per_gen.drop(columns=per_gen_cols)
+egrid_facilities = egrid_facilities.drop(columns=per_gen_cols)
+
+
+
 
 #Merge back into facilities
 egrid_facilities = pd.merge(egrid_facilities,egrid_facilities_fuel_cat_per_gen,on=['FacilityID','FuelCategory'],how='left')
-
 

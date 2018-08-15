@@ -17,14 +17,14 @@ from electricitylci.globals import egrid_year, fuel_name, join_with_underscore
 from electricitylci.eia923_generation import eia_download_extract
 from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows,map_renewable_heat_flows_to_fedelemflows,map_compartment_to_flow_type,add_flow_direction
-
+from electricitylci.dqi import lookup_score_with_bound_key
 #Get a subset of the egrid_facilities dataset
-egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory','PercentGenerationfromDesignatedFuelCategory']]
+egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory','NERC','PercentGenerationfromDesignatedFuelCategory','Balancing Authority Name','Balancing Authority Code']]
 egrid_facilities_w_fuel_region['FacilityID'] = egrid_facilities_w_fuel_region['FacilityID'].astype(str)
 
 
 
-def create_generation_process_df(generation_data,emissions_data,subregion='ALL'):  
+def create_generation_process_df(generation_data,emissions_data,subregion):  
 
     emissions_data = emissions_data.drop(columns = ['FacilityID'])
     combined_data = generation_data.merge(emissions_data, left_on = ['FacilityID'], right_on = ['eGRID_ID'], how = 'right')   
@@ -82,8 +82,10 @@ def create_generation_process_df(generation_data,emissions_data,subregion='ALL')
     final_data = final_data.drop_duplicates(subset = ['Subregion', 'PrimaryFuel','FuelCategory','FlowName','FlowAmount','Compartment'])
      
     final_data = final_data[final_data['FlowName'] != 'Electricity']
-
-    b = generation_process_builder_fnc(final_data,regions)
+    #final_data.to_csv('chk.csv')
+    
+    
+    b = generation_process_builder_fnc(final_data,regions,subregion)
     return b
     
 
@@ -93,15 +95,17 @@ def total_generation_calculator(source_list,electricity_source_db):
     #drop duplicate facilities
     electricity_source_by_region = electricity_source_by_region.drop_duplicates(subset='eGRID_ID')
 
+
     total_gen = electricity_source_by_region['Electricity'].sum()
     mean = electricity_source_by_region['Electricity'].mean()
     total_facility_considered = len(electricity_source_by_region)
-
+    
+    
     return total_gen,mean,total_facility_considered
     
 
 
-def generation_process_builder_fnc(final_database,regions):
+def generation_process_builder_fnc(final_database,regions,subregion):
     
     #Map emission flows to fed elem flows
     final_database = map_emissions_to_fedelemflows(final_database)
@@ -118,6 +122,8 @@ def generation_process_builder_fnc(final_database,regions):
              database = final_database[final_database['NERC'] == reg]
           elif subregion == 'BA':
              database = final_database[final_database['Balancing Authority Name'] == reg]
+             
+          
 
           for index,row in fuel_name.iterrows():
             #Reading complete fuel name and heat content information
@@ -171,7 +177,7 @@ def generation_process_builder_fnc(final_database,regions):
                         database_f3['Emission_factor'] = compilation(database_f3[['Electricity','FlowAmount']],total_gen)
 
                         #Data Quality Scores
-                        database_f3['ReliabilityScore'] = np.average(database_f3['ReliabilityScore'],
+                        database_f3['Reliability_Score'] = np.average(database_f3['ReliabilityScore'],
                                                                      weights = database_f3['FlowAmount'])
                         database_f3['TemporalCorrelation'] = np.average(database_f3['TemporalCorrelation'],
                                                                      weights=database_f3['FlowAmount'])
@@ -212,27 +218,46 @@ def generation_process_builder_fnc(final_database,regions):
                 
      
                                            
-def create_generation_mix_process_df(generation_data,subregion='ALL'):
+def create_generation_mix_process_df(generation_data,subregion):
    
-   #database_for_genmix =  emissions_for_selected_egrid_facilities_final[emissions_for_selected_egrid_facilities_final['Source'] == 'eGRID']
-   generation_data[['Electricity']] = generation_data[['NetGeneration(MJ)']]*0.00027778
-    
    #Converting to numeric for better stability and merging
    generation_data['FacilityID'] = generation_data['FacilityID'].astype(str)
-   generation_data = generation_data.drop(columns = ['NetGeneration(MJ)'])
    
    database_for_genmix_final = pd.merge(generation_data,egrid_facilities_w_fuel_region, on='FacilityID')
    
-   if subregion == 'ALL':
-       regions = egrid_subregions
+   if subregion == 'all':
+    regions = egrid_subregions
+   elif subregion == 'NERC':
+    regions = list(pd.unique(database_for_genmix_final['NERC']))
+   elif subregion == 'BA':
+    regions = list(pd.unique(database_for_genmix_final['Balancing Authority Name']))  
    else:
-       regions = [subregion]
+    regions = [subregion]
    
   
    result_database = pd.DataFrame() 
 
    for reg in regions:
-       database = database_for_genmix_final[database_for_genmix_final['Subregion'] == reg]
+       
+       if subregion == 'all':
+          database = database_for_genmix_final[database_for_genmix_final['Subregion'] == reg]
+       elif subregion == 'NERC':
+          database = database_for_genmix_final[database_for_genmix_final['NERC'] == reg]
+       elif subregion == 'BA':
+          database = database_for_genmix_final[database_for_genmix_final['Balancing Authority Name'] == reg]
+          
+        # This makes sure that the dictionary writer works fine because it only works with the subregion column. So we are sending the 
+       #correct regions in the subregion column rather than egrid subregions if rquired.
+       #This makes it easy for the process_dictionary_writer to be much simpler. 
+       if subregion == 'all':
+           database['Subregion'] = database['Subregion']
+       elif subregion == 'NERC':
+           database['Subregion'] = database['NERC']
+       elif subregion == 'BA':
+           database['Subregion'] = database['Balancing Authority Name'] 
+       
+       
+
        total_gen_reg = np.sum(database['Electricity'])
        for index,row in fuel_name.iterrows():
            # Reading complete fuel name and heat content information
@@ -274,11 +299,11 @@ def uncertainty_creation(data,name,fuelheat,mean,total_gen,total_facility_consid
             if l > 3:
                u,s = uncertainty(temp_data,mean,total_gen,total_facility_considered)
                if str(fuelheat)!='nan':
-                  ar['geomMean'] = str(round(math.exp(u),3)/fuelheat);
-                  ar['geomSd']=str(round(math.exp(s),3)/fuelheat); 
+                  ar['geomMean'] = str(round(math.exp(u),12)/fuelheat);
+                  ar['geomSd']=str(round(math.exp(s),12)/fuelheat); 
                else:
-                  ar['geomMean'] = str(round(math.exp(u),3)); 
-                  ar['geomSd']=str(round(math.exp(s),3)); 
+                  ar['geomMean'] = str(round(math.exp(u),12)); 
+                  ar['geomSd']=str(round(math.exp(s),12)); 
                   
             else:
                                     
@@ -291,8 +316,8 @@ def uncertainty_creation(data,name,fuelheat,mean,total_gen,total_facility_consid
                     if l > 3:
                        
                        u,s = (uncertainty(data,mean,total_gen,total_facility_considered))
-                       ar['geomMean'] = str(round(math.exp(u),3)); 
-                       ar['geomSd']=str(round(math.exp(s),3)); 
+                       ar['geomMean'] = str(round(math.exp(u),12)); 
+                       ar['geomSd']=str(round(math.exp(s),12)); 
                     else:
                        ar['geomMean'] = None
                        ar['geomSd']= None 
@@ -322,7 +347,7 @@ def uncertainty_creation(data,name,fuelheat,mean,total_gen,total_facility_consid
     return ar;
 
 def add_flow_representativeness_data_quality_scores(db):
-    from electricitylci.dqi import lookup_score_with_bound_key
+    
     db = add_technological_correlation_score(db)
     db = add_temporal_correlation_score(db)
     db = add_data_collection_score(db)
@@ -357,8 +382,7 @@ def add_data_collection_score(db):
 
 #HAVE THE CHANGE FROM HERE TO WRITE DICTIONARY
 
-def olcaschema_genprocess(database,subregion):
-   
+def olcaschema_genprocess(database,subregion):   
 
    generation_process_dict = {}
 
@@ -384,7 +408,10 @@ def olcaschema_genprocess(database,subregion):
         region = [subregion]
 
    for reg in region: 
-       
+        
+       # This makes sure that the dictionary writer works fine because it only works with the subregion column. So we are sending the 
+       #correct regions in the subregion column rather than egrid subregions if rquired.
+       #This makes it easy for the process_dictionary_writer to be much simpler. 
         if subregion == 'all':
            database['Subregion'] = database['Subregion']
         elif subregion == 'NERC':
@@ -440,7 +467,7 @@ def olcaschema_genprocess(database,subregion):
                 
    return generation_process_dict
 
-def olcaschema_genmix(database):
+def olcaschema_genmix(database,subregion):
    generation_mix_dict = {}
 
    region = list(pd.unique(database['Subregion']))
@@ -466,7 +493,7 @@ def olcaschema_genmix(database):
      del final['']
     
    
-     print(reg +' Process Created')
+     #print(reg +' Process Created')
      generation_mix_dict[reg] = final
    return generation_mix_dict
 

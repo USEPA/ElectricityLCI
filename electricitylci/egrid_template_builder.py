@@ -144,9 +144,11 @@ def gen_process_template_generator(generation_process_dict):
                 if index > 1:
                     
                     io[row1][12].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][1:4]
-                    io[row1][13].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][5]
-                    io[row1][14].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][7]
-                    io[row1][15].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][9]
+                    io[row1][13].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][5:8]
+                    io[row1][14].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][9]
+                    io[row1][15].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][11:14]
+                    io[row1][16].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][15:18]
+                    
                 io[row1][21].value = 'database data with plants over 10% efficiency';
                 
                 if 'uncertainty' in generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]:
