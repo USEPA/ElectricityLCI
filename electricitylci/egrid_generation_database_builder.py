@@ -115,6 +115,8 @@ def generation_process_builder_fnc(final_database,regions,subregion):
     total_gen_database = pd.DataFrame()
     #Looping through different subregions to create the files
     for reg in regions:
+        
+          print(reg)
         #Cropping out based on regions
           if subregion == 'all':
              database = final_database[final_database['Subregion'] == reg]
@@ -135,7 +137,6 @@ def generation_process_builder_fnc(final_database,regions,subregion):
             if database_f1.empty == True:
                   database_f1 = database[database['PrimaryFuel'] == row['FuelList']]
             if database_f1.empty != True:
-                print(row['Fuelname'])
 
                 database_f1  = database_f1.sort_values(by='Source',ascending=False)
                 exchange_list = list(pd.unique(database_f1['FlowName']))

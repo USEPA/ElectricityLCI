@@ -16,7 +16,7 @@ egrid_subregions = [x for x in egrid_subregions if str(x) != 'nan']
 len(egrid_subregions)
 
 #2016: 26
-egrid_subregions = ['AZNM']
+#egrid_subregions = ['AZNM']
 
 egrid_primary_fuel_categories = sorted(pd.unique(egrid_facilities['FuelCategory'].dropna()))
 
