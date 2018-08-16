@@ -48,6 +48,8 @@ for reg in Canada.itertuples():
     trade_dict[region] = final;
     
 del trade_dict['']
+
+
 trade_mix_template_generator(trade_dict)
     
 

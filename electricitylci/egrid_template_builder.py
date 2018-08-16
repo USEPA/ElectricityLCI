@@ -367,7 +367,7 @@ def distribution_template_generator(distribution_dict,efficiency):
                         
                         gi['D18'].value = distribution_dict[Reg]['processDocumentation']['validFrom']
                         
-                        gi['D20'].value = 'US-eGRID-'+Reg
+                        gi['D20'].value = 'US-eGRID-'+str(Reg)
                         
                         v= '' ;
                         #THis function is used for finding the NERC regions. THese input files are built manually. 
@@ -428,7 +428,7 @@ def distribution_template_generator(distribution_dict,efficiency):
                         io[row][2].value = 0;
                         io[row][3].value = 'Electricity 100 - 120V';
                         io[row][4].value = distribution_dict[Reg]['category']
-                        io[row][5].value = str(Reg)
+                        io[row][5].value = 'US-eGRID-'+str(Reg)
                         io[row][6].value = 1
                         io[row][7].value = 'MWh';
                         io[row][21].value = 'Electricity Distribution Mix';                           
@@ -442,7 +442,7 @@ def distribution_template_generator(distribution_dict,efficiency):
                         io[row][1].value = 5;
                         io[row][3].value = distribution_dict[Reg]['exchanges'][index-1]['flow']['name']
                         io[row][4].value = distribution_dict[Reg]['category']
-                        io[row][5].value = str(Reg)
+                        io[row][5].value = distribution_dict[Reg]['exchanges'][index-1]['flow']['location']
                         io[row][6].value = 1/efficiency
                         io[row][7].value = 'MWh';
                         io[row][21].value = distribution_dict[Reg]['description']                         
@@ -593,12 +593,13 @@ def consumption_mix_template_generator(consumption_dict):
                             
                             io[row][4].value = consumption_dict[Reg]['category']
                             if len(consumption_dict[Reg]['exchanges']) == 2:
-                               io[row][5].value = str(Reg)
+                               io[row][5].value = consumption_dict[Reg]['exchanges'][index]['flow']['location']                            
                             else:
                                if index == 1: 
-                                  io[row][5].value = consumption_dict[Reg]['exchanges'][index]['flow']['name'][23:27]
+                                  io[row][5].value = consumption_dict[Reg]['exchanges'][index]['flow']['location']
                                else:
-                                  io[row][5].value = str(Reg)
+                                  io[row][5].value = consumption_dict[Reg]['exchanges'][index]['flow']['location']
+                            
                             io[row][6].value = consumption_dict[Reg]['exchanges'][index]['amount']
                             io[row][7].value = 'MWh';
                             io[row][21].value = consumption_dict[Reg]['description']                         
@@ -606,11 +607,6 @@ def consumption_mix_template_generator(consumption_dict):
                             index=index+1
                             
                         
-                                                     
-
-                        
-                                        
-                             
                         filename = Reg+"_Consumption.xlsx"
 
                         wb.save(output_dir+filename)
@@ -675,7 +671,7 @@ def surplus_pool_mix_template_generator(surplus_pool_dict,nerc_region):
                         
                         gi['D18'].value = surplus_pool_dict[Reg]['processDocumentation']['validFrom']
                         
-                        gi['D20'].value = 'US-eGRID-'+Reg
+                        gi['D20'].value = 'US-NERC-'+Reg
                         
                         v= '' ;
                         #THis function is used for finding the NERC regions. THese input files are built manually. 

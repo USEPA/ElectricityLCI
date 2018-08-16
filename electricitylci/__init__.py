@@ -18,7 +18,9 @@ def get_consumption_surplus_distribution_df():
     from electricitylci.NERC_consumption_surplus_distribution_builder import surplus_dict
     from electricitylci.NERC_consumption_surplus_distribution_builder import consumption_dict
     from electricitylci.NERC_consumption_surplus_distribution_builder import distribution_dict
-    from electricitylci.Canada_mexico_process_builder import trade_dict
+    from electricitylci.Canada_mexico_process_builder import trade_dict    
+    return surplus_dict,consumption_dict,distribution_dict,trade_dict
+
 
 def write_generation_process_database_to_dict(gen_database,regions='all'):
     from electricitylci.egrid_generation_database_builder import olcaschema_genprocess

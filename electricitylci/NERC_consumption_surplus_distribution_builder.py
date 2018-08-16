@@ -59,7 +59,7 @@ def surplus_pool_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,gen_q
                
                if trade_matrix[i+1][j].value != None and trade_matrix[i+1][j].value != 0:
                    name = 'Electricity from generation mix '+trade_matrix[0][j].value;
-                   exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,name,trade_matrix[0][j].value),exchanges_list)
+                   exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,name,'US-eGRID-'+trade_matrix[0][j].value),exchanges_list)
                    chk = 1;
         
            final = process_table_creation_surplus(region,exchanges_list)
@@ -85,7 +85,7 @@ def consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,ge
            region = eGRID_region[reg][0].value
            
            exchanges_list = []
-           exchange(ref_flow_creator(region),exchanges_list)
+           exchange(ref_flow_creator('US-eGRID-'+region),exchanges_list)
            
            
            y  = len(trade_matrix[0])
@@ -107,9 +107,9 @@ def consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,ge
                             break;
            name = 'Electricity from generation mix '+eGRID_region[reg][0].value   
            if chk == 1:
-               exchange(exchange_table_creation_input_con_mix(gen_quantity[reg][0].value,name,region),exchanges_list)
+               exchange(exchange_table_creation_input_con_mix(gen_quantity[reg][0].value,name,'US-eGRID-'+region),exchanges_list)
            else:
-               exchange(exchange_table_creation_input_con_mix(1,name,region),exchanges_list)
+               exchange(exchange_table_creation_input_con_mix(1,name,'US-eGRID-'+region),exchanges_list)
            
            final = process_table_creation_con_mix(region,exchanges_list)
            del final['']
@@ -138,9 +138,9 @@ def distribution_mix_dictionary(eGRID_subregions,efficiency_of_distribution):
             region = reg
             exchanges_list =[]
 
-            exchange(ref_flow_creator(region),exchanges_list)
+            exchange(ref_flow_creator('US-eGRID-'+region),exchanges_list)
             name =  consumption_dict[reg]['name']
-            exchange(exchange_table_creation_input_con_mix(1/efficiency_of_distribution,name,region),exchanges_list)
+            exchange(exchange_table_creation_input_con_mix(1/efficiency_of_distribution,name,'US-eGRID-'+region),exchanges_list)
         
             final = process_table_creation_distribution(region,exchanges_list)
             
@@ -190,11 +190,10 @@ del distribution_dict['']
 
 
 
-
-
-distribution_template_generator(distribution_dict,efficiency_of_distribution_grid)
-surplus_pool_mix_template_generator(surplus_dict,nerc_region2)
 consumption_mix_template_generator(consumption_dict)
+surplus_pool_mix_template_generator(surplus_dict,nerc_region2)
+distribution_template_generator(distribution_dict,efficiency_of_distribution_grid)
+
 
 
 
