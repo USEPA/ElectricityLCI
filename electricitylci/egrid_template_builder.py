@@ -741,7 +741,7 @@ def surplus_pool_mix_template_generator(surplus_pool_dict,nerc_region):
                             
                             io[row][4].value = surplus_pool_dict[Reg]['category']
                             if index == 0:
-                                io[row][5].value = str(Reg)
+                                io[row][5].value = surplus_pool_dict[Reg]['exchanges'][index]['location']
                             else:
                                 io[row][5].value = surplus_pool_dict[Reg]['exchanges'][index]['location']
                             io[row][6].value = surplus_pool_dict[Reg]['exchanges'][index]['amount']
@@ -817,7 +817,7 @@ def trade_mix_template_generator(trade_dict):
                         
                         gi['D18'].value = trade_dict[Reg]['processDocumentation']['validFrom']
                         
-                        gi['D20'].value = Reg
+                        gi['D20'].value = 'CA-'+Reg
                         
                         v= '' ;
                         #THis function is used for finding the NERC regions. THese input files are built manually. 
@@ -891,7 +891,7 @@ def trade_mix_template_generator(trade_dict):
                                 io[row][3].value = trade_dict[Reg]['exchanges'][index]['flow']['name']
                             
                             io[row][4].value = trade_dict[Reg]['category']
-                            io[row][5].value = trade_dict[Reg]['location']
+                            io[row][5].value = trade_dict[Reg]['exchanges'][index]['location']
                             
                             io[row][6].value = trade_dict[Reg]['exchanges'][index]['amount']
                             io[row][7].value = 'MWh';

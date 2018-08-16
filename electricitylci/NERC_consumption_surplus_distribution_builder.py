@@ -43,7 +43,7 @@ def surplus_pool_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,gen_q
            
            exchanges_list = []
            
-           exchange(ref_flow_creator(region),exchanges_list)
+           exchange(ref_flow_creator('US-NERC-'+region),exchanges_list)
            y  = len(trade_matrix[0])
            
            chk=0;
@@ -52,7 +52,7 @@ def surplus_pool_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,gen_q
                if trade_matrix[i+1][j].value != None and trade_matrix[i+1][j].value != 0:
                    
                    name = 'Electricity; at region '+trade_matrix[0][j].value+'; Trade Mix';
-                   exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,name,trade_matrix[0][j].value),exchanges_list)
+                   exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,name,'CA-'+trade_matrix[0][j].value),exchanges_list)
                    chk = 1;
            
            for j in range(8,34):
@@ -102,7 +102,7 @@ def consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,ge
                         
                         if trade_matrix[nerc+1][j].value != None and trade_matrix[nerc+1][j].value !=0:
                             
-                            exchange(exchange_table_creation_input_con_mix(surplus_pool_trade_in[reg][0].value,name,nerc_region[reg][0].value),exchanges_list)
+                            exchange(exchange_table_creation_input_con_mix(surplus_pool_trade_in[reg][0].value,name,'US-NERC-'+nerc_region[reg][0].value),exchanges_list)
                             chk=1;
                             break;
            name = 'Electricity from generation mix '+eGRID_region[reg][0].value   
