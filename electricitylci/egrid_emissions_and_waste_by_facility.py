@@ -21,7 +21,7 @@ else:
     emissions_and_wastes_by_facility.to_csv(data_dir+stewicombooutputfile,index=False)
 
 len(emissions_and_wastes_by_facility)
-#with egrid 2016, tri 2016, nei 2016, rcrainfo 2015: 131733
+#with egrid 2016, tri 2016, nei 2016, rcrainfo 2015: 106284
 
 #Get a list of unique years in the emissions data
 years_in_emissions_and_wastes_by_facility = list(pd.unique(emissions_and_wastes_by_facility['Year']))

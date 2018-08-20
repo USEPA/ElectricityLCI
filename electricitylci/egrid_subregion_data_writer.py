@@ -21,7 +21,18 @@ required_fields_map = {'eGRID subregion acronym':'Subregion',
                        'eGRID subregion annual SO2 emissions (tons)':'Sulfur dioxide',
                        'eGRID subregion annual CO2 emissions (tons)':'Carbon dioxide',
                        'eGRID subregion annual CH4 emissions (lbs)':'Methane',
-                       'eGRID subregion annual N2O emissions (lbs)':'Nitrous oxide'}
+                       'eGRID subregion annual N2O emissions (lbs)':'Nitrous oxide',
+                       'eGRID subregion coal generation percent (resource mix)': 'Percent_COAL',
+                       'eGRID subregion oil generation percent (resource mix)' : 'Percent_OIL',
+                       'eGRID subregion gas generation percent (resource mix)' : 'Percent_GAS',
+                       'eGRID subregion nuclear generation percent (resource mix)' : 'Percent_NUCLEAR',
+                       'eGRID subregion hydro generation percent (resource mix)' : 'Percent_HYDRO',
+                       'eGRID subregion biomass generation percent (resource mix)' : 'Percent_BIOMASS',
+                       'eGRID subregion wind generation percent (resource mix)': 'Percent_WIND',
+                       'eGRID subregion solar generation percent (resource mix)': 'Percent_SOLAR',
+                       'eGRID subregion geothermal generation percent (resource mix)': 'Percent_GEOTHERMAL',
+                       'eGRID subregion other fossil generation percent (resource mix)' : 'Percent_OFSL',
+                       'eGRID subregion other unknown/ purchased fuel generation percent (resource mix)' : 'Percent_OTHF'}
 required_fields = list(required_fields_map.keys())
 subregion_totals_egrid_reference = pd.read_excel(eGRIDfile, sheet_name=regionsheetname, skipinitialspace = True)
 #drop first row which are column name abbreviations
@@ -47,4 +58,46 @@ subregion_totals_egrid_reference_melted = subregion_totals_egrid_reference.melt(
                                                                                 var_name='FlowName',
                                                                                 value_name='FlowAmount')
 
-subregion_totals_egrid_reference_melted.to_csv(data_dir+'egrid_subregion_totals_' + 'reference_' + egrid_year_str + '.csv',index=False)
+subregion_totals_egrid_reference_melted.to_csv(data_dir+'egrid_subregion_emission_totals_' + 'reference_' + egrid_year_str + '.csv',index=False)
+
+#Use Percent Gen columns
+import re
+percent_gen_columns = []
+new_gen_columns = []
+old_to_new_corr = {}
+for c in subregion_totals_egrid_reference.columns:
+    match = re.match('Percent*',c)
+    if re.match('Percent*',c) is not None:
+        percent_gen_columns.append(c)
+        new_gen = c[len(match[0])+1:]
+        new_gen_columns.append(new_gen)
+        old_to_new_corr[c] = new_gen
+
+cols_to_keep = list(percent_gen_columns)
+cols_to_keep.append('Subregion')
+cols_to_keep.append('Electricity')
+
+egrid_subregion_reference_generation = subregion_totals_egrid_reference[cols_to_keep]
+
+#First create the new columns
+for c in new_gen_columns:
+    egrid_subregion_reference_generation[c] = None
+
+#Now calculate the new cols
+for i,r in egrid_subregion_reference_generation.iterrows():
+    for k,v in old_to_new_corr.items():
+        r[v] = (r[k]/100)*r['Electricity']
+
+
+cols_to_keep_2 = list(new_gen_columns)
+cols_to_keep_2.append('Subregion')
+
+
+egrid_subregion_reference_generation_by_fuelcategory = egrid_subregion_reference_generation[cols_to_keep_2]
+
+egrid_subregion_reference_generation_by_fuelcategory_melted = egrid_subregion_reference_generation_by_fuelcategory.melt(id_vars=['Subregion'],
+                                                                                value_vars=list(new_gen_columns),
+                                                                                var_name='FuelCategory',
+                                                                                value_name='Electricity')
+
+egrid_subregion_reference_generation_by_fuelcategory_melted.to_csv(data_dir+'egrid_subregion_generation_by_fuelcategory_reference_'+str(egrid_year)+'.csv',index=False)

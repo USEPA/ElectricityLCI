@@ -124,8 +124,6 @@ def generation_process_builder_fnc(final_database,regions,subregion):
              database = final_database[final_database['NERC'] == reg]
           elif subregion == 'BA':
              database = final_database[final_database['Balancing Authority Name'] == reg]
-             
-          
 
           for index,row in fuel_name.iterrows():
             #Reading complete fuel name and heat content information
