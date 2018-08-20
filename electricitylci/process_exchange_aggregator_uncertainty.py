@@ -94,7 +94,7 @@ def uncertainty(db,mean_gen,total_gen,total_facility_considered):
             #always choose lower standard deviation from solving the square root equation. 
             if sd1 < sd2:
                log_mean = np.log(ef)-0.5*(sd1**2)
-               return round(log_mean,2),round(sd1,2)
+               return round(log_mean,12),round(sd1,12)
             else:
                log_mean = np.log(ef)-0.5*(sd2**2)
-               return round(log_mean,2),round(sd2,2)
+               return round(log_mean,12),round(sd2,12)

@@ -276,11 +276,11 @@ def exchange_table_creation_output(data):
     ar['amountFormula']=''
     ar['unit']=unit('kg');
     ar['pedigreeUncertainty']=''  
-    ar['dqEntry'] = '('+str(data['ReliabilityScore'].iloc[0])+\
-                    ';'+str(data['TemporalCorrelation'].iloc[0])+\
-                    ';' + str(data['GeographicalCorrelation'].iloc[0])+\
-                    ';' + str(data['TechnologicalCorrelation'].iloc[0])+ \
-                    ';' + str(data['DataCollection'].iloc[0])+')'
+    ar['dqEntry'] = '('+str(round(data['Reliability_Score'].iloc[0],1))+\
+                    ';'+str(round(data['TemporalCorrelation'].iloc[0],1))+\
+                    ';' + str(round(data['GeographicalCorrelation'].iloc[0],1))+\
+                    ';' + str(round(data['TechnologicalCorrelation'].iloc[0],1))+ \
+                    ';' + str(round(data['DataCollection'].iloc[0],1))+')'
     ar['uncertainty']=uncertainty_table_creation(data)
     ar['comment'] = str(source)+' '+str(year)
     if data['FlowType'].iloc[0] == 'ELEMENTARY_FLOW':
@@ -365,7 +365,7 @@ def ref_flow_creator(region):
     ar['amount']=1.0
     ar['amountFormula']=''
     ar['unit']=unit('MWh');
-    ar['location'] = location(region)
+    ar['location'] = region
     
     #ar['uncertainty']=uncertainty_table_creation(data)   
     #ar['uncertainty'] = ''
@@ -409,7 +409,7 @@ def process_table_creation_con_mix(region,exchanges_list):
     ar['allocationFactors']=''
     ar['defaultAllocationMethod']=''
     ar['exchanges']=exchanges_list;
-    ar['location']=region
+    ar['location']='US-eGRID-'+region
     ar['parameters']=''
     ar['processDocumentation']=process_doc_creation();
     ar['processType']=''
@@ -451,7 +451,7 @@ def process_table_creation_distribution(region,exchanges_list):
     ar['allocationFactors']=''
     ar['defaultAllocationMethod']=''
     ar['exchanges']=exchanges_list;
-    ar['location']=region
+    ar['location']='US-eGRID-'+region
     ar['parameters']=''
     ar['processDocumentation']=process_doc_creation();
     ar['processType']=''

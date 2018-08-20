@@ -30,7 +30,7 @@ for reg in Canada.itertuples():
     
     region = reg[0]
     exchanges_list =[]
-    exchange(ref_flow_creator(region),exchanges_list)
+    exchange(ref_flow_creator('CA-'+region),exchanges_list)
     
     
     for fuel in Canada.iteritems():
@@ -40,7 +40,7 @@ for reg in Canada.itertuples():
                 
         name = 'Electricity from '+fuel_new_name+' in the region of '+region;
         if Canada.loc[region,fuelname]/100 != 0:
-          exchange(exchange_table_creation_input_con_mix(Canada.loc[region,fuelname]/100,name,region),exchanges_list)
+          exchange(exchange_table_creation_input_con_mix(Canada.loc[region,fuelname]/100,name,'CA-'+region),exchanges_list)
     
     final = process_table_creation_trade_mix(region,exchanges_list)
     del final['']
@@ -48,6 +48,8 @@ for reg in Canada.itertuples():
     trade_dict[region] = final;
     
 del trade_dict['']
+
+
 trade_mix_template_generator(trade_dict)
     
 

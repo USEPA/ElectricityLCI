@@ -144,9 +144,11 @@ def gen_process_template_generator(generation_process_dict):
                 if index > 1:
                     
                     io[row1][12].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][1:4]
-                    io[row1][13].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][5]
-                    io[row1][14].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][7]
-                    io[row1][15].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][9]
+                    io[row1][13].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][5:8]
+                    io[row1][14].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][9]
+                    io[row1][15].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][11:14]
+                    io[row1][16].value = generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]['dqEntry'][15:18]
+                    
                 io[row1][21].value = 'database data with plants over 10% efficiency';
                 
                 if 'uncertainty' in generation_process_dict[Reg+'_'+fuelname]['exchanges'][index]:
@@ -365,7 +367,7 @@ def distribution_template_generator(distribution_dict,efficiency):
                         
                         gi['D18'].value = distribution_dict[Reg]['processDocumentation']['validFrom']
                         
-                        gi['D20'].value = 'US-eGRID-'+Reg
+                        gi['D20'].value = 'US-eGRID-'+str(Reg)
                         
                         v= '' ;
                         #THis function is used for finding the NERC regions. THese input files are built manually. 
@@ -426,7 +428,7 @@ def distribution_template_generator(distribution_dict,efficiency):
                         io[row][2].value = 0;
                         io[row][3].value = 'Electricity 100 - 120V';
                         io[row][4].value = distribution_dict[Reg]['category']
-                        io[row][5].value = str(Reg)
+                        io[row][5].value = 'US-eGRID-'+str(Reg)
                         io[row][6].value = 1
                         io[row][7].value = 'MWh';
                         io[row][21].value = 'Electricity Distribution Mix';                           
@@ -440,7 +442,7 @@ def distribution_template_generator(distribution_dict,efficiency):
                         io[row][1].value = 5;
                         io[row][3].value = distribution_dict[Reg]['exchanges'][index-1]['flow']['name']
                         io[row][4].value = distribution_dict[Reg]['category']
-                        io[row][5].value = str(Reg)
+                        io[row][5].value = distribution_dict[Reg]['exchanges'][index-1]['flow']['location']
                         io[row][6].value = 1/efficiency
                         io[row][7].value = 'MWh';
                         io[row][21].value = distribution_dict[Reg]['description']                         
@@ -591,12 +593,13 @@ def consumption_mix_template_generator(consumption_dict):
                             
                             io[row][4].value = consumption_dict[Reg]['category']
                             if len(consumption_dict[Reg]['exchanges']) == 2:
-                               io[row][5].value = str(Reg)
+                               io[row][5].value = consumption_dict[Reg]['exchanges'][index]['flow']['location']                            
                             else:
                                if index == 1: 
-                                  io[row][5].value = consumption_dict[Reg]['exchanges'][index]['flow']['name'][23:27]
+                                  io[row][5].value = consumption_dict[Reg]['exchanges'][index]['flow']['location']
                                else:
-                                  io[row][5].value = str(Reg)
+                                  io[row][5].value = consumption_dict[Reg]['exchanges'][index]['flow']['location']
+                            
                             io[row][6].value = consumption_dict[Reg]['exchanges'][index]['amount']
                             io[row][7].value = 'MWh';
                             io[row][21].value = consumption_dict[Reg]['description']                         
@@ -604,11 +607,6 @@ def consumption_mix_template_generator(consumption_dict):
                             index=index+1
                             
                         
-                                                     
-
-                        
-                                        
-                             
                         filename = Reg+"_Consumption.xlsx"
 
                         wb.save(output_dir+filename)
@@ -673,7 +671,7 @@ def surplus_pool_mix_template_generator(surplus_pool_dict,nerc_region):
                         
                         gi['D18'].value = surplus_pool_dict[Reg]['processDocumentation']['validFrom']
                         
-                        gi['D20'].value = 'US-eGRID-'+Reg
+                        gi['D20'].value = 'US-NERC-'+Reg
                         
                         v= '' ;
                         #THis function is used for finding the NERC regions. THese input files are built manually. 
@@ -743,7 +741,7 @@ def surplus_pool_mix_template_generator(surplus_pool_dict,nerc_region):
                             
                             io[row][4].value = surplus_pool_dict[Reg]['category']
                             if index == 0:
-                                io[row][5].value = str(Reg)
+                                io[row][5].value = surplus_pool_dict[Reg]['exchanges'][index]['location']
                             else:
                                 io[row][5].value = surplus_pool_dict[Reg]['exchanges'][index]['location']
                             io[row][6].value = surplus_pool_dict[Reg]['exchanges'][index]['amount']
@@ -819,7 +817,7 @@ def trade_mix_template_generator(trade_dict):
                         
                         gi['D18'].value = trade_dict[Reg]['processDocumentation']['validFrom']
                         
-                        gi['D20'].value = Reg
+                        gi['D20'].value = 'CA-'+Reg
                         
                         v= '' ;
                         #THis function is used for finding the NERC regions. THese input files are built manually. 
@@ -893,7 +891,7 @@ def trade_mix_template_generator(trade_dict):
                                 io[row][3].value = trade_dict[Reg]['exchanges'][index]['flow']['name']
                             
                             io[row][4].value = trade_dict[Reg]['category']
-                            io[row][5].value = trade_dict[Reg]['location']
+                            io[row][5].value = trade_dict[Reg]['exchanges'][index]['location']
                             
                             io[row][6].value = trade_dict[Reg]['exchanges'][index]['amount']
                             io[row][7].value = 'MWh';

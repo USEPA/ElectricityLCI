@@ -12,3 +12,4 @@ electricitylci/__pycache__/elci_database_generator.cpython-36.pyc
 electricitylci/__pycache__/elci_database_generator.cpython-36.pyc
 electricitylci/save.p
 *.pyc
+electricitylci/data/Dict_gen.spydata
