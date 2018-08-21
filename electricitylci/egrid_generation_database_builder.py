@@ -1,13 +1,7 @@
 #Dictionary Creator
 #This is the main file that creates the dictionary with all the regions and fuel. This is essentially the database generator in a dictionary format.
 from electricitylci.globals import output_dir
-from electricitylci.globals import data_dir
-import sys
-import pandas as pd
-import os
 import warnings
-import numpy as np
-import math
 warnings.filterwarnings("ignore")
 
 from electricitylci.process_dictionary_writer import *
@@ -71,7 +65,7 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
     elif subregion == 'NERC':
         regions = list(pd.unique(final_data['NERC']))
     elif subregion == 'BA':
-        regions = list(pd.unique(final_data['Balancing Authority Name']))  
+        regions = list(pd.unique(final_data['Balancing Authority Name']))
     else:
         regions = [subregion]
 
@@ -124,16 +118,19 @@ def generation_process_builder_fnc(final_database,regions,subregion):
              database = final_database[final_database['NERC'] == reg]
           elif subregion == 'BA':
              database = final_database[final_database['Balancing Authority Name'] == reg]
+          elif subregion == 'US':
+              #For entire US use full database
+             database = final_database
 
           for index,row in fuel_name.iterrows():
             #Reading complete fuel name and heat content information
             fuelname = row['FuelList']
             fuelheat = float(row['Heatcontent'])
             #croppping the database according to the current fuel being considered
-            database_f1 = database[database['FuelCategory'] == row['FuelList']]
+            database_f1 = database[database['FuelCategory'] == fuelname]
             
             if database_f1.empty == True:
-                  database_f1 = database[database['PrimaryFuel'] == row['FuelList']]
+                  database_f1 = database[database['PrimaryFuel'] == fuelname]
             if database_f1.empty != True:
 
                 database_f1  = database_f1.sort_values(by='Source',ascending=False)
@@ -205,15 +202,16 @@ def generation_process_builder_fnc(final_database,regions,subregion):
     elif subregion == 'NERC':
        result_database = result_database.drop(columns= ['eGRID_ID','FlowAmount','Electricity','ReliabilityScore','PrimaryFuel','Balancing Authority Name','Balancing Authority Code','Subregion'])  
     elif subregion == 'BA':
-       result_database = result_database.drop(columns= ['eGRID_ID','FlowAmount','Electricity','ReliabilityScore','PrimaryFuel','NERC','Balancing Authority Code','Subregion'])      
- 
-    result_database = result_database.drop_duplicates()   
+       result_database = result_database.drop(columns= ['eGRID_ID','FlowAmount','Electricity','ReliabilityScore','PrimaryFuel','NERC','Balancing Authority Code','Subregion'])
+    elif subregion == 'US':
+       result_database = result_database.drop(columns=['eGRID_ID', 'FlowAmount', 'Electricity', 'ReliabilityScore', 'PrimaryFuel', 'NERC','Balancing Authority Name','Balancing Authority Code', 'Subregion'])
+
+    result_database = result_database.drop_duplicates()
     #Drop duplicated in total gen database
     total_gen_database = total_gen_database.drop_duplicates()
-    total_gen_database.to_csv(output_dir+'Total Generation Information.csv',index = False)
+    total_gen_database.to_csv(output_dir+'total_gen_database_' + subregion + '.csv',index = False)
     return result_database
-    
-            
+
                 
      
                                            
