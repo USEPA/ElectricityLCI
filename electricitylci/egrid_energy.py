@@ -1,6 +1,7 @@
 import numpy as np
 
 from electricitylci.egrid_flowbyfacilty import egrid_flowbyfacility
+from electricitylci.globals import data_dir,egrid_year
 
 #Get flow by facility data for egrid
 egrid_net_generation = egrid_flowbyfacility[egrid_flowbyfacility['FlowName']=='Electricity']
@@ -33,25 +34,6 @@ def list_egrid_facilities_in_efficiency_range(min_efficiency,max_efficiency):
     return list(egrid_efficiency_pass['FacilityID'])
 
 
-
-
-
-
-
-
-
-
-
-# for r in egrid_facilities_fuel_cat_per_gen.iterrows():
-#         #print(r['FuelCategory'])
-#         plant_fuel_category = r['FuelCategory']
-#
-#         percent_gen_from_fuel = r[fuel_cat_to_per_gen[plant_fuel_category]]
-#         if percent_gen_from_fuel >= min_plant_percent_generation_from_primary_fuel_category:
-#             facility_ids_passing.append(r['FacilityID'])
-
-
-
-
-
-
+#Get egrid generation reference data by subregion from the egrid data files ..used for validation
+#import reference data
+ref_egrid_subregion_generation_by_fuelcategory = pd.read_csv(data_dir+'egrid_subregion_generation_by_fuelcategory_reference_' + str(egrid_year) + '.csv')
