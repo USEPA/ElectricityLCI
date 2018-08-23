@@ -16,9 +16,9 @@ from electricitylci.dqi import lookup_score_with_bound_key
 egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory','NERC','PercentGenerationfromDesignatedFuelCategory','Balancing Authority Name','Balancing Authority Code']]
 egrid_facilities_w_fuel_region['FacilityID'] = egrid_facilities_w_fuel_region['FacilityID'].astype(str)
 
+from electricitylci.egrid_energy import ref_egrid_subregion_generation_by_fuelcategory
 
-
-def create_generation_process_df(generation_data,emissions_data,subregion):  
+def create_generation_process_df(generation_data,emissions_data,subregion):
 
     emissions_data = emissions_data.drop(columns = ['FacilityID'])
     combined_data = generation_data.merge(emissions_data, left_on = ['FacilityID'], right_on = ['eGRID_ID'], how = 'right')   
@@ -55,7 +55,9 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
        
     #Merging with the egrid_facilites file to get the subregion information in the database!!!
     final_data = pd.merge(egrid_facilities_w_fuel_region,emissions_gen_data, left_on = ['FacilityID'],right_on = ['eGRID_ID'], how = 'right')
-    
+
+    #Add in reference electricity for subregion and fuel category
+    final_data = pd.merge(final_data,ref_egrid_subregion_generation_by_fuelcategory,on=['Subregion','FuelCategory'],how='left')
     
     #store the total elci data in a csv file just for checking
     #final_data.to_excel('elci_summary.xlsx')
@@ -139,9 +141,14 @@ def generation_process_builder_fnc(final_database,regions,subregion):
                 
                 for exchange in exchange_list:
                     database_f2 = database_f1[database_f1['FlowName'] == exchange]
-                    database_f2 = database_f2[['Subregion','FuelCategory','PrimaryFuel','eGRID_ID', 'Electricity','FlowName','FlowAmount','Compartment','Year','Source','ReliabilityScore','Unit','NERC','PercentGenerationfromDesignatedFuelCategory','Balancing Authority Name','Balancing Authority Code']]
+                    database_f2 = database_f2[['Subregion','FuelCategory','PrimaryFuel',
+                                               'eGRID_ID', 'Electricity','FlowName','FlowAmount',
+                                               'Compartment','Year','Source','ReliabilityScore','Unit',
+                                               'NERC','PercentGenerationfromDesignatedFuelCategory',
+                                               'Balancing Authority Name','Balancing Authority Code',
+                                               'Ref_Electricity_Subregion_FuelCategory']]
 
-                    
+
                     compartment_list = list(pd.unique(database_f2['Compartment']))
                     for compartment in compartment_list:
                         database_f3 = database_f2[database_f2['Compartment'] == compartment]
@@ -158,7 +165,9 @@ def generation_process_builder_fnc(final_database,regions,subregion):
 
                         #Add data quality scores
 
-                        database_f3 = add_flow_representativeness_data_quality_scores(database_f3)
+                        database_f3 = add_flow_representativeness_data_quality_scores(database_f3,total_gen)
+                        #Can now drop this
+                        database_f3 = database_f3.drop(columns='Ref_Electricity_Subregion_FuelCategory')
 
                         #Add scores for regions to
                         sources_str = join_with_underscore(sources)
@@ -187,7 +196,7 @@ def generation_process_builder_fnc(final_database,regions,subregion):
                         #Uncertainty Calcs
                         uncertainty_info = uncertainty_creation(database_f3[['Electricity','FlowAmount']],exchange,fuelheat,mean,total_gen,total_facility_considered)
                         database_f3['GeomMean'] = uncertainty_info['geomMean']
-                        database_f3['GeomSD'] = uncertainty_info['geomMean']
+                        database_f3['GeomSD'] = uncertainty_info['geomSd']
                         database_f3['Maximum'] = uncertainty_info['maximum']
                         database_f3['Minimum'] = uncertainty_info['minimum']
                         database_f3['Source'] = sources_str
@@ -343,11 +352,10 @@ def uncertainty_creation(data,name,fuelheat,mean,total_gen,total_facility_consid
     
     return ar;
 
-def add_flow_representativeness_data_quality_scores(db):
-    
+def add_flow_representativeness_data_quality_scores(db,total_gen):
     db = add_technological_correlation_score(db)
     db = add_temporal_correlation_score(db)
-    db = add_data_collection_score(db)
+    db = add_data_collection_score(db,total_gen)
     return db
 
 def add_technological_correlation_score(db):
@@ -372,9 +380,14 @@ def add_temporal_correlation_score(db):
     db = db.drop(columns='Age')
     return db
 
-def add_data_collection_score(db):
+def add_data_collection_score(db,total_gen):
+    from electricitylci.dqi import data_collection_lower_bound_to_dqi
+    #Define data collection score based on percentage of the generation as generation for each factor over the total gen for that fuel category
     db['DataCollection'] = 5
-    #Need to add method for this here
+    db['Percent_of_Gen_in_EF_Denominator'] = (total_gen/db['Ref_Electricity_Subregion_FuelCategory'])/100
+    db['DataCollection'] = db['Percent_of_Gen_in_EF_Denominator'].apply(
+        lambda x: lookup_score_with_bound_key(x, data_collection_lower_bound_to_dqi))
+    db = db.drop(columns='Percent_of_Gen_in_EF_Denominator')
     return db
 
 #HAVE THE CHANGE FROM HERE TO WRITE DICTIONARY
