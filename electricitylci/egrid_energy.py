@@ -1,5 +1,5 @@
 import numpy as np
-
+import pandas as pd
 from electricitylci.egrid_flowbyfacilty import egrid_flowbyfacility
 from electricitylci.globals import data_dir,egrid_year
 
@@ -37,3 +37,5 @@ def list_egrid_facilities_in_efficiency_range(min_efficiency,max_efficiency):
 #Get egrid generation reference data by subregion from the egrid data files ..used for validation
 #import reference data
 ref_egrid_subregion_generation_by_fuelcategory = pd.read_csv(data_dir+'egrid_subregion_generation_by_fuelcategory_reference_' + str(egrid_year) + '.csv')
+
+ref_egrid_subregion_generation_by_fuelcategory = ref_egrid_subregion_generation_by_fuelcategory.rename(columns={'Electricity':'Ref_Electricity_Subregion_FuelCategory'})
