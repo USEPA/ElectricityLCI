@@ -30,6 +30,11 @@ def map_emissions_to_fedelemflows(df_with_flows_compartments):
 #Manually mapping of input 'Heat' to energy types for renewables
 #!Still need to consider amount conversion
 def map_renewable_heat_flows_to_fedelemflows(df_with_flows_compart_direction):
+    
+    #For all other fuel soruces
+    df_with_flows_compart_direction.loc[(df_with_flows_compart_direction['FlowName'] == 'Heat'),
+                                   'ElementaryFlowPrimeContext'] = 'technresource'      
+    
     df_with_flows_compart_direction.loc[(df_with_flows_compart_direction['FlowName']=='Heat')&
                                    ((df_with_flows_compart_direction['FuelCategory']=='SOLAR')|
                                     (df_with_flows_compart_direction['FuelCategory'] == 'GEOTHERMAL')|
@@ -56,6 +61,13 @@ def map_renewable_heat_flows_to_fedelemflows(df_with_flows_compart_direction):
     df_with_flows_compart_direction.loc[(df_with_flows_compart_direction['FlowName'] == 'Heat') &
                                    (df_with_flows_compart_direction['FuelCategory'] == 'HYDRO'), 'Compartment'] = 'water'
 
+                                            
+    df_with_flows_compart_direction.loc[(df_with_flows_compart_direction['FlowName'] != 'Heat'),
+                                   'ElementaryFlowPrimeContext'] = 'emissions' 
+                                        
+    df_with_flows_compart_direction.loc[(df_with_flows_compart_direction['FlowName']=='Steam'),
+                                   'ElementaryFlowPrimeContext'] = 'coproduct'
+    
     return df_with_flows_compart_direction
 
 #Compartment to flow type mapping

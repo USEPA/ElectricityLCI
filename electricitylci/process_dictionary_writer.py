@@ -214,12 +214,9 @@ def exchange_table_creation_input(data,fuelname,fuelheat):
     ar['flowProperty']=''
     ar['input'] = True
     ar['baseUncertainty']=''
-    ar['provider']=''
-    
-    if math.isnan(fuelheat) != True:
-      ar['amount']=data['Emission_factor'].iloc[0]/fuelheat
-    else:          
-      ar['amount']=data['Emission_factor'].iloc[0]
+    ar['provider']='' 
+   
+    ar['amount']=data['Emission_factor'].iloc[0]
     
     ar['amountFormula']='  '
     if math.isnan(fuelheat) != True:        
@@ -303,25 +300,19 @@ def uncertainty_table_creation(data):
     
 
     ar['geomMean'] = data['GeomMean'].iloc[0]
-    ar['geomSd']= data['GeomSD'].iloc[0] 
-
-    
-    
+    ar['geomSd']= data['GeomSD'].iloc[0]    
     ar['distributionType']='Logarithmic Normal Distribution'
     ar['mean']=''
-    ar['meanFormula']=''
-    
+    ar['meanFormula']=''    
     ar['geomMeanFormula']=''
-
-    ar['minimum']=data['Maximum'].iloc[0]
-    ar['maximum']=data['Minimum'].iloc[0]
+    ar['maximum']=data['Maximum'].iloc[0]
+    ar['minimum']=data['Minimum'].iloc[0]
     ar['minimumFormula']=''
     ar['sd']=''
     ar['sdFormula']=''    
     ar['geomSdFormula']=''
     ar['mode']=''
-    ar['modeFormula']=''
-   
+    ar['modeFormula']=''   
     ar['maximumFormula']='';
     del ar['']
     
