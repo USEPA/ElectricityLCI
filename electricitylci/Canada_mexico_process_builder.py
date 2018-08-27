@@ -4,7 +4,7 @@ from electricitylci.globals import fuel_name
 from electricitylci.globals import output_dir
 from electricitylci.globals import data_dir
 from electricitylci.process_dictionary_writer import *
-from electricitylci.egrid_template_builder import trade_mix_template_generator
+from electricitylci.fedlcacommons_template_builder import trade_mix_template_generator
 
 
 def name_change(name):

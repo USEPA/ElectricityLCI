@@ -33,7 +33,7 @@ def write_generation_mix_database_to_dict(genmix_database,regions='all'):
     return genmix_dict
 
 def write_generation_process_dict_to_template(gen_dict):
-    from electricitylci.fedlcacommons_template_builder import _template_builder import gen_process_template_generator
+    from electricitylci.fedlcacommons_template_builder import gen_process_template_generator
     gen_process_template_generator(gen_dict)
 
 def write_generation_mix_dict_to_template(genmix_dict):

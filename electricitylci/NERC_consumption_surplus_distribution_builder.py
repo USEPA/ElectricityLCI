@@ -5,10 +5,9 @@ from electricitylci.egrid_facilities import egrid_subregions
 from electricitylci.process_dictionary_writer import *
 from electricitylci.globals import efficiency_of_distribution_grid
 from electricitylci.globals import net_trading
-from electricitylci.egrid_template_builder import distribution_template_generator
-from electricitylci.egrid_template_builder import consumption_mix_template_generator
-from electricitylci.egrid_template_builder import surplus_pool_mix_template_generator
-from electricitylci.globals import output_dir
+from electricitylci.fedlcacommons_template_builder import distribution_template_generator
+from electricitylci.fedlcacommons_template_builder import consumption_mix_template_generator
+from electricitylci.fedlcacommons_template_builder import surplus_pool_mix_template_generator
 from electricitylci.globals import data_dir
 
 wb2 = openpyxl.load_workbook(data_dir+'eGRID_Consumption_Mix_new.xlsx',data_only=True)
@@ -131,7 +130,7 @@ def consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,ge
 
 
 def distribution_mix_dictionary(eGRID_subregions,efficiency_of_distribution):
-    
+
     distribution_dict = {'':''}
     for reg in eGRID_subregions:
             global region;
@@ -141,12 +140,12 @@ def distribution_mix_dictionary(eGRID_subregions,efficiency_of_distribution):
             exchange(ref_flow_creator('US-eGRID-'+region),exchanges_list)
             name =  consumption_dict[reg]['name']
             exchange(exchange_table_creation_input_con_mix(1/efficiency_of_distribution,name,'US-eGRID-'+region),exchanges_list)
-        
+
             final = process_table_creation_distribution(region,exchanges_list)
-            
+
             del final['']
             print(region+' Distribution Process Created')
-            
+
             distribution_dict[region] = final;
            #del consumption_dict['']
     return distribution_dict
