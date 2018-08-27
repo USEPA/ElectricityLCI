@@ -61,12 +61,9 @@ def map_renewable_heat_flows_to_fedelemflows(df_with_flows_compart_direction):
     df_with_flows_compart_direction.loc[(df_with_flows_compart_direction['FlowName'] == 'Heat') &
                                    (df_with_flows_compart_direction['FuelCategory'] == 'HYDRO'), 'Compartment'] = 'water'
 
-                                            
-    df_with_flows_compart_direction.loc[(df_with_flows_compart_direction['FlowName'] != 'Heat'),
-                                   'ElementaryFlowPrimeContext'] = 'emissions' 
-                                        
-    df_with_flows_compart_direction.loc[(df_with_flows_compart_direction['FlowName']=='Steam'),
-                                   'ElementaryFlowPrimeContext'] = 'coproduct'
+#Need to handle steam separately
+#    df_with_flows_compart_direction.loc[(df_with_flows_compart_direction['FlowName']=='Steam'),
+#                                   'ElementaryFlowPrimeContext'] = 'coproduct'
     
     return df_with_flows_compart_direction
 
