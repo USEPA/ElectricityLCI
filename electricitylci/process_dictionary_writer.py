@@ -6,25 +6,20 @@ import math
 import time
 import pandas as pd
 from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty
-from electricitylci.globals import egrid_year
-
-
- 
+from electricitylci.globals import data_dir,egrid_year
 
 
 year = egrid_year
 
+#Read in general metadata to be used by all processes
+metadata = pd.read_csv(data_dir+'metadata.csv')
+#Use only first row of metadata for all processes for now
+metadata = metadata.iloc[0,]
 
 def exchange_table_creation_ref(data):
-    
-    
-    region = data['Subregion'].iloc[0] 
-
-    
-    
+    region = data['Subregion'].iloc[0]
     #data=pd.DataFrame(columns = ['Electricity','Heat'])
     ar = {'':''}
-    
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
@@ -45,9 +40,6 @@ def exchange_table_creation_ref(data):
     return ar
     #ar['pedigreeUncertainty']=''
     #ar['uncertainty']=uncertainty_table_creation(data)      
-
-
-
 
 def exchange_table_creation_input_genmix(database,fuelname):
     
@@ -76,10 +68,7 @@ def exchange_table_creation_input_genmix(database,fuelname):
     return ar;
 
 def process_table_creation_genmix(region,exchanges_list):
-    
-                        
     ar = {'':''}
-    
     ar['@type'] = 'Process'
     ar['allocationFactors']=''
     ar['defaultAllocationMethod']=''
@@ -91,26 +80,15 @@ def process_table_creation_genmix(region,exchanges_list):
     ar['name'] = 'Electricity; from Generation; at region '+str(region)+'; Production Mix'
     ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'
     ar['description'] = 'Electricity from generation mix using power plants in the '+str(region)+' region'
-    
-    
     return ar;
-
-
-
 
 def exchange(flw,exchanges_list):
    
     exchanges_list.append(flw)
     return exchanges_list
-    
-    
-    
-def process_table_creation(fuelname,exchanges_list,region):
-    
 
-                              
+def process_table_creation(fuelname,exchanges_list,region):
     ar = {'':''}
-    
     ar['@type'] = 'Process'
     ar['allocationFactors']=''
     ar['defaultAllocationMethod']=''
@@ -155,32 +133,29 @@ def location(region):
 def process_doc_creation():
     
     global year;
-    
-    
-
     ar = {'':''}
     ar['timeDescription']=''
     ar['validUntil']='12/31/2018'
     ar['validFrom']='1/1/2018'
     ar['technologyDescription']=''
-    ar['dataCollectionDescription']=''
-    ar['completenessDescription']=''
-    ar['dataSelectionDescription']=''
-    ar['reviewDetails']=''
-    ar['dataTreatmentDescription']=''
-    ar['inventoryMethodDescription']=''
-    ar['modelingConstantsDescription']=''
-    ar['reviewer']='Wes Ingwersen'
-    ar['samplingDescription']=''
+    ar['dataCollectionDescription']=metadata['DataCollectionPeriod']
+    ar['completenessDescription']=metadata['DataCompleteness']
+    ar['dataSelectionDescription']=metadata['']
+    ar['reviewDetails']=metadata['DatasetOtherEvaluation']
+    ar['dataTreatmentDescription']=metadata['DataTreatment']
+    ar['inventoryMethodDescription']=metadata['LCIMethod']
+    ar['modelingConstantsDescription']=metadata['ModellingConstants']
+    ar['reviewer']=metadata['Reviewer']
+    ar['samplingDescription']=metadata['SamplingProcedure']
     ar['sources']=''
-    ar['restrictionsDescription']=''
+    ar['restrictionsDescription']=metadata['AccessUseRestrictions']
     ar['copyright']=False
     ar['creationDate']=time.time()
-    ar['dataDocumentor']='Wes Ingwersen'
-    ar['dataGenerator']='Tapajyoti Ghosh'
-    ar['dataSetOwner']=''
-    ar['intendedApplication']=''
-    ar['projectDescription']=''
+    ar['dataDocumentor']= metadata['DataDocumentor']
+    ar['dataGenerator']= metadata['DataGenerator']
+    ar['dataSetOwner']= metadata['DatasetOwner']
+    ar['intendedApplication']= metadata['IntendedApplication']
+    ar['projectDescription']= metadata['ProjectDescription']
     ar['publication']=''
     ar['geographyDescription']=''
     ar['exchangeDqSystem'] = exchangeDqsystem()
@@ -474,8 +449,7 @@ def process_table_creation_trade_mix(region,exchanges_list):
     return ar;           
             
 
-            
-            
+
             
             
             
