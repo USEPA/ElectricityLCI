@@ -2,7 +2,7 @@ import pandas as pd
 import fedelemflowlist
 from electricitylci.globals import fedelemflowlist_version,inventories
 
-flowlist = fedelemflowlist.get_flowlist()
+#flowlist = fedelemflowlist.get_flowlist()
 mapping_to_fedelemflows = fedelemflowlist.get_flowmapping(version=fedelemflowlist_version,source_list=inventories)
 mapping_to_fedelemflows = mapping_to_fedelemflows[['Source','OriginalName','OriginalCategory','OriginalProperty',
                                                    'NewName','NewCategory', 'NewSubCategory', 'NewUnit','UUID']]
