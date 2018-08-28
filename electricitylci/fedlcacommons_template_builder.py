@@ -1,7 +1,5 @@
 from electricitylci.egrid_facilities import egrid_subregions
-from electricitylci.globals import output_dir
-from electricitylci.globals import data_dir
-from electricitylci.globals import fuel_name
+from electricitylci.globals import output_dir,data_dir,fuel_name,model_name
 import os
 import openpyxl
 from copy import copy, deepcopy
@@ -164,20 +162,11 @@ def gen_process_template_generator(generation_process_dict):
         
                 
                 row1 = blank_row-1
-                
-                
-                    
-        
-        
-                     
-                
-                 
-                    
+
             #Writing final file. 
             
             filename = fuelname+"_"+Reg+".xlsx"
-            wbook.save(output_dir+filename)
-            print(filename+' File written Successfully')
+            save_template(wbook,filename)
  
 
 def gen_mix_template_generator(generation_mix_dict):
@@ -296,22 +285,10 @@ def gen_mix_template_generator(generation_mix_dict):
             
                     
                     row1 = blank_row-1
-                    
-                    
-                        
-            
-            
-                         
-                    
-                     
-                        
                     #Writing final file. 
                     
                 filename = Reg+"_Generation_Mix.xlsx"
-                wbook.save(output_dir+filename)
-                print(filename+' File written Successfully')
-
-
+                save_template(wbook,filename)
 
 
 def distribution_template_generator(distribution_dict,efficiency):
@@ -455,13 +432,7 @@ def distribution_template_generator(distribution_dict,efficiency):
                                         
                              
                         filename = Reg+"_Distribution.xlsx"
-
-                        wb.save(output_dir+filename)
-                        print(filename+' File written Successfully')
-                        
-                
-
-
+                        save_template(wb, filename)
 
 def consumption_mix_template_generator(consumption_dict):
 
@@ -569,15 +540,8 @@ def consumption_mix_template_generator(consumption_dict):
                             return br
                         
                         row = blank_row-1;
-                        
-                         
-                        
-                                               
-                        
-                     
-                         
+
                         for index in range(0,len(consumption_dict[Reg]['exchanges'])):
-                            
                             
                             blank_row = createblnkrow(blank_row)
                             io[row][0].value = index+1;
@@ -608,12 +572,7 @@ def consumption_mix_template_generator(consumption_dict):
                             
                         
                         filename = Reg+"_Consumption.xlsx"
-
-                        wb.save(output_dir+filename)
-                        print(filename+' File written Successfully')
-
-
-
+                        save_template(wb, filename)
 
 def surplus_pool_mix_template_generator(surplus_pool_dict,nerc_region):
 
@@ -719,13 +678,7 @@ def surplus_pool_mix_template_generator(surplus_pool_dict,nerc_region):
                             return br
                         
                         row = blank_row-1;
-                        
-                         
-                        
-                                               
-                        
-                     
-                         
+
                         for index in range(0,len(surplus_pool_dict[Reg]['exchanges'])):
                             
                             
@@ -757,12 +710,8 @@ def surplus_pool_mix_template_generator(surplus_pool_dict,nerc_region):
                                         
                              
                         filename = Reg+"_surplus_pool.xlsx"
+                        save_template(wb, filename)
 
-                        wb.save(output_dir+filename)
-                        print(filename+' File written Successfully')
-                        
-                        
-                        
 def trade_mix_template_generator(trade_dict):
     
     
@@ -868,13 +817,7 @@ def trade_mix_template_generator(trade_dict):
                             return br
                         
                         row = blank_row-1;
-                        
-                         
-                        
-                                               
-                        
-                     
-                         
+
                         for index in range(0,len(trade_dict[Reg]['exchanges'])):
                             
                             
@@ -898,13 +841,14 @@ def trade_mix_template_generator(trade_dict):
                             io[row][21].value = trade_dict[Reg]['description']                         
                             row = row+1;
                             index=index+1
-                            
-                        
-                                                     
-                         
-                                        
-                             
-                        filename = Reg+"_trade.xlsx"
 
-                        wb.save(output_dir+filename)
-                        print(filename+' File written Successfully')
+                        filename = Reg+"_trade.xlsx"
+                        save_template(wb, filename)
+
+def save_template(wbook,file_name):
+    newdir = output_dir + '/' + model_name + '_templates'
+    if not os.path.exists(newdir):
+        os.mkdir(newdir)
+    wbook.save(newdir + '/'+ file_name)
+    print(file_name + ' File written Successfully')
+
