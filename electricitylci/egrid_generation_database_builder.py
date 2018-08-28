@@ -142,7 +142,7 @@ def generation_process_builder_fnc(final_database,regions,subregion):
                 for exchange in exchange_list:
                     database_f2 = database_f1[database_f1['FlowName'] == exchange]
                     database_f2 = database_f2[['Subregion','FuelCategory','PrimaryFuel',
-                                               'eGRID_ID', 'Electricity','FlowName','FlowAmount',
+                                               'eGRID_ID', 'Electricity','FlowName','FlowAmount','FlowUUID',
                                                'Compartment','Year','Source','ReliabilityScore','Unit',
                                                'NERC','PercentGenerationfromDesignatedFuelCategory',
                                                'Balancing Authority Name','Balancing Authority Code',
@@ -417,10 +417,6 @@ def add_data_collection_score(db,total_gen):
 def olcaschema_genprocess(database,subregion):   
 
    generation_process_dict = {}
-
-   #Map emission flows to fed elem flows
-   #Moved above!
-   #database = map_emissions_to_fedelemflows(database)
 
    #Map heat flows for renewable fuels to energy elementary flows. This must be applied after emission mapping
    database = map_renewable_heat_flows_to_fedelemflows(database)
