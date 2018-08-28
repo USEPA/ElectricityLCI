@@ -2,13 +2,10 @@ import openpyxl
 import os
 
 from electricitylci.egrid_facilities import egrid_subregions
-from electricitylci.process_dictionary_writer import *
-from electricitylci.globals import efficiency_of_distribution_grid
-from electricitylci.globals import net_trading
 from electricitylci.fedlcacommons_template_builder import distribution_template_generator
 from electricitylci.fedlcacommons_template_builder import consumption_mix_template_generator
 from electricitylci.fedlcacommons_template_builder import surplus_pool_mix_template_generator
-from electricitylci.globals import data_dir
+from electricitylci.globals import data_dir,net_trading,efficiency_of_distribution_grid
 
 wb2 = openpyxl.load_workbook(data_dir+'eGRID_Consumption_Mix_new.xlsx',data_only=True)
 data = wb2['ConsumptionMixContributions']
