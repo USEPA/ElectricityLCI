@@ -133,14 +133,14 @@ def location(region):
 def process_doc_creation():
     
     global year;
-    ar = {'':''}
+    ar = dict()
     ar['timeDescription']=''
     ar['validUntil']='12/31/2018'
     ar['validFrom']='1/1/2018'
-    ar['technologyDescription']=''
+    ar['technologyDescription']='This is an aggregation of technology types for this fuel type within this eGRID subregion'
     ar['dataCollectionDescription']=metadata['DataCollectionPeriod']
     ar['completenessDescription']=metadata['DataCompleteness']
-    ar['dataSelectionDescription']=metadata['']
+    ar['dataSelectionDescription']=metadata['DataSelection']
     ar['reviewDetails']=metadata['DatasetOtherEvaluation']
     ar['dataTreatmentDescription']=metadata['DataTreatment']
     ar['inventoryMethodDescription']=metadata['LCIMethod']
@@ -159,18 +159,25 @@ def process_doc_creation():
     ar['publication']=''
     ar['geographyDescription']=''
     ar['exchangeDqSystem'] = exchangeDqsystem()
-    del ar['']
-    
+    ar['dqSystem'] = processDqsystem()
+    #Temp place holder for process DQ scores
+    ar['dqEntry'] = '(5;5)'
     return ar;
 
 def exchangeDqsystem():
-    ar = {'':''}
+    ar = dict()
     ar['@type'] = 'DQSystem'
-    ar['name'] = 'US_EPA - Flow Pedigree Matrix'
-    
-    del ar['']
+    ar['@id'] = 'd13b2bc4-5e84-4cc8-a6be-9101ebb252ff'
+    ar['name'] = 'US EPA - Flow Pedigree Matrix'
     return ar
-    
+
+def processDqsystem():
+    ar = dict()
+    ar['@type'] = 'DQSystem'
+    ar['@id'] = '70bf370f-9912-4ec1-baa3-fbd4eaf85a10'
+    ar['name'] = 'US EPA - Process Pedigree Matrix'
+    return ar
+
 
 
 def exchange_table_creation_input(data,fuelname,fuelheat):
@@ -178,14 +185,14 @@ def exchange_table_creation_input(data,fuelname,fuelheat):
 
     year = data['Year'].iloc[0]
     region = data['Subregion'].iloc[0]
-   
-    
+    flow_uuid = data['FlowUUID'].iloc[0]
+
     ar = {'':''}
     
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
-    ar['flow'] = flow_table_creation(region,fuelname,'Input Fuel')
+    ar['flow'] = flow_table_creation(region,fuelname,'Input Fuel',flow_uuid)
     ar['flowProperty']=''
     ar['input'] = True
     ar['baseUncertainty']=''
@@ -233,12 +240,13 @@ def exchange_table_creation_output(data):
     comp = data['Compartment'].iloc[0]
     source = data['Source'].iloc[0]
     region = data['Subregion'].iloc[0]
+    flow_uuid = data['FlowUUID'].iloc[0]
     ar = {'':''}
     
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
-    ar['flow']=flow_table_creation(region,data['FlowName'].iloc[0],comp)
+    ar['flow']=flow_table_creation(region,data['FlowName'].iloc[0],comp,flow_uuid)
     ar['flowProperty']=''
     ar['input']=False
     ar['quantitativeReference']=False
@@ -294,7 +302,7 @@ def uncertainty_table_creation(data):
     return ar;
 
 
-def flow_table_creation(region,fl,comp):
+def flow_table_creation(region,fl,comp,uuid=None):
     
                    
     ar = {'':''}
@@ -304,8 +312,9 @@ def flow_table_creation(region,fl,comp):
     ar['flowProperties']=''
     ar['location']=str(region)
     ar['name'] = str(fl);
+    ar['@id'] = uuid
     if comp!=None:
-     ar['category'] = 'Elementary Flows/'+str(comp)+'/unspecified'
+     ar['category'] = 'Elementary Flows/'+str(comp)
     else:
      ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'
     ar['description'] = ''
