@@ -11,9 +11,9 @@ This project is a collaboration between US EPA Office of Research and Developmen
   US EPA is the lead on Phase I.
 
 Phase I Active Team members (* = lead):
-USEPA - Wesley Ingwersen*
+USEPA - [Wesley Ingwersen](https://github.com/WesIngwersen)*
 NREL - Alberta Carpenter
-ERG - Tapajyoti Ghosh, Troy Hottle, Sarah Cashman
+ERG - [Tapajyoti Ghosh](https://github.com/TJTapajyoti), Troy Hottle, Sarah Cashman
 Former contributors: Kirti Richa and Troy Hawkins (current affiliation: Argonne National Laboratory)
 
 ##Requirements for use
