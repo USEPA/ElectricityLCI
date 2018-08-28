@@ -6,25 +6,20 @@ import math
 import time
 import pandas as pd
 from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty
-from electricitylci.globals import egrid_year
-
-
- 
+from electricitylci.globals import data_dir,egrid_year
 
 
 year = egrid_year
 
+#Read in general metadata to be used by all processes
+metadata = pd.read_csv(data_dir+'metadata.csv')
+#Use only first row of metadata for all processes for now
+metadata = metadata.iloc[0,]
 
 def exchange_table_creation_ref(data):
-    
-    
-    region = data['Subregion'].iloc[0] 
-
-    
-    
+    region = data['Subregion'].iloc[0]
     #data=pd.DataFrame(columns = ['Electricity','Heat'])
     ar = {'':''}
-    
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
@@ -45,9 +40,6 @@ def exchange_table_creation_ref(data):
     return ar
     #ar['pedigreeUncertainty']=''
     #ar['uncertainty']=uncertainty_table_creation(data)      
-
-
-
 
 def exchange_table_creation_input_genmix(database,fuelname):
     
@@ -76,10 +68,7 @@ def exchange_table_creation_input_genmix(database,fuelname):
     return ar;
 
 def process_table_creation_genmix(region,exchanges_list):
-    
-                        
     ar = {'':''}
-    
     ar['@type'] = 'Process'
     ar['allocationFactors']=''
     ar['defaultAllocationMethod']=''
@@ -91,26 +80,15 @@ def process_table_creation_genmix(region,exchanges_list):
     ar['name'] = 'Electricity; from Generation; at region '+str(region)+'; Production Mix'
     ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'
     ar['description'] = 'Electricity from generation mix using power plants in the '+str(region)+' region'
-    
-    
     return ar;
-
-
-
 
 def exchange(flw,exchanges_list):
    
     exchanges_list.append(flw)
     return exchanges_list
-    
-    
-    
-def process_table_creation(fuelname,exchanges_list,region):
-    
 
-                              
+def process_table_creation(fuelname,exchanges_list,region):
     ar = {'':''}
-    
     ar['@type'] = 'Process'
     ar['allocationFactors']=''
     ar['defaultAllocationMethod']=''
@@ -155,47 +133,51 @@ def location(region):
 def process_doc_creation():
     
     global year;
-    
-    
-
-    ar = {'':''}
+    ar = dict()
     ar['timeDescription']=''
     ar['validUntil']='12/31/2018'
     ar['validFrom']='1/1/2018'
-    ar['technologyDescription']=''
-    ar['dataCollectionDescription']=''
-    ar['completenessDescription']=''
-    ar['dataSelectionDescription']=''
-    ar['reviewDetails']=''
-    ar['dataTreatmentDescription']=''
-    ar['inventoryMethodDescription']=''
-    ar['modelingConstantsDescription']=''
-    ar['reviewer']='Wes Ingwersen'
-    ar['samplingDescription']=''
+    ar['technologyDescription']='This is an aggregation of technology types for this fuel type within this eGRID subregion'
+    ar['dataCollectionDescription']=metadata['DataCollectionPeriod']
+    ar['completenessDescription']=metadata['DataCompleteness']
+    ar['dataSelectionDescription']=metadata['DataSelection']
+    ar['reviewDetails']=metadata['DatasetOtherEvaluation']
+    ar['dataTreatmentDescription']=metadata['DataTreatment']
+    ar['inventoryMethodDescription']=metadata['LCIMethod']
+    ar['modelingConstantsDescription']=metadata['ModellingConstants']
+    ar['reviewer']=metadata['Reviewer']
+    ar['samplingDescription']=metadata['SamplingProcedure']
     ar['sources']=''
-    ar['restrictionsDescription']=''
+    ar['restrictionsDescription']=metadata['AccessUseRestrictions']
     ar['copyright']=False
     ar['creationDate']=time.time()
-    ar['dataDocumentor']='Wes Ingwersen'
-    ar['dataGenerator']='Tapajyoti Ghosh'
-    ar['dataSetOwner']=''
-    ar['intendedApplication']=''
-    ar['projectDescription']=''
+    ar['dataDocumentor']= metadata['DataDocumentor']
+    ar['dataGenerator']= metadata['DataGenerator']
+    ar['dataSetOwner']= metadata['DatasetOwner']
+    ar['intendedApplication']= metadata['IntendedApplication']
+    ar['projectDescription']= metadata['ProjectDescription']
     ar['publication']=''
     ar['geographyDescription']=''
     ar['exchangeDqSystem'] = exchangeDqsystem()
-    del ar['']
-    
+    ar['dqSystem'] = processDqsystem()
+    #Temp place holder for process DQ scores
+    ar['dqEntry'] = '(5;5)'
     return ar;
 
 def exchangeDqsystem():
-    ar = {'':''}
+    ar = dict()
     ar['@type'] = 'DQSystem'
-    ar['name'] = 'US_EPA - Flow Pedigree Matrix'
-    
-    del ar['']
+    ar['@id'] = 'd13b2bc4-5e84-4cc8-a6be-9101ebb252ff'
+    ar['name'] = 'US EPA - Flow Pedigree Matrix'
     return ar
-    
+
+def processDqsystem():
+    ar = dict()
+    ar['@type'] = 'DQSystem'
+    ar['@id'] = '70bf370f-9912-4ec1-baa3-fbd4eaf85a10'
+    ar['name'] = 'US EPA - Process Pedigree Matrix'
+    return ar
+
 
 
 def exchange_table_creation_input(data,fuelname,fuelheat):
@@ -203,23 +185,20 @@ def exchange_table_creation_input(data,fuelname,fuelheat):
 
     year = data['Year'].iloc[0]
     region = data['Subregion'].iloc[0]
-   
-    
+    flow_uuid = data['FlowUUID'].iloc[0]
+
     ar = {'':''}
     
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
-    ar['flow'] = flow_table_creation(region,fuelname,'Input Fuel')
+    ar['flow'] = flow_table_creation(region,fuelname,'Input Fuel',flow_uuid)
     ar['flowProperty']=''
     ar['input'] = True
     ar['baseUncertainty']=''
-    ar['provider']=''
-    
-    if math.isnan(fuelheat) != True:
-      ar['amount']=data['Emission_factor'].iloc[0]/fuelheat
-    else:          
-      ar['amount']=data['Emission_factor'].iloc[0]
+    ar['provider']='' 
+   
+    ar['amount']=data['Emission_factor'].iloc[0]
     
     ar['amountFormula']='  '
     if math.isnan(fuelheat) != True:        
@@ -261,12 +240,13 @@ def exchange_table_creation_output(data):
     comp = data['Compartment'].iloc[0]
     source = data['Source'].iloc[0]
     region = data['Subregion'].iloc[0]
+    flow_uuid = data['FlowUUID'].iloc[0]
     ar = {'':''}
     
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
-    ar['flow']=flow_table_creation(region,data['FlowName'].iloc[0],comp)
+    ar['flow']=flow_table_creation(region,data['FlowName'].iloc[0],comp,flow_uuid)
     ar['flowProperty']=''
     ar['input']=False
     ar['quantitativeReference']=False
@@ -303,32 +283,26 @@ def uncertainty_table_creation(data):
     
 
     ar['geomMean'] = data['GeomMean'].iloc[0]
-    ar['geomSd']= data['GeomSD'].iloc[0] 
-
-    
-    
+    ar['geomSd']= data['GeomSD'].iloc[0]    
     ar['distributionType']='Logarithmic Normal Distribution'
     ar['mean']=''
-    ar['meanFormula']=''
-    
+    ar['meanFormula']=''    
     ar['geomMeanFormula']=''
-
-    ar['minimum']=data['Maximum'].iloc[0]
-    ar['maximum']=data['Minimum'].iloc[0]
+    ar['maximum']=data['Maximum'].iloc[0]
+    ar['minimum']=data['Minimum'].iloc[0]
     ar['minimumFormula']=''
     ar['sd']=''
     ar['sdFormula']=''    
     ar['geomSdFormula']=''
     ar['mode']=''
-    ar['modeFormula']=''
-   
+    ar['modeFormula']=''   
     ar['maximumFormula']='';
     del ar['']
     
     return ar;
 
 
-def flow_table_creation(region,fl,comp):
+def flow_table_creation(region,fl,comp,uuid=None):
     
                    
     ar = {'':''}
@@ -338,8 +312,9 @@ def flow_table_creation(region,fl,comp):
     ar['flowProperties']=''
     ar['location']=str(region)
     ar['name'] = str(fl);
+    ar['@id'] = uuid
     if comp!=None:
-     ar['category'] = 'Elementary Flows/'+str(comp)+'/unspecified'
+     ar['category'] = 'Elementary Flows/'+str(comp)
     else:
      ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'
     ar['description'] = ''
@@ -483,8 +458,7 @@ def process_table_creation_trade_mix(region,exchanges_list):
     return ar;           
             
 
-            
-            
+
             
             
             

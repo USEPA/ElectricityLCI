@@ -9,7 +9,7 @@ from electricitylci.egrid_facilities import egrid_facilities,egrid_subregions
 from electricitylci.egrid_emissions_and_waste_by_facility import years_in_emissions_and_wastes_by_facility
 from electricitylci.globals import egrid_year, fuel_name, join_with_underscore
 from electricitylci.eia923_generation import eia_download_extract
-from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty
+from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty,max_min
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows,map_renewable_heat_flows_to_fedelemflows,map_compartment_to_flow_type,add_flow_direction
 from electricitylci.dqi import lookup_score_with_bound_key
 #Get a subset of the egrid_facilities dataset
@@ -22,7 +22,6 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
 
     emissions_data = emissions_data.drop(columns = ['FacilityID'])
     combined_data = generation_data.merge(emissions_data, left_on = ['FacilityID'], right_on = ['eGRID_ID'], how = 'right')   
-
 
     #Checking the odd year
     for year in years_in_emissions_and_wastes_by_facility:
@@ -78,9 +77,8 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
     final_data = final_data.drop_duplicates(subset = ['Subregion', 'PrimaryFuel','FuelCategory','FlowName','FlowAmount','Compartment'])
      
     final_data = final_data[final_data['FlowName'] != 'Electricity']
-    #final_data.to_csv('chk.csv')
-    
-    
+   
+
     b = generation_process_builder_fnc(final_data,regions,subregion)
     return b
     
@@ -90,8 +88,6 @@ def total_generation_calculator(source_list,electricity_source_db):
     electricity_source_by_region = electricity_source_db[electricity_source_db['Source'].isin(source_list)]
     #drop duplicate facilities
     electricity_source_by_region = electricity_source_by_region.drop_duplicates(subset='eGRID_ID')
-
-
     total_gen = electricity_source_by_region['Electricity'].sum()
     mean = electricity_source_by_region['Electricity'].mean()
     total_facility_considered = len(electricity_source_by_region)
@@ -105,14 +101,14 @@ def generation_process_builder_fnc(final_database,regions,subregion):
     
     #Map emission flows to fed elem flows
     final_database = map_emissions_to_fedelemflows(final_database)
-
     #Create dfs for storing the output
     result_database = pd.DataFrame()
     total_gen_database = pd.DataFrame()
     #Looping through different subregions to create the files
+    
     for reg in regions:
         
-          print(reg)
+          print("Creating generation process database for "+ reg + " ...")
         #Cropping out based on regions
           if subregion == 'all':
              database = final_database[final_database['Subregion'] == reg]
@@ -123,6 +119,10 @@ def generation_process_builder_fnc(final_database,regions,subregion):
           elif subregion == 'US':
               #For entire US use full database
              database = final_database
+          else:
+              #This should be a egrid subregion
+              database = final_database[final_database['Subregion'] == reg]
+
 
           for index,row in fuel_name.iterrows():
             #Reading complete fuel name and heat content information
@@ -142,7 +142,7 @@ def generation_process_builder_fnc(final_database,regions,subregion):
                 for exchange in exchange_list:
                     database_f2 = database_f1[database_f1['FlowName'] == exchange]
                     database_f2 = database_f2[['Subregion','FuelCategory','PrimaryFuel',
-                                               'eGRID_ID', 'Electricity','FlowName','FlowAmount',
+                                               'eGRID_ID', 'Electricity','FlowName','FlowAmount','FlowUUID',
                                                'Compartment','Year','Source','ReliabilityScore','Unit',
                                                'NERC','PercentGenerationfromDesignatedFuelCategory',
                                                'Balancing Authority Name','Balancing Authority Code',
@@ -175,12 +175,15 @@ def generation_process_builder_fnc(final_database,regions,subregion):
                         total_gen_database = total_gen_database.append(exchange_total_gen,ignore_index = True)
 
 
-
-
+                        if exchange == 'Heat' and str(fuelheat) != 'nan' :
+                            #Getting Emisssion_factor
+                            database_f3['Emission_factor'] = compilation(database_f3[['Electricity','FlowAmount']],total_gen)/fuelheat
+                            database_f3['Unit'] = 'kg'
+                            
+                        else:
+                            database_f3['Emission_factor'] = compilation(database_f3[['Electricity','FlowAmount']],total_gen)
+                            
                        
-                        #Getting Emisssion_factor
-                        database_f3['Emission_factor'] = compilation(database_f3[['Electricity','FlowAmount']],total_gen)
-
                         #Data Quality Scores
                         database_f3['Reliability_Score'] = np.average(database_f3['ReliabilityScore'],
                                                                      weights = database_f3['FlowAmount'])
@@ -195,11 +198,15 @@ def generation_process_builder_fnc(final_database,regions,subregion):
 
                         #Uncertainty Calcs
                         uncertainty_info = uncertainty_creation(database_f3[['Electricity','FlowAmount']],exchange,fuelheat,mean,total_gen,total_facility_considered)
+                        
                         database_f3['GeomMean'] = uncertainty_info['geomMean']
                         database_f3['GeomSD'] = uncertainty_info['geomSd']
                         database_f3['Maximum'] = uncertainty_info['maximum']
                         database_f3['Minimum'] = uncertainty_info['minimum']
+                        
                         database_f3['Source'] = sources_str
+                        
+                        
                         #Optionally write out electricity
                         #database_f3['Electricity'] = total_gen
 
@@ -219,11 +226,12 @@ def generation_process_builder_fnc(final_database,regions,subregion):
     #Drop duplicated in total gen database
     total_gen_database = total_gen_database.drop_duplicates()
     total_gen_database.to_csv(output_dir+'total_gen_database_' + subregion + '.csv',index = False)
+    #result_database.to_csv('chk.csv')
+    print("Generation process database for " + subregion + " complete.")
     return result_database
 
-                
-     
-                                           
+
+
 def create_generation_mix_process_df(generation_data,subregion):
    
    #Converting to numeric for better stability and merging
@@ -298,13 +306,17 @@ def uncertainty_creation(data,name,fuelheat,mean,total_gen,total_facility_consid
     ar = {'':''}
     
     if name == 'Heat':
-            
+        
             temp_data = data
             #uncertianty calculations only if database length is more than 3
             l,b = temp_data.shape
+            minimum,maximum = max_min(temp_data,mean,total_gen,total_facility_considered)
             if l > 3:
                u,s = uncertainty(temp_data,mean,total_gen,total_facility_considered)
-               if str(fuelheat)!='nan':
+               
+               
+               if str(fuelheat)!='nan':                  
+                   
                   ar['geomMean'] = str(round(math.exp(u),12)/fuelheat);
                   ar['geomSd']=str(round(math.exp(s),12)/fuelheat); 
                else:
@@ -314,32 +326,42 @@ def uncertainty_creation(data,name,fuelheat,mean,total_gen,total_facility_consid
             else:
                                     
                   ar['geomMean'] = None
-                  ar['geomSd']= None 
-    else:
+                  ar['geomSd']= None
+                  
+            if math.isnan(fuelheat) != True:                   
+                 
+                  ar['minimum']=minimum/fuelheat;
+                  ar['maximum']=maximum/fuelheat;
+                  
+            else:
+                  ar['minimum']=minimum
+                  ar['maximum']=maximum
     
-            #uncertianty calculations
+    else:
+                    minimum,maximum = max_min(data,mean,total_gen,total_facility_considered)
+                    #uncertianty calculations
                     l,b = data.shape
                     if l > 3:
                        
                        u,s = (uncertainty(data,mean,total_gen,total_facility_considered))
+                       
                        ar['geomMean'] = str(round(math.exp(u),12)); 
                        ar['geomSd']=str(round(math.exp(s),12)); 
                     else:
                        ar['geomMean'] = None
                        ar['geomSd']= None 
+                       
+                       
+                    ar['minimum']=minimum
+                    ar['maximum']=maximum
     
     
     ar['distributionType']='Logarithmic Normal Distribution'
     ar['mean']=''
     ar['meanFormula']=''
     
-    ar['geomMeanFormula']=''
-    if math.isnan(fuelheat) != True:
-        ar['minimum']=((data.iloc[:,1]/data.iloc[:,0]).min())/fuelheat;
-        ar['maximum']=((data.iloc[:,1]/data.iloc[:,0]).max())/fuelheat;
-    else:
-        ar['minimum']=(data.iloc[:,1]/data.iloc[:,0]).min();
-        ar['maximum']=(data.iloc[:,1]/data.iloc[:,0]).max();
+    ar['geomMeanFormula']=''    
+
     ar['minimumFormula']=''
     ar['sd']=''
     ar['sdFormula']=''    
@@ -396,10 +418,6 @@ def olcaschema_genprocess(database,subregion):
 
    generation_process_dict = {}
 
-   #Map emission flows to fed elem flows
-   #Moved above!
-   #database = map_emissions_to_fedelemflows(database)
-
    #Map heat flows for renewable fuels to energy elementary flows. This must be applied after emission mapping
    database = map_renewable_heat_flows_to_fedelemflows(database)
    #Add FlowType to the database
@@ -417,11 +435,12 @@ def olcaschema_genprocess(database,subregion):
    else:
         region = [subregion]
 
-   for reg in region: 
-        
-       # This makes sure that the dictionary writer works fine because it only works with the subregion column. So we are sending the 
-       #correct regions in the subregion column rather than egrid subregions if rquired.
-       #This makes it easy for the process_dictionary_writer to be much simpler. 
+   for reg in region:
+
+        print("Writing generation process dictionary for " + reg + " ...")
+        # This makes sure that the dictionary writer works fine because it only works with the subregion column. So we are sending the
+        #correct regions in the subregion column rather than egrid subregions if rquired.
+        #This makes it easy for the process_dictionary_writer to be much simpler.
         if subregion == 'all':
            database['Subregion'] = database['Subregion']
         elif subregion == 'NERC':
@@ -459,22 +478,19 @@ def olcaschema_genprocess(database,subregion):
                     compartment_list = list(pd.unique(database_f3['Compartment']))
                     for compartment in compartment_list:
                         database_f4 = database_f3[database_f3['Compartment'] == compartment]
-                        
-                        
-                        if len(database_f4) > 1:
-                            print('THIS CHECK DIS DONE TO SEE DUPLICATE FLOWS. DELETE THIS IN LINE 333 to LINE 338\n')
-                            print(database_f4[['FlowName','Source','FuelCategory','Subregion']])                        
-                            print('\n')
-                            
-                            
                         ra = exchange_table_creation_output(database_f4)
                         exchanges_list = exchange(ra,exchanges_list)
-                
-                
+
+                        #if len(database_f4) > 1:
+                            #print('THIS CHECK DIS DONE TO SEE DUPLICATE FLOWS. DELETE THIS IN LINE 333 to LINE 338\n')
+                            #print(database_f4[['FlowName','Source','FuelCategory','Subregion']])
+                            #print('\n')
+
                 final = process_table_creation(fuelname,exchanges_list,reg)
                 del final['']
                 generation_process_dict[reg+"_"+fuelname] = final
-                
+
+   print("Generation process dictionary for " + reg + " complete.")
    return generation_process_dict
 
 def olcaschema_genmix(database,subregion):
