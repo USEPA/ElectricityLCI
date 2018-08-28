@@ -108,7 +108,7 @@ def generation_process_builder_fnc(final_database,regions,subregion):
     
     for reg in regions:
         
-          print(reg)
+          print("Creating generation process database for "+ reg + " ...")
         #Cropping out based on regions
           if subregion == 'all':
              database = final_database[final_database['Subregion'] == reg]
@@ -119,6 +119,10 @@ def generation_process_builder_fnc(final_database,regions,subregion):
           elif subregion == 'US':
               #For entire US use full database
              database = final_database
+          else:
+              #This should be a egrid subregion
+              database = final_database[final_database['Subregion'] == reg]
+
 
           for index,row in fuel_name.iterrows():
             #Reading complete fuel name and heat content information
@@ -222,12 +226,12 @@ def generation_process_builder_fnc(final_database,regions,subregion):
     #Drop duplicated in total gen database
     total_gen_database = total_gen_database.drop_duplicates()
     total_gen_database.to_csv(output_dir+'total_gen_database_' + subregion + '.csv',index = False)
-    result_database.to_csv('chk.csv')
+    #result_database.to_csv('chk.csv')
+    print("Generation process database for " + subregion + " complete.")
     return result_database
 
-                
-     
-                                           
+
+
 def create_generation_mix_process_df(generation_data,subregion):
    
    #Converting to numeric for better stability and merging
@@ -435,11 +439,12 @@ def olcaschema_genprocess(database,subregion):
    else:
         region = [subregion]
 
-   for reg in region: 
-        
-       # This makes sure that the dictionary writer works fine because it only works with the subregion column. So we are sending the 
-       #correct regions in the subregion column rather than egrid subregions if rquired.
-       #This makes it easy for the process_dictionary_writer to be much simpler. 
+   for reg in region:
+
+        print("Writing generation process dictionary for " + reg + " ...")
+        # This makes sure that the dictionary writer works fine because it only works with the subregion column. So we are sending the
+        #correct regions in the subregion column rather than egrid subregions if rquired.
+        #This makes it easy for the process_dictionary_writer to be much simpler.
         if subregion == 'all':
            database['Subregion'] = database['Subregion']
         elif subregion == 'NERC':
@@ -477,22 +482,19 @@ def olcaschema_genprocess(database,subregion):
                     compartment_list = list(pd.unique(database_f3['Compartment']))
                     for compartment in compartment_list:
                         database_f4 = database_f3[database_f3['Compartment'] == compartment]
-                        
-                        
-                        if len(database_f4) > 1:
-                            print('THIS CHECK DIS DONE TO SEE DUPLICATE FLOWS. DELETE THIS IN LINE 333 to LINE 338\n')
-                            print(database_f4[['FlowName','Source','FuelCategory','Subregion']])                        
-                            print('\n')
-                            
-                            
                         ra = exchange_table_creation_output(database_f4)
                         exchanges_list = exchange(ra,exchanges_list)
-                
-                
+
+                        #if len(database_f4) > 1:
+                            #print('THIS CHECK DIS DONE TO SEE DUPLICATE FLOWS. DELETE THIS IN LINE 333 to LINE 338\n')
+                            #print(database_f4[['FlowName','Source','FuelCategory','Subregion']])
+                            #print('\n')
+
                 final = process_table_creation(fuelname,exchanges_list,reg)
                 del final['']
                 generation_process_dict[reg+"_"+fuelname] = final
-                
+
+   print("Generation process dictionary for " + reg + " complete.")
    return generation_process_dict
 
 def olcaschema_genmix(database,subregion):
