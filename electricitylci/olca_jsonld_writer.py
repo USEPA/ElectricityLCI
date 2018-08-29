@@ -1,35 +1,44 @@
-import zipfile
-from iomb.util import make_uuid
-from iomb.olca import dump
+import uuid
 
-#testing
-zip_file = 'camx_json-ld.zip'
-process_collection = camx_gen_dict
-
-def write_dict_of_processes_to_olca_jsonld(process_collection,zip_file):
-    #Initite a zipfile
-    pack = zipfile.ZipFile(zip_file, mode='a', compression=zipfile.ZIP_DEFLATED)
-
-    for p in process_collection:
-        process = process_collection[p]
-        name = process['name']
-        process['@id'] = make_uuid('PROCESS',name)
-        #Give each exchange a UUID
-        for exchange in process['exchanges']:
-           exchange['@id'] = make_uuid('EXCHANGE',exchange['flow']['name'])
-        dump(process,'processes',pack)
-
-    pack.close()
+import olca
+import olca.pack as pack
 
 
-#adapted from https://github.com/USEPA/IO-Model-Builder/blob/master/iomb/olca/__init__.py
-def dump(obj: dict, folder: str, pack: zipf.ZipFile):
-    """ dump writes the given dictionary to the zip-file under the given folder.
+def write(processes: dict, file_path: str):
+    """ Write the given process dictionary to a olca-schema zip file with the
+        given path.
     """
-    uid = obj.get('@id')
-    #if uid is None or uid == '':
-        log.error('No @id for object %s in %s', obj, folder)
-        return
-    path = '%s/%s.json' % (folder, obj['@id'])
-    s = json.dumps(obj)
-    pack.writestr(path, s)
+    with pack.Writer(file_path) as writer:
+        for d in processes.values():
+            process = olca.Process()
+            process.name = _val(d, 'name')
+            category_path = _val(d, 'category')
+            process.id = _uid(olca.ModelType.PROCESS,
+                              category_path, process.name)
+            writer.write(process)
+
+
+def _val(d: dict, *path, **kvargs):
+    if d is None or path is None:
+        return None
+    v = d
+    for p in path:
+        if not isinstance(v, dict):
+            return None
+        v = v[p]
+    if v is None and 'default' in kvargs:
+        return kvargs['default']
+    return v
+
+
+def _uid(*args):
+    path = '/'.join([str(arg).strip() for arg in args]).lower()
+    return str(uuid.uuid3(uuid.NAMESPACE_OID, path))
+
+
+# this currently just for testing and will be removed later
+if __name__ == '__main__':
+    import pickle
+    with open('../CAMX_gen_dict_WI.p', 'rb') as f:
+        processes = pickle.load(f)
+        write(processes, '../ElectricityLCI_jsonld.zip')
