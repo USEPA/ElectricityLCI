@@ -1,6 +1,7 @@
 import logging as log
-import typing
 import uuid
+
+from typing import Optional
 
 import olca
 import olca.pack as pack
@@ -15,11 +16,14 @@ def write(processes: dict, file_path: str):
         for d in processes.values():
             process = olca.Process()
             process.name = _val(d, 'name')
-            category_path = _val(d, 'category')
+            category_path = _val(d, 'category', default='')
             process.id = _uid(olca.ModelType.PROCESS,
                               category_path, process.name)
             process.category = _category(
                 category_path, olca.ModelType.PROCESS, writer, created_ids)
+            process.process_type = olca.ProcessType.LCI_RESULT
+            process.location = _location(_val(d, 'location'),
+                                         writer, created_ids)
             process.exchanges = []
             last_id = 0
             for e in _val(d, 'exchanges', default=[]):
@@ -32,7 +36,7 @@ def write(processes: dict, file_path: str):
 
 
 def _category(path: str, mtype: olca.ModelType, writer: pack.Writer,
-              created_ids: set) -> typing.Optional[olca.Ref]:
+              created_ids: set) -> Optional[olca.Ref]:
     if not isinstance(path, str):
         return None
     if path.strip() == '':
@@ -57,7 +61,7 @@ def _category(path: str, mtype: olca.ModelType, writer: pack.Writer,
 
 
 def _exchange(d: dict, writer: pack.Writer,
-              created_ids: set) -> typing.Optional[olca.Exchange]:
+              created_ids: set) -> Optional[olca.Exchange]:
     if d is None:
         return None
     exchange = olca.Exchange()
@@ -68,11 +72,14 @@ def _exchange(d: dict, writer: pack.Writer,
     exchange.amount = _val(d, 'amount', default=0.0)
     unit_name = _val(d, 'unit', 'name')
     exchange.unit = _unit(unit_name)
-    exchange.flow_property = _flow_property(unit_name)
+    flowprop = _flow_property(unit_name)
+    exchange.flow_property = flowprop
+    exchange.flow = _flow(_val(d, 'flow'), flowprop, writer, created_ids)
+
     return exchange
 
 
-def _unit(unit_name: str) -> typing.Optional[olca.Ref]:
+def _unit(unit_name: str) -> Optional[olca.Ref]:
     """ Get the ID of the openLCA reference unit with the given name. """
     ref_id = None
     if unit_name == 'MWh':
@@ -87,7 +94,7 @@ def _unit(unit_name: str) -> typing.Optional[olca.Ref]:
     return olca.ref(olca.Unit, ref_id, unit_name)
 
 
-def _flow_property(unit_name: str) -> typing.Optional[olca.Ref]:
+def _flow_property(unit_name: str) -> Optional[olca.Ref]:
     """ Get the ID of the openLCA reference flow property for the unit with
         the given name.
     """
@@ -102,6 +109,53 @@ def _flow_property(unit_name: str) -> typing.Optional[olca.Ref]:
         return olca.ref(olca.FlowProperty, ref_id, 'Mass')
     log.error('unknown unit %s; no flow property reference', unit_name)
     return None
+
+
+def _flow(d: dict, flowprop: olca.Ref, writer: pack.Writer,
+          created_ids: set) -> Optional[olca.Ref]:
+    if not isinstance(d, dict):
+        return None
+    uid = _val(d, 'id')
+    name = _val(d, 'name')
+    if isinstance(uid, str) and uid != '':
+        return olca.ref(olca.Flow, uid, name)
+    category_path = _val(d, 'category', default='')
+    uid = _uid(olca.ModelType.FLOW, category_path, name)
+    if uid not in created_ids:
+        flow = olca.Flow()
+        flow.id = uid
+        flow.name = name
+        flow.flow_type = olca.FlowType[_val(
+            d, 'flowType', default='ELEMENTARY_FLOW')]
+        flow.location = _location(_val(d, 'location'),
+                                  writer, created_ids)
+        flow.category = _category(category_path, olca.ModelType.FLOW,
+                                  writer, created_ids)
+        propfac = olca.FlowPropertyFactor()
+        propfac.conversion_factor = 1.0
+        propfac.flow_property = flowprop
+        propfac.reference_flow_property = True
+        flow.flow_properties = [propfac]
+        writer.write(flow)
+        created_ids.add(uid)
+    return olca.ref(olca.Flow, uid, name)
+
+
+def _location(code: str, writer: pack.Writer,
+              created_ids: set) -> Optional[olca.Ref]:
+    if not isinstance(code, str):
+        return None
+    if code == '':
+        return None
+    uid = _uid(olca.ModelType.LOCATION, code)
+    if uid in created_ids:
+        return olca.ref(olca.Location, uid, code)
+    location = olca.Location()
+    location.id = uid
+    location.name = code
+    writer.write(location)
+    created_ids.add(uid)
+    return olca.ref(olca.Location, uid, code)
 
 
 def _val(d: dict, *path, **kvargs):
