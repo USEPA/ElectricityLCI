@@ -38,4 +38,3 @@ def list_egrid_facilities_in_efficiency_range(min_efficiency,max_efficiency):
 #import reference data
 ref_egrid_subregion_generation_by_fuelcategory = pd.read_csv(data_dir+'egrid_subregion_generation_by_fuelcategory_reference_' + str(egrid_year) + '.csv')
 
-ref_egrid_subregion_generation_by_fuelcategory = ref_egrid_subregion_generation_by_fuelcategory.rename(columns={'Electricity':'Ref_Electricity_Subregion_FuelCategory'})
