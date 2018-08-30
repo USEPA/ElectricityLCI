@@ -1,4 +1,7 @@
+import datetime
+import pytz
 import logging as log
+import math
 import uuid
 
 from typing import Optional
@@ -23,10 +26,11 @@ def write(processes: dict, file_path: str):
                 category_path, olca.ModelType.PROCESS, writer, created_ids)
             process.description = _val(d, 'description')
             process.process_type = olca.ProcessType.LCI_RESULT
-            process.location = _location(_val(d, 'location'),
+            process.location = _location(_val(d, 'location', 'name'),
                                          writer, created_ids)
             process.process_documentation = _process_doc(
                 _val(d, 'processDocumentation'), writer, created_ids)
+            _process_dq(d, process)
             process.exchanges = []
             last_id = 0
             for e in _val(d, 'exchanges', default=[]):
@@ -36,6 +40,17 @@ def write(processes: dict, file_path: str):
                     exchange.internal_id = last_id
                     process.exchanges.append(exchange)
             writer.write(process)
+
+
+def _process_dq(d: dict, process: olca.Process):
+    process.dq_entry = _format_dq_entry(
+        _val(d, 'processDocumentation', 'dqEntry'))
+    pdq_uid = _val(d, 'processDocumentation', 'dqSystem', '@id')
+    if isinstance(pdq_uid, str):
+        process.dq_system = olca.ref(olca.DqSystem, pdq_uid)
+    edq_uid = _val(d, 'processDocumentation', 'exchangeDqSystem', '@id')
+    if isinstance(edq_uid, str):
+        process.exchange_dq_system = olca.ref(olca.DqSystem, edq_uid)
 
 
 def _category(path: str, mtype: olca.ModelType, writer: pack.Writer,
@@ -67,19 +82,19 @@ def _exchange(d: dict, writer: pack.Writer,
               created_ids: set) -> Optional[olca.Exchange]:
     if d is None:
         return None
-    exchange = olca.Exchange()
-    exchange.input = _val(d, 'input', default=False)
-    exchange.quantitative_reference = _val(d, 'quantitativeReference',
-                                           default=False)
-    exchange.avoided_product = _val(d, 'avoidedProduct', default=False)
-    exchange.amount = _val(d, 'amount', default=0.0)
+    e = olca.Exchange()
+    e.input = _val(d, 'input', default=False)
+    e.quantitative_reference = _val(d, 'quantitativeReference', default=False)
+    e.avoided_product = _val(d, 'avoidedProduct', default=False)
+    e.amount = _val(d, 'amount', default=0.0)
     unit_name = _val(d, 'unit', 'name')
-    exchange.unit = _unit(unit_name)
+    e.unit = _unit(unit_name)
     flowprop = _flow_property(unit_name)
-    exchange.flow_property = flowprop
-    exchange.flow = _flow(_val(d, 'flow'), flowprop, writer, created_ids)
-    exchange.dq_entry = _val(d, 'dqEntry')
-    return exchange
+    e.flow_property = flowprop
+    e.flow = _flow(_val(d, 'flow'), flowprop, writer, created_ids)
+    e.dq_entry = _format_dq_entry(_val(d, 'dqEntry'))
+    e.uncertainty = _uncertainty(_val(d, 'uncertainty'))
+    return e
 
 
 def _unit(unit_name: str) -> Optional[olca.Ref]:
@@ -164,6 +179,7 @@ def _location(code: str, writer: pack.Writer,
 def _process_doc(d: dict, writer: pack.Writer,
                  created_ids: set) -> olca.ProcessDocumentation:
     doc = olca.ProcessDocumentation()
+    doc.creation_date = datetime.datetime.now(pytz.utc).isoformat()
     if not isinstance(d, dict):
         return doc
     # copy the fields that have the same format as in the olca-schema spec.
@@ -184,6 +200,8 @@ def _process_doc(d: dict, writer: pack.Writer,
         'projectDescription'
     ]
     doc.from_json({field: _val(d, field) for field in copy_fields})
+    doc.valid_from = _format_date(_val(d, 'validFrom'))
+    doc.valid_until = _format_date(_val(d, 'validUntil'))
     doc.reviewer = _actor(_val(d, 'reviewer'), writer, created_ids)
     doc.data_documentor = _actor(_val(d, 'dataDocumentor'), writer, created_ids)
     doc.data_generator = _actor(_val(d, 'dataGenerator'), writer, created_ids)
@@ -229,10 +247,71 @@ def _val(d: dict, *path, **kvargs):
     for p in path:
         if not isinstance(v, dict):
             return None
-        v = v.get(p)
+        if p not in v:
+            v = None
+        else:
+            v = v[p]
     if v is None and 'default' in kvargs:
         return kvargs['default']
     return v
+
+
+def _uncertainty(d: dict) -> Optional[olca.Uncertainty]:
+    if not isinstance(d, dict):
+        return None
+    dt = _val(d, 'distributionType')
+    if dt != 'Logarithmic Normal Distribution':
+        # no other distribution type is currently used
+        return None
+    gmean = _val(d, 'geomMean')
+    if isinstance(gmean, str):
+        gmean = float(gmean)
+    gsd = _val(d, 'geomSd')
+    if isinstance(gsd, str):
+        gsd = float(gsd)
+    if not _isnum(gmean) or not _isnum(gsd):
+        return None
+    u = olca.Uncertainty()
+    u.distribution_type = olca.UncertaintyType.LOG_NORMAL_DISTRIBUTION
+    u.geom_mean = gmean
+    u.geom_sd = gsd
+    return u
+
+
+def _isnum(n) -> bool:
+    if not isinstance(n, (float, int)):
+        return False
+    return not math.isnan(n)
+
+
+def _format_dq_entry(entry: str) -> Optional[str]:
+    """ The data quality entries may contain floating point numbers which are
+        converted to integer numbers in this function."""
+    if not isinstance(entry, str):
+        return None
+    e = entry.strip()
+    if len(e) < 2:
+        return None
+    nums = e[1:(len(e) - 1)].split(';')
+    for i in range(0, len(nums)):
+        if nums[i] == 'n.a.':
+            continue
+        nums[i] = str(round(float(nums[i])))
+    return '(%s)' % ';'.join(nums)
+
+
+def _format_date(entry: str) -> Optional[str]:
+    """ Date entries currently have the format `month/day/year`. This function
+        converts such entries into the ISO format year-month-day. """
+    if not isinstance(entry, str):
+        return None
+    parts = entry.split('/')
+    if len(parts) < 3:
+        return None
+    month = int(parts[0])
+    day = int(parts[1])
+    year = int(parts[2])
+    return datetime.date(year, month, day).isoformat()
 
 
 def _uid(*args):
