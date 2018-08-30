@@ -1,7 +1,7 @@
 
 def get_generation_process_df(source='egrid', regions='all'):
     from electricitylci.egrid_filter import electricity_for_selected_egrid_facilities,emissions_and_waste_for_selected_egrid_facilities
-    from electricitylci.egrid_generation_database_builder import create_generation_process_df
+    from electricitylci.generation import create_generation_process_df
     generation_process_df = create_generation_process_df(electricity_for_selected_egrid_facilities,emissions_and_waste_for_selected_egrid_facilities,subregion=regions)
     return generation_process_df
     
@@ -9,8 +9,8 @@ def get_generation_process_df(source='egrid', regions='all'):
     
 def get_generation_mix_process_df(source='egrid',regions='all'):
     from electricitylci.egrid_filter import electricity_for_selected_egrid_facilities
-    from electricitylci.egrid_generation_database_builder import create_generation_mix_process_df
-    generation_mix_process_df = create_generation_mix_process_df(electricity_for_selected_egrid_facilities,regions)
+    from electricitylci.generation_mix import create_generation_mix_from_gen_data_process_df
+    generation_mix_process_df = create_generation_mix_from_gen_data_process_df(electricity_for_selected_egrid_facilities,regions)
     return generation_mix_process_df
 
 
@@ -23,12 +23,12 @@ def get_consumption_surplus_distribution_df():
 
 
 def write_generation_process_database_to_dict(gen_database,regions='all'):
-    from electricitylci.egrid_generation_database_builder import olcaschema_genprocess
+    from electricitylci.generation import olcaschema_genprocess
     gen_dict = olcaschema_genprocess(gen_database,subregion=regions)
     return gen_dict
 
 def write_generation_mix_database_to_dict(genmix_database,regions='all'):
-    from electricitylci.egrid_generation_database_builder import olcaschema_genmix
+    from electricitylci.generation import olcaschema_genmix
     genmix_dict = olcaschema_genmix(genmix_database,subregion=regions)
     return genmix_dict
 
