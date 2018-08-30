@@ -21,9 +21,12 @@ def write(processes: dict, file_path: str):
                               category_path, process.name)
             process.category = _category(
                 category_path, olca.ModelType.PROCESS, writer, created_ids)
+            process.description = _val(d, 'description')
             process.process_type = olca.ProcessType.LCI_RESULT
             process.location = _location(_val(d, 'location'),
                                          writer, created_ids)
+            process.process_documentation = _process_doc(
+                _val(d, 'processDocumentation'), writer, created_ids)
             process.exchanges = []
             last_id = 0
             for e in _val(d, 'exchanges', default=[]):
@@ -75,7 +78,7 @@ def _exchange(d: dict, writer: pack.Writer,
     flowprop = _flow_property(unit_name)
     exchange.flow_property = flowprop
     exchange.flow = _flow(_val(d, 'flow'), flowprop, writer, created_ids)
-
+    exchange.dq_entry = _val(d, 'dqEntry')
     return exchange
 
 
@@ -156,6 +159,67 @@ def _location(code: str, writer: pack.Writer,
     writer.write(location)
     created_ids.add(uid)
     return olca.ref(olca.Location, uid, code)
+
+
+def _process_doc(d: dict, writer: pack.Writer,
+                 created_ids: set) -> olca.ProcessDocumentation:
+    doc = olca.ProcessDocumentation()
+    if not isinstance(d, dict):
+        return doc
+    # copy the fields that have the same format as in the olca-schema spec.
+    copy_fields = [
+        'timeDescription',
+        'technologyDescription',
+        'dataCollectionDescription',
+        'completenessDescription',
+        'dataSelectionDescription',
+        'reviewDetails',
+        'dataTreatmentDescription',
+        'inventoryMethodDescription',
+        'modelingConstantsDescription',
+        'samplingDescription',
+        'restrictionsDescription',
+        'copyright',
+        'intendedApplication',
+        'projectDescription'
+    ]
+    doc.from_json({field: _val(d, field) for field in copy_fields})
+    doc.reviewer = _actor(_val(d, 'reviewer'), writer, created_ids)
+    doc.data_documentor = _actor(_val(d, 'dataDocumentor'), writer, created_ids)
+    doc.data_generator = _actor(_val(d, 'dataGenerator'), writer, created_ids)
+    doc.data_set_owner = _actor(_val(d, 'dataSetOwner'), writer, created_ids)
+    doc.publication = _source(_val(d, 'publication'), writer, created_ids)
+    return doc
+
+
+def _actor(name: str, writer: pack.Writer,
+           created_ids: set) -> Optional[olca.Ref]:
+    if not isinstance(name, str) or name == '':
+        return None
+    uid = _uid(olca.ModelType.ACTOR, name)
+    if uid in created_ids:
+        return olca.ref(olca.Actor, uid, name)
+    actor = olca.Actor()
+    actor.id = uid
+    actor.name = name
+    writer.write(actor)
+    created_ids.add(uid)
+    return olca.ref(olca.Actor, uid, name)
+
+
+def _source(name: str, writer: pack.Writer,
+            created_ids: set) -> Optional[olca.Ref]:
+    if not isinstance(name, str) or name == '':
+        return None
+    uid = _uid(olca.ModelType.SOURCE, name)
+    if uid in created_ids:
+        return olca.ref(olca.Source, uid, name)
+    source = olca.Source()
+    source.id = uid
+    source.name = name
+    writer.write(source)
+    created_ids.add(uid)
+    return olca.ref(olca.Source, uid, name)
 
 
 def _val(d: dict, *path, **kvargs):
