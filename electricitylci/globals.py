@@ -16,7 +16,7 @@ data_dir = modulepath + 'data/'
 fuel_name = pd.read_csv(data_dir+'fuelname.csv')
 
 #Set model_name here
-model_name = 'ELCI_2'
+model_name = 'ELCI_1'
 
 #pull in model config vars
 try:
@@ -44,6 +44,9 @@ net_trading = model_specs["net_trading"]
 fedelemflowlist_version = model_specs["fedelemflowlist_version"]
 #Determine whether or not to post-process the generation data
 post_process_generation_emission_factors = model_specs["post_process_generation_emission_factors"]
+
+gen_mix_from_model_generation_data=False
+
 
 #
 def join_with_underscore(items):
