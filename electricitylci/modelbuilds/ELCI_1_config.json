@@ -8,5 +8,7 @@
 "efficiency_of_distribution_grid" : 0.95,
 "net_trading" : false,
 "fedelemflowlist_version" : "0.1",
-"post_process_generation_emission_factors" : true
+"post_process_generation_emission_factors" : true,
+"use_primaryfuel_for_coal" : false,
+"fuel_name_file" : "fuelname_1.csv"
 }
