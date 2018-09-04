@@ -12,8 +12,6 @@ except NameError: modulepath = 'electricitylci/'
 output_dir = modulepath + 'output/'
 data_dir = modulepath + 'data/'
 
-#Reading the fuel name file
-fuel_name = pd.read_csv(data_dir+'fuelname.csv')
 
 #Set model_name here
 model_name = 'ELCI_1'
@@ -29,6 +27,8 @@ except FileNotFoundError:
 electricity_lci_target_year = model_specs["electricity_lci_target_year"]
 #Year for egrid data
 egrid_year = model_specs["egrid_year"]
+#use fuel category for fuel
+
 #emissions data to include in LCI
 inventories_of_interest = model_specs["inventories_of_interest"]
 inventories = inventories_of_interest.keys()
@@ -42,6 +42,14 @@ efficiency_of_distribution_grid = model_specs["efficiency_of_distribution_grid"]
 net_trading = model_specs["net_trading"]
 #Flow list
 fedelemflowlist_version = model_specs["fedelemflowlist_version"]
+
+#Break down COAL into the primary fuel types
+use_primaryfuel_for_coal = model_specs["use_primaryfuel_for_coal"]
+#get the fuelname file
+fuel_name_file = model_specs["fuel_name_file"]
+#Reading the fuel name file
+fuel_name = pd.read_csv(data_dir+fuel_name_file)
+
 #Determine whether or not to post-process the generation data
 post_process_generation_emission_factors = model_specs["post_process_generation_emission_factors"]
 
