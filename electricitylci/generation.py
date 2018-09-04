@@ -7,7 +7,7 @@ warnings.filterwarnings("ignore")
 from electricitylci.process_dictionary_writer import *
 from electricitylci.egrid_facilities import egrid_facilities,egrid_subregions
 from electricitylci.egrid_emissions_and_waste_by_facility import years_in_emissions_and_wastes_by_facility
-from electricitylci.globals import egrid_year, fuel_name, join_with_underscore
+from electricitylci.globals import egrid_year, fuel_name, join_with_underscore,use_primaryfuel_for_coal
 from electricitylci.eia923_generation import eia_download_extract
 from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty,max_min
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows,map_renewable_heat_flows_to_fedelemflows,map_compartment_to_flow_type,add_flow_direction
@@ -111,7 +111,8 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
 
                 database_f1 = database_f1.sort_values(by='Source', ascending=False)
                 exchange_list = list(pd.unique(database_f1['FlowName']))
-                database_f1['FuelCategory'].loc[database_f1['FuelCategory'] == 'COAL'] = database_f1['PrimaryFuel']
+                if use_primaryfuel_for_coal:
+                    database_f1['FuelCategory'].loc[database_f1['FuelCategory'] == 'COAL'] = database_f1['PrimaryFuel']
 
                 for exchange in exchange_list:
                     database_f2 = database_f1[database_f1['FlowName'] == exchange]
@@ -233,141 +234,6 @@ def total_generation_calculator(source_list,electricity_source_db):
     
     return total_gen,mean,total_facility_considered
     
-
-
-# def generation_process_builder_fnc(final_database,regions,subregion):
-#
-#     #Map emission flows to fed elem flows
-#     final_database = map_emissions_to_fedelemflows(final_database)
-#     #Create dfs for storing the output
-#     result_database = pd.DataFrame()
-#     total_gen_database = pd.DataFrame()
-#     #Looping through different subregions to create the files
-#
-#     for reg in regions:
-#
-#           print("Creating generation process database for "+ reg + " ...")
-#         #Cropping out based on regions
-#           if subregion == 'all':
-#              database = final_database[final_database['Subregion'] == reg]
-#           elif subregion == 'NERC':
-#              database = final_database[final_database['NERC'] == reg]
-#           elif subregion == 'BA':
-#              database = final_database[final_database['Balancing Authority Name'] == reg]
-#           elif subregion == 'US':
-#               #For entire US use full database
-#              database = final_database
-#           else:
-#               #This should be a egrid subregion
-#               database = final_database[final_database['Subregion'] == reg]
-#
-#
-#           for index,row in fuel_name.iterrows():
-#             #Reading complete fuel name and heat content information
-#             fuelname = row['FuelList']
-#             fuelheat = float(row['Heatcontent'])
-#             #croppping the database according to the current fuel being considered
-#             database_f1 = database[database['FuelCategory'] == fuelname]
-#
-#             if database_f1.empty == True:
-#                   database_f1 = database[database['PrimaryFuel'] == fuelname]
-#             if database_f1.empty != True:
-#
-#                 database_f1  = database_f1.sort_values(by='Source',ascending=False)
-#                 exchange_list = list(pd.unique(database_f1['FlowName']))
-#                 database_f1['FuelCategory'].loc[database_f1['FuelCategory'] == 'COAL'] = database_f1['PrimaryFuel']
-#
-#                 for exchange in exchange_list:
-#                     database_f2 = database_f1[database_f1['FlowName'] == exchange]
-#                     database_f2 = database_f2[['Subregion','FuelCategory','PrimaryFuel',
-#                                                'eGRID_ID', 'Electricity','FlowName','FlowAmount','FlowUUID',
-#                                                'Compartment','Year','Source','ReliabilityScore','Unit',
-#                                                'NERC','PercentGenerationfromDesignatedFuelCategory',
-#                                                'Balancing Authority Name','Balancing Authority Code',
-#                                                'Ref_Electricity_Subregion_FuelCategory']]
-#
-#
-#                     compartment_list = list(pd.unique(database_f2['Compartment']))
-#                     for compartment in compartment_list:
-#                         database_f3 = database_f2[database_f2['Compartment'] == compartment]
-#
-#                         database_f3 = database_f3.drop_duplicates(subset = ['Subregion','FuelCategory','PrimaryFuel','eGRID_ID', 'Electricity','FlowName','Compartment','Year','Unit'])
-#                         sources = list(pd.unique(database_f3['Source']))
-#                         #if len(sources) >1:
-#                         #    print('Error occured. Duplicate emissions from Different source. Writing an error file error.csv')
-#                         #    database_f3.to_csv(output_dir+'error'+reg+fuelname+exchange+'.csv')
-#
-#                         #Get electricity relevant for this exchange for the denominator in the emissions factors calcs
-#                         electricity_source_by_facility_for_region_fuel = database_f1[['eGRID_ID','Electricity','Source']].drop_duplicates()
-#                         total_gen,mean,total_facility_considered = total_generation_calculator(sources,electricity_source_by_facility_for_region_fuel)
-#
-#                         #Add data quality scores
-#
-#                         database_f3 = add_flow_representativeness_data_quality_scores(database_f3,total_gen)
-#                         #Can now drop this
-#                         database_f3 = database_f3.drop(columns='Ref_Electricity_Subregion_FuelCategory')
-#
-#                         #Add scores for regions to
-#                         sources_str = join_with_underscore(sources)
-#                         exchange_total_gen = pd.DataFrame([[reg,fuelname,exchange,compartment,sources_str,total_gen]],columns = ['Subregion','FuelCategory','FlowName','Compartment','Source','Total Generation'])
-#                         total_gen_database = total_gen_database.append(exchange_total_gen,ignore_index = True)
-#
-#
-#                         if exchange == 'Heat' and str(fuelheat) != 'nan' :
-#                             #Getting Emisssion_factor
-#                             database_f3['Emission_factor'] = compilation(database_f3[['Electricity','FlowAmount']],total_gen)/fuelheat
-#                             database_f3['Unit'] = 'kg'
-#
-#                         else:
-#                             database_f3['Emission_factor'] = compilation(database_f3[['Electricity','FlowAmount']],total_gen)
-#
-#
-#                         #Data Quality Scores
-#                         database_f3['Reliability_Score'] = np.average(database_f3['ReliabilityScore'],
-#                                                                      weights = database_f3['FlowAmount'])
-#                         database_f3['TemporalCorrelation'] = np.average(database_f3['TemporalCorrelation'],
-#                                                                      weights=database_f3['FlowAmount'])
-#                         #Set GeographicalCorrelation 1 for now only
-#                         database_f3['GeographicalCorrelation'] = 1
-#                         database_f3['TechnologicalCorrelation'] = np.average(database_f3['TechnologicalCorrelation'],
-#                                                                      weights=database_f3['FlowAmount'])
-#                         database_f3['DataCollection'] = np.average(database_f3['DataCollection'],
-#                                                                      weights=database_f3['FlowAmount'])
-#
-#                         #Uncertainty Calcs
-#                         uncertainty_info = uncertainty_creation(database_f3[['Electricity','FlowAmount']],exchange,fuelheat,mean,total_gen,total_facility_considered)
-#
-#                         database_f3['GeomMean'] = uncertainty_info['geomMean']
-#                         database_f3['GeomSD'] = uncertainty_info['geomSd']
-#                         database_f3['Maximum'] = uncertainty_info['maximum']
-#                         database_f3['Minimum'] = uncertainty_info['minimum']
-#
-#                         database_f3['Source'] = sources_str
-#
-#
-#                         #Optionally write out electricity
-#                         #database_f3['Electricity'] = total_gen
-#
-#                         frames = [result_database,database_f3]
-#                         result_database  = pd.concat(frames)
-#
-#     if subregion == 'all':
-#        result_database = result_database.drop(columns= ['eGRID_ID','FlowAmount','Electricity','ReliabilityScore','PrimaryFuel','NERC','Balancing Authority Name','Balancing Authority Code'])
-#     elif subregion == 'NERC':
-#        result_database = result_database.drop(columns= ['eGRID_ID','FlowAmount','Electricity','ReliabilityScore','PrimaryFuel','Balancing Authority Name','Balancing Authority Code','Subregion'])
-#     elif subregion == 'BA':
-#        result_database = result_database.drop(columns= ['eGRID_ID','FlowAmount','Electricity','ReliabilityScore','PrimaryFuel','NERC','Balancing Authority Code','Subregion'])
-#     elif subregion == 'US':
-#        result_database = result_database.drop(columns=['eGRID_ID', 'FlowAmount', 'Electricity', 'ReliabilityScore', 'PrimaryFuel', 'NERC','Balancing Authority Name','Balancing Authority Code', 'Subregion'])
-#
-#     result_database = result_database.drop_duplicates()
-#     #Drop duplicated in total gen database
-#     total_gen_database = total_gen_database.drop_duplicates()
-#     total_gen_database.to_csv(output_dir+'total_gen_database_' + subregion + '.csv',index = False)
-#     #result_database.to_csv('chk.csv')
-#     print("Generation process database for " + subregion + " complete.")
-#     return result_database
-#
 
 def uncertainty_creation(data,name,fuelheat,mean,total_gen,total_facility_considered):
     

@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from electricitylci.process_dictionary_writer import *
 from electricitylci.egrid_facilities import egrid_facilities,egrid_subregions
-from electricitylci.globals import fuel_name
+from electricitylci.globals import fuel_name,use_primaryfuel_for_coal
 
 #Get a subset of the egrid_facilities dataset
 egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory','NERC','PercentGenerationfromDesignatedFuelCategory','Balancing Authority Name','Balancing Authority Code']]
@@ -67,7 +67,8 @@ def create_generation_mix_process_df_from_model_generation_data(generation_data,
             if database_f1.empty == True:
                 database_f1 = database[database['PrimaryFuel'] == row['FuelList']]
             if database_f1.empty != True:
-                database_f1['FuelCategory'].loc[database_f1['FuelCategory'] == 'COAL'] = database_f1['PrimaryFuel']
+                if use_primaryfuel_for_coal:
+                    database_f1['FuelCategory'].loc[database_f1['FuelCategory'] == 'COAL'] = database_f1['PrimaryFuel']
                 database_f2 = database_f1.groupby(by = ['Subregion' ,'FuelCategory'])['Electricity'].sum()
                 database_f2 = database_f2.reset_index()
                 generation = np.sum(database_f2['Electricity'])
