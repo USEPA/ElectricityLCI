@@ -1,13 +1,10 @@
 #Data filtered from stewi and Stewi combo is written ina dictionary in this script. 
 #The dictionary is basaed on the OLCA schema
 #This dictionary can be used for writing json files or templates
-import numpy as np
 import math
 import time
 import pandas as pd
-from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty
-from electricitylci.globals import data_dir,egrid_year
-
+from electricitylci.globals import data_dir,egrid_year,electricity_flow_name_generation_and_distribution,electricity_flow_name_consumption
 
 year = egrid_year
 
@@ -16,59 +13,70 @@ metadata = pd.read_csv(data_dir+'metadata.csv')
 #Use only first row of metadata for all processes for now
 metadata = metadata.iloc[0,]
 
+#Read in process name info
+process_name = pd.read_csv(data_dir+'processname_1.csv')
+generation_name_parts = process_name[process_name['Stage']=='generation'].iloc[0]
+generation_mix_name_parts = process_name[process_name['Stage']=='generation mix'].iloc[0]
+
+
 def exchange_table_creation_ref(data):
     region = data['Subregion'].iloc[0]
-    #data=pd.DataFrame(columns = ['Electricity','Heat'])
-    ar = {'':''}
+    ar = dict()
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
-    ar['flow']=flow_table_creation(region,'Electricity',None)
+    ar['flow']= {'flowType':'PRODUCT_FLOW',
+                 'flowProperties':'',
+                 'name':electricity_flow_name_generation_and_distribution,
+                 '@id':'',
+                 'category':'22: Utilities/2211: Electric Power Generation, Transmission and Distribution'
+                 }
     ar['flowProperty']=''
     ar['input']=False
-    ar['quantitativeReference']=True
+    ar['quantitativeRefefrence']=True
     ar['baseUncertainty']=''
     ar['provider']=''
     ar['amount']=1.0
     ar['amountFormula']=''
     ar['unit']=unit('MWh');
-    ar['location'] = location(region)
-    
-    #ar['uncertainty']=uncertainty_table_creation(data)   
-    #ar['uncertainty'] = ''
-    del ar['']
+    #ar['location'] = location(region)
     return ar
-    #ar['pedigreeUncertainty']=''
-    #ar['uncertainty']=uncertainty_table_creation(data)      
 
 def exchange_table_creation_input_genmix(database,fuelname):
-    
-    year = egrid_year 
-    region = database['Subregion'].iloc[0] 
-
-    ar = {'':''}
-    
+    region = database['Subregion'].iloc[0]
+    ar = dict()
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
-    ar['flow']=flow_table_creation(region,'Electricity from '+fuelname,None)
+    ar['flow']={'flowType':'PRODUCT_FLOW',
+                 'flowProperties':'',
+                 'name':electricity_flow_name_generation_and_distribution,
+                 '@id':'',
+                 'category':'22: Utilities/2211: Electric Power Generation, Transmission and Distribution'
+                 }
     ar['flowProperty']=''
     ar['input']=True
     ar['quantitativeReference']='True'
     ar['baseUncertainty']=''
-    ar['provider']=''
+    ar['provider']=gen_process_ref(fuelname,region)
     ar['amount']=database['Generation_Ratio'].iloc[0]
     ar['unit'] = unit('MWh')    
     ar['pedigreeUncertainty']=''
-    ar['category']='22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+fuelname
-    ar['comment']='eGRID '+str(year);
+    #ar['category']='22: Utilities/2211: Electric Power Generation, Transmission and Distribution'+fuelname
+    ar['comment']='from ' + fuelname;
     ar['uncertainty'] = ''
-    del ar['']
-    
     return ar;
 
+def gen_process_ref(fuel,reg):
+    processref = dict()
+    processref['name']=generation_name_parts['Base name'] + '; from ' + str(fuel) + '; ' + generation_name_parts['Location type']
+    processref['location']=reg
+    processref['processType']='UNIT_PROCESS'
+    processref['categoryPath']=["22: Utilities","2211: Electric Power Generation, Transmission and Distribution",fuel]
+    return processref
+
 def process_table_creation_genmix(region,exchanges_list):
-    ar = {'':''}
+    ar = dict()
     ar['@type'] = 'Process'
     ar['allocationFactors']=''
     ar['defaultAllocationMethod']=''
@@ -76,10 +84,10 @@ def process_table_creation_genmix(region,exchanges_list):
     ar['location']=location(region)
     ar['parameters']=''
     ar['processDocumentation']=process_doc_creation();
-    ar['processType']=''
-    ar['name'] = 'Electricity; from Generation; at region '+str(region)+'; Production Mix'
-    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'
-    ar['description'] = 'Electricity from generation mix using power plants in the '+str(region)+' region'
+    ar['processType']='UNIT_PROCESS'
+    ar['name'] = generation_mix_name_parts['Base name'] + '; ' + generation_mix_name_parts['Location type'] +  '; ' + generation_mix_name_parts['Mix type']
+    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution'
+    ar['description'] = 'Electricity generation mix in the '+str(region)+' region'
     return ar;
 
 def exchange(flw,exchanges_list):
@@ -87,8 +95,8 @@ def exchange(flw,exchanges_list):
     exchanges_list.append(flw)
     return exchanges_list
 
-def process_table_creation(fuelname,exchanges_list,region):
-    ar = {'':''}
+def process_table_creation_gen(fuelname, exchanges_list, region):
+    ar = dict()
     ar['@type'] = 'Process'
     ar['allocationFactors']=''
     ar['defaultAllocationMethod']=''
@@ -96,39 +104,31 @@ def process_table_creation(fuelname,exchanges_list,region):
     ar['location']=location(region)
     ar['parameters']=''
     ar['processDocumentation']=process_doc_creation();
-    ar['processType']=''
-    ar['name'] = 'Electricity; from '+str(fuelname)+' ; at generating facility'
+    ar['processType']='UNIT_PROCESS'
+    ar['name'] = generation_name_parts['Base name'] + '; from ' + str(fuelname) + '; ' + generation_name_parts['Location type']
     ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+fuelname
-    ar['description'] = 'Electricity from '+str(fuelname)+' using power plants in the '+str(region)+' region'
-    
-    
+    ar['description'] = 'Electricity from '+str(fuelname)+' produced at generating facilities in the '+str(region)+' region'
     return ar;
-    
 
 #Will be used later
-def category():
-    
-    global fuelname;
-    ar = {'':''}   
-    ar['@id'] = ''
-    ar['@type'] = 'Category'
-    ar['name'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+str(fuelname)
-    del ar['']
-    return ar
+# def category():
+#
+#     global fuelname;
+#     ar = {'':''}
+#     ar['@id'] = ''
+#     ar['@type'] = 'Category'
+#     ar['name'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution'+str(fuelname)
+#     del ar['']
+#     return ar
     
 
 #Will be used later
 def location(region):
-    
-    
-    ar = {'':''}   
+    ar = dict()
     ar['@id'] = ''
     ar['@type'] = 'Location'
     ar['name'] = region;
-    del ar['']
     return ar
-
-
 
 def process_doc_creation():
     
@@ -178,75 +178,50 @@ def processDqsystem():
     ar['name'] = 'US EPA - Process Pedigree Matrix'
     return ar
 
-
-
 def exchange_table_creation_input(data,fuelname,fuelheat):
-    
-
     year = data['Year'].iloc[0]
-    region = data['Subregion'].iloc[0]
-    flow_uuid = data['FlowUUID'].iloc[0]
-
-    ar = {'':''}
-    
+    ar = dict()
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
-    ar['flow'] = flow_table_creation(region,fuelname,'Input Fuel',flow_uuid)
+    ar['flow'] = flow_table_creation(data)
     ar['flowProperty']=''
     ar['input'] = True
     ar['baseUncertainty']=''
     ar['provider']='' 
-   
     ar['amount']=data['Emission_factor'].iloc[0]
-    
     ar['amountFormula']='  '
     if math.isnan(fuelheat) != True:        
       ar['unit']=unit('kg');
     else:
       ar['unit']=unit('MJ')
-    
-    
     ar['dqEntry'] = ''
     ar['pedigreeUncertainty']=''
     ar['uncertainty']=uncertainty_table_creation(data)
     ar['comment']='eGRID '+str(year)
-    if data['FlowType'].iloc[0] == 'ELEMENTARY_FLOW':
-      ar['category'] = 'Elementary flows/'+str(data['ElementaryFlowPrimeContext'].iloc[0])+'/'+str(data['Compartment'].iloc[0])
-    elif data['FlowType'].iloc[0] == 'WASTE_FLOW':
-      ar['category'] = 'Waste flows/'  
-    else:
-      ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+fuelname  
-        
-    
-    
-    del ar['']
-    
+    # if data['FlowType'].iloc[0] == 'ELEMENTARY_FLOW':
+    #   ar['category'] = 'Elementary flows/'+str(data['ElementaryFlowPrimeContext'].iloc[0])+'/'+str(data['Compartment'].iloc[0])
+    # elif data['FlowType'].iloc[0] == 'WASTE_FLOW':
+    #   ar['category'] = 'Waste flows/'
+    # else:
+    #   ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+fuelname
     return ar;
 
 def unit(unt):
-    ar = {'':''}
+    ar = dict()
     ar['internalId']=''
     ar['@type']='Unit'
     ar['name'] = unt
-    del ar['']
-    
     return ar
 
- 
 def exchange_table_creation_output(data):
-    
     year = data['Year'].iloc[0]
-    comp = data['Compartment'].iloc[0]
     source = data['Source'].iloc[0]
-    region = data['Subregion'].iloc[0]
-    flow_uuid = data['FlowUUID'].iloc[0]
-    ar = {'':''}
-    
+    ar = dict()
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
-    ar['flow']=flow_table_creation(region,data['FlowName'].iloc[0],comp,flow_uuid)
+    ar['flow']=flow_table_creation(data)
     ar['flowProperty']=''
     ar['input']=False
     ar['quantitativeReference']=False
@@ -263,25 +238,19 @@ def exchange_table_creation_output(data):
                     ';' + str(round(data['DataCollection'].iloc[0],1))+')'
     ar['uncertainty']=uncertainty_table_creation(data)
     ar['comment'] = str(source)+' '+str(year)
-    if data['FlowType'].iloc[0] == 'ELEMENTARY_FLOW':
-      ar['category'] = 'Elementary flows/'+str(data['ElementaryFlowPrimeContext'].iloc[0])+'/'+str(data['Compartment'].iloc[0])
-    elif data['FlowType'].iloc[0] == 'WASTE_FLOW':
-      ar['category'] = 'Waste flows/'
-    else:
-      ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+data['FlowName'].iloc[0]
+    #if data['FlowType'].iloc[0] == 'ELEMENTARY_FLOW':
+    #  ar['category'] = 'Elementary flows/'+str(data['ElementaryFlowPrimeContext'].iloc[0])+'/'+str(data['Compartment'].iloc[0])
+    #elif data['FlowType'].iloc[0] == 'WASTE_FLOW':
+    #  ar['category'] = 'Waste flows/'
+    #else:
+    #  ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution'+data['FlowName'].iloc[0]
 
-    del ar['']
     return ar;    
 
-  
         
 def uncertainty_table_creation(data):
-    
-  
-    
-    ar = {'':''}
-    
 
+    ar = dict()
     ar['geomMean'] = data['GeomMean'].iloc[0]
     ar['geomSd']= data['GeomSD'].iloc[0]    
     ar['distributionType']='Logarithmic Normal Distribution'
@@ -297,69 +266,62 @@ def uncertainty_table_creation(data):
     ar['mode']=''
     ar['modeFormula']=''   
     ar['maximumFormula']='';
-    del ar['']
-    
     return ar;
 
-
-def flow_table_creation(region,fl,comp,uuid=None):
-    
-                   
-    ar = {'':''}
-    ar['flowType']='PRODUCT_FLOW'
-    ar['cas']=''
-    ar['formula']=''
+def flow_table_creation(data):
+    ar = dict()
+    flowtype = data['FlowType'].iloc[0]
+    ar['flowType'] = flowtype
     ar['flowProperties']=''
-    ar['location']=str(region)
-    ar['name'] = str(fl);
-    ar['@id'] = uuid
+    ar['name'] = data['FlowName'].iloc[0][0:255] #cutoff name at length 255 if greater than that
+    ar['@id'] = data['FlowUUID'].iloc[0]
+    comp = str(data['Compartment'].iloc[0])
     if comp!=None:
-     ar['category'] = 'Elementary Flows/'+str(comp)
+     ar['category'] = 'Elementary Flows/'+comp
     else:
-     ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'
-    ar['description'] = ''
-    del ar['']
-    
+     ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution'
+    if flowtype == 'ELEMENTARY_FLOW':
+      ar['category'] = 'Elementary flows/'+str(data['ElementaryFlowPrimeContext'].iloc[0])+'/'+comp
+    elif flowtype == 'WASTE_FLOW':
+      ar['category'] = 'Waste flows/'
+    else:
+      ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution'
     return ar
 
-def ref_flow_creator(region):
-    
-    
-    #data=pd.DataFrame(columns = ['Electricity','Heat'])
-    ar = {'':''}
-    
-    ar['internalId']=''
-    ar['@type']='Exchange'
-    ar['avoidedProduct']=False
-    ar['flow']=flow_table_creation(region,'Electricity',None)
-    ar['flowProperty']=''
-    ar['input']=False
-    ar['quantitativeReference']=True
-    ar['baseUncertainty']=''
-    ar['provider']=''
-    ar['amount']=1.0
-    ar['amountFormula']=''
-    ar['unit']=unit('MWh');
-    ar['location'] = region
-    
-    #ar['uncertainty']=uncertainty_table_creation(data)   
-    #ar['uncertainty'] = ''
-    del ar['']
-    return ar
-    #ar['pedigreeUncertainty']=''
-    #ar['uncertainty']=uncertainty_table_creation(data)   
+# def ref_flow_creator(region):
+#     ar = dict()
+#     ar['internalId']=''
+#     ar['@type']='Exchange'
+#     ar['avoidedProduct']=False
+#     ar['flow']=flow_table_creation('PRODUCT_FLOW',electricity_flow_name_generation_and_distribution,None)
+#     ar['flowProperty']=''
+#     ar['input']=False
+#     ar['quantitativeReference']=True
+#     ar['baseUncertainty']=''
+#     ar['provider']=''
+#     ar['amount']=1.0
+#     ar['amountFormula']=''
+#     ar['unit']=unit('MWh');
+#     ar['location'] = ''
+#     return ar
+
 
 def exchange_table_creation_input_con_mix(generation,name,loc):
     
     year = egrid_year
     
 
-    ar = {'':''}
+    ar = dict()
     
     ar['internalId']=''
     ar['@type']='Exchange'
     ar['avoidedProduct']=False
-    ar['flow']=flow_table_creation(loc,name,None)
+    ar['flow']={'flowType':'PRODUCT_FLOW',
+                 'flowProperties':'',
+                 'name':electricity_flow_name_generation_and_distribution,
+                 '@id':'',
+                 'category':'22: Utilities/2211: Electric Power Generation, Transmission and Distribution'
+                 }
     ar['flowProperty']=''
     ar['input']=True
     ar['baseUncertainty']=''
@@ -370,16 +332,13 @@ def exchange_table_creation_input_con_mix(generation,name,loc):
     ar['uncertainty']=''
     ar['comment']='eGRID '+str(year);
     ar['location'] = loc
-    del ar['']
-    
     return ar;
 
 
 def process_table_creation_con_mix(region,exchanges_list):
     
                               
-    ar = {'':''}
-    
+    ar = dict()
     ar['@type'] = 'Process'
     ar['allocationFactors']=''
     ar['defaultAllocationMethod']=''
@@ -389,18 +348,15 @@ def process_table_creation_con_mix(region,exchanges_list):
     ar['processDocumentation']=process_doc_creation();
     ar['processType']=''
     ar['name'] = 'Electricity; at region '+str(region)+'; Consumption Mix'
-    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'
+    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution'
     ar['description'] = 'Electricity showing Consumption mix using power plants in the '+str(region)+' region'
-    
-    
     return ar;
 
 
 def process_table_creation_surplus(region,exchanges_list):
     
                               
-    ar = {'':''}
-    
+    ar = dict()
     ar['@type'] = 'Process'
     ar['allocationFactors']=''
     ar['defaultAllocationMethod']=''
@@ -410,31 +366,23 @@ def process_table_creation_surplus(region,exchanges_list):
     ar['processDocumentation']=process_doc_creation();
     ar['processType']=''
     ar['name'] = 'Electricity; at region '+str(region)+'; Surplus Pool'
-    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'
+    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution'
     ar['description'] = 'Electricity showing surplus in the '+str(region)+' region'
-    
-    
     return ar;
 
-
 def process_table_creation_distribution(region,exchanges_list):
-    
-                              
     ar = {'':''}
-    
     ar['@type'] = 'Process'
     ar['allocationFactors']=''
     ar['defaultAllocationMethod']=''
     ar['exchanges']=exchanges_list;
-    ar['location']='US-eGRID-'+region
+    ar['location']=region
     ar['parameters']=''
     ar['processDocumentation']=process_doc_creation();
     ar['processType']=''
     ar['name'] = 'Electricity; at region '+str(region)+'; Distribution Mix'
-    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'
+    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution'
     ar['description'] = 'Electricity from distribution mix in the '+str(region)+' region'
-    
-    
     return ar;
 
 def process_table_creation_trade_mix(region,exchanges_list):
@@ -451,18 +399,8 @@ def process_table_creation_trade_mix(region,exchanges_list):
     ar['processDocumentation']=process_doc_creation();
     ar['processType']=''
     ar['name'] = 'Electricity; at region '+str(region)+'; Trade Mix'
-    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'
+    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution'
     ar['description'] = 'Electricity showing Trade mix using power plants in the '+str(region)+' region'
 
     
     return ar;           
-            
-
-
-            
-            
-            
-        
-        
-    
-     
