@@ -25,7 +25,7 @@ def write(processes: dict, file_path: str):
             process.category = _category(
                 category_path, olca.ModelType.PROCESS, writer, created_ids)
             process.description = _val(d, 'description')
-            process.process_type = olca.ProcessType.LCI_RESULT
+            process.process_type = olca.ProcessType.UNIT_PROCESS
             process.location = _location(_val(d, 'location', 'name'),
                                          writer, created_ids)
             process.process_documentation = _process_doc(
@@ -77,7 +77,6 @@ def _category(path: str, mtype: olca.ModelType, writer: pack.Writer,
         parent.category_path = uid_path[1:]
     return parent
 
-
 def _exchange(d: dict, writer: pack.Writer,
               created_ids: set) -> Optional[olca.Exchange]:
     if d is None:
@@ -94,6 +93,8 @@ def _exchange(d: dict, writer: pack.Writer,
     e.flow = _flow(_val(d, 'flow'), flowprop, writer, created_ids)
     e.dq_entry = _format_dq_entry(_val(d, 'dqEntry'))
     e.uncertainty = _uncertainty(_val(d, 'uncertainty'))
+    e.provider = _processRef(_val(d, 'provider'))
+    e.comment = _val(d,'comment')
     return e
 
 
@@ -277,6 +278,15 @@ def _uncertainty(d: dict) -> Optional[olca.Uncertainty]:
     u.geom_sd = gsd
     return u
 
+def _processRef(d: dict) -> Optional[olca.ProcessRef]:
+    if not isinstance(d, dict):
+        return None
+    pr = olca.ProcessRef()
+    pr.name = _val(d,'name')
+    pr.category_path = d['categoryPath']
+    pr.location = _val(d,'location',default='')
+    pr.process_type = olca.ProcessType.UNIT_PROCESS
+    return pr
 
 def _isnum(n) -> bool:
     if not isinstance(n, (float, int)):
@@ -318,15 +328,3 @@ def _uid(*args):
     path = '/'.join([str(arg).strip() for arg in args]).lower()
     return str(uuid.uuid3(uuid.NAMESPACE_OID, path))
 
-
-# this currently just for testing and will be removed later
-if __name__ == '__main__':
-    import os
-    import pickle
-
-    zip_file = '../ElectricityLCI_jsonld.zip'
-    if os.path.isfile(zip_file):
-        os.remove(zip_file)
-    with open('../CAMX_gen_dict_WI.p', 'rb') as f:
-        data = pickle.load(f)
-        write(data, zip_file)
