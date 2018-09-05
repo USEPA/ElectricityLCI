@@ -1,0 +1,6 @@
+﻿Stage,Base name,Location type,Mix type,Category,Subcategory
+generation,Electricity,at generating facility,,22: Utilities,"2211: Electric Power Generation, Transmission and Distribution"
+generation mix,Electricity,at grid,generation mix,22: Utilities,"2211: Electric Power Generation, Transmission and Distribution"
+surplus pool,Electricity,at grid,surplus pool,22: Utilities,"2211: Electric Power Generation, Transmission and Distribution"
+consumption mix,Electricity,at grid,consumption mix,22: Utilities,"2211: Electric Power Generation, Transmission and Distribution"
+distribution,Electricity,at consumer,,22: Utilities,"2211: Electric Power Generation, Transmission and Distribution"
