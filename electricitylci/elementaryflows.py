@@ -31,9 +31,9 @@ def map_emissions_to_fedelemflows(df_with_flows_compartments):
 #!Still need to consider amount conversion
 def map_renewable_heat_flows_to_fedelemflows(df_with_flows_compart_direction):
     
-    #For all other fuel soruces
+    #For all other fuel sources assume techonosphere flows and set to null
     df_with_flows_compart_direction.loc[(df_with_flows_compart_direction['FlowName'] == 'Heat'),
-                                   'ElementaryFlowPrimeContext'] = 'technresource'      
+                                   'ElementaryFlowPrimeContext'] = None
     
     df_with_flows_compart_direction.loc[(df_with_flows_compart_direction['FlowName']=='Heat')&
                                    ((df_with_flows_compart_direction['FuelCategory']=='SOLAR')|
@@ -57,9 +57,10 @@ def map_renewable_heat_flows_to_fedelemflows(df_with_flows_compart_direction):
                                    (df_with_flows_compart_direction['FuelCategory'] == 'WIND'), 'FlowName'] = 'Energy, wind'
 
     df_with_flows_compart_direction.loc[(df_with_flows_compart_direction['FlowName'] == 'Heat') &
-                                   (df_with_flows_compart_direction['FuelCategory'] == 'HYDRO'), 'FlowName'] = 'Energy, hydro'
-    df_with_flows_compart_direction.loc[(df_with_flows_compart_direction['FlowName'] == 'Heat') &
                                    (df_with_flows_compart_direction['FuelCategory'] == 'HYDRO'), 'Compartment'] = 'water'
+    df_with_flows_compart_direction.loc[(df_with_flows_compart_direction['FlowName'] == 'Heat') &
+                                   (df_with_flows_compart_direction['FuelCategory'] == 'HYDRO'), 'FlowName'] = 'Energy, hydro'
+
 
 #Need to handle steam separately
 #    df_with_flows_compart_direction.loc[(df_with_flows_compart_direction['FlowName']=='Steam'),
