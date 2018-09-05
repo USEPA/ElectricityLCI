@@ -1,4 +1,3 @@
-import pandas as pd
 import numpy as np
 from electricitylci.process_dictionary_writer import *
 from electricitylci.egrid_facilities import egrid_facilities,egrid_subregions
@@ -93,19 +92,16 @@ def create_generation_mix_process_df_from_egrid_ref_data(subregion):
         result_database = pd.DataFrame()
 
         for reg in regions:
-
-            if subregion == 'all':
-                database = ref_egrid_subregion_generation_by_fuelcategory_with_NERC[ref_egrid_subregion_generation_by_fuelcategory_with_NERC['Subregion'] == reg]
-            elif subregion == 'NERC':
+            if subregion == 'NERC':
+                # This makes sure that the dictionary writer works fine because it only works with the subregion column.
                 database = ref_egrid_subregion_generation_by_fuelcategory_with_NERC[ref_egrid_subregion_generation_by_fuelcategory_with_NERC['NERC'] == reg]
-
-            # This makes sure that the dictionary writer works fine because it only works with the subregion column. So we are sending the
-            # correct regions in the subregion column rather than egrid subregions if rquired.
-            # This makes it easy for the process_dictionary_writer to be much simpler.
-            if subregion == 'all':
-                database['Subregion'] = database['Subregion']
-            elif subregion == 'NERC':
                 database['Subregion'] = database['NERC']
+            elif subregion == 'US':
+                #for all US use entire database
+                database = ref_egrid_subregion_generation_by_fuelcategory_with_NERC
+            else:
+                #assume the region is an egrid subregion
+                database = ref_egrid_subregion_generation_by_fuelcategory_with_NERC[ref_egrid_subregion_generation_by_fuelcategory_with_NERC['Subregion'] == reg]
 
             #Get fuel typoes for each region
             #region_fuel_categories = list(pd.unique(database['FuelCategory']))
@@ -151,7 +147,6 @@ def olcaschema_genmix(database, subregion):
                 exchange(ra, exchanges_list)
                 # Writing final file
         final = process_table_creation_genmix(reg, exchanges_list)
-        del final['']
 
         # print(reg +' Process Created')
         generation_mix_dict[reg] = final
