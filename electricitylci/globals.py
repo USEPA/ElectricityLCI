@@ -69,3 +69,5 @@ def join_with_underscore(items):
     return "_".join(items)
 
 
+electricity_flow_name_generation_and_distribution = 'Electricity, AC, 2300-7650 V'  #ref Table 1.1 NERC report
+electricity_flow_name_consumption = 'Electricity, AC, 120 V'
