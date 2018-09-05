@@ -1,13 +1,13 @@
 #Dictionary Creator
 #This is the main file that creates the dictionary with all the regions and fuel. This is essentially the database generator in a dictionary format.
-from electricitylci.globals import output_dir
+import numpy as np
 import warnings
 warnings.filterwarnings("ignore")
 
 from electricitylci.process_dictionary_writer import *
 from electricitylci.egrid_facilities import egrid_facilities,egrid_subregions
 from electricitylci.egrid_emissions_and_waste_by_facility import years_in_emissions_and_wastes_by_facility
-from electricitylci.globals import egrid_year, fuel_name, join_with_underscore,use_primaryfuel_for_coal
+from electricitylci.globals import egrid_year,output_dir, fuel_name, join_with_underscore,use_primaryfuel_for_coal
 from electricitylci.eia923_generation import eia_download_extract
 from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty,max_min
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows,map_renewable_heat_flows_to_fedelemflows,map_compartment_to_flow_type,add_flow_direction
@@ -120,7 +120,7 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
                                                'eGRID_ID', 'Electricity', 'FlowName', 'FlowAmount', 'FlowUUID',
                                                'Compartment', 'Year', 'Source', 'ReliabilityScore', 'Unit',
                                                'NERC', 'PercentGenerationfromDesignatedFuelCategory',
-                                               'Balancing Authority Name', 'Balancing Authority Code',
+                                               'Balancing Authority Name','ElementaryFlowPrimeContext','Balancing Authority Code',
                                                'Ref_Electricity_Subregion_FuelCategory']]
 
                     compartment_list = list(pd.unique(database_f2['Compartment']))
@@ -420,8 +420,7 @@ def olcaschema_genprocess(database,subregion):
                             #print(database_f4[['FlowName','Source','FuelCategory','Subregion']])
                             #print('\n')
 
-                final = process_table_creation(fuelname,exchanges_list,reg)
-                del final['']
+                final = process_table_creation_gen(fuelname, exchanges_list, reg)
                 generation_process_dict[reg+"_"+fuelname] = final
 
    print("Generation process dictionary for " + reg + " complete.")
