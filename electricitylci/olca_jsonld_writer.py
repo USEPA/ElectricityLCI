@@ -77,6 +77,7 @@ def _category(path: str, mtype: olca.ModelType, writer: pack.Writer,
         parent.category_path = uid_path[1:]
     return parent
 
+
 def _exchange(d: dict, writer: pack.Writer,
               created_ids: set) -> Optional[olca.Exchange]:
     if d is None:
@@ -93,8 +94,8 @@ def _exchange(d: dict, writer: pack.Writer,
     e.flow = _flow(_val(d, 'flow'), flowprop, writer, created_ids)
     e.dq_entry = _format_dq_entry(_val(d, 'dqEntry'))
     e.uncertainty = _uncertainty(_val(d, 'uncertainty'))
-    e.provider = _processRef(_val(d, 'provider'))
-    e.comment = _val(d,'comment')
+    e.provider = _process_ref(_val(d, 'provider'))
+    e.description = _val(d, 'comment')
     return e
 
 
@@ -278,15 +279,18 @@ def _uncertainty(d: dict) -> Optional[olca.Uncertainty]:
     u.geom_sd = gsd
     return u
 
-def _processRef(d: dict) -> Optional[olca.ProcessRef]:
+
+def _process_ref(d: dict) -> Optional[olca.ProcessRef]:
     if not isinstance(d, dict):
         return None
     pr = olca.ProcessRef()
-    pr.name = _val(d,'name')
-    pr.category_path = d['categoryPath']
-    pr.location = _val(d,'location',default='')
+    pr.id = _val(d, 'id')
+    pr.name = _val(d, 'name')
+    pr.category_path = _val(d, 'categoryPath')
+    pr.location = _val(d, 'location', default='')
     pr.process_type = olca.ProcessType.UNIT_PROCESS
     return pr
+
 
 def _isnum(n) -> bool:
     if not isinstance(n, (float, int)):
@@ -327,4 +331,3 @@ def _format_date(entry: str) -> Optional[str]:
 def _uid(*args):
     path = '/'.join([str(arg).strip() for arg in args]).lower()
     return str(uuid.uuid3(uuid.NAMESPACE_OID, path))
-
