@@ -94,7 +94,7 @@ def _exchange(d: dict, writer: pack.Writer,
     e.flow = _flow(_val(d, 'flow'), flowprop, writer, created_ids)
     e.dq_entry = _format_dq_entry(_val(d, 'dqEntry'))
     e.uncertainty = _uncertainty(_val(d, 'uncertainty'))
-    e.provider = _process_ref(_val(d, 'provider'))
+    e.default_provider = _process_ref(_val(d, 'provider'))
     e.description = _val(d, 'comment')
     return e
 
