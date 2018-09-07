@@ -20,14 +20,14 @@ def write(processes: dict, file_path: str):
             process = olca.Process()
             process.name = _val(d, 'name')
             category_path = _val(d, 'category', default='')
+            location_code = _val(d, 'location', 'name', default='')
             process.id = _uid(olca.ModelType.PROCESS,
-                              category_path, process.name)
+                              category_path, location_code, process.name)
             process.category = _category(
                 category_path, olca.ModelType.PROCESS, writer, created_ids)
             process.description = _val(d, 'description')
             process.process_type = olca.ProcessType.UNIT_PROCESS
-            process.location = _location(_val(d, 'location', 'name'),
-                                         writer, created_ids)
+            process.location = _location(location_code, writer, created_ids)
             process.process_documentation = _process_doc(
                 _val(d, 'processDocumentation'), writer, created_ids)
             _process_dq(d, process)
@@ -286,11 +286,12 @@ def _process_ref(d: dict) -> Optional[olca.ProcessRef]:
     pr = olca.ProcessRef()
     pr.name = _val(d, 'name')
     category_path = _val(d, 'categoryPath')
+    location_code = _val(d, 'location', default='')
     if isinstance(category_path, list):
         category_path = '/'.join(category_path)
     pr.id = _uid(olca.ModelType.PROCESS,
-                 category_path, pr.name)
-    pr.location = _val(d, 'location', default='')
+                 category_path, location_code, pr.name)
+    pr.location = location_code
     pr.process_type = olca.ProcessType.UNIT_PROCESS
     return pr
 
