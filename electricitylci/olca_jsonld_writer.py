@@ -284,9 +284,12 @@ def _process_ref(d: dict) -> Optional[olca.ProcessRef]:
     if not isinstance(d, dict):
         return None
     pr = olca.ProcessRef()
-    pr.id = _val(d, 'id')
     pr.name = _val(d, 'name')
-    pr.category_path = _val(d, 'categoryPath')
+    category_path = _val(d, 'categoryPath')
+    if isinstance(category_path, list):
+        category_path = '/'.join(category_path)
+    pr.id = _uid(olca.ModelType.PROCESS,
+                 category_path, pr.name)
     pr.location = _val(d, 'location', default='')
     pr.process_type = olca.ProcessType.UNIT_PROCESS
     return pr
