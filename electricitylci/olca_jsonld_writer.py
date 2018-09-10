@@ -20,14 +20,14 @@ def write(processes: dict, file_path: str):
             process = olca.Process()
             process.name = _val(d, 'name')
             category_path = _val(d, 'category', default='')
+            location_code = _val(d, 'location', 'name', default='')
             process.id = _uid(olca.ModelType.PROCESS,
-                              category_path, process.name)
+                              category_path, location_code, process.name)
             process.category = _category(
                 category_path, olca.ModelType.PROCESS, writer, created_ids)
             process.description = _val(d, 'description')
             process.process_type = olca.ProcessType.UNIT_PROCESS
-            process.location = _location(_val(d, 'location', 'name'),
-                                         writer, created_ids)
+            process.location = _location(location_code, writer, created_ids)
             process.process_documentation = _process_doc(
                 _val(d, 'processDocumentation'), writer, created_ids)
             _process_dq(d, process)
@@ -77,6 +77,7 @@ def _category(path: str, mtype: olca.ModelType, writer: pack.Writer,
         parent.category_path = uid_path[1:]
     return parent
 
+
 def _exchange(d: dict, writer: pack.Writer,
               created_ids: set) -> Optional[olca.Exchange]:
     if d is None:
@@ -93,8 +94,8 @@ def _exchange(d: dict, writer: pack.Writer,
     e.flow = _flow(_val(d, 'flow'), flowprop, writer, created_ids)
     e.dq_entry = _format_dq_entry(_val(d, 'dqEntry'))
     e.uncertainty = _uncertainty(_val(d, 'uncertainty'))
-    e.provider = _processRef(_val(d, 'provider'))
-    e.comment = _val(d,'comment')
+    e.default_provider = _process_ref(_val(d, 'provider'))
+    e.description = _val(d, 'comment')
     return e
 
 
@@ -278,15 +279,22 @@ def _uncertainty(d: dict) -> Optional[olca.Uncertainty]:
     u.geom_sd = gsd
     return u
 
-def _processRef(d: dict) -> Optional[olca.ProcessRef]:
+
+def _process_ref(d: dict) -> Optional[olca.ProcessRef]:
     if not isinstance(d, dict):
         return None
     pr = olca.ProcessRef()
-    pr.name = _val(d,'name')
-    pr.category_path = d['categoryPath']
-    pr.location = _val(d,'location',default='')
+    pr.name = _val(d, 'name')
+    category_path = _val(d, 'categoryPath')
+    location_code = _val(d, 'location', default='')
+    if isinstance(category_path, list):
+        category_path = '/'.join(category_path)
+    pr.id = _uid(olca.ModelType.PROCESS,
+                 category_path, location_code, pr.name)
+    pr.location = location_code
     pr.process_type = olca.ProcessType.UNIT_PROCESS
     return pr
+
 
 def _isnum(n) -> bool:
     if not isinstance(n, (float, int)):
@@ -327,4 +335,3 @@ def _format_date(entry: str) -> Optional[str]:
 def _uid(*args):
     path = '/'.join([str(arg).strip() for arg in args]).lower()
     return str(uuid.uuid3(uuid.NAMESPACE_OID, path))
-
