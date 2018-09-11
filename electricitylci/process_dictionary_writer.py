@@ -19,6 +19,10 @@ generation_name_parts = process_name[process_name['Stage']=='generation'].iloc[0
 generation_mix_name_parts = process_name[process_name['Stage']=='generation mix'].iloc[0]
 
 
+def exchange(flw, exchanges_list):
+    exchanges_list.append(flw)
+    return exchanges_list
+
 def exchange_table_creation_ref(data):
     region = data['Subregion'].iloc[0]
     ar = dict()
@@ -42,6 +46,15 @@ def exchange_table_creation_ref(data):
     #ar['location'] = location(region)
     return ar
 
+
+def gen_process_ref(fuel,reg):
+    processref = dict()
+    processref['name']=generation_name_parts['Base name'] + '; from ' + str(fuel) + '; ' + generation_name_parts['Location type']
+    processref['location']=reg
+    processref['processType']='UNIT_PROCESS'
+    processref['categoryPath']=["22: Utilities","2211: Electric Power Generation, Transmission and Distribution",fuel]
+    return processref
+
 def exchange_table_creation_input_genmix(database,fuelname):
     region = database['Subregion'].iloc[0]
     ar = dict()
@@ -60,20 +73,28 @@ def exchange_table_creation_input_genmix(database,fuelname):
     ar['baseUncertainty']=''
     ar['provider']=gen_process_ref(fuelname,region)
     ar['amount']=database['Generation_Ratio'].iloc[0]
-    ar['unit'] = unit('MWh')    
+    ar['unit'] = unit('MWh')
     ar['pedigreeUncertainty']=''
     #ar['category']='22: Utilities/2211: Electric Power Generation, Transmission and Distribution'+fuelname
     ar['comment']='from ' + fuelname;
     ar['uncertainty'] = ''
     return ar;
 
-def gen_process_ref(fuel,reg):
-    processref = dict()
-    processref['name']=generation_name_parts['Base name'] + '; from ' + str(fuel) + '; ' + generation_name_parts['Location type']
-    processref['location']=reg
-    processref['processType']='UNIT_PROCESS'
-    processref['categoryPath']=["22: Utilities","2211: Electric Power Generation, Transmission and Distribution",fuel]
-    return processref
+
+def process_table_creation_gen(fuelname, exchanges_list, region):
+    ar = dict()
+    ar['@type'] = 'Process'
+    ar['allocationFactors']=''
+    ar['defaultAllocationMethod']=''
+    ar['exchanges']=exchanges_list;
+    ar['location']=location(region)
+    ar['parameters']=''
+    ar['processDocumentation']=process_doc_creation();
+    ar['processType']='UNIT_PROCESS'
+    ar['name'] = generation_name_parts['Base name'] + '; from ' + str(fuelname) + '; ' + generation_name_parts['Location type']
+    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+fuelname
+    ar['description'] = 'Electricity from '+str(fuelname)+' produced at generating facilities in the '+str(region)+' region'
+    return ar;
 
 def process_table_creation_genmix(region,exchanges_list):
     ar = dict()
@@ -90,25 +111,7 @@ def process_table_creation_genmix(region,exchanges_list):
     ar['description'] = 'Electricity generation mix in the '+str(region)+' region'
     return ar;
 
-def exchange(flw,exchanges_list):
-   
-    exchanges_list.append(flw)
-    return exchanges_list
 
-def process_table_creation_gen(fuelname, exchanges_list, region):
-    ar = dict()
-    ar['@type'] = 'Process'
-    ar['allocationFactors']=''
-    ar['defaultAllocationMethod']=''
-    ar['exchanges']=exchanges_list;
-    ar['location']=location(region)
-    ar['parameters']=''
-    ar['processDocumentation']=process_doc_creation();
-    ar['processType']='UNIT_PROCESS'
-    ar['name'] = generation_name_parts['Base name'] + '; from ' + str(fuelname) + '; ' + generation_name_parts['Location type']
-    ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution/'+fuelname
-    ar['description'] = 'Electricity from '+str(fuelname)+' produced at generating facilities in the '+str(region)+' region'
-    return ar;
 
 #Will be used later
 # def category():
@@ -178,7 +181,7 @@ def processDqsystem():
     ar['name'] = 'US EPA - Process Pedigree Matrix'
     return ar
 
-def exchange_table_creation_input(data,fuelname,fuelheat):
+def exchange_table_creation_input(data,fuelheat):
     year = data['Year'].iloc[0]
     ar = dict()
     ar['internalId']=''
@@ -274,7 +277,7 @@ def flow_table_creation(data):
     ar['flowType'] = flowtype
     ar['flowProperties']=''
     ar['name'] = data['FlowName'].iloc[0][0:255] #cutoff name at length 255 if greater than that
-    ar['@id'] = data['FlowUUID'].iloc[0]
+    ar['id'] = data['FlowUUID'].iloc[0]
     comp = str(data['Compartment'].iloc[0])
     if comp!=None:
      ar['category'] = 'Elementary Flows/'+comp
