@@ -30,7 +30,6 @@ def surplus_pool_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,gen_q
      for i in range(0,len(nerc_region2)):
          
            region = nerc_region2[i][0].value
-           
            exchanges_list = []
            
            exchange(ref_exchange_creator(), exchanges_list)
@@ -52,18 +51,13 @@ def surplus_pool_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,gen_q
      return surplus_dict
 
 
+def consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,generation_quantity, egrid_regions,nerc_region2):
 
-
-
-
-
-def consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,generation_quantity, eGRID_region,nerc_region2):
-
-   surplus_dict = surplus_pool_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,generation_quantity,eGRID_region,nerc_region2)
-   global region
+   surplus_dict = surplus_pool_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,generation_quantity,egrid_regions,nerc_region2)
+   #global region
    consumption_dict = dict()
-   for reg in range(0,len(eGRID_region)):
-           region = eGRID_region[reg][0].value
+   for reg in range(0,len(egrid_regions)):
+           region = egrid_regions[reg][0].value
            
            exchanges_list = []
            exchange(ref_exchange_creator(), exchanges_list)
@@ -82,7 +76,7 @@ def consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,ge
                         #name = surplus_dict[nerc_region[reg][0].value]['name']
 
                         if trade_matrix[nerc+1][j].value != None and trade_matrix[nerc+1][j].value !=0:
-                            
+                            print(nerc_region[reg][0].value)
                             exchange(exchange_table_creation_input_con_mix(surplus_pool_trade_in[reg][0].value,nerc_region[reg][0].value),exchanges_list)
                             chk=1;
                             break;
@@ -95,7 +89,7 @@ def consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,ge
            
            final = process_table_creation_con_mix(region,exchanges_list)
            print(region+' Consumption Mix Process Created')
-           consumption_dict['Consumption'+eGRID_region[reg][0].value] = final;
+           consumption_dict['Consumption'+region] = final;
    return consumption_dict
 
 
