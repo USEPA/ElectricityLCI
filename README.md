@@ -17,12 +17,17 @@ ERG - [Tapajyoti Ghosh](https://github.com/TJTapajyoti), Troy Hottle, Sarah Cash
 Former contributors: Kirti Richa and Troy Hawkins (current affiliation: Argonne National Laboratory)
 
 ## Requirements for use of the code
-This project requires Python 3.x and a number of available packages. See the setup.py file.
+This project requires Python 3.x and some freely available python packages. See the setup.py file.
+The code has currently been designed to be run inside a Python IDE.
 To run the modules requires downloading/pulling these two python projects:
 [Standardized Emission and Waste Inventories (StEWI)](https://github.com/usepa/standardizedinventories)
 [Federal-LCA-Commons-Elementary-Flow-List](https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List)
-This project folders should be put inside the directory housing this project file so they reside at the same level as the 
-'electricitylci' directory.
+This project folders should be put inside the directory housing these project files so they reside at the same level as the 
+'electricitylci' directory. The working directory should then be set be inside the main 'ElectricityLCI' directory containing
+the 'electricitylci' and other module subfolders. 
+To run a model, model_name in globals.py should be set to correspond to a config file in the model builds directory, e.g., 'ELCI_1'
+. Then the model_builds.py file can be run within the IDE to generate the model components and output.
+
 
 ## Using the output in openLCA
 The model is written out to two formats, openLCA JSON-LD and the Federal LCA Commons Unit Process Template.
