@@ -27,7 +27,7 @@ def write(processes: dict, file_path: str):
                 category_path, olca.ModelType.PROCESS, writer, created_ids)
             process.description = _val(d, 'description')
             process.process_type = olca.ProcessType.UNIT_PROCESS
-            process.location = _location(location_code, writer, created_ids)
+            process.location = _location(_val(d, 'location'), writer, created_ids)
             process.process_documentation = _process_doc(
                 _val(d, 'processDocumentation'), writer, created_ids)
             _process_dq(d, process)
@@ -40,7 +40,6 @@ def write(processes: dict, file_path: str):
                     exchange.internal_id = last_id
                     process.exchanges.append(exchange)
             writer.write(process)
-
 
 def _process_dq(d: dict, process: olca.Process):
     process.dq_entry = _format_dq_entry(
@@ -147,8 +146,9 @@ def _flow(d: dict, flowprop: olca.Ref, writer: pack.Writer,
         flow.name = name
         flow.flow_type = olca.FlowType[_val(
             d, 'flowType', default='ELEMENTARY_FLOW')]
-        flow.location = _location(_val(d, 'location'),
-                                  writer, created_ids)
+        #Do not assign flows a location
+        #flow.location = _location(_val(d, 'location'),
+        #                          writer, created_ids)
         flow.category = _category(category_path, olca.ModelType.FLOW,
                                   writer, created_ids)
         propfac = olca.FlowPropertyFactor()
@@ -160,13 +160,16 @@ def _flow(d: dict, flowprop: olca.Ref, writer: pack.Writer,
         created_ids.add(uid)
     return olca.ref(olca.Flow, uid, name)
 
-
-def _location(code: str, writer: pack.Writer,
+def _location(d: dict, writer: pack.Writer,
               created_ids: set) -> Optional[olca.Ref]:
+    code = _val(d, 'name')
     if not isinstance(code, str):
         return None
     if code == '':
         return None
+    uid = _val(d, 'id')
+    if isinstance(uid, str) and uid != '':
+        return olca.ref(olca.Location, uid, code)
     uid = _uid(olca.ModelType.LOCATION, code)
     if uid in created_ids:
         return olca.ref(olca.Location, uid, code)
