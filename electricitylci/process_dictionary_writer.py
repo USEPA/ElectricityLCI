@@ -14,6 +14,15 @@ metadata = pd.read_csv(data_dir+'metadata.csv')
 #Use only first row of metadata for all processes for now
 metadata = metadata.iloc[0,]
 
+#Read in process location uuids
+location_UUID = pd.read_csv(data_dir+'location_UUIDs.csv')
+def lookup_location_uuid(location):
+    try:
+        uuid = location_UUID.loc[location_UUID['NAME'] == location]['REF_ID'].iloc[0]
+    except IndexError:
+        uuid=''
+    return uuid
+
 #Read in process name info
 process_name = pd.read_csv(data_dir+'processname_1.csv')
 generation_name_parts = process_name[process_name['Stage']=='generation'].iloc[0]
@@ -176,8 +185,8 @@ def process_table_creation_genmix(region,exchanges_list):
 #Will be used later
 def location(region):
     ar = dict()
-    ar['@id'] = ''
-    ar['@type'] = 'Location'
+    ar['id'] = lookup_location_uuid(region)
+    ar['type'] = 'Location'
     ar['name'] = region;
     return ar
 
