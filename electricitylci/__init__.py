@@ -36,6 +36,15 @@ def write_distribution_dict():
     from electricitylci.distribution import distribution_mix_dictionary
     return distribution_mix_dictionary()
 
+#Send one or more process dictionaries to be written to json-ld
+def write_process_dicts_to_jsonld(*process_dicts):
+    from electricitylci.olca_jsonld_writer import write
+    from electricitylci.globals import output_dir,model_name
+    all_process_dicts = dict()
+    for d in process_dicts:
+        all_process_dicts={**all_process_dicts,**d}
+    write(all_process_dicts,output_dir+model_name+'_jsonld.zip')
+
 def write_generation_process_dict_to_template(gen_dict):
     from electricitylci.fedlcacommons_template_builder import gen_process_template_generator
     gen_process_template_generator(gen_dict)
