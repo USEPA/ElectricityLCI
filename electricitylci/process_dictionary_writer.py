@@ -67,7 +67,6 @@ def exchange_table_creation_ref(data):
     ar['amount']=1.0
     ar['amountFormula']=''
     ar['unit']=unit('MWh');
-    #ar['location'] = location(region)
     return ar
 
 
@@ -135,7 +134,7 @@ def exchange_table_creation_input_con_mix(generation, loc,ref_to_consumption=Fal
     ar['pedigreeUncertainty'] = ''
     ar['uncertainty'] = ''
     ar['comment'] = 'eGRID ' + str(year);
-    ar['location'] = loc
+    #ar['location'] = location(loc)
     return ar;
 
 def process_table_creation_gen(fuelname, exchanges_list, region):
