@@ -108,7 +108,7 @@ def exchange_table_creation_input_genmix(database,fuelname):
     return ar;
 
 
-def exchange_table_creation_input_con_mix(generation, loc):
+def exchange_table_creation_input_con_mix(generation, loc,ref_to_consumption=False):
     ar = dict()
     ar['internalId'] = ''
     ar['@type'] = 'Exchange'
@@ -117,7 +117,10 @@ def exchange_table_creation_input_con_mix(generation, loc):
     ar['flowProperty'] = ''
     ar['input'] = True
     ar['baseUncertainty'] = ''
-    ar['provider'] = con_process_ref(loc,'consumption')
+    if ref_to_consumption:
+        ar['provider'] = con_process_ref(loc,'consumption')
+    else:
+        ar['provider'] = con_process_ref(loc)
     ar['amount'] = generation
     ar['unit'] = unit('MWh')
     ar['pedigreeUncertainty'] = ''
@@ -125,9 +128,6 @@ def exchange_table_creation_input_con_mix(generation, loc):
     ar['comment'] = 'eGRID ' + str(year);
     ar['location'] = loc
     return ar;
-
-
-
 
 def process_table_creation_gen(fuelname, exchanges_list, region):
     ar = dict()
@@ -364,13 +364,13 @@ def process_table_creation_con_mix(region,exchanges_list):
     ar['allocationFactors']=''
     ar['defaultAllocationMethod']=''
     ar['exchanges']=exchanges_list;
-    ar['location']='US-eGRID-'+region
+    ar['location']=location(region)
     ar['parameters']=''
     ar['processDocumentation']=process_doc_creation();
     ar['processType']=''
     ar['name'] = consumption_mix_name
     ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution'
-    ar['description'] = 'Electricity showing Consumption mix using power plants in the '+str(region)+' region'
+    ar['description'] = 'Electricity consumption mix using power plants in the '+str(region)+' region'
     return ar;
 
 
@@ -380,7 +380,7 @@ def process_table_creation_surplus(region,exchanges_list):
     ar['allocationFactors']=''
     ar['defaultAllocationMethod']=''
     ar['exchanges']=exchanges_list;
-    ar['location']=region
+    ar['location']=location(region)
     ar['parameters']=''
     ar['processDocumentation']=process_doc_creation();
     ar['processType']='UNIT_PROCESS'
@@ -395,7 +395,7 @@ def process_table_creation_distribution(region,exchanges_list):
     ar['allocationFactors']=''
     ar['defaultAllocationMethod']=''
     ar['exchanges']=exchanges_list;
-    ar['location']=region
+    ar['location']=location(region)
     ar['parameters']=''
     ar['processDocumentation']=process_doc_creation();
     ar['processType']=''
