@@ -16,7 +16,7 @@ NREL - Alberta Carpenter
 ERG - [Tapajyoti Ghosh](https://github.com/TJTapajyoti), Troy Hottle, Sarah Cashman
 Former contributors: Kirti Richa and Troy Hawkins (current affiliation: Argonne National Laboratory)
 
-##Requirements for use of the code
+## Requirements for use of the code
 This project requires Python 3.x and a number of available packages. See the setup.py file.
 To run the modules requires downloading/pulling these two python projects:
 [Standardized Emission and Waste Inventories (StEWI)](https://github.com/usepa/standardizedinventories)
@@ -24,7 +24,7 @@ To run the modules requires downloading/pulling these two python projects:
 This project folders should be put inside the directory housing this project file so they reside at the same level as the 
 'electricitylci' directory.
 
-##Using the output in openLCA
+## Using the output in openLCA
 The model is written out to two formats, openLCA JSON-LD and the Federal LCA Commons Unit Process Template.
 The output files correspond to a particular model name and can be found in the 'output' directory.
 The JSON-LD output files have been tested in openLCA 1.6x and more recent versions.
