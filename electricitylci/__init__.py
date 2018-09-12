@@ -15,13 +15,6 @@ def get_generation_mix_process_df(source='egrid',regions='all'):
         generation_mix_process_df = create_generation_mix_process_df_from_egrid_ref_data(regions)
     return generation_mix_process_df
 
-def get_consumption_surplus_distribution_df():
-    from electricitylci.NERC_consumption_surplus_distribution_builder import surplus_dict
-    from electricitylci.NERC_consumption_surplus_distribution_builder import consumption_dict
-    from electricitylci.NERC_consumption_surplus_distribution_builder import distribution_dict
-    from electricitylci.Canada_mexico_process_builder import trade_dict    
-    return surplus_dict,consumption_dict,distribution_dict,trade_dict
-
 def write_generation_process_database_to_dict(gen_database,regions='all'):
     from electricitylci.generation import olcaschema_genprocess
     gen_dict = olcaschema_genprocess(gen_database,subregion=regions)
@@ -32,6 +25,17 @@ def write_generation_mix_database_to_dict(genmix_database,regions='all'):
     genmix_dict = olcaschema_genmix(genmix_database,subregion=regions)
     return genmix_dict
 
+#Currently only valid for all egrid subregions
+def write_surplus_pool_and_consumption_mix_dict():
+    from electricitylci.consumption_mix import surplus_dict
+    from electricitylci.consumption_mix import consumption_dict
+    surplus_pool_and_con_mix = {**surplus_dict,**consumption_dict}
+    return surplus_pool_and_con_mix
+
+def write_distribution_dict():
+    from electricitylci.distribution import distribution_mix_dictionary
+    return distribution_mix_dictionary()
+
 def write_generation_process_dict_to_template(gen_dict):
     from electricitylci.fedlcacommons_template_builder import gen_process_template_generator
     gen_process_template_generator(gen_dict)
@@ -39,3 +43,5 @@ def write_generation_process_dict_to_template(gen_dict):
 def write_generation_mix_dict_to_template(genmix_dict):
     from electricitylci.fedlcacommons_template_builder import gen_mix_template_generator
     gen_mix_template_generator(genmix_dict)
+
+
