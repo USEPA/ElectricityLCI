@@ -1,3 +1,4 @@
+###NOT CURRENTLY INCORPORATED
 import pandas as pd
 import os
 from electricitylci.globals import fuel_name
@@ -30,7 +31,7 @@ for reg in Canada.itertuples():
     
     region = reg[0]
     exchanges_list =[]
-    exchange(ref_flow_creator('CA-'+region),exchanges_list)
+    exchange(ref_exchange_creator('CA-' + region), exchanges_list)
     
     
     for fuel in Canada.iteritems():
