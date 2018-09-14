@@ -7,7 +7,7 @@ from electricitylci.globals import inventories_of_interest
 def count_processes(process_dict):
     return len(process_dict)
 
-def count_facility_matches()
+def count_facility_matches():
     inventory_no_overlap = stewicombo.combineInventoriesforFacilitiesinOneInventory("eGRID", inventories_of_interest, filter_for_LCI=True,
                                                              remove_overlap=False)
     #drop duplicate Facility_IDs
