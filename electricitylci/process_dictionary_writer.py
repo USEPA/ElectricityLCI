@@ -237,7 +237,7 @@ def processDqsystem():
     ar['name'] = 'US EPA - Process Pedigree Matrix'
     return ar
 
-def exchange_table_creation_input(data,fuelname,fuelheat):
+def exchange_table_creation_input(data):
     year = data['Year'].iloc[0]
     ar = dict()
     ar['internalId']=''
@@ -250,10 +250,7 @@ def exchange_table_creation_input(data,fuelname,fuelheat):
     ar['provider']='' 
     ar['amount']=data['Emission_factor'].iloc[0]
     ar['amountFormula']='  '
-    if math.isnan(fuelheat) != True:        
-      ar['unit']=unit('kg');
-    else:
-      ar['unit']=unit('MJ')
+    ar['unit']=unit(data['Unit'].iloc[0]);
     ar['dqEntry'] = ''
     ar['pedigreeUncertainty']=''
     ar['uncertainty']=uncertainty_table_creation(data)
@@ -335,16 +332,15 @@ def flow_table_creation(data):
     ar['name'] = data['FlowName'].iloc[0][0:255] #cutoff name at length 255 if greater than that
     ar['id'] = data['FlowUUID'].iloc[0]
     comp = str(data['Compartment'].iloc[0])
-    if comp!=None:
-     ar['category'] = 'Elementary Flows/'+comp
-    else:
-     ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution'
-    if flowtype == 'ELEMENTARY_FLOW':
-      ar['category'] = 'Elementary flows/'+str(data['ElementaryFlowPrimeContext'].iloc[0])+'/'+comp
+    if (flowtype=='ELEMENTARY_FLOW')&(comp!=''):
+        ar['category'] = 'Elementary flows/' + str(data['ElementaryFlowPrimeContext'].iloc[0]) + '/' + comp
+    elif (flowtype == 'PRODUCT_FLOW') & (comp!=''):
+        ar['category'] = comp
     elif flowtype == 'WASTE_FLOW':
-      ar['category'] = 'Waste flows/'
+        ar['category'] = 'Waste flows/'
     else:
-      ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution'
+        #Assume this is electricity or a byproduct
+        ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution'
     return ar
 
 def ref_exchange_creator(electricity_flow=electricity_at_grid_flow):
