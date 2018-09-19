@@ -42,13 +42,14 @@ def compilation(db,total_gen):
 def uncertainty(db,mean_gen,total_gen,total_facility_considered):
         #Troy Method
         #Creating copy of database by substitution the NA emissions with zero
-        db1 = db.fillna(value = 0)
+        #db1 = db.fillna(value = 0)
         
         #Removing all rows here emissions are not reported for second dataframe
-        db2 = db.dropna()
-        frames = [db1,db2]
+        #db2 = db.dropna()
+        #frames = [db1,db2]
         #Here we doubled up the database by combining two databases together
-        data_1 = pd.concat(frames,axis = 0)
+        #data_1 = pd.concat(frames,axis = 0)
+        data_1 = db
         
         df2 = pd.DataFrame([[0, 0]],columns = ['Electricity','FlowAmount'])
         
