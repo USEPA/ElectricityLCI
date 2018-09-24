@@ -106,24 +106,25 @@ def uncertainty(db,mean_gen,total_gen,total_facility_considered):
 def max_min(db,mean_gen,total_gen,total_facility_considered):
         #Troy Method
         #Creating copy of database by substitution the NA emissions with zero
-        db1 = db.fillna(value = 0)
+        #db1 = db.fillna(value = 0)
         
         #Removing all rows here emissions are not reported for second dataframe
-        db2 = db.dropna()
-        frames = [db1,db2]
+        #db2 = db.dropna()
+        #frames = [db1,db2]
         #Here we doubled up the database by combining two databases together
-        data_1 = pd.concat(frames,axis = 0)
+        #data_1 = pd.concat(frames,axis = 0)
         
         #Filling up the electriity with a random value so that the 0 EF plants can be obtained and calculated. 
         #We need to find the max and minimum of the plant wise emissions factors. 
-        df2 = pd.DataFrame([[0.1, 0]],columns = ['Electricity','FlowAmount'])
         
-        for i in range(len(data_1),total_facility_considered):
+        #df2 = pd.DataFrame([[0.1, 0]],columns = ['Electricity','FlowAmount'])
+        
+        #for i in range(len(data_1),total_facility_considered):
             
-            data = data_1.append(df2,ignore_index = True)
-            data_1 = data
+         #   data = data_1.append(df2,ignore_index = True)
+         #  data_1 = data
             
-        data = data_1
+        data = db
         maximum = (data.iloc[:,1]/data.iloc[:,0]).max();
         minimum = (data.iloc[:,1]/data.iloc[:,0]).min();
         
