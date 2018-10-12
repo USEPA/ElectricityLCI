@@ -1,11 +1,17 @@
 import pandas as pd
 import stewi
-from electricitylci.globals import egrid_year
+from electricitylci.globals import egrid_year,data_dir
 from electricitylci.globals import min_plant_percent_generation_from_primary_fuel_category
 
 #get egrid facility file from stewi
 egrid_facilities = stewi.getInventoryFacilities("eGRID",egrid_year)
 egrid_facilities.rename(columns={'Plant primary coal/oil/gas/ other fossil fuel category':'FuelCategory','Plant primary fuel':'PrimaryFuel','eGRID subregion acronym':'Subregion','NERC region acronym':'NERC'},inplace=True)
+
+#Remove NERC from original egrid output in stewi because there are mismatches in the original data with more than 1 NERC per egrid subregion
+egrid_facilities = egrid_facilities.drop(columns='NERC')
+#Bring in eGRID subregion-NERC mapping
+egrid_nerc = pd.read_csv(data_dir+'egrid_subregion_to_NERC.csv')
+egrid_facilities = pd.merge(egrid_facilities,egrid_nerc,on='Subregion',how='left')
 
 len(egrid_facilities)
 #2016:9709
