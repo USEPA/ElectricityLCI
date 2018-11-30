@@ -10,7 +10,7 @@ setup(
     author='Wesley Ingwersen',
     author_email='ingwersen.wesley@epa.gov',
     description='Create life cycle inventory data for regionalized electricity generation, mix of generation, mix of consumption, and distribution to the end-user in the United States.',
-    install_requires = ['numpy','pandas','olca-ipc','openpyxl'],
+    install_requires = ['numpy>=1.14','pandas>=0.22','olca-ipc>=0.0.6','openpyxl>=2.5','matplotlib>=2.2','seaborn>=0.9'],
     long_description = open('README.md').read(),
     classifiers = [
         "Development Status :: Alpha",
@@ -19,5 +19,8 @@ setup(
         "License :: CC0",
         "Programming Language :: Python :: 3.x",
         "Topic :: Utilities",
-    ]
+    ],
+    #This does not automatically install these dependencies
+    dependency_links=['https://github.com/USEPA/standardizedinventories/archive/v0,9.zip',
+                      'https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List/archive/master.zip']
 )
