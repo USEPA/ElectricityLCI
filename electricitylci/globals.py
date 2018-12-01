@@ -12,13 +12,13 @@ except NameError: modulepath = 'electricitylci/'
 output_dir = modulepath + 'output/'
 data_dir = modulepath + 'data/'
 
-
 #Set model_name here
 model_name = 'ELCI_1'
+#uncomment to define elsewhere
 
 #pull in model config vars
 try:
-    with open("electricitylci/modelbuilds/"+model_name+"_config.json") as cfg:
+    with open(modulepath+'modelbuilds/'+model_name+"_config.json") as cfg:
         model_specs = json.load(cfg)
 except FileNotFoundError:
     print("Model specs not found. Create a model specs file for the model of interest.")

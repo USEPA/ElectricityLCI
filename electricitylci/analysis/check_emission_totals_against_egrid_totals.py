@@ -1,7 +1,7 @@
 import pandas as pd
 
 #Check
-from electricitylci.globals import output_dir,data_dir,egrid_year,model_name
+from electricitylci.globals import output_dir,data_dir,egrid_year#,model_name
 
 #Bring in model gen db and gen mix db
 gen = pd.read_csv(output_dir+model_name+'_all_gen_db.csv')
