@@ -17,8 +17,27 @@ ref_egrid_subregion_generation_by_fuelcategory_with_NERC = pd.merge(ref_egrid_su
 ref_egrid_subregion_generation_by_fuelcategory_with_NERC = ref_egrid_subregion_generation_by_fuelcategory_with_NERC.rename(columns={"Ref_Electricity_Subregion_FuelCategory":"Electricity"})
 
 
-def create_generation_mix_process_df_from_model_generation_data(generation_data, subregion):
-
+def create_generation_mix_process_df_from_model_generation_data(generation_data,
+    subregion):
+    """
+    Creates fuel generation mix by subregion. Currently uses a dataframe
+    'egrid_facilities_w_fuel_region' that is not an input. This should be changed
+    to an input so that the function can accommodate another data source.
+    
+    Parameters
+    ----------
+    generation_data : DataFrame
+        [description]
+    subregion : str
+        Description of single region or group of regions. Options include 'all' for
+        all eGRID subregions, 'NERC' for all NERC regions, 'BA' for all balancing
+        authorities, or a single region (unclear if single region will work).
+    
+    Returns
+    -------
+    DataFrame
+        [description]
+    """
     # Converting to numeric for better stability and merging
     generation_data['FacilityID'] = generation_data['FacilityID'].astype(str)
 
@@ -55,7 +74,7 @@ def create_generation_mix_process_df_from_model_generation_data(generation_data,
             database['Subregion'] = database['Balancing Authority Name']
 
 
-
+    # This looks like it is pretty slow.
         total_gen_reg = np.sum(database['Electricity'])
         for index ,row in fuel_name.iterrows():
             # Reading complete fuel name and heat content information
@@ -80,39 +99,52 @@ def create_generation_mix_process_df_from_model_generation_data(generation_data,
 #Creates gen mix from reference data
 #Only possible for a subregion, NERC region, or total US
 def create_generation_mix_process_df_from_egrid_ref_data(subregion):
+    """
+    [summary]
+    
+    Parameters
+    ----------
+    subregion : [type]
+        [description]
+    
+    Returns
+    -------
+    [type]
+        [description]
+    """
 
-        # Converting to numeric for better stability and merging
-        if subregion == 'all':
-            regions = egrid_subregions
-        elif subregion == 'NERC':
-            regions = list(pd.unique(ref_egrid_subregion_generation_by_fuelcategory_with_NERC['NERC']))
+    # Converting to numeric for better stability and merging
+    if subregion == 'all':
+        regions = egrid_subregions
+    elif subregion == 'NERC':
+        regions = list(pd.unique(ref_egrid_subregion_generation_by_fuelcategory_with_NERC['NERC']))
+    else:
+        regions = [subregion]
+
+    result_database = pd.DataFrame()
+
+    for reg in regions:
+        if subregion == 'NERC':
+            # This makes sure that the dictionary writer works fine because it only works with the subregion column.
+            database = ref_egrid_subregion_generation_by_fuelcategory_with_NERC[ref_egrid_subregion_generation_by_fuelcategory_with_NERC['NERC'] == reg]
+            database['Subregion'] = database['NERC']
+        elif subregion == 'US':
+            #for all US use entire database
+            database = ref_egrid_subregion_generation_by_fuelcategory_with_NERC
         else:
-            regions = [subregion]
+            #assume the region is an egrid subregion
+            database = ref_egrid_subregion_generation_by_fuelcategory_with_NERC[ref_egrid_subregion_generation_by_fuelcategory_with_NERC['Subregion'] == reg]
 
-        result_database = pd.DataFrame()
+        #Get fuel typoes for each region
+        #region_fuel_categories = list(pd.unique(database['FuelCategory']))
+        total_gen_reg = np.sum(database['Electricity'])
+        database['Generation_Ratio'] =  database['Electricity']/total_gen_reg
+        # for index,row in database.iterrows():
+        #     # cropping the database according to the current fuel being considered
+        #     row['Generation_Ratio'] = row['Electricity']/total_gen_reg
+        result_database = pd.concat([result_database,database])
 
-        for reg in regions:
-            if subregion == 'NERC':
-                # This makes sure that the dictionary writer works fine because it only works with the subregion column.
-                database = ref_egrid_subregion_generation_by_fuelcategory_with_NERC[ref_egrid_subregion_generation_by_fuelcategory_with_NERC['NERC'] == reg]
-                database['Subregion'] = database['NERC']
-            elif subregion == 'US':
-                #for all US use entire database
-                database = ref_egrid_subregion_generation_by_fuelcategory_with_NERC
-            else:
-                #assume the region is an egrid subregion
-                database = ref_egrid_subregion_generation_by_fuelcategory_with_NERC[ref_egrid_subregion_generation_by_fuelcategory_with_NERC['Subregion'] == reg]
-
-            #Get fuel typoes for each region
-            #region_fuel_categories = list(pd.unique(database['FuelCategory']))
-            total_gen_reg = np.sum(database['Electricity'])
-            database['Generation_Ratio'] =  database['Electricity']/total_gen_reg
-            # for index,row in database.iterrows():
-            #     # cropping the database according to the current fuel being considered
-            #     row['Generation_Ratio'] = row['Electricity']/total_gen_reg
-            result_database = pd.concat([result_database,database])
-
-        return result_database
+    return result_database
 
 
 
