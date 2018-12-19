@@ -7,3 +7,8 @@ electricitylci/__pycache__/
 # IDE files
 .idea/
 .vscode/
+
+# egg files
+*.egg-info/
+
+.DS_Store
