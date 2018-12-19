@@ -40,7 +40,7 @@ def write_distribution_dict():
 #Send one or more process dictionaries to be written to json-ld
 def write_process_dicts_to_jsonld(*process_dicts):
     from electricitylci.olca_jsonld_writer import write
-    from electricitylci.globals import output_dir#,model_name
+    from electricitylci.globals import output_dir,model_name
     all_process_dicts = dict()
     for d in process_dicts:
         all_process_dicts={**all_process_dicts,**d}
