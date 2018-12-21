@@ -1,6 +1,8 @@
 from electricitylci.process_dictionary_writer import exchange,ref_exchange_creator,exchange_table_creation_input_con_mix,process_table_creation_distribution,electricity_at_user_flow
 from electricitylci.egrid_facilities import egrid_subregions
-from electricitylci.globals import electricity_flow_name_consumption,efficiency_of_distribution_grid
+from electricitylci.globals import electricity_flow_name_consumption
+from electricitylci.model_config import efficiency_of_distribution_grid
+
 
 def distribution_mix_dictionary():
     distribution_dict = dict()

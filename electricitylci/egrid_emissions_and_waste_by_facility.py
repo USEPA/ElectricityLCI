@@ -1,7 +1,8 @@
 import pandas as pd
 import stewicombo
 import os
-from electricitylci.globals import inventories_of_interest,data_dir
+from electricitylci.globals import data_dir
+from electricitylci.model_config import inventories_of_interest
 
 #Check to see if the stewicombo output of interest is stored as a csv
 stewicombooutputfile = ''

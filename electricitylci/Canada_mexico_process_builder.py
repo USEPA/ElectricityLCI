@@ -1,7 +1,7 @@
 ###NOT CURRENTLY INCORPORATED
 import pandas as pd
 import os
-from electricitylci.globals import fuel_name
+from electricitylci.model_config import fuel_name
 from electricitylci.globals import output_dir
 from electricitylci.globals import data_dir
 from electricitylci.process_dictionary_writer import *

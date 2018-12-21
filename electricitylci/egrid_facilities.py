@@ -1,7 +1,7 @@
 import pandas as pd
 import stewi
-from electricitylci.globals import egrid_year,data_dir
-from electricitylci.globals import min_plant_percent_generation_from_primary_fuel_category
+from electricitylci.globals import data_dir
+from electricitylci.model_config import egrid_year, min_plant_percent_generation_from_primary_fuel_category
 
 #get egrid facility file from stewi
 egrid_facilities = stewi.getInventoryFacilities("eGRID",egrid_year)
