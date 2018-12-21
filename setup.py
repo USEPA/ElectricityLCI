@@ -10,7 +10,7 @@ setup(
     author='Wesley Ingwersen',
     author_email='ingwersen.wesley@epa.gov',
     description='Create life cycle inventory data for regionalized electricity generation, mix of generation, mix of consumption, and distribution to the end-user in the United States.',
-    install_requires = ['numpy>=1.14','pandas>=0.22','olca-ipc>=0.0.6','openpyxl>=2.5','matplotlib>=2.2','seaborn>=0.9'],
+    install_requires = ['numpy>=1.14','pandas>=0.22','olca-ipc>=0.0.6','openpyxl>=2.5','matplotlib>=2.2','seaborn>=0.9', 'sympy>=1.2','xlrd>=1.1'],
     long_description = open('README.md').read(),
     classifiers = [
         "Development Status :: Alpha",
