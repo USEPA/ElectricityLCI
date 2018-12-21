@@ -1,7 +1,8 @@
 #Import egrid subregion data from egrid_data file, converts them all to use names and units used in this project,
 #writes them to a csv file
 import pandas as pd
-from electricitylci.globals import egrid_year, data_dir
+from electricitylci.globals import data_dir
+from electricitylci.model_config import egrid_year
 
 egrid_year_str = str(egrid_year)
 

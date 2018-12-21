@@ -9,7 +9,7 @@ def get_generation_process_df(source='egrid', regions='all'):
 def get_generation_mix_process_df(source='egrid',regions='all'):
     from electricitylci.egrid_filter import electricity_for_selected_egrid_facilities
     from electricitylci.generation_mix import create_generation_mix_process_df_from_model_generation_data,create_generation_mix_process_df_from_egrid_ref_data
-    from electricitylci.globals import gen_mix_from_model_generation_data
+    from electricitylci.model_config import gen_mix_from_model_generation_data
     if gen_mix_from_model_generation_data:
         generation_mix_process_df = create_generation_mix_process_df_from_model_generation_data(electricity_for_selected_egrid_facilities, regions)
     else:
@@ -40,7 +40,8 @@ def write_distribution_dict():
 #Send one or more process dictionaries to be written to json-ld
 def write_process_dicts_to_jsonld(*process_dicts):
     from electricitylci.olca_jsonld_writer import write
-    from electricitylci.globals import output_dir,model_name
+    from electricitylci.globals import output_dir
+    from electricitylci.model_config import model_name
     all_process_dicts = dict()
     for d in process_dicts:
         all_process_dicts={**all_process_dicts,**d}

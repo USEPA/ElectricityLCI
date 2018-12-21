@@ -1,7 +1,8 @@
 import pandas as pd
 
 import stewicombo
-from electricitylci.globals import inventories_of_interest
+from electricitylci.model_config import inventories_of_interest
+
 
 #Send one on more process dictionary from a model
 def count_processes(process_dict):
