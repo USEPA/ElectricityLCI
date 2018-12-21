@@ -1,7 +1,8 @@
 #Must set model_name in globals.py to model of interest
 import electricitylci
 
-#from electricitylci.globals import output_dir,model_name
+from electricitylci.globals import output_dir
+from electricitylci.model_config import model_name
 
 #Optionally create a US avg generation database
 US_generation_db = electricitylci.get_generation_process_df(regions='US')
