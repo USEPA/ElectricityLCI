@@ -1,6 +1,7 @@
 
 import pandas as pd
-from electricitylci.globals import fuel_name
+from electricitylci.model_config import fuel_name
+
 
 def map_heat_inputs_to_fuel_names(generation_df):
     fuel_info_tech_flows = fuel_name[fuel_name["ElementaryFlowInput"]==0]

@@ -1,52 +1,19 @@
 # Electricity Life Cycle Inventory
 
-THIS PROJECT IS IN ALPHA STATE AND OUTPUTS SHOULD NOT BE USED FOR LCA OR OTHER PURPOSES AT THIS TIME
-
-Use standardized facility release data along with existing models to create regionalized life cycle inventory data for the generation,
+Use standardized facility release data to create regionalized life cycle inventory data for the generation,
  mix of generation, mix of consumption, and distribution of electricity to end-users for the US. 
 
-This project is a collaboration between US EPA Office of Research and Development (USEPA) and the National Renewable Energy Laboratory (NREL),
- with support from Franklin Associates (ERG), and other federal entities, including the National Energy Technology Laboratory and
- the National Agricultural Library. The goal of the project is to create an LCI model of electricity for the [Federal LCA Commons](http://www.lcacommons.gov/catalog).
-  US EPA is the lead on Phase I.
+THIS CODE IS IN BETA STATE
 
-Phase I Active Team members (* = lead):
-USEPA - [Wesley Ingwersen](https://github.com/WesIngwersen)*
-NREL - Alberta Carpenter
-ERG - [Tapajyoti Ghosh](https://github.com/TJTapajyoti), Troy Hottle, Sarah Cashman
-Former contributors: Kirti Richa and Troy Hawkins (current affiliation: Argonne National Laboratory)
+See the [wiki](https://github.com/USEPA/ElectricityLCI/wiki) for installation and use instructions, descriptions of files, and a list of contributors.
 
-## Requirements for use of the code
-This project requires Python 3.x and some freely available python packages. See the setup.py file.
-The code has currently been designed to be run inside a Python IDE.
-To run the modules requires downloading/pulling these two python projects:
-[Standardized Emission and Waste Inventories (StEWI)](https://github.com/usepa/standardizedinventories)
-[Federal-LCA-Commons-Elementary-Flow-List](https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List)
-This project folders should be put inside the directory housing these project files so they reside at the same level as the 
-'electricitylci' directory. The working directory should then be set be inside the main 'ElectricityLCI' directory containing
-the 'electricitylci' and other module subfolders. 
-To run a model, model_name in globals.py should be set to correspond to a config file in the model builds directory, e.g., 'ELCI_1'
-. Then the model_builds.py file can be run within the IDE to generate the model components and output.
+This code was created as part of a collaboration between US EPA Office of Research and Development (USEPA) and the National Renewable Energy Laboratory (NREL),
+ with support from Franklin Associates (ERG), and the National Energy Technology Laboratory.
 
+For a full background on the motivation, methodology, and results of ELCI_1 model built with this code, see this article:
+Ghosh T, Ingwersen WW, Hottle T, Richa K, Cashmann S, Hawkins TR, Carpenter A (2018)
+ A System for U.S. Regionalized Electricity Life Cycle Inventory Data Creation. _currently under peer review_
 
-## Using the output in openLCA
-The model is written out to two formats, openLCA JSON-LD and the Federal LCA Commons Unit Process Template.
-The output files correspond to a particular model name and can be found in the 'output' directory.
-The JSON-LD output files have been tested in openLCA 1.6x and more recent versions.
-The template output files (Excel) will only work in openLCA 1.5x.
-
-To use the JSON-LD files, a new openLCA database should be created with 'units and flow properties'.
-The following reference data needs to be imported into this database prior to imported the ELCI JSON-LD output:
-1. The [Federal LCA Commons Elementary Flow List](https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List) corresponding to the version specified in the model config file.
- Type: JSON-LD .zip archive.  
- Save the file to your local machine and import into the new database in openLCA using File>>Import>> and
- selecting 'Linked Data(JSON-LD)' as the type and selecting the downloaded .zip file.
-2. The [US EPA Data Quality Systems for openLCA](https://edgadmin.epa.gov/data/PUBLIC/ORD/NRMRL/LCACENTEROFEXCELLENCE/USEPA_DataQualitySchemes_JSON-LDforopenLCA1.6.zip). Type: JSON-LD .zip archive. See the previous step for import instructions. 
-3. The locations database (location TDB). Type: openLCA database format .zolca. 
- This is imported the same way as JSON-LD except 'Import entire database' is selected as the type.
-
-Then the database is ready to import the .zip containing the json-ld files for the eLCI database of interest,
- using the same methods for JSON-LD import as described above. 
 
 ## Disclaimer
 The United States Environmental Protection Agency (EPA) GitHub project code is provided on an "as is" basis 

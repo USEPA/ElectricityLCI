@@ -1,5 +1,6 @@
 from electricitylci.egrid_facilities import egrid_subregions
-from electricitylci.globals import output_dir,data_dir,fuel_name#,model_name
+from electricitylci.globals import output_dir,data_dir  #,model_name
+from electricitylci.model_config import fuel_name
 import os
 import openpyxl
 from copy import copy, deepcopy

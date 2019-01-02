@@ -1,7 +1,8 @@
 import openpyxl
 
 #from electricitylci.egrid_facilities import egrid_subregions
-from electricitylci.globals import data_dir,net_trading
+from electricitylci.globals import data_dir
+from electricitylci.model_config import net_trading
 from electricitylci.process_dictionary_writer import exchange,exchange_table_creation_input_con_mix,ref_exchange_creator,process_table_creation_con_mix,process_table_creation_surplus
 
 wb2 = openpyxl.load_workbook(data_dir+'eGRID_Consumption_Mix_new.xlsx',data_only=True)

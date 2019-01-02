@@ -1,5 +1,5 @@
 import stewi
-from electricitylci.globals import egrid_year
+from electricitylci.model_config import egrid_year
 
 #Get inventory data to get net generation per facility
 egrid_flowbyfacility = stewi.getInventory("eGRID",egrid_year)
