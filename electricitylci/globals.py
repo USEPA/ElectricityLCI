@@ -2,23 +2,26 @@ import os
 import pandas as pd
 import json
 
+
 def set_dir(directory):
     if not os.path.exists(directory): os.makedirs(directory)
     return directory
 
 try: modulepath = os.path.dirname(os.path.realpath(__file__)).replace('\\', '/') + '/'
 except NameError: modulepath = 'electricitylci/'
-
-output_dir = modulepath + 'output/'
-data_dir = modulepath + 'data/'
+# modulepath = os.path.dirname(os.path.realpath("__file__"))
+output_dir = os.path.join(modulepath, 'output')
+data_dir = os.path.join(modulepath,  'data')
 
 
 #Set model_name here
-model_name = 'ELCI_1'
+model_name = 'ELCI_2'
 
 #pull in model config vars
 try:
-    with open("electricitylci/modelbuilds/"+model_name+"_config.json") as cfg:
+    fn = os.path.join(modulepath, 'modelbuilds',
+                      '{}_config.json'.format(model_name))
+    with open(fn) as cfg:
         model_specs = json.load(cfg)
 except FileNotFoundError:
     print("Model specs not found. Create a model specs file for the model of interest.")
@@ -48,7 +51,7 @@ use_primaryfuel_for_coal = model_specs["use_primaryfuel_for_coal"]
 #get the fuelname file
 fuel_name_file = model_specs["fuel_name_file"]
 #Reading the fuel name file
-fuel_name = pd.read_csv(data_dir+fuel_name_file)
+fuel_name = pd.read_csv(os.path.join(data_dir, fuel_name_file))
 
 #Determine whether or not to post-process the generation data
 post_process_generation_emission_factors = model_specs["post_process_generation_emission_factors"]
