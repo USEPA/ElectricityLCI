@@ -5,7 +5,12 @@ import math
 import time
 import pandas as pd
 from os.path import join
-from electricitylci.globals import data_dir,egrid_year,electricity_flow_name_generation_and_distribution,electricity_flow_name_consumption
+from electricitylci.globals import (
+    data_dir,
+    electricity_flow_name_generation_and_distribution,
+    electricity_flow_name_consumption
+)
+from electricitylci.model_config import egrid_year
 from electricitylci.egrid_facilities import egrid_subregions
 
 year = egrid_year
