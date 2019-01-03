@@ -4,18 +4,19 @@
 import math
 import time
 import pandas as pd
+from os.path import join
 from electricitylci.globals import data_dir,egrid_year,electricity_flow_name_generation_and_distribution,electricity_flow_name_consumption
 from electricitylci.egrid_facilities import egrid_subregions
 
 year = egrid_year
 
 #Read in general metadata to be used by all processes
-metadata = pd.read_csv(data_dir+'metadata.csv')
+metadata = pd.read_csv(join(data_dir, 'metadata.csv'))
 #Use only first row of metadata for all processes for now
 metadata = metadata.iloc[0,]
 
 #Read in process location uuids
-location_UUID = pd.read_csv(data_dir+'location_UUIDs.csv')
+location_UUID = pd.read_csv(join(data_dir, 'location_UUIDs.csv'))
 def lookup_location_uuid(location):
     try:
         uuid = location_UUID.loc[location_UUID['NAME'] == location]['REF_ID'].iloc[0]
@@ -24,7 +25,7 @@ def lookup_location_uuid(location):
     return uuid
 
 #Read in process name info
-process_name = pd.read_csv(data_dir+'processname_1.csv')
+process_name = pd.read_csv(join(data_dir, 'processname_1.csv'))
 generation_name_parts = process_name[process_name['Stage']=='generation'].iloc[0]
 generation_mix_name_parts = process_name[process_name['Stage']=='generation mix'].iloc[0]
 

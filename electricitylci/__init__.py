@@ -1,7 +1,12 @@
 
 def get_generation_process_df(source='egrid', regions='all'):
     """
-    Create a dataframe of emissions from power generation by fuel type in each region.
+    Create a dataframe of emissions from power generation by fuel type in each
+    region.
+
+    Possible changes:
+    - Use the 'source' parameter to switch between eGRID and 923
+    - Read the 'source' parameter from a config file and pass through the variable.
     
     Parameters
     ----------
@@ -112,7 +117,7 @@ def write_generation_mix_database_to_dict(genmix_database, regions='all'):
 
 def write_surplus_pool_and_consumption_mix_dict():
     """
-    Currently only valid for all egrid subregions
+    [summary]
     
     Returns
     -------

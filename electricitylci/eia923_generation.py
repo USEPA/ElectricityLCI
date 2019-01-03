@@ -2,6 +2,7 @@ import pandas as pd
 import zipfile
 import io
 import os
+from os.path import join
 import requests
 from electricitylci.globals import data_dir
 
@@ -11,7 +12,7 @@ def eia_download_extract(odd_year):
     schedule_name = 'EIA923_Schedules_2_3_4_5_'
     if odd_year == '2015':
         schedule_name = 'EIA923_Schedules_2_3_4_5_M_12_'
-    stored_file_name = data_dir+schedule_name+odd_year+'_Final_Revision.csv'
+    stored_file_name = join(data_dir, schedule_name+odd_year+'_Final_Revision.csv')
     if not os.path.exists(stored_file_name):
         url_eia923 = 'https://www.eia.gov/electricity/data/eia923/archive/xls/f923_'+odd_year+'.zip'
         print("Downloading EIA-923 files for " + odd_year)
@@ -19,7 +20,7 @@ def eia_download_extract(odd_year):
         file = zipfile.ZipFile(io.BytesIO(request.content))
         file.extractall(path=data_dir)
         print('Reading in Excel file ...')
-        eia923_path = data_dir+schedule_name+odd_year+'_Final_Revision.xlsx'
+        eia923_path = join(data_dir, schedule_name+odd_year+'_Final_Revision.xlsx')
         eia = pd.read_excel(eia923_path,
                             sheet_name='Page 1 Generation and Fuel Data',
                             header=5,
@@ -42,7 +43,9 @@ def eia_download_extract(odd_year):
         eia = eia.loc[:, colstokeep]
         eia.to_csv(stored_file_name)
     else:
-        eia = pd.read_csv(stored_file_name)
+        eia = pd.read_csv(stored_file_name,
+                          dtype={'Plant Id': str,
+                                 'YEAR': str})
 
     EIA_923 = eia
     # Grouping similar facilities together.
