@@ -6,7 +6,7 @@ The functions in this script calculate the fraction of each generating source
 import numpy as np
 from electricitylci.process_dictionary_writer import *
 from electricitylci.egrid_facilities import egrid_facilities,egrid_subregions
-from electricitylci.globals import fuel_name,use_primaryfuel_for_coal
+from electricitylci.model_config import use_primaryfuel_for_coal, fuel_name
 
 #Get a subset of the egrid_facilities dataset
 egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory','NERC','PercentGenerationfromDesignatedFuelCategory','Balancing Authority Name','Balancing Authority Code']]

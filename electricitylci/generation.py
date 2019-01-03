@@ -7,7 +7,8 @@ warnings.filterwarnings("ignore")
 from electricitylci.process_dictionary_writer import *
 from electricitylci.egrid_facilities import egrid_facilities,egrid_subregions
 from electricitylci.egrid_emissions_and_waste_by_facility import years_in_emissions_and_wastes_by_facility
-from electricitylci.globals import egrid_year,output_dir, fuel_name, join_with_underscore,use_primaryfuel_for_coal
+from electricitylci.globals import output_dir, join_with_underscore
+from electricitylci.model_config import egrid_year, use_primaryfuel_for_coal, fuel_name
 from electricitylci.eia923_generation import eia_download_extract
 from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty,max_min
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows,map_renewable_heat_flows_to_fedelemflows,map_compartment_to_flow_type,add_flow_direction
@@ -328,7 +329,7 @@ def add_technological_correlation_score(db):
 def add_temporal_correlation_score(db):
     db['TemporalCorrelation'] = 5
     from electricitylci.dqi import temporal_correlation_lower_bound_to_dqi
-    from electricitylci.globals import electricity_lci_target_year
+    from electricitylci.model_config import electricity_lci_target_year
 
     #Could be more precise here with year
     db['Age'] =  electricity_lci_target_year - pd.to_numeric(db['Year'])

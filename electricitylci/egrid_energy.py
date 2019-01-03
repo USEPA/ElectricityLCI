@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 from os.path import join
 from electricitylci.egrid_flowbyfacilty import egrid_flowbyfacility
-from electricitylci.globals import data_dir,egrid_year
+from electricitylci.globals import data_dir
+from electricitylci.model_config import egrid_year
 
 #Get flow by facility data for egrid
 egrid_net_generation = egrid_flowbyfacility[egrid_flowbyfacility['FlowName']=='Electricity']
