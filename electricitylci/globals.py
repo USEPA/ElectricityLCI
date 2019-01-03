@@ -11,6 +11,7 @@ except NameError: modulepath = 'electricitylci/'
 output_dir = os.path.join(modulepath, 'output')
 data_dir = os.path.join(modulepath,  'data')
 
+
 def join_with_underscore(items):
     type_cast_to_str = False
     for x in items:

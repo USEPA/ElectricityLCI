@@ -7,7 +7,7 @@ def get_generation_process_df(source='egrid', regions='all'):
     Possible changes:
     - Use the 'source' parameter to switch between eGRID and 923
     - Read the 'source' parameter from a config file and pass through the variable.
-    
+
     Parameters
     ----------
     source : str, optional
@@ -15,7 +15,7 @@ def get_generation_process_df(source='egrid', regions='all'):
     regions : str, optional
         Regions to include in the analysis (the default is 'all', which uses all
         eGRID subregions.)
-    
+
     Returns
     -------
     DataFrame
@@ -47,7 +47,7 @@ def get_generation_mix_process_df(source='egrid',regions='all'):
     This function imports and uses the parameter 'gen_mix_from_model_generation_data'
     from globals.py. If the value is False it cannot currently handle regions
     other than 'all', 'NERC', 'US', or a single eGRID subregion.
-    
+
     Parameters
     ----------
     source : str, optional
@@ -55,7 +55,7 @@ def get_generation_mix_process_df(source='egrid',regions='all'):
     regions : str, optional
         Which regions to include (the default is 'all', which includes all eGRID
         subregions)
-    
+
     Returns
     -------
     DataFrame
@@ -89,7 +89,7 @@ def get_generation_mix_process_df(source='egrid',regions='all'):
 def write_generation_process_database_to_dict(gen_database, regions='all'):
     """
     Create olca formatted dictionaries of individual processes
-    
+
     Parameters
     ----------
     gen_database : DataFrame
@@ -97,7 +97,7 @@ def write_generation_process_database_to_dict(gen_database, regions='all'):
         in a single region.
     regions : str, optional
         Not currently used (the default is 'all', which [default_description])
-    
+
     Returns
     -------
     dict
@@ -118,7 +118,7 @@ def write_generation_mix_database_to_dict(genmix_database, regions='all'):
 def write_surplus_pool_and_consumption_mix_dict():
     """
     [summary]
-    
+
     Returns
     -------
     [type]
@@ -138,7 +138,7 @@ def write_distribution_dict():
 def write_process_dicts_to_jsonld(*process_dicts):
     """
     Send one or more process dictionaries to be written to json-ld
-    
+
     """
     from electricitylci.olca_jsonld_writer import write
     from electricitylci.globals import output_dir
@@ -147,7 +147,3 @@ def write_process_dicts_to_jsonld(*process_dicts):
     for d in process_dicts:
         all_process_dicts = {**all_process_dicts, **d}
     write(all_process_dicts, output_dir+model_name+'_jsonld.zip')
-
-
-
-
