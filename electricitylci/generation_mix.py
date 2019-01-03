@@ -1,3 +1,8 @@
+""" 
+The functions in this script calculate the fraction of each generating source
+(either from generation data or straight from eGRID)
+"""
+
 import numpy as np
 from electricitylci.process_dictionary_writer import *
 from electricitylci.egrid_facilities import egrid_facilities,egrid_subregions
