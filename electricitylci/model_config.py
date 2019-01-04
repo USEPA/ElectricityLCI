@@ -17,6 +17,10 @@ except FileNotFoundError:
 
 electricity_lci_target_year = model_specs["electricity_lci_target_year"]
 egrid_year = model_specs["egrid_year"]
+
+# use 923 and cems rather than egrid, but still use the egrid_year
+# parameter to determine the data year
+replace_egrid = model_specs["replace_egrid"]
 inventories_of_interest = model_specs["inventories_of_interest"]
 inventories = inventories_of_interest.keys()
 egrid_facility_efficiency_filters = model_specs["egrid_facility_efficiency_filters"]

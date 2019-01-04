@@ -1,6 +1,7 @@
 {
 "electricity_lci_target_year": 2018,
 "egrid_year": 2016,
+"replace_egrid" : true,
 "inventories_of_interest": {"eGRID":"2016","TRI":"2016","NEI":"2016","RCRAInfo":"2015"},
 "include_only_egrid_facilities_with_positive_generation": true,
 "egrid_facility_efficiency_filters" : {"lower_efficiency":10,"upper_efficiency":100},
