@@ -25,30 +25,32 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
     combined_data = generation_data.merge(emissions_data, left_on = ['FacilityID'], right_on = ['eGRID_ID'], how = 'right')   
 
     #Checking the odd year
+    odd_year = None
     for year in years_in_emissions_and_wastes_by_facility:
 
         if year != egrid_year:
-           odd_year = year;
+            odd_year = year;
+            #Code below not being used
+            #checking if any of the years are odd. If yes, we need EIA data.
+            #non_egrid_emissions_odd_year = combined_data[combined_data['Year'] == odd_year]
+            #odd_database = pd.unique(non_egrid_emissions_odd_year['Source'])
 
-    #checking if any of the years are odd. If yes, we need EIA data.
-    non_egrid_emissions_odd_year = combined_data[combined_data['Year'] == odd_year]
-    odd_database = pd.unique(non_egrid_emissions_odd_year['Source'])
-      
+    cols_to_drop_for_final = ['FacilityID']
     
     #Downloading the required EIA923 data
     if odd_year != None:
         EIA_923_gen_data = eia_download_extract(odd_year)
     
-    #Merging database with EIA 923 data
-    database_with_new_generation = combined_data.merge(EIA_923_gen_data, left_on = ['eGRID_ID'],right_on = ['Plant Id'],how = 'left')
-    database_with_new_generation['Year'] = database_with_new_generation['Year'].astype(str)
-    database_with_new_generation = database_with_new_generation.sort_values(by = ['Year'])
+        #Merging database with EIA 923 data
+        combined_data = combined_data.merge(EIA_923_gen_data, left_on = ['eGRID_ID'],right_on = ['Plant Id'],how = 'left')
+        combined_data['Year'] = combined_data['Year'].astype(str)
+        combined_data = combined_data.sort_values(by = ['Year'])
+        #Replacing the odd year Net generations with the EIA net generations.
+        combined_data['Electricity']= np.where(combined_data['Year'] == int(odd_year), combined_data['Net Generation (Megawatthours)'],combined_data['Electricity'])
+        cols_to_drop_for_final = cols_to_drop_for_final+['Plant Id','Plant Name','State','YEAR','Net Generation (Megawatthours)','Total Fuel Consumption MMBtu']
 
-    #Replacing the odd year Net generations with the EIA net generations. 
-    database_with_new_generation['Electricity']= np.where(database_with_new_generation['Year'] == int(odd_year), database_with_new_generation['Net Generation (Megawatthours)'],database_with_new_generation['Electricity'])
-   
     #Dropping unnecessary columns
-    emissions_gen_data = database_with_new_generation.drop(columns = ['FacilityID','Plant Id','Plant Name','State','YEAR','Net Generation (Megawatthours)','Total Fuel Consumption MMBtu'])
+    emissions_gen_data = combined_data.drop(columns = cols_to_drop_for_final)
 
     #Merging with the egrid_facilites file to get the subregion information in the database!!!
     final_data = pd.merge(egrid_facilities_w_fuel_region,emissions_gen_data, left_on = ['FacilityID'],right_on = ['eGRID_ID'], how = 'right')
@@ -215,7 +217,7 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
 
     result_database = result_database.drop_duplicates()
     # Drop duplicated in total gen database
-    total_gen_database = total_gen_database.drop_duplicates()
+    #total_gen_database = total_gen_database.drop_duplicates()
 
 
     print("Generation process database for " + subregion + " complete.")
