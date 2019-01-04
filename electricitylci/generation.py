@@ -216,8 +216,8 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
     result_database = result_database.drop_duplicates()
     # Drop duplicated in total gen database
     total_gen_database = total_gen_database.drop_duplicates()
-    total_gen_database.to_csv(output_dir + 'total_gen_database_' + subregion + '.csv', index=False)
-    # result_database.to_csv('chk.csv')
+
+
     print("Generation process database for " + subregion + " complete.")
     return result_database
 
