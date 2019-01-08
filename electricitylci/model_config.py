@@ -1,5 +1,6 @@
 import json
 import pandas as pd
+from os.path import join
 
 from electricitylci.globals import modulepath, data_dir
 
@@ -31,6 +32,6 @@ net_trading = model_specs["net_trading"]
 fedelemflowlist_version = model_specs["fedelemflowlist_version"]
 use_primaryfuel_for_coal = model_specs["use_primaryfuel_for_coal"]
 fuel_name_file = model_specs["fuel_name_file"]
-fuel_name = pd.read_csv(data_dir+fuel_name_file)
+fuel_name = pd.read_csv(join(data_dir, fuel_name_file))
 post_process_generation_emission_factors = model_specs["post_process_generation_emission_factors"]
 gen_mix_from_model_generation_data=False
