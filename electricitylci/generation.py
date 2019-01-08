@@ -8,7 +8,12 @@ from electricitylci.process_dictionary_writer import *
 from electricitylci.egrid_facilities import egrid_facilities,egrid_subregions
 from electricitylci.egrid_emissions_and_waste_by_facility import years_in_emissions_and_wastes_by_facility
 from electricitylci.globals import output_dir, join_with_underscore
-from electricitylci.model_config import egrid_year, use_primaryfuel_for_coal, fuel_name
+from electricitylci.model_config import (
+    egrid_year,
+    use_primaryfuel_for_coal,
+    fuel_name,
+    replace_egrid
+)
 from electricitylci.eia923_generation import eia_download_extract
 from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty,max_min
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows,map_renewable_heat_flows_to_fedelemflows,map_compartment_to_flow_type,add_flow_direction
@@ -36,6 +41,8 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
       
     
     #Downloading the required EIA923 data
+    # Annual facility generation from the same year as the emissions data
+    # is needed to normalize total facility emissions.
     if odd_year != None:
         EIA_923_gen_data = eia_download_extract(odd_year)
     
