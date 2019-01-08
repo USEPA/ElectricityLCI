@@ -95,9 +95,10 @@ def eia923_download_extract(
         print('Downloading EIA-923 files')
         eia923_download(year=year, save_path=expected_923_folder)
         
-        eia923_path = find_file_in_folder(
+        eia923_path, eia923_name = find_file_in_folder(
             folder_path=expected_923_folder,
-            file_pattern_match='2_3_4_5'
+            file_pattern_match='2_3_4_5',
+            return_name=True
         )
         # eia923_files = os.listdir(expected_923_folder)
 
@@ -113,7 +114,7 @@ def eia923_download_extract(
         eia = load_eia923_excel(eia923_path)
 
         # Save as csv for easier access in future
-        csv_fn = gen_file.split('.')[0] + '.csv'
+        csv_fn = eia923_name.split('.')[0] + '.csv'
         csv_path = join(expected_923_folder, csv_fn)
         eia.to_csv(csv_path, index=False)
 
@@ -138,9 +139,10 @@ def eia923_download_extract(
         else:
             print('Loading data from previously downloaded excel file,',
                   ' how did the csv file get deleted?')
-            eia923_path = find_file_in_folder(
+            eia923_path, eia923_name = find_file_in_folder(
                 folder_path=expected_923_folder,
-                file_pattern_match='2_3_4_5'
+                file_pattern_match='2_3_4_5',
+                return_name=True
             )
             
             # # would be more elegent with glob but this works to identify the
@@ -151,7 +153,7 @@ def eia923_download_extract(
             # eia923_path = join(expected_923_folder, gen_file)
             eia = load_eia923_excel(eia923_path)
 
-            csv_fn = gen_file.split('.')[0] + '.csv'
+            csv_fn = eia923_name.split('.')[0] + '.csv'
             csv_path = join(expected_923_folder, csv_fn)
             eia.to_csv(csv_path, index=False)
 

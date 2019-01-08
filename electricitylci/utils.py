@@ -33,7 +33,7 @@ def download_unzip(url, unzip_path):
     z.extractall(path=unzip_path)
 
 
-def find_file_in_folder(folder_path, file_pattern_match):
+def find_file_in_folder(folder_path, file_pattern_match, return_name=True):
 
     files = os.listdir(folder_path)
 
@@ -45,4 +45,7 @@ def find_file_in_folder(folder_path, file_pattern_match):
 
     file_path = join(folder_path, file_name)
 
-    return file_path
+    if not return_name:
+        return file_path
+    else:
+        return (file_path, file_name)

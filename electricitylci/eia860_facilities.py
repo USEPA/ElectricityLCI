@@ -62,9 +62,10 @@ def eia860_balancing_authority(year):
         print('Downloading EIA-860 files')
         eia860_download(year=year, save_path=expected_860_folder)
 
-        eia860_path = find_file_in_folder(
+        eia860_path, eia860_name = find_file_in_folder(
             folder_path=expected_860_folder,
-            file_pattern_match='2___Plant'
+            file_pattern_match='2___Plant',
+            return_name=True
         )
         # eia860_files = os.listdir(expected_860_folder)
 
@@ -80,7 +81,7 @@ def eia860_balancing_authority(year):
         eia = load_eia860_excel(eia860_path)
 
         # Save as csv for easier access in future
-        csv_fn = plant_file.split('.')[0] + '.csv'
+        csv_fn = eia860_name.split('.')[0] + '.csv'
         csv_path = join(expected_860_folder, csv_fn)
         eia.to_csv(csv_path, index=False)
 
@@ -103,19 +104,20 @@ def eia860_balancing_authority(year):
 
         else:
             print('Loading data from previously downloaded excel file')
-            eia860_path = find_file_in_folder(
+            eia860_path, eia860_name = find_file_in_folder(
                 folder_path=expected_860_folder,
-                file_pattern_match='2___Plant'
+                file_pattern_match='2___Plant',
+                return_name=True
             )
             # # would be more elegent with glob but this works to identify the
             # # Schedule_2_3_4_5 file
             # for f in all_files:
-            #     if '2_3_4_5' in f:
-            #         gen_file = f
-            # eia860_path = join(expected_860_folder, gen_file)
+            #     if '2___Plant' in f:
+            #         plant_file = f
+            # eia860_path = join(expected_860_folder, plant_file)
             eia = load_eia860_excel(eia860_path)
 
-            csv_fn = gen_file.split('.')[0] + '.csv'
+            csv_fn = eia860_name.split('.')[0] + '.csv'
             csv_path = join(expected_860_folder, csv_fn)
             eia.to_csv(csv_path, index=False)
     
