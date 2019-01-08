@@ -10,6 +10,15 @@ from electricitylci.globals import (
     FUEL_CAT_CODES,
 )
 from electricitylci.utils import download_unzip, find_file_in_folder
+from electricitylci.model_config import (
+    include_only_egrid_facilities_with_positive_generation,
+    filter_on_efficiency,
+    filter_on_min_plant_percent_generation_from_primary_fuel,
+    min_plant_percent_generation_from_primary_fuel_category,
+    filter_non_egrid_emission_on_NAICS,
+    egrid_facility_efficiency_filters,
+)
+from electricitylci.eia860_facilities import eia860_balancing_authority
 
 
 def eia923_download(year, save_path):
@@ -42,7 +51,8 @@ def load_eia923_excel(eia923_path):
                         header=5,
                         na_values=['.'],
                         dtype={'Plant Id': str,
-                                'YEAR': str})
+                               'YEAR': str,
+                               'NAICS Code': str})
     # Get ride of line breaks. And apparently 2015 had 'Plant State'
     # instead of 'State'
     eia.columns = (eia.columns.str.replace('\n', ' ')
@@ -69,8 +79,9 @@ def eia923_download_extract(
         'Plant Id',
         'Plant Name',
         'State',
+        'NAICS Code',
         'Reported Prime Mover',
-        'Reported Fuel Type Code',
+        'AER Fuel Type Code',
         'YEAR'
     ]
 ):
@@ -134,7 +145,8 @@ def eia923_download_extract(
             csv_path = join(expected_923_folder, fn)
             eia = pd.read_csv(csv_path,
                               dtype={'Plant Id': str,
-                                     'YEAR': str})
+                                     'YEAR': str,
+                                     'NAICS Code': str})
 
         else:
             print('Loading data from previously downloaded excel file,',
@@ -178,31 +190,126 @@ def group_fuel_categories(df):
 
 
 def eia923_primary_fuel(year, method_col='Net Generation (Megawatthours)'):
+    """
+    Determine the primary fuel for each power plant. Include the NAICS code
+    for each plant in output.
+
+    Primary fuel can be determined using either generation (output) or fuel
+    consumption (input). EIA923 doesn't list fuel inputs for non-combustion
+    generation (wind, sun, hydro, etc), so an additional step to determine
+    the primary fuel of these plants if 'Total Fuel Consumption MMBtu' is
+    selected as the method.
+    
+    Parameters
+    ----------
+    year : int
+        Year of 923 data
+    method_col : str, optional
+        The method to use when determining the primary fuel of a power plant
+        (the default is 'Net Generation (Megawatthours)', and the alternative
+        is 'Total Fuel Consumption MMBtu')
+    
+    """
 
     eia923_gen_fuel = eia923_download_extract(year)
-    eia923_gen_fuel['fuel categories'] = group_fuel_categories(eia923_gen_fuel)
+    eia923_gen_fuel['fuel category'] = group_fuel_categories(eia923_gen_fuel)
     
-    group_cols = ['Plant Id', 'fuel category']
+    group_cols = ['Plant Id', 'NAICS Code', 'fuel category']
+
+    sum_cols = [
+        'Net Generation (Megawatthours)',
+        'Total Fuel Consumption MMBtu',
+    ]
     plant_fuel_total = (eia923_gen_fuel.groupby(
                             group_cols, as_index=False
-                        )[method_col].sum())
+                        )[sum_cols].sum())
     
     # Find the dataframe index for the fuel with the most gen at each plant
     # Use this to slice the dataframe and return plant code and primary fuel
     primary_fuel_idx = (plant_fuel_total.groupby('Plant Id')[method_col].idxmax())
-    primary_fuel = plant_fuel_total.loc[primary_fuel_idx,
-                               ['fuel category', 'Plant Id']]
+    
+    data_cols = [
+        'Plant Id',
+        'NAICS Code',
+        'fuel category',
+        'Net Generation (Megawatthours)',
+    ]
+    primary_fuel = plant_fuel_total.loc[primary_fuel_idx, data_cols]
+
+    # Also going to include the percent of total generation from primary
+    # fuel
+    total_gen_plant = eia923_gen_fuel.groupby('Plant Id', as_index=False)[
+        'Net Generation (Megawatthours)'
+    ].sum()
+    total_gen_plant.rename(columns={'Net Generation (Megawatthours)':'total_gen'},
+                           inplace=True)
+    primary_fuel = primary_fuel.merge(total_gen_plant, on='Plant Id')
+    primary_fuel['primary fuel percent gen'] = (
+        primary_fuel['Net Generation (Megawatthours)']
+        / primary_fuel['total_gen']
+        * 100
+    )
 
     primary_fuel.reset_index(inplace=True, drop=True)
 
-    return primary_fuel
+    keep_cols = [
+        'Plant Id',
+        'NAICS Code',
+        'fuel category',
+        'primary fuel percent gen'
+    ]
+
+    return primary_fuel.loc[:, keep_cols]
+
+
+def calculate_plant_efficiency(gen_fuel_data):
+
+    plant_total = gen_fuel_data.groupby('Plant Id', as_index=False).sum()
+    plant_total['efficiency'] = (plant_total['Net Generation (Megawatthours)']
+                                 * 10
+                                 / (plant_total['Total Fuel Consumption MMBtu']
+                                    * 3.412) * 100)
+    return plant_total
+
+
+def efficiency_filter(df):
+
+    upper = egrid_facility_efficiency_filters['upper_efficiency']
+    lower = egrid_facility_efficiency_filters['lower_efficiency']
+
+    df = df.loc[(df['efficiency'] >= lower)
+                & (df['efficiency'] <= upper), :]
+    
+    return df
 
 
 def build_generation_data(year):
 
-    gen_data = eia923_download_extract(year)
+    gen_fuel_data = eia923_download_extract(year)
     primary_fuel = eia923_primary_fuel(year)
+    gen_efficiency = calculate_plant_efficiency(gen_fuel_data)
 
+    final_gen_df = gen_efficiency.merge(primary_fuel, on='Plant Id')
+
+    if include_only_egrid_facilities_with_positive_generation:
+        final_gen_df = final_gen_df.loc[
+            final_gen_df['Net Generation (Megawatthours)'] >= 0, :
+        ]
+    if filter_on_efficiency:
+        final_gen_df = efficiency_filter(final_gen_df)
+    if filter_on_min_plant_percent_generation_from_primary_fuel:
+        final_gen_df = final_gen_df.loc[
+            final_gen_df['primary fuel percent gen']
+            >= min_plant_percent_generation_from_primary_fuel_category, :
+        ]
+    if filter_non_egrid_emission_on_NAICS:
+        # Check with Wes to see what the filter here is supposed to be
+        final_gen_df = final_gen_df.loc[
+            final_gen_df['NAICS Code'] == '22', :
+        ]
     
-    
-    pass
+    ba_match = eia860_balancing_authority(year)
+
+    final_gen_df = final_gen_df.merge(ba_match, on='Plant Id', how='left')
+
+    return final_gen_df
