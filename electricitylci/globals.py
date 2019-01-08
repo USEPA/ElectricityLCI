@@ -29,4 +29,33 @@ electricity_flow_name_consumption = 'Electricity, AC, 120 V'
 # EIA923 download url - this is just the base, need to add
 # extension and file name
 EIA923_BASE_URL = 'https://www.eia.gov/electricity/data/eia923/'
+EIA860_BASE_URL = 'https://www.eia.gov/electricity/data/eia860/'
 
+
+# 
+
+
+##############################
+
+# Quick and dirty grouping of fuel codes to named categories
+# Need to get these lined up with eGRID?
+FUEL_CAT_CODES = {
+    'COL': 'Coal',
+    'NG': 'Natural Gas',
+    'NUC': 'Nuclear',
+    'WND': 'Wind',
+    'SUN': 'Solar',
+    'DFO': 'Petroleum',
+    'RFO': 'Petroleum',
+    'HYC': 'Hydro',
+    'HPS': 'Other',
+    'GEO': 'Other',
+    'WOO': 'Other', # Other oil
+    'WWW': 'Biomass',
+    'PC': 'Other',
+    'MLG': 'Biomass',
+    'WOC': 'Other',
+    'OTH': 'Other',
+    'ORW': 'Biomass',
+    'OOG': 'Other'
+}
