@@ -2,7 +2,7 @@ import pandas as pd
 import stewi
 from os.path import join
 from electricitylci.globals import data_dir
-from electricitylci.globals import (
+from electricitylci.model_config import (
     egrid_year,
     min_plant_percent_generation_from_primary_fuel_category
 )
