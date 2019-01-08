@@ -41,21 +41,21 @@ EIA860_BASE_URL = 'https://www.eia.gov/electricity/data/eia860/'
 # Need to get these lined up with eGRID?
 FUEL_CAT_CODES = {
     'COL': 'Coal',
-    'NG': 'Natural Gas',
+    'NG': 'Gas',
     'NUC': 'Nuclear',
     'WND': 'Wind',
     'SUN': 'Solar',
-    'DFO': 'Petroleum',
-    'RFO': 'Petroleum',
+    'DFO': 'Oil',
+    'RFO': 'Other Fossil',
     'HYC': 'Hydro',
-    'HPS': 'Other',
-    'GEO': 'Other',
-    'WOO': 'Other', # Other oil
-    'WWW': 'Biomass',
-    'PC': 'Other',
-    'MLG': 'Biomass',
-    'WOC': 'Other',
-    'OTH': 'Other',
-    'ORW': 'Biomass',
-    'OOG': 'Other'
+    'HPS': 'Other Renew',
+    'GEO': 'Geo',
+    'WOO': 'Other Fossil', # Other oil
+    'WWW': 'Other Renew',
+    'PC': 'Other Fossil',
+    'MLG': 'Other Renew',
+    'WOC': 'Other Fossil',
+    'OTH': 'Other Fossil',
+    'ORW': 'Other Renew',
+    'OOG': 'Other Renew'
 }
