@@ -4,8 +4,12 @@ import io
 import os
 from os.path import join
 import requests
-from electricitylci.globals import data_dir, EIA923_BASE_URL
-from electricitylci.utils import download_unzip
+from electricitylci.globals import (
+    data_dir,
+    EIA923_BASE_URL,
+    FUEL_CAT_CODES,
+)
+from electricitylci.utils import download_unzip, find_file_in_folder
 
 
 def eia923_download(year, save_path):
@@ -90,15 +94,20 @@ def eia923_download_extract(
     if not os.path.exists(expected_923_folder):
         print('Downloading EIA-923 files')
         eia923_download(year=year, save_path=expected_923_folder)
-        eia923_files = os.listdir(expected_923_folder)
+        
+        eia923_path = find_file_in_folder(
+            folder_path=expected_923_folder,
+            file_pattern_match='2_3_4_5'
+        )
+        # eia923_files = os.listdir(expected_923_folder)
 
-        # would be more elegent with glob but this works to identify the
-        # Schedule_2_3_4_5 file
-        for f in eia923_files:
-            if '2_3_4_5' in f:
-                gen_file = f
+        # # would be more elegent with glob but this works to identify the
+        # # Schedule_2_3_4_5 file
+        # for f in eia923_files:
+        #     if '2_3_4_5' in f:
+        #         gen_file = f
 
-        eia923_path = join(expected_923_folder, gen_file)
+        # eia923_path = join(expected_923_folder, gen_file)
 
         # colstokeep = group_cols + sum_cols
         eia = load_eia923_excel(eia923_path)
@@ -127,13 +136,19 @@ def eia923_download_extract(
                                      'YEAR': str})
 
         else:
-            print('Loading data from previously downloaded excel file')
-            # would be more elegent with glob but this works to identify the
-            # Schedule_2_3_4_5 file
-            for f in all_files:
-                if '2_3_4_5' in f:
-                    gen_file = f
-            eia923_path = join(expected_923_folder, gen_file)
+            print('Loading data from previously downloaded excel file,',
+                  ' how did the csv file get deleted?')
+            eia923_path = find_file_in_folder(
+                folder_path=expected_923_folder,
+                file_pattern_match='2_3_4_5'
+            )
+            
+            # # would be more elegent with glob but this works to identify the
+            # # Schedule_2_3_4_5 file
+            # for f in all_files:
+            #     if '2_3_4_5' in f:
+            #         gen_file = f
+            # eia923_path = join(expected_923_folder, gen_file)
             eia = load_eia923_excel(eia923_path)
 
             csv_fn = gen_file.split('.')[0] + '.csv'
@@ -151,3 +166,41 @@ def eia923_download_extract(
                                           as_index=False)[sum_cols].sum()
 
     return EIA_923_generation_data
+
+
+def group_fuel_categories(df):
+
+    new_fuel_categories = df['AER Fuel Type Code'].map(FUEL_CAT_CODES)
+
+    return new_fuel_categories
+
+
+def eia923_primary_fuel(year, method_col='Net Generation (Megawatthours)'):
+
+    eia923_gen_fuel = eia923_download_extract(year)
+    eia923_gen_fuel['fuel categories'] = group_fuel_categories(eia923_gen_fuel)
+    
+    group_cols = ['Plant Id', 'fuel category']
+    plant_fuel_total = (eia923_gen_fuel.groupby(
+                            group_cols, as_index=False
+                        )[method_col].sum())
+    
+    # Find the dataframe index for the fuel with the most gen at each plant
+    # Use this to slice the dataframe and return plant code and primary fuel
+    primary_fuel_idx = (plant_fuel_total.groupby('Plant Id')[method_col].idxmax())
+    primary_fuel = plant_fuel_total.loc[primary_fuel_idx,
+                               ['fuel category', 'Plant Id']]
+
+    primary_fuel.reset_index(inplace=True, drop=True)
+
+    return primary_fuel
+
+
+def build_generation_data(year):
+
+    gen_data = eia923_download_extract(year)
+    primary_fuel = eia923_primary_fuel(year)
+
+    
+    
+    pass
