@@ -284,6 +284,29 @@ def efficiency_filter(df):
 
 
 def build_generation_data(year):
+    """
+    Build a dataset of facility-level generation using EIA923. This
+    function will apply filters for positive generation, generation
+    efficiency within a given range, and a minimum percent of generation
+    from the primary fuel (if set in the config file). The returned
+    dataframe also includes the balancing authority for every power
+    plant.
+    
+    Parameters
+    ----------
+    year : int
+        Year of generation data to compile
+    
+    Returns
+    ----------
+    DataFrame
+
+    Dataframe columns include:
+    ['Plant Id', 'Total Fuel Consumption MMBtu',
+       'Net Generation (Megawatthours)', 'efficiency', 'NAICS Code',
+       'fuel category', 'primary fuel percent gen', 'State', 'NERC Region',
+       'Balancing Authority Code']
+    """
 
     gen_fuel_data = eia923_download_extract(year)
     primary_fuel = eia923_primary_fuel(year)
