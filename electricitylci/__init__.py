@@ -1,3 +1,4 @@
+from electricitylci.model_config import model_name
 
 def get_generation_process_df(source='egrid', regions='all'):
     """Create a dataframe of inputs and outputs to electricity generation processes."""
@@ -41,7 +42,6 @@ def write_distribution_dict():
 def write_process_dicts_to_jsonld(*process_dicts):
     from electricitylci.olca_jsonld_writer import write
     from electricitylci.globals import output_dir
-    from electricitylci.model_config import model_name
     all_process_dicts = dict()
     for d in process_dicts:
         all_process_dicts={**all_process_dicts,**d}
