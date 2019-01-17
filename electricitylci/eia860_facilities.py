@@ -92,7 +92,7 @@ def eia860_balancing_authority(year):
         # or other csv files exist
         csv_file = [f for f in all_files
                     if '.csv' in f
-                    and 'Plant_{}'.format(year) in f]
+                    and 'Plant_Y{}'.format(year) in f]
 
         # Read and return the existing csv file if it exists
         if csv_file:
@@ -126,6 +126,7 @@ def eia860_balancing_authority(year):
         'State',
         'NERC Region',
         'Balancing Authority Code',
+        'Balancing Authority Name',
     ]
     eia_plant_ba_match = eia.loc[:, ba_cols].drop_duplicates()
 
