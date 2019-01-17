@@ -17,6 +17,8 @@ from electricitylci.model_config import (
     min_plant_percent_generation_from_primary_fuel_category,
     filter_non_egrid_emission_on_NAICS,
     egrid_facility_efficiency_filters,
+    inventories_of_interest,
+    eia_gen_year,
 )
 from electricitylci.eia860_facilities import eia860_balancing_authority
 
@@ -283,7 +285,7 @@ def efficiency_filter(df):
     return df
 
 
-def build_generation_data(year):
+def build_generation_data(egrid_facilities_to_include=None):
     """
     Build a dataset of facility-level generation using EIA923. This
     function will apply filters for positive generation, generation
@@ -307,32 +309,58 @@ def build_generation_data(year):
        'fuel category', 'primary fuel percent gen', 'State', 'NERC Region',
        'Balancing Authority Code']
     """
+    # Use the years from inventories of interest
+    generation_years = set(
+        list(inventories_of_interest.values())
+        + [eia_gen_year]
+    )
 
-    gen_fuel_data = eia923_download_extract(year)
-    primary_fuel = eia923_primary_fuel(year)
-    gen_efficiency = calculate_plant_efficiency(gen_fuel_data)
+    df_list = []
+    for year in generation_years:
+        if not egrid_facilities_to_include:
+            gen_fuel_data = eia923_download_extract(year)
+            primary_fuel = eia923_primary_fuel(year)
+            gen_efficiency = calculate_plant_efficiency(gen_fuel_data)
 
-    final_gen_df = gen_efficiency.merge(primary_fuel, on='Plant Id')
+            final_gen_df = gen_efficiency.merge(primary_fuel, on='Plant Id')
 
-    if include_only_egrid_facilities_with_positive_generation:
-        final_gen_df = final_gen_df.loc[
-            final_gen_df['Net Generation (Megawatthours)'] >= 0, :
-        ]
-    if filter_on_efficiency:
-        final_gen_df = efficiency_filter(final_gen_df)
-    if filter_on_min_plant_percent_generation_from_primary_fuel:
-        final_gen_df = final_gen_df.loc[
-            final_gen_df['primary fuel percent gen']
-            >= min_plant_percent_generation_from_primary_fuel_category, :
-        ]
-    if filter_non_egrid_emission_on_NAICS:
-        # Check with Wes to see what the filter here is supposed to be
-        final_gen_df = final_gen_df.loc[
-            final_gen_df['NAICS Code'] == '22', :
-        ]
+            if include_only_egrid_facilities_with_positive_generation:
+                final_gen_df = final_gen_df.loc[
+                    final_gen_df['Net Generation (Megawatthours)'] >= 0, :
+                ]
+            if filter_on_efficiency:
+                final_gen_df = efficiency_filter(final_gen_df)
+            if filter_on_min_plant_percent_generation_from_primary_fuel:
+                final_gen_df = final_gen_df.loc[
+                    final_gen_df['primary fuel percent gen']
+                    >= min_plant_percent_generation_from_primary_fuel_category, :
+                ]
+            # if filter_non_egrid_emission_on_NAICS:
+            #     # Check with Wes to see what the filter here is supposed to be
+            #     final_gen_df = final_gen_df.loc[
+            #         final_gen_df['NAICS Code'] == '22', :
+            #     ]
+        else:
+            final_gen_df = final_gen_df.loc[
+                final_gen_df['Plant Id'].isin(egrid_facilities_to_include), :
+            ]
+        
+        ba_match = eia860_balancing_authority(year)
+
+        final_gen_df = final_gen_df.merge(ba_match, on='Plant Id', how='left')
+        final_gen_df['Year'] = year
+        df_list.append(final_gen_df)
+
+    all_years_gen = pd.concat(df_list)
     
-    ba_match = eia860_balancing_authority(year)
+    all_years_gen = all_years_gen.rename(
+        columns={
+            'Plant Id': 'FacilityID',
+            'Net Generation (Megawatthours)': 'Electricity',
+        }
+    )
 
-    final_gen_df = final_gen_df.merge(ba_match, on='Plant Id', how='left')
+    all_years_gen = all_years_gen.loc[:, ['FacilityID', 'Electricity', 'Year']]
+    all_years_gen.reset_index(drop=True, inplace=True)
 
-    return final_gen_df
+    return all_years_gen
