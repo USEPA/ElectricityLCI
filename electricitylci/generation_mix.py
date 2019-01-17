@@ -4,9 +4,16 @@ The functions in this script calculate the fraction of each generating source
 """
 
 import numpy as np
+import pandas as pd
 from electricitylci.process_dictionary_writer import *
 from electricitylci.egrid_facilities import egrid_facilities,egrid_subregions
-from electricitylci.model_config import use_primaryfuel_for_coal, fuel_name
+from electricitylci.model_config import (
+    use_primaryfuel_for_coal,
+    fuel_name,
+    replace_egrid,
+    eia_gen_year,
+)
+from electricitylci.generation import eia_facility_fuel_region
 
 #Get a subset of the egrid_facilities dataset
 egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory','NERC','PercentGenerationfromDesignatedFuelCategory','Balancing Authority Name','Balancing Authority Code']]
@@ -46,7 +53,17 @@ def create_generation_mix_process_df_from_model_generation_data(generation_data,
     # Converting to numeric for better stability and merging
     generation_data['FacilityID'] = generation_data['FacilityID'].astype(str)
 
-    database_for_genmix_final = pd.merge(generation_data ,egrid_facilities_w_fuel_region, on='FacilityID')
+    if replace_egrid:
+        year = eia_gen_year
+        # This will only add BA labels, not eGRID subregions
+        fuel_region = eia_facility_fuel_region(year)
+        database_for_genmix_final = pd.merge(
+            generation_data, fuel_region, on='FacilityID'
+        )
+    else:
+        database_for_genmix_final = pd.merge(
+            generation_data, egrid_facilities_w_fuel_region, on='FacilityID'
+        )
 
     if subregion == 'all':
         regions = egrid_subregions
