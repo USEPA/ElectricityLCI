@@ -30,11 +30,23 @@ def get_generation_process_df(source='egrid', regions='all'):
     """
     from electricitylci.egrid_filter import (
         electricity_for_selected_egrid_facilities,
+        egrid_facilities_to_include,
         emissions_and_waste_for_selected_egrid_facilities
     )
+    from electricitylci.eia923_generation import build_generation_data
     from electricitylci.generation import create_generation_process_df
+    from electricitylci.model_config import replace_egrid
+
+    if replace_egrid:
+        generation_data = build_generation_data()
+    else:
+        generation_data = build_generation_data(
+            egrid_facilities_to_include=egrid_facilities_to_include
+        )
+
     generation_process_df = create_generation_process_df(
-        electricity_for_selected_egrid_facilities,
+        # electricity_for_selected_egrid_facilities,
+        generation_data,
         emissions_and_waste_for_selected_egrid_facilities,
         subregion=regions)
     return generation_process_df
