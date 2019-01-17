@@ -12,9 +12,10 @@ from electricitylci.model_config import (
     egrid_year,
     use_primaryfuel_for_coal,
     fuel_name,
-    replace_egrid
+    replace_egrid,
+    eia_gen_year,
 )
-from electricitylci.eia923_generation import eia_download_extract
+# from electricitylci.eia923_generation import eia_download_extract
 from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty,max_min
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows,map_renewable_heat_flows_to_fedelemflows,map_compartment_to_flow_type,add_flow_direction
 from electricitylci.dqi import lookup_score_with_bound_key
@@ -24,43 +25,84 @@ egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','Pri
 
 from electricitylci.egrid_energy import ref_egrid_subregion_generation_by_fuelcategory
 
+from electricitylci.eia923_generation import eia923_primary_fuel
+from electricitylci.eia860_facilities import eia860_balancing_authority
+
+def eia_facility_fuel_region(year):
+
+    primary_fuel = eia923_primary_fuel(year)
+    ba_match = eia860_balancing_authority(year)
+
+    combined = primary_fuel.merge(ba_match, on='Plant Id')
+
+    combined.rename(
+        columns={
+            'primary fuel percent gen': 'PercentGenerationfromDesignatedFuelCategory',
+            'Plant Id': 'FacilityID',
+            'fuel category': 'FuelCategory',
+            'NERC Region': 'NERC',
+        },
+        inplace=True
+    )
+
+    return combined
+
+
 def create_generation_process_df(generation_data,emissions_data,subregion):
 
     emissions_data = emissions_data.drop(columns = ['FacilityID'])
-    combined_data = generation_data.merge(emissions_data, left_on = ['FacilityID'], right_on = ['eGRID_ID'], how = 'right')   
+    combined_data = generation_data.merge(
+        emissions_data,
+        left_on=['FacilityID', 'Year'],
+        right_on=['eGRID_ID', 'Year'],
+        how='right'
+    )   
 
-    #Checking the odd year
-    odd_year = None
-    for year in years_in_emissions_and_wastes_by_facility:
+    # # Checking the odd year to determine if emissions are from a year other than
+    # # generation - need to normalize emissions data with generation from the
+    # # corresponding data.
+    # odd_year = None
+    # for year in years_in_emissions_and_wastes_by_facility:
 
-        if year != egrid_year:
-            odd_year = year;
-            #Code below not being used
-            #checking if any of the years are odd. If yes, we need EIA data.
-            #non_egrid_emissions_odd_year = combined_data[combined_data['Year'] == odd_year]
-            #odd_database = pd.unique(non_egrid_emissions_odd_year['Source'])
+    #     if year != egrid_year:
+    #         odd_year = year;
+    #         #Code below not being used
+    #         #checking if any of the years are odd. If yes, we need EIA data.
+    #         #non_egrid_emissions_odd_year = combined_data[combined_data['Year'] == odd_year]
+    #         #odd_database = pd.unique(non_egrid_emissions_odd_year['Source'])
 
     cols_to_drop_for_final = ['FacilityID']
     
-    #Downloading the required EIA923 data
-    # Annual facility generation from the same year as the emissions data
-    # is needed to normalize total facility emissions.
-    if odd_year != None:
-        EIA_923_gen_data = eia_download_extract(odd_year)
+    # #Downloading the required EIA923 data
+    # # Annual facility generation from the same year as the emissions data
+    # # is needed to normalize total facility emissions.
+    # if odd_year != None:
+    #     EIA_923_gen_data = eia_download_extract(odd_year)
     
-        #Merging database with EIA 923 data
-        combined_data = combined_data.merge(EIA_923_gen_data, left_on = ['eGRID_ID'],right_on = ['Plant Id'],how = 'left')
-        combined_data['Year'] = combined_data['Year'].astype(str)
-        combined_data = combined_data.sort_values(by = ['Year'])
-        #Replacing the odd year Net generations with the EIA net generations.
-        combined_data['Electricity']= np.where(combined_data['Year'] == int(odd_year), combined_data['Net Generation (Megawatthours)'],combined_data['Electricity'])
-        cols_to_drop_for_final = cols_to_drop_for_final+['Plant Id','Plant Name','State','YEAR','Net Generation (Megawatthours)','Total Fuel Consumption MMBtu']
+    #     #Merging database with EIA 923 data
+    #     combined_data = combined_data.merge(EIA_923_gen_data, left_on = ['eGRID_ID'],right_on = ['Plant Id'],how = 'left')
+    #     combined_data['Year'] = combined_data['Year'].astype(str)
+    #     combined_data = combined_data.sort_values(by = ['Year'])
+    #     #Replacing the odd year Net generations with the EIA net generations.
+    #     combined_data['Electricity']= np.where(combined_data['Year'] == int(odd_year), combined_data['Net Generation (Megawatthours)'],combined_data['Electricity'])
+    #     cols_to_drop_for_final = cols_to_drop_for_final+['Plant Id','Plant Name','State','YEAR','Net Generation (Megawatthours)','Total Fuel Consumption MMBtu']
 
     #Dropping unnecessary columns
     emissions_gen_data = combined_data.drop(columns = cols_to_drop_for_final)
 
-    #Merging with the egrid_facilites file to get the subregion information in the database!!!
-    final_data = pd.merge(egrid_facilities_w_fuel_region,emissions_gen_data, left_on = ['FacilityID'],right_on = ['eGRID_ID'], how = 'right')
+    if replace_egrid:
+        year = eia_gen_year
+
+        # This will only add BA labels, not eGRID subregions
+        fuel_region = eia_facility_fuel_region(year)
+        final_data = pd.merge(fuel_region, emissions_gen_data, 
+                              left_on=['FacilityID'], right_on=['eGRID_ID'],
+                              how='right')
+    else:
+        #Merging with the egrid_facilites file to get the subregion information in the database!!!
+        final_data = pd.merge(egrid_facilities_w_fuel_region,
+                              emissions_gen_data, left_on=['FacilityID'],
+                              right_on=['eGRID_ID'], how='right')
 
     #Add in reference electricity for subregion and fuel category
     final_data = pd.merge(final_data,ref_egrid_subregion_generation_by_fuelcategory,on=['Subregion','FuelCategory'],how='left')
