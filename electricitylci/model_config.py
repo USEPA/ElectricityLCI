@@ -22,6 +22,7 @@ egrid_year = model_specs["egrid_year"]
 # use 923 and cems rather than egrid, but still use the egrid_year
 # parameter to determine the data year
 replace_egrid = model_specs["replace_egrid"]
+eia_gen_year = model_specs["eia_gen_year"]
 inventories_of_interest = model_specs["inventories_of_interest"]
 inventories = inventories_of_interest.keys()
 include_only_egrid_facilities_with_positive_generation = model_specs["include_only_egrid_facilities_with_positive_generation"]
