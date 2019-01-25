@@ -170,16 +170,19 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
                                                                          total_gen)
 
                         # Data Quality Scores
-                        database_f3['Reliability_Score'] = np.average(database_f3['ReliabilityScore'],
-                                                                      weights=database_f3['FlowAmount'])
-                        database_f3['TemporalCorrelation'] = np.average(database_f3['TemporalCorrelation'],
-                                                                        weights=database_f3['FlowAmount'])
-                        # Set GeographicalCorrelation 1 for now only
                         database_f3['GeographicalCorrelation'] = 1
-                        database_f3['TechnologicalCorrelation'] = np.average(database_f3['TechnologicalCorrelation'],
-                                                                             weights=database_f3['FlowAmount'])
-                        database_f3['DataCollection'] = np.average(database_f3['DataCollection'],
-                                                                   weights=database_f3['FlowAmount'])
+                        #If flow amount sum = 0, then do not average
+                        if sum(database_f3['FlowAmount'])!=0:
+
+                            database_f3['Reliability_Score'] = np.average(database_f3['ReliabilityScore'],
+                                                                          weights=database_f3['FlowAmount'])
+                            database_f3['TemporalCorrelation'] = np.average(database_f3['TemporalCorrelation'],
+                                                                            weights=database_f3['FlowAmount'])
+
+                            database_f3['TechnologicalCorrelation'] = np.average(database_f3['TechnologicalCorrelation'],
+                                                                                 weights=database_f3['FlowAmount'])
+                            database_f3['DataCollection'] = np.average(database_f3['DataCollection'],
+                                                                       weights=database_f3['FlowAmount'])
 
                         # Uncertainty Calcs
                         uncertainty_info = uncertainty_creation(database_f3[['Electricity', 'FlowAmount']], exchange,
