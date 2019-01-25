@@ -283,11 +283,14 @@ def uncertainty_creation(data,name,fuelheat,mean,total_gen,total_facility_consid
                     #uncertianty calculations
                     l,b = data.shape
                     if l > 3:
-                       
                        u,s = (uncertainty(data,mean,total_gen,total_facility_considered))
                        
-                       ar['geomMean'] = str(round(math.exp(u),12)); 
-                       ar['geomSd']=str(round(math.exp(s),12)); 
+                       if u != None:
+                           ar['geomMean'] = str(round(math.exp(u),12))
+                           ar['geomSd']=str(round(math.exp(s),12))
+                       else:
+                           ar['geomMean'] = None
+                           ar['geomSd'] = None
                     else:
                        ar['geomMean'] = None
                        ar['geomSd']= None 
