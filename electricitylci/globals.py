@@ -40,22 +40,22 @@ EIA860_BASE_URL = 'https://www.eia.gov/electricity/data/eia860/'
 # Quick and dirty grouping of fuel codes to named categories
 # Need to get these lined up with eGRID?
 FUEL_CAT_CODES = {
-    'COL': 'Coal',
-    'NG': 'Gas',
-    'NUC': 'Nuclear',
-    'WND': 'Wind',
-    'SUN': 'Solar',
-    'DFO': 'Oil',
-    'RFO': 'Other Fossil',
-    'HYC': 'Hydro',
-    'HPS': 'Other Renew',
-    'GEO': 'Geo',
-    'WOO': 'Other Fossil', # Other oil
-    'WWW': 'Other Renew',
-    'PC': 'Other Fossil',
-    'MLG': 'Other Renew',
-    'WOC': 'Other Fossil',
-    'OTH': 'Other Fossil',
-    'ORW': 'Other Renew',
-    'OOG': 'Other Renew'
+    'COL': 'COAL',
+    'NG': 'GAS',
+    'NUC': 'NUCLEAR',
+    'WND': 'WIND',
+    'SUN': 'SOLAR',
+    'DFO': 'OIL',
+    'RFO': 'OIL',
+    'HYC': 'HYDRO',
+    'HPS': 'OTHF',
+    'GEO': 'GEOTHERMAL',
+    'WOO': 'OIL', # Other oil
+    'WWW': 'BIOMASS',
+    'PC': 'OIL',
+    'MLG': 'BIOMASS',
+    'WOC': 'COAL',
+    'OTH': 'OTHF',
+    'ORW': 'BIOMASS',
+    'OOG': 'OFSL'
 }
