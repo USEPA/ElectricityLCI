@@ -12,3 +12,9 @@ electricitylci/__pycache__/
 *.egg-info/
 
 .DS_Store
+
+# notebooks
+*.ipynb
+
+# downloaded excel files and csv transformations
+electricitylci/data/**/*.*
