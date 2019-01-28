@@ -28,6 +28,7 @@ from electricitylci.egrid_energy import ref_egrid_subregion_generation_by_fuelca
 from electricitylci.eia923_generation import eia923_primary_fuel
 from electricitylci.eia860_facilities import eia860_balancing_authority
 
+
 def eia_facility_fuel_region(year):
 
     primary_fuel = eia923_primary_fuel(year)
@@ -129,7 +130,16 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
     final_data = final_data.drop(columns = ['FacilityID'])
     
     #THIS CHECK AND STAMENT IS BEING PUT BECAUSE OF SAME FLOW VALUE ERROR STILL BEING THERE IN THE DATA
-    final_data = final_data.drop_duplicates(subset = ['Subregion', 'PrimaryFuel','FuelCategory','FlowName','FlowAmount','Compartment'])
+    dup_cols_check = [
+        'Subregion',
+        'PrimaryFuel',
+        'FuelCategory',
+        'FlowName',
+        'FlowAmount',
+        'Compartment',
+    ]
+
+    final_data = final_data.drop_duplicates(subset=dup_cols_check)
      
     final_data = final_data[final_data['FlowName'] != 'Electricity']
 
@@ -139,6 +149,16 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
     result_database = pd.DataFrame()
     total_gen_database = pd.DataFrame()
     # Looping through different subregions to create the files
+
+    # Columns to keep in datbase_f2
+    database_f2_cols = [
+        'Subregion', 'FuelCategory', 'PrimaryFuel', 'eGRID_ID', 
+        'Electricity', 'FlowName', 'FlowAmount', 'FlowUUID',
+        'Compartment', 'Year', 'Source', 'ReliabilityScore', 'Unit',
+        'NERC', 'PercentGenerationfromDesignatedFuelCategory',
+        'Balancing Authority Name','ElementaryFlowPrimeContext',
+        'Balancing Authority Code', #'Ref_Electricity_Subregion_FuelCategory'
+    ]
 
     for reg in regions:
 
@@ -175,12 +195,7 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
 
                 for exchange in exchange_list:
                     database_f2 = database_f1[database_f1['FlowName'] == exchange]
-                    database_f2 = database_f2[['Subregion', 'FuelCategory', 'PrimaryFuel',
-                                               'eGRID_ID', 'Electricity', 'FlowName', 'FlowAmount', 'FlowUUID',
-                                               'Compartment', 'Year', 'Source', 'ReliabilityScore', 'Unit',
-                                               'NERC', 'PercentGenerationfromDesignatedFuelCategory',
-                                               'Balancing Authority Name','ElementaryFlowPrimeContext','Balancing Authority Code',
-                                               'Ref_Electricity_Subregion_FuelCategory']]
+                    database_f2 = database_f2[database_f2_cols]
 
                     compartment_list = list(pd.unique(database_f2['Compartment']))
                     for compartment in compartment_list:
