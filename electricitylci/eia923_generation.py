@@ -348,7 +348,7 @@ def build_generation_data(egrid_facilities_to_include=None):
         ba_match = eia860_balancing_authority(year)
 
         final_gen_df = final_gen_df.merge(ba_match, on='Plant Id', how='left')
-        final_gen_df['Year'] = year
+        final_gen_df['Year'] = int(year)
         df_list.append(final_gen_df)
 
     all_years_gen = pd.concat(df_list)
