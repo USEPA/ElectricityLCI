@@ -105,7 +105,13 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
                               right_on=['eGRID_ID'], how='right')
 
     #Add in reference electricity for subregion and fuel category
+    if not replace_egrid:
     final_data = pd.merge(final_data,ref_egrid_subregion_generation_by_fuelcategory,on=['Subregion','FuelCategory'],how='left')
+    
+    if replace_egrid:
+        # Subregion shows up all over the place below. If not using egrid
+        # sub in the BA name because we don't have the eGRID subergion.
+        final_data['Subregion'] = final_data['Balancing Authority Name']
     
     #store the total elci data in a csv file just for checking
     #final_data.to_excel('elci_summary.xlsx')
