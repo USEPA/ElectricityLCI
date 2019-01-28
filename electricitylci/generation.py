@@ -107,7 +107,7 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
 
     #Add in reference electricity for subregion and fuel category
     if not replace_egrid:
-    final_data = pd.merge(final_data,ref_egrid_subregion_generation_by_fuelcategory,on=['Subregion','FuelCategory'],how='left')
+        final_data = pd.merge(final_data,ref_egrid_subregion_generation_by_fuelcategory,on=['Subregion','FuelCategory'],how='left')
     
     if replace_egrid:
         # Subregion shows up all over the place below. If not using egrid
@@ -293,7 +293,7 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
     print("Generation process database for " + subregion + " complete.")
     return result_database
 
-    return b
+    # return b
     
 
 
