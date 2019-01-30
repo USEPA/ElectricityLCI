@@ -129,6 +129,12 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
     #store the total elci data in a csv file just for checking
     #final_data.to_excel('elci_summary.xlsx')
     
+    # Need to drop rows with NaN electricity generation
+    # They currently exist when generation from a facility has been omitted
+    # because of some filter (e.g. generation from pirmary fuel < 90%)
+    # but we still have emissions data.
+    final_data.dropna(subset=['Electricity'], inplace=True)
+    
     if subregion == 'all':
         regions = egrid_subregions
     elif subregion == 'NERC':
