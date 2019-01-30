@@ -57,7 +57,7 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
         left_on=['FacilityID', 'Year'],
         right_on=['eGRID_ID', 'Year'],
         how='right'
-    )   
+    )
 
     # # Checking the odd year to determine if emissions are from a year other than
     # # generation - need to normalize emissions data with generation from the
@@ -113,7 +113,7 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
         # Subregion shows up all over the place below. If not using egrid
         # sub in the BA name because we don't have the eGRID subergion.
         final_data['Subregion'] = final_data['Balancing Authority Name']
-    
+
         subregion_fuel_year_gen = (
             final_data.groupby(
                 ['Subregion', 'FuelCategory', 'Year'], as_index=False
@@ -128,7 +128,7 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
     
     #store the total elci data in a csv file just for checking
     #final_data.to_excel('elci_summary.xlsx')
-    
+
     # Need to drop rows with NaN electricity generation
     # They currently exist when generation from a facility has been omitted
     # because of some filter (e.g. generation from pirmary fuel < 90%)
@@ -175,7 +175,7 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
         'Compartment', 'Year', 'Source', 'ReliabilityScore', 'Unit',
         'NERC', 'PercentGenerationfromDesignatedFuelCategory',
         'Balancing Authority Name','ElementaryFlowPrimeContext',
-        'Balancing Authority Code', #'Ref_Electricity_Subregion_FuelCategory'
+        'Balancing Authority Code', 'Ref_Electricity_Subregion_FuelCategory'
     ]
 
     for reg in regions:
@@ -195,6 +195,7 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
             # This should be a egrid subregion
             database = final_database[final_database['Subregion'] == reg]
 
+        df_list = []
         for index, row in fuel_name.iterrows():
             # Reading complete fuel name and heat content information
             fuelname = row['FuelList']
@@ -283,8 +284,11 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
                         # Optionally write out electricity
                         # database_f3['Electricity'] = total_gen
 
-                        frames = [result_database, database_f3]
-                        result_database = pd.concat(frames)
+                        # frames = [result_database, database_f3]
+                        # result_database = pd.concat(frames)
+                        df_list.append(database_f3)
+    
+    result_database = pd.concat(df_list)
 
     if subregion == 'all':
         result_database = result_database.drop(
