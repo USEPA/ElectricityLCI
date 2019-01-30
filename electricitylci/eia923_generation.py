@@ -214,9 +214,10 @@ def eia923_primary_fuel(year, method_col='Net Generation (Megawatthours)'):
     """
 
     eia923_gen_fuel = eia923_download_extract(year)
-    eia923_gen_fuel['fuel category'] = group_fuel_categories(eia923_gen_fuel)
+    # eia923_gen_fuel['FuelCategory'] = group_fuel_categories(eia923_gen_fuel)
+    # eia923_gen_fuel.rename(columns={'AER Fuel Type Code'})
     
-    group_cols = ['Plant Id', 'NAICS Code', 'fuel category']
+    group_cols = ['Plant Id', 'NAICS Code', 'AER Fuel Type Code']
 
     sum_cols = [
         'Net Generation (Megawatthours)',
@@ -233,7 +234,7 @@ def eia923_primary_fuel(year, method_col='Net Generation (Megawatthours)'):
     data_cols = [
         'Plant Id',
         'NAICS Code',
-        'fuel category',
+        'AER Fuel Type Code',
         'Net Generation (Megawatthours)',
     ]
     primary_fuel = plant_fuel_total.loc[primary_fuel_idx, data_cols]
@@ -252,12 +253,18 @@ def eia923_primary_fuel(year, method_col='Net Generation (Megawatthours)'):
         * 100
     )
 
+    primary_fuel['FuelCategory'] = group_fuel_categories(primary_fuel)
+    primary_fuel.rename(columns={'AER Fuel Type Code': 'PrimaryFuel'}, inplace=True)
+
+
+
     primary_fuel.reset_index(inplace=True, drop=True)
 
     keep_cols = [
         'Plant Id',
         'NAICS Code',
-        'fuel category',
+        'FuelCategory',
+        'PrimaryFuel',
         'primary fuel percent gen'
     ]
 
@@ -306,7 +313,7 @@ def build_generation_data(egrid_facilities_to_include=None):
     Dataframe columns include:
     ['Plant Id', 'Total Fuel Consumption MMBtu',
        'Net Generation (Megawatthours)', 'efficiency', 'NAICS Code',
-       'fuel category', 'primary fuel percent gen', 'State', 'NERC Region',
+       'FuelCategory', 'primary fuel percent gen', 'State', 'NERC Region',
        'Balancing Authority Code']
     """
     # Use the years from inventories of interest
