@@ -114,6 +114,18 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
         # sub in the BA name because we don't have the eGRID subergion.
         final_data['Subregion'] = final_data['Balancing Authority Name']
     
+        subregion_fuel_year_gen = (
+            final_data.groupby(
+                ['Subregion', 'FuelCategory', 'Year'], as_index=False
+            )['Electricity']
+                      .sum()
+        )
+        subregion_fuel_year_gen.rename(columns={
+            'Electricity': 'Ref_Electricity_Subregion_FuelCategory'
+        }, inplace=True)
+        final_data = pd.merge(final_data, subregion_fuel_year_gen,
+                              on=['Subregion', 'FuelCategory', 'Year'])
+    
     #store the total elci data in a csv file just for checking
     #final_data.to_excel('elci_summary.xlsx')
     
