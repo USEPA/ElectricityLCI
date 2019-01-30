@@ -85,7 +85,13 @@ def uncertainty(db,mean_gen,total_gen,total_facility_considered):
             
             #This method will not work with the interval limits are more than 280% of the mean. 
             if pi3 < 2.8:
-              sd1,sd2 = solve(0.5*x*x -(1.16308*np.sqrt(2))*x + (np.log(1+pi3)),x)
+                # sd1,sd2 = solve(0.5*x*x -(1.16308*np.sqrt(2))*x + (np.log(1+pi3)),x)
+              
+                a = 0.5
+                b = -(1.16308*np.sqrt(2))
+                c = np.log(1+pi3)
+                sd1 = (-b + np.sqrt(b**2 - (4 * a * c))) / (2 * a)
+                sd2 = (-b - np.sqrt(b**2 - (4 * a * c))) / (2 * a)
 
             else:#This is a wrong mathematical statement. However, we have to use it if something fails. 
               sd1,sd2 = solve(0.5*x*x -(1.36*np.sqrt(2))*x + (np.log(1+pi3)),x)
