@@ -66,6 +66,8 @@ FUEL_CAT_CODES = {
     'PC': 'OIL',
     'MLG': 'BIOMASS',
     'WOC': 'COAL',
+    'WH': 'OTHF',
+    'MSN': 'OTHF',
     'OTH': 'OTHF',
     'ORW': 'BIOMASS',
     'OOG': 'OFSL'
