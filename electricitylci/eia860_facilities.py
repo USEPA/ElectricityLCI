@@ -96,7 +96,7 @@ def eia860_balancing_authority(year):
 
         # Read and return the existing csv file if it exists
         if csv_file:
-            print('Loading plant data from csv file')
+            print('Loading {} EIA-860 plant data from csv file'.format(year))
             fn = csv_file[0]
             csv_path = join(expected_860_folder, fn)
             eia = pd.read_csv(csv_path,

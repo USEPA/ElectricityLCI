@@ -142,7 +142,7 @@ def eia923_download_extract(
 
         # Read and return the existing csv file if it exists
         if csv_file:
-            print('Loading data from csv file')
+            print('Loading {} EIA-923 data from csv file'.format(year))
             fn = csv_file[0]
             csv_path = join(expected_923_folder, fn)
             eia = pd.read_csv(csv_path,
