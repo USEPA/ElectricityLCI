@@ -57,66 +57,104 @@ def create_generation_mix_process_df_from_model_generation_data(generation_data,
         year = eia_gen_year
         # This will only add BA labels, not eGRID subregions
         fuel_region = eia_facility_fuel_region(year)
+
+        generation_data = generation_data.loc[generation_data['Year'] == year, :]
         database_for_genmix_final = pd.merge(
             generation_data, fuel_region, on='FacilityID'
         )
+
+        # database_for_genmix_final['Subregion'] = (
+        #     database_for_genmix_final['Balancing Authority Name']
+        # )
     else:
         database_for_genmix_final = pd.merge(
             generation_data, egrid_facilities_w_fuel_region, on='FacilityID'
         )
+    
+    # Changing the loop structure of this function so that it uses pandas groupby
+    if subregion == 'NERC':
+        database_for_genmix_final['Subregion'] = database_for_genmix_final['NERC']
+    if subregion == 'BA':
+        database_for_genmix_final['Subregion'] = (
+            database_for_genmix_final['Balancing Authority Name']
+        )
+    
+    if use_primaryfuel_for_coal:
+        database_for_genmix_final.loc[
+            database_for_genmix_final['FuelCategory'] == 'COAL', 'FuelCategory'
+        ] = database_for_genmix_final.loc[
+            database_for_genmix_final['FuelCategory'] == 'COAL', 'PrimaryFuel'
+        ]
 
-    if subregion == 'all':
-        regions = egrid_subregions
-    elif subregion == 'NERC':
-        regions = list(pd.unique(database_for_genmix_final['NERC']))
-    elif subregion == 'BA':
-        regions = list(pd.unique(database_for_genmix_final['Balancing Authority Name']))
-    else:
-        regions = [subregion]
+    group_cols = [
+        'Subregion',
+        'FuelCategory'
+    ]
+    subregion_fuel_gen = database_for_genmix_final.groupby(
+        group_cols, as_index=False)['Electricity'].sum()
+    
+    # Groupby .transform method returns a dataframe of the same len as the original
+    subregion_total_gen = subregion_fuel_gen.groupby(
+        'Subregion')['Electricity'].transform('sum')
+    subregion_fuel_gen['Generation_Ratio'] = (
+        subregion_fuel_gen['Electricity']
+        / subregion_total_gen
+    )
 
-    result_database = pd.DataFrame()
+    return subregion_fuel_gen
 
-    for reg in regions:
+    # if subregion == 'all':
+    #     regions = egrid_subregions
+    # elif subregion == 'NERC':
+    #     regions = list(pd.unique(database_for_genmix_final['NERC']))
+    # elif subregion == 'BA':
+    #     regions = list(pd.unique(database_for_genmix_final['Balancing Authority Name']))
+    # else:
+    #     regions = [subregion]
 
-        if subregion == 'all':
-            database = database_for_genmix_final[database_for_genmix_final['Subregion'] == reg]
-        elif subregion == 'NERC':
-            database = database_for_genmix_final[database_for_genmix_final['NERC'] == reg]
-        elif subregion == 'BA':
-            database = database_for_genmix_final[database_for_genmix_final['Balancing Authority Name'] == reg]
+    # result_database = pd.DataFrame()
 
-            # This makes sure that the dictionary writer works fine because it only works with the subregion column. So we are sending the
-        # correct regions in the subregion column rather than egrid subregions if rquired.
-        # This makes it easy for the process_dictionary_writer to be much simpler.
-        if subregion == 'all':
-            database['Subregion'] = database['Subregion']
-        elif subregion == 'NERC':
-            database['Subregion'] = database['NERC']
-        elif subregion == 'BA':
-            database['Subregion'] = database['Balancing Authority Name']
+    # for reg in regions:
+
+    #     if subregion == 'all':
+    #         database = database_for_genmix_final[database_for_genmix_final['Subregion'] == reg]
+    #     elif subregion == 'NERC':
+    #         database = database_for_genmix_final[database_for_genmix_final['NERC'] == reg]
+    #     elif subregion == 'BA':
+    #         database = database_for_genmix_final[database_for_genmix_final['Balancing Authority Name'] == reg]
+
+    #         # This makes sure that the dictionary writer works fine because it only works with the subregion column. So we are sending the
+    #     # correct regions in the subregion column rather than egrid subregions if rquired.
+    #     # This makes it easy for the process_dictionary_writer to be much simpler.
+    #     if subregion == 'all':
+    #         database['Subregion'] = database['Subregion']
+    #     elif subregion == 'NERC':
+    #         database['Subregion'] = database['NERC']
+    #     elif subregion == 'BA':
+    #         database['Subregion'] = database['Balancing Authority Name']
 
 
-    # This looks like it is pretty slow.
-        total_gen_reg = np.sum(database['Electricity'])
-        for index ,row in fuel_name.iterrows():
-            # Reading complete fuel name and heat content information
-            fuelname = row['FuelList']
-            fuelheat = float(row['Heatcontent'])
-            # croppping the database according to the current fuel being considered
-            database_f1 = database[database['FuelCategory'] == row['FuelList']]
-            if database_f1.empty == True:
-                database_f1 = database[database['PrimaryFuel'] == row['FuelList']]
-            if database_f1.empty != True:
-                if use_primaryfuel_for_coal:
-                    database_f1['FuelCategory'].loc[database_f1['FuelCategory'] == 'COAL'] = database_f1['PrimaryFuel']
-                database_f2 = database_f1.groupby(by = ['Subregion' ,'FuelCategory'])['Electricity'].sum()
-                database_f2 = database_f2.reset_index()
-                generation = np.sum(database_f2['Electricity'])
-                database_f2['Generation_Ratio'] = generation/ total_gen_reg
-                frames = [result_database, database_f2]
-                result_database  = pd.concat(frames)
+    # # This looks like it is pretty slow.
+    #     total_gen_reg = np.sum(database['Electricity'])
+    #     for index ,row in fuel_name.iterrows():
+    #         # Reading complete fuel name and heat content information
+    #         fuelname = row['FuelList']
+    #         fuelheat = float(row['Heatcontent'])
+    #         # croppping the database according to the current fuel being considered
+    #         database_f1 = database[database['FuelCategory'] == row['FuelList']]
+    #         if database_f1.empty == True:
+    #             database_f1 = database[database['PrimaryFuel'] == row['FuelList']]
+    #         if database_f1.empty != True:
+    #             if use_primaryfuel_for_coal:
+    #                 database_f1['FuelCategory'].loc[database_f1['FuelCategory'] == 'COAL'] = database_f1['PrimaryFuel']
+    #             database_f2 = database_f1.groupby(by = ['Subregion' ,'FuelCategory'])['Electricity'].sum()
+    #             database_f2 = database_f2.reset_index()
+    #             generation = np.sum(database_f2['Electricity'])
+    #             database_f2['Generation_Ratio'] = generation/ total_gen_reg
+    #             frames = [result_database, database_f2]
+    #             result_database  = pd.concat(frames)
 
-    return result_database
+    # return result_database
 
 #Creates gen mix from reference data
 #Only possible for a subregion, NERC region, or total US
