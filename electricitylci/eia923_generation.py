@@ -292,7 +292,7 @@ def efficiency_filter(df):
     return df
 
 
-def build_generation_data(egrid_facilities_to_include=None):
+def build_generation_data(egrid_facilities_to_include=None, generation_years=None):
     """
     Build a dataset of facility-level generation using EIA923. This
     function will apply filters for positive generation, generation
@@ -303,19 +303,22 @@ def build_generation_data(egrid_facilities_to_include=None):
     
     Parameters
     ----------
-    year : int
-        Year of generation data to compile
+    egrid_facilities_to_include : list, optional
+        List of plant codes to include (default is None, which builds a list)
+    generation_years : list, optional
+        Years of generation data to include in the output (default is None,
+        which builds a list from the inventories of interest and eia_gen_year
+        parameters)
     
     Returns
     ----------
     DataFrame
 
     Dataframe columns include:
-    ['Plant Id', 'Total Fuel Consumption MMBtu',
-       'Net Generation (Megawatthours)', 'efficiency', 'NAICS Code',
-       'FuelCategory', 'primary fuel percent gen', 'State', 'NERC Region',
-       'Balancing Authority Code']
+    ['FacilityID', 'Electricity', 'Year']
     """
+    
+    if not generation_years:
     # Use the years from inventories of interest
     generation_years = set(
         list(inventories_of_interest.values())
