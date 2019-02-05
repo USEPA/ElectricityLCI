@@ -35,6 +35,9 @@ def eia_facility_fuel_region(year):
     ba_match = eia860_balancing_authority(year)
 
     combined = primary_fuel.merge(ba_match, on='Plant Id')
+    combined['primary fuel percent gen'] = (
+        combined['primary fuel percent gen'] / 100
+    )
 
     combined.rename(
         columns={
@@ -163,6 +166,7 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
 
     # Map emission flows to fed elem flows
     final_database = map_emissions_to_fedelemflows(final_data)
+
     # Create dfs for storing the output
     result_database = pd.DataFrame()
     total_gen_database = pd.DataFrame()
@@ -196,6 +200,12 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
             database = final_database[final_database['Subregion'] == reg]
 
         df_list = []
+
+        # Initialize values
+        database['TechnologicalCorrelation'] = 5
+        database['TemporalCorrelation'] = 5
+        database['DataCollection'] = 5
+        
         for index, row in fuel_name.iterrows():
             # Reading complete fuel name and heat content information
             fuelname = row['FuelList']
@@ -238,7 +248,7 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
 
                         database_f3 = add_flow_representativeness_data_quality_scores(database_f3, total_gen)
                         # Can now drop this
-                        database_f3 = database_f3.drop(columns='Ref_Electricity_Subregion_FuelCategory')
+                        # database_f3 = database_f3.drop(columns='Ref_Electricity_Subregion_FuelCategory')
 
                         # Add scores for regions to
                         sources_str = join_with_underscore(sources)
@@ -290,23 +300,37 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
     
     result_database = pd.concat(df_list)
 
-    if subregion == 'all':
-        result_database = result_database.drop(
-            columns=['eGRID_ID', 'FlowAmount', 'Electricity', 'ReliabilityScore', 'PrimaryFuel', 'NERC',
-                     'Balancing Authority Name', 'Balancing Authority Code'])
-    elif subregion == 'NERC':
-        result_database = result_database.drop(
-            columns=['eGRID_ID', 'FlowAmount', 'Electricity', 'ReliabilityScore', 'PrimaryFuel',
-                     'Balancing Authority Name', 'Balancing Authority Code', 'Subregion'])
-    elif subregion == 'BA':
-        result_database = result_database.drop(
-            columns=['eGRID_ID', 'FlowAmount', 'Electricity', 'ReliabilityScore', 'PrimaryFuel', 'NERC',
-                     'Balancing Authority Code', 'Subregion'])
-    elif subregion == 'US':
-        result_database = result_database.drop(
-            columns=['eGRID_ID', 'FlowAmount', 'Electricity', 'ReliabilityScore', 'PrimaryFuel', 'NERC',
-                     'Balancing Authority Name', 'Balancing Authority Code', 'Subregion'])
+    # drop_cols = [
+    #     'eGRID_ID', 'FlowAmount', 'Electricity', 'ReliabilityScore',
+    #     'PrimaryFuel', 'PercentGenerationfromDesignatedFuelCategory',
+    #     'Percent_of_Gen_in_EF_Denominator', 'Age'
+    # ]
 
+    # if subregion == 'all':
+    #     result_database = result_database.drop(
+    #         columns=['eGRID_ID', 'FlowAmount', 'Electricity', 'ReliabilityScore', 'PrimaryFuel', 'NERC',
+    #                  'Balancing Authority Name', 'Balancing Authority Code'])
+    # elif subregion == 'NERC':
+    #     result_database = result_database.drop(
+    #         columns=['eGRID_ID', 'FlowAmount', 'Electricity', 'ReliabilityScore', 'PrimaryFuel',
+    #                  'Balancing Authority Name', 'Balancing Authority Code', 'Subregion'])
+    # elif subregion == 'BA':
+    #     result_database = result_database.drop(
+    #         columns=['eGRID_ID', 'FlowAmount', 'Electricity', 'ReliabilityScore', 'PrimaryFuel', 'NERC',
+    #                  'Balancing Authority Code', 'Subregion'])
+    # elif subregion == 'US':
+    #     result_database = result_database.drop(
+    #         columns=['eGRID_ID', 'FlowAmount', 'Electricity', 'ReliabilityScore', 'PrimaryFuel', 'NERC',
+    #                  'Balancing Authority Name', 'Balancing Authority Code', 'Subregion'])
+
+    keep_cols = [
+       'FuelCategory', 'FlowName', 'FlowUUID', 'Compartment', 'Year', 'Source',
+       'Unit', 'Balancing Authority Name', 'ElementaryFlowPrimeContext',
+       'TechnologicalCorrelation', 'TemporalCorrelation', 'DataCollection',
+       'Emission_factor', 'Reliability_Score', 'GeographicalCorrelation',
+       'GeomMean', 'GeomSD', 'Maximum', 'Minimum'
+    ]
+    result_database = result_database[keep_cols]
     result_database = result_database.drop_duplicates()
     # Drop duplicated in total gen database
     #total_gen_database = total_gen_database.drop_duplicates()
@@ -412,16 +436,16 @@ def add_flow_representativeness_data_quality_scores(db,total_gen):
 
 def add_technological_correlation_score(db):
     #Create col, set to 5 by default
-    db['TechnologicalCorrelation'] = 5
+    # db['TechnologicalCorrelation'] = 5
     from electricitylci.dqi import technological_correlation_lower_bound_to_dqi
     #convert PercentGen to fraction
     db['PercentGenerationfromDesignatedFuelCategory'] = db['PercentGenerationfromDesignatedFuelCategory']/100
     db['TechnologicalCorrelation'] = db['PercentGenerationfromDesignatedFuelCategory'].apply(lambda x: lookup_score_with_bound_key(x,technological_correlation_lower_bound_to_dqi))
-    db = db.drop(columns='PercentGenerationfromDesignatedFuelCategory')
+    # db = db.drop(columns='PercentGenerationfromDesignatedFuelCategory')
     return db
 
 def add_temporal_correlation_score(db):
-    db['TemporalCorrelation'] = 5
+    # db['TemporalCorrelation'] = 5
     from electricitylci.dqi import temporal_correlation_lower_bound_to_dqi
     from electricitylci.model_config import electricity_lci_target_year
 
@@ -429,17 +453,17 @@ def add_temporal_correlation_score(db):
     db['Age'] =  electricity_lci_target_year - pd.to_numeric(db['Year'])
     db['TemporalCorrelation'] = db['Age'].apply(
         lambda x: lookup_score_with_bound_key(x, temporal_correlation_lower_bound_to_dqi))
-    db = db.drop(columns='Age')
+    # db = db.drop(columns='Age')
     return db
 
 def add_data_collection_score(db,total_gen):
     from electricitylci.dqi import data_collection_lower_bound_to_dqi
     #Define data collection score based on percentage of the generation as generation for each factor over the total gen for that fuel category
-    db['DataCollection'] = 5
+    # db['DataCollection'] = 5
     db['Percent_of_Gen_in_EF_Denominator'] = (total_gen/db['Ref_Electricity_Subregion_FuelCategory'])/100
     db['DataCollection'] = db['Percent_of_Gen_in_EF_Denominator'].apply(
         lambda x: lookup_score_with_bound_key(x, data_collection_lower_bound_to_dqi))
-    db = db.drop(columns='Percent_of_Gen_in_EF_Denominator')
+    # db = db.drop(columns='Percent_of_Gen_in_EF_Denominator')
     return db
 
 #HAVE THE CHANGE FROM HERE TO WRITE DICTIONARY
