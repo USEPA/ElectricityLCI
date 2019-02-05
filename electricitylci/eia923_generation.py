@@ -83,7 +83,7 @@ def eia923_download_extract(
         'State',
         'NAICS Code',
         'Reported Prime Mover',
-        'AER Fuel Type Code',
+        'Reported Fuel Type Code',
         'YEAR'
     ]
 ):
@@ -186,7 +186,7 @@ def eia923_download_extract(
 
 def group_fuel_categories(df):
 
-    new_fuel_categories = df['AER Fuel Type Code'].map(FUEL_CAT_CODES)
+    new_fuel_categories = df['Reported Fuel Type Code'].map(FUEL_CAT_CODES)
 
     return new_fuel_categories
 
@@ -215,9 +215,9 @@ def eia923_primary_fuel(year, method_col='Net Generation (Megawatthours)'):
 
     eia923_gen_fuel = eia923_download_extract(year)
     # eia923_gen_fuel['FuelCategory'] = group_fuel_categories(eia923_gen_fuel)
-    # eia923_gen_fuel.rename(columns={'AER Fuel Type Code'})
+    # eia923_gen_fuel.rename(columns={'Reported Fuel Type Code'})
     
-    group_cols = ['Plant Id', 'NAICS Code', 'AER Fuel Type Code']
+    group_cols = ['Plant Id', 'NAICS Code', 'Reported Fuel Type Code']
 
     sum_cols = [
         'Net Generation (Megawatthours)',
@@ -234,7 +234,7 @@ def eia923_primary_fuel(year, method_col='Net Generation (Megawatthours)'):
     data_cols = [
         'Plant Id',
         'NAICS Code',
-        'AER Fuel Type Code',
+        'Reported Fuel Type Code',
         'Net Generation (Megawatthours)',
     ]
     primary_fuel = plant_fuel_total.loc[primary_fuel_idx, data_cols]
@@ -254,7 +254,7 @@ def eia923_primary_fuel(year, method_col='Net Generation (Megawatthours)'):
     )
 
     primary_fuel['FuelCategory'] = group_fuel_categories(primary_fuel)
-    primary_fuel.rename(columns={'AER Fuel Type Code': 'PrimaryFuel'}, inplace=True)
+    primary_fuel.rename(columns={'Reported Fuel Type Code': 'PrimaryFuel'}, inplace=True)
 
 
 
