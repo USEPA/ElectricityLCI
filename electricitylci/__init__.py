@@ -86,15 +86,30 @@ def get_generation_mix_process_df(source='egrid',regions='all'):
         create_generation_mix_process_df_from_egrid_ref_data
     )
     from electricitylci.model_config import gen_mix_from_model_generation_data
+    from electricitylci.model_config import replace_egrid
+    from electricitylci.eia923_generation import build_generation_data
+    from electricitylci.model_config import eia_gen_year
 
-    if gen_mix_from_model_generation_data:
-        generation_mix_process_df = \
+    if replace_egrid:
+        assert regions == 'BA' or regions == 'NERC', 'Regions must be BA or NERC'
+        print('Actual generation data is used when replacing eGRID')
+        generation_data = build_generation_data(
+            generation_years=[eia_gen_year]
+        )
+        generation_mix_process_df = (
             create_generation_mix_process_df_from_model_generation_data(
-                electricity_for_selected_egrid_facilities,
-                regions)
+                generation_data, regions
+            )
+        )
     else:
-        generation_mix_process_df = \
-            create_generation_mix_process_df_from_egrid_ref_data(regions)
+        if gen_mix_from_model_generation_data:
+            generation_mix_process_df = \
+                create_generation_mix_process_df_from_model_generation_data(
+                    electricity_for_selected_egrid_facilities,
+                    regions)
+        else:
+            generation_mix_process_df = \
+                create_generation_mix_process_df_from_egrid_ref_data(regions)
     return generation_mix_process_df
 
 
