@@ -31,7 +31,7 @@ from electricitylci.eia860_facilities import eia860_balancing_authority
 
 def eia_facility_fuel_region(year):
 
-    primary_fuel = eia923_primary_fuel(year)
+    primary_fuel = eia923_primary_fuel(year=year)
     ba_match = eia860_balancing_authority(year)
 
     combined = primary_fuel.merge(ba_match, on='Plant Id')
