@@ -1,0 +1,52 @@
+This document is a record of changes to the EPA branch of electricitylci and
+other repositories.
+
+- ELCI_<>_config.json files:
+    - Added boolean parameter "replace_egrid", which will trigger the use of EIA/CEMS
+    data in place of eGRID generation and emissions data.
+    - Added parameter "eia_gen_year" to set the year of EIA electricity generation
+    data.
+- eia923_generation.py
+    - Rewrote the download and extraction. One function now downloads excel files
+    for a single year, another extracts generation data. These are used to extract
+    and save data to csv. CSV data are then loaded when they exist.
+    - Files for each year are saved in a subfolder of "data" rather than at the
+    top level.
+    - Primary fuel can be determined here using either generation or fuel
+    consumption methods.
+    - Filters for efficiency, percent generation from primary fuel, and NAICS code
+    are now included in this module.
+    - Multiple years of generation data can be loaded in a single dataframe
+    for matching with emissions data from a range of years.
+- eia860_facilities.py
+    - Created a new module to download/save EIA860 plant data.
+    - Determine the balancing authority and NERC region for each plant (when
+    not using eGRID).
+- generation.py
+    - Created a new function (eia_facility_fuel_region) to provide the balancing
+    authority, NERC region, primary fuel category, and percent of generation
+    from the primary fuel category. This is needed when not using eGRID.
+    - Modified the "create_generation_process_df" function so that it can use
+    non-eGRID data inputs. This is accomplished with a few if/else statements
+    using the "replace_egrid" parameter.
+    - Pulled the creation and/or dropping of some columns out of the loops in
+    "create_generation_df" to reduce runtime. Some of the columns were created
+    in other functions (e.g. add_technological_correlation_score, etc.).
+    - Removed column creation and dropping columns from the data quality and
+    representativeness functions to reduce runtime.
+- process_exchange_aggregator_uncertainty.py
+    - Replace the sympy solve of quadratic equation with explicit formulas in
+    the "uncertainty" function. This reduces runtime of process df creation by
+    about half. It's possible that it may introduce a bug with imaginary number
+    results.
+    - Looked at the "weight" parameter in "compilation" function. The parameter is
+    always equal to 1 right now, so I'm not sure if this is expected. A bug report
+    has been filed on jira.
+    - Created the module "emissions_other_sources". The one function in this file,
+    "integrate_replace_emissions" will be used to update facility emissions with
+    new values calcualted using CEMS and manual calculations.
+- __init__.py
+    - The functions "get_generation_process_df" and "get_generation_mix_process_df"
+    have been modified so eGRID can be replaced as the primary source of generation
+    data.
+
