@@ -191,7 +191,8 @@ def group_fuel_categories(df):
     return new_fuel_categories
 
 
-def eia923_primary_fuel(year, method_col='Net Generation (Megawatthours)'):
+def eia923_primary_fuel(eia923_gen_fuel=None, year=None,
+                        method_col='Net Generation (Megawatthours)'):
     """
     Determine the primary fuel for each power plant. Include the NAICS code
     for each plant in output.
@@ -212,7 +213,7 @@ def eia923_primary_fuel(year, method_col='Net Generation (Megawatthours)'):
         is 'Total Fuel Consumption MMBtu')
     
     """
-
+    if year:
     eia923_gen_fuel = eia923_download_extract(year)
     # eia923_gen_fuel['FuelCategory'] = group_fuel_categories(eia923_gen_fuel)
     # eia923_gen_fuel.rename(columns={'Reported Fuel Type Code'})
@@ -329,7 +330,7 @@ def build_generation_data(egrid_facilities_to_include=None, generation_years=Non
     for year in generation_years:
         if not egrid_facilities_to_include:
             gen_fuel_data = eia923_download_extract(year)
-            primary_fuel = eia923_primary_fuel(year)
+            primary_fuel = eia923_primary_fuel(gen_fuel_data)
             gen_efficiency = calculate_plant_efficiency(gen_fuel_data)
 
             final_gen_df = gen_efficiency.merge(primary_fuel, on='Plant Id')
