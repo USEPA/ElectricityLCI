@@ -214,7 +214,7 @@ def eia923_primary_fuel(eia923_gen_fuel=None, year=None,
     
     """
     if year:
-    eia923_gen_fuel = eia923_download_extract(year)
+        eia923_gen_fuel = eia923_download_extract(year)
     # eia923_gen_fuel['FuelCategory'] = group_fuel_categories(eia923_gen_fuel)
     # eia923_gen_fuel.rename(columns={'Reported Fuel Type Code'})
     
@@ -320,11 +320,11 @@ def build_generation_data(egrid_facilities_to_include=None, generation_years=Non
     """
     
     if not generation_years:
-    # Use the years from inventories of interest
-    generation_years = set(
-        list(inventories_of_interest.values())
-        + [eia_gen_year]
-    )
+        # Use the years from inventories of interest
+        generation_years = set(
+            list(inventories_of_interest.values())
+            + [eia_gen_year]
+        )
 
     df_list = []
     for year in generation_years:
