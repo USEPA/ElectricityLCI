@@ -34,6 +34,10 @@ other repositories.
     in other functions (e.g. add_technological_correlation_score, etc.).
     - Removed column creation and dropping columns from the data quality and
     representativeness functions to reduce runtime.
+- generation_mix.py
+    - Modify to allow replacement of eGRID generation data.
+    - Simplify the logic in "create_generation_mix_process_df_from_model_generation_data"
+    by using groupby methods rather than for loops.
 - process_exchange_aggregator_uncertainty.py
     - Replace the sympy solve of quadratic equation with explicit formulas in
     the "uncertainty" function. This reduces runtime of process df creation by
