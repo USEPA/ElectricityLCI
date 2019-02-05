@@ -23,15 +23,19 @@ def compilation(db,total_gen):
         #keeping the unreported emissions and facilities in separate database
 
         #This check is to make sure that the second database is not empt after droppins all NA. if empty, then we only use first database.  
-        if db2.empty == True:
+        if db2.empty:
             ef1 = np.sum(db1.iloc[:,1])/total_gen
             return ef1
     
         ef1 = np.sum(db1.iloc[:,1])/total_gen
+        # ef1_gen = db1['Electricity'].sum()
         
         ef2 = np.sum(db2.iloc[:,1])/total_gen
+        # ef2_gen = db2['Electricity'].sum()
         
         #weight formula.
+
+        # print('Why is the weight in compilation equal to total_gen/total_gen?')
         weight = total_gen/total_gen
         final_ef = ef2*weight + (1-weight)*ef1
         
