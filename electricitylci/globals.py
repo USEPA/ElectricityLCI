@@ -48,27 +48,47 @@ EIA860_BASE_URL = 'https://www.eia.gov/electricity/data/eia860/'
 
 ##############################
 
-# Quick and dirty grouping of fuel codes to named categories
-# Need to get these lined up with eGRID?
+# Grouping of Reported fuel codes to EPA categories
 FUEL_CAT_CODES = {
-    'COL': 'COAL',
+    'BIT': 'COAL',
+    'SUB': 'COAL',
+    'LIG': 'COAL',
+    'RC': 'COAL',
+    'ANT': 'COAL',
+    'SGC': 'COAL',
+    'SC': 'COAL',
     'NG': 'GAS',
     'NUC': 'NUCLEAR',
     'WND': 'WIND',
     'SUN': 'SOLAR',
     'DFO': 'OIL',
     'RFO': 'OIL',
-    'HYC': 'HYDRO',
-    'HPS': 'OTHF',
+    'WAT': 'HYDRO',
+    # 'HPS': 'OTHF',
     'GEO': 'GEOTHERMAL',
-    'WOO': 'OIL', # Other oil
-    'WWW': 'BIOMASS',
+    'WO': 'OIL',
+    'KER': 'OIL',
+    'JF': 'OIL',
+    'PG': 'OIL',
+    'BLQ': 'BIOMASS',
+    'WDS': 'BIOMASS',
+    'WDL': 'BIOMASS',
     'PC': 'OIL',
-    'MLG': 'BIOMASS',
+    'SGP': 'OIL',
+    'MSB': 'BIOMASS',
+    'LFG': 'BIOMASS',
     'WOC': 'COAL',
     'WH': 'OTHF',
     'MSN': 'OTHF',
     'OTH': 'OTHF',
-    'ORW': 'BIOMASS',
-    'OOG': 'OFSL'
+    'TDF': 'OTHF',
+    'PUR': 'OTHF',
+    'MWH': 'OTHF',
+    'AB': 'BIOMASS',
+    'OBL': 'BIOMASS',
+    'SLW': 'BIOMASS',
+    'OBG': 'BIOMASS',
+    'OBS': 'BIOMASS',
+    'OG': 'OFSL',
+    'BFG': 'OFSL',
 }
