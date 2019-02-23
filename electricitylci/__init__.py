@@ -91,7 +91,7 @@ def get_generation_mix_process_df(source='egrid',regions='all'):
     from electricitylci.model_config import eia_gen_year
 
     if replace_egrid:
-        assert regions == 'BA' or regions == 'NERC', 'Regions must be BA or NERC'
+        # assert regions == 'BA' or regions == 'NERC', 'Regions must be BA or NERC'
         print('Actual generation data is used when replacing eGRID')
         generation_data = build_generation_data(
             generation_years=[eia_gen_year]

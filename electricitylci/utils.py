@@ -7,8 +7,10 @@ import io
 import zipfile
 import os
 from os.path import join
+from electricitylci.globals import data_dir
 
 import requests
+import pandas as pd
 
 
 def download_unzip(url, unzip_path):
@@ -49,3 +51,13 @@ def find_file_in_folder(folder_path, file_pattern_match, return_name=True):
         return file_path
     else:
         return (file_path, file_name)
+
+
+def create_ba_region_map(match_fn='BA code match.csv', region_col='ferc_region'):
+
+    match_path = join(data_dir, match_fn)
+    region_match = pd.read_csv(match_path, index_col=0)
+    map_series = region_match[region_col]
+
+    return map_series
+

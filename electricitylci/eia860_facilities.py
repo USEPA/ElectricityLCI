@@ -13,7 +13,12 @@ import os
 from os.path import join
 import requests
 from electricitylci.globals import data_dir, EIA860_BASE_URL
-from electricitylci.utils import download_unzip, find_file_in_folder
+from electricitylci.utils import (
+    download_unzip,
+    find_file_in_folder,
+    create_ba_region_map
+)
+from electricitylci.model_config import region_column_name
 
 
 def eia860_download(year, save_path):
@@ -129,6 +134,13 @@ def eia860_balancing_authority(year):
         'Balancing Authority Name',
     ]
     eia_plant_ba_match = eia.loc[:, ba_cols].drop_duplicates()
+
+    # Map the balancing authority to a larger region (e.g. FERC or EIA)
+    if region_column_name:
+        region_map = create_ba_region_map(region_col=region_column_name)
+        eia_plant_ba_match[region_column_name] = (
+            eia_plant_ba_match['Balancing Authority Code'].map(region_map)
+        )
 
     return eia_plant_ba_match
 

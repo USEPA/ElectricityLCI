@@ -12,6 +12,7 @@ from electricitylci.model_config import (
     fuel_name,
     replace_egrid,
     eia_gen_year,
+    region_column_name,
 )
 from electricitylci.generation import eia_facility_fuel_region
 
@@ -72,9 +73,13 @@ def create_generation_mix_process_df_from_model_generation_data(generation_data,
         )
     
     # Changing the loop structure of this function so that it uses pandas groupby
-    if subregion == 'NERC':
+    if region_column_name:
+        database_for_genmix_final['Subregion'] = (
+            database_for_genmix_final[region_column_name]
+        )
+    elif subregion == 'NERC':
         database_for_genmix_final['Subregion'] = database_for_genmix_final['NERC']
-    if subregion == 'BA':
+    elif subregion == 'BA':
         database_for_genmix_final['Subregion'] = (
             database_for_genmix_final['Balancing Authority Name']
         )

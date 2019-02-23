@@ -3,6 +3,7 @@
 "egrid_year": 2016,
 "eia_gen_year" : 2017,
 "replace_egrid" : true,
+"region_column_name" : "eia_region",
 "inventories_of_interest": {"eGRID":"2016","TRI":"2016","NEI":"2016","RCRAInfo":"2015"},
 "include_only_egrid_facilities_with_positive_generation": true,
 "filter_on_efficiency" : true,
@@ -14,6 +15,6 @@
 "net_trading" : false,
 "fedelemflowlist_version" : "0.1",
 "post_process_generation_emission_factors" : false,
-"use_primaryfuel_for_coal" : false,
+"use_primaryfuel_for_coal" : true,
 "fuel_name_file" : "fuelname_1.csv"
 }
