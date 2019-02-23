@@ -6,6 +6,10 @@ other repositories.
     data in place of eGRID generation and emissions data.
     - Added parameter "eia_gen_year" to set the year of EIA electricity generation
     data.
+    - Added parameter "region_column_name" that is used to specify the name of a
+    column with region identifiers. Needed for things like FERC market regions.
+    NOTE: This parameter overrides function parameters for regions such as "all",
+    "BA", "NERC", etc.
 - eia923_generation.py
     - Rewrote the download and extraction. One function now downloads excel files
     for a single year, another extracts generation data. These are used to extract
@@ -46,11 +50,10 @@ other repositories.
     - Looked at the "weight" parameter in "compilation" function. The parameter is
     always equal to 1 right now, so I'm not sure if this is expected. A bug report
     has been filed on jira.
-    - Created the module "emissions_other_sources". The one function in this file,
+- Created the module "emissions_other_sources". The one function in this file,
     "integrate_replace_emissions" will be used to update facility emissions with
     new values calcualted using CEMS and manual calculations.
 - __init__.py
     - The functions "get_generation_process_df" and "get_generation_mix_process_df"
     have been modified so eGRID can be replaced as the primary source of generation
     data.
-
