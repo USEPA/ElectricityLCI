@@ -131,13 +131,12 @@ def trading_mix_fuels(gen_mix, trading_matrix):
 
         ['region', 'from_region', 'FuelCategory', 'trading_gen_ratio']
     """
-    # slow but it works
     _gen_mix = gen_mix.dropna().set_index('Subregion')
     assert set(_gen_mix.index.unique()).issubset(set(trading_matrix.index))
 
     check_trading_normalized(trading_matrix)
 
-    regions = trade_matrix.index
+    regions = trading_matrix.index
 
     df_list = []
     for region in regions:
@@ -147,7 +146,7 @@ def trading_mix_fuels(gen_mix, trading_matrix):
         # pandas will automatically match the values correctly.
         # Much faster than looping through everything multiple times.
         region_df['trading_amount'] = trading_matrix[region]
-        region_df['region'] = region
+        region_df['Subregion'] = region
         region_df['trading_gen_ratio'] = (
             region_df['trading_amount']
             * region_df['Generation_Ratio']
@@ -158,10 +157,10 @@ def trading_mix_fuels(gen_mix, trading_matrix):
     full_gen_df = pd.concat(df_list)
     full_gen_df['from_region'] = full_gen_df.index
     full_gen_df.dropna(inplace=True)
-    full_gen_df.reset_index(drop=True, inplace=True)
+
 
     keep_cols = [
-        'region',
+        'Subregion',
         'from_region',
         'FuelCategory',
         'trading_gen_ratio',
@@ -169,7 +168,8 @@ def trading_mix_fuels(gen_mix, trading_matrix):
     full_gen_df = full_gen_df.loc[
         full_gen_df['trading_gen_ratio'] > 0,
         keep_cols
-    ]
+    ].reset_index(drop=True)
+
 
     return full_gen_df
 
