@@ -1,4 +1,6 @@
 import openpyxl
+import pandas as pd
+import numpy as np
 
 #from electricitylci.egrid_facilities import egrid_subregions
 from electricitylci.globals import data_dir
@@ -101,7 +103,75 @@ def consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,ge
     return consumption_dict
 
 
+def check_trading_normalized(trading_matrix):
 
+    if trading_matrix.iloc[:, 0].sum() > 1:
+        for col in trading_matrix.columns:
+            trading_matrix[col] /= trading_matrix[col].sum()
+
+
+def trading_mix_fuels(gen_mix, trading_matrix):
+    """
+    Calculate the incoming fuel mix of for each region based on an I/O trading
+    matrix. The matrix and generation mix should contain the same regions.
+
+    Parameters
+    ----------
+    gen_mix : dataframe
+        Dataframe with columns ['Subregion', 'FuelCategory', 'Electricity',
+        'Generation_Ratio'].
+    trading_matrix : dataframe
+        A square input-output trading matrix of electricity between regions.
+
+    Returns
+    -------
+    dataframe
+        The fraction of every fuel/region combo that makes up consumption
+        within a region. Columns include:
+
+        ['region', 'from_region', 'FuelCategory', 'trading_gen_ratio']
+    """
+    # slow but it works
+    _gen_mix = gen_mix.dropna().set_index('Subregion')
+    assert set(_gen_mix.index.unique()).issubset(set(trading_matrix.index))
+
+    check_trading_normalized(trading_matrix)
+
+    regions = trade_matrix.index
+
+    df_list = []
+    for region in regions:
+        region_df = _gen_mix.copy()
+
+        # The index was set to region names above. Because of this
+        # pandas will automatically match the values correctly.
+        # Much faster than looping through everything multiple times.
+        region_df['trading_amount'] = trading_matrix[region]
+        region_df['region'] = region
+        region_df['trading_gen_ratio'] = (
+            region_df['trading_amount']
+            * region_df['Generation_Ratio']
+        )
+
+        df_list.append(region_df)
+
+    full_gen_df = pd.concat(df_list)
+    full_gen_df['from_region'] = full_gen_df.index
+    full_gen_df.dropna(inplace=True)
+    full_gen_df.reset_index(drop=True, inplace=True)
+
+    keep_cols = [
+        'region',
+        'from_region',
+        'FuelCategory',
+        'trading_gen_ratio',
+    ]
+    full_gen_df = full_gen_df.loc[
+        full_gen_df['trading_gen_ratio'] > 0,
+        keep_cols
+    ]
+
+    return full_gen_df
 
 
 
