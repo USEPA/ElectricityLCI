@@ -15,21 +15,21 @@ if not replace_egrid:
     wb2 = openpyxl.load_workbook(data_dir+'eGRID_Consumption_Mix_new.xlsx',data_only=True)
     data = wb2['ConsumptionMixContributions']
 
-if net_trading == True:
-    nerc_region = data['A4:A29']
-    surplus_pool_trade_in = data['F4':'F29']
-    trade_matrix = data['I3':'AP13']
-    generation_quantity = data['E4':'E29']
-    nerc_region2 = data['H4:H13']
-    egrid_regions = data['C4:C29']
+    if net_trading == True:
+        nerc_region = data['A4:A29']
+        surplus_pool_trade_in = data['F4':'F29']
+        trade_matrix = data['I3':'AP13']
+        generation_quantity = data['E4':'E29']
+        nerc_region2 = data['H4:H13']
+        egrid_regions = data['C4:C29']
 
-else:
-    nerc_region = data['A36:A61']
-    surplus_pool_trade_in = data['F36':'F61']
-    trade_matrix = data['I35':'AP45']
-    generation_quantity = data['E36':'E61']
-    nerc_region2 = data['H36:H45']
-    egrid_regions = data['C36:C61']
+    else:
+        nerc_region = data['A36:A61']
+        surplus_pool_trade_in = data['F36':'F61']
+        trade_matrix = data['I35':'AP45']
+        generation_quantity = data['E36':'E61']
+        nerc_region2 = data['H36:H45']
+        egrid_regions = data['C36:C61']
 
 
 def surplus_pool_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,gen_quantity, eGRID_region,nerc_region2):
