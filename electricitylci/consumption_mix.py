@@ -132,15 +132,16 @@ def consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,ge
 
 
 
-#Creating Surplus Pool dictionary
-surplus_dict = surplus_pool_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,generation_quantity,egrid_regions,nerc_region2)
-#del surplus_dict['']
+if not replace_egrid:
+    #Creating Surplus Pool dictionary
+    surplus_dict = surplus_pool_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,generation_quantity,egrid_regions,nerc_region2)
+    #del surplus_dict['']
 
 
 
 
-#Creating Consumption dictionary
-consumption_dict = consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,generation_quantity,egrid_regions,nerc_region2)
+    #Creating Consumption dictionary
+    consumption_dict = consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,generation_quantity,egrid_regions,nerc_region2)
 
 
 #Test distr
