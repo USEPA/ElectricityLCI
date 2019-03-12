@@ -158,7 +158,6 @@ def trading_mix_fuels(gen_mix, trading_matrix):
     full_gen_df['from_region'] = full_gen_df.index
     full_gen_df.dropna(inplace=True)
 
-
     keep_cols = [
         'Subregion',
         'from_region',
@@ -170,11 +169,39 @@ def trading_mix_fuels(gen_mix, trading_matrix):
         keep_cols
     ].reset_index(drop=True)
 
-
     return full_gen_df
 
 
+def consumption_flows(fuels_mix, flows):
+    """
+    Calculate the flows (e.g. emissions) attributable to each fuel/region
+    combination that is attributable to consumption within each region. For
+    example, the emissions of CO2 from electricity generation from every fuel
+    type in regions 'A', 'B', 'C', and 'D' that can be attributed to consumption
+    of electricity in region 'A', where 'A' exchanges electricity with 'B', 'C',
+    and 'D'.
 
+    Parameters
+    ----------
+    fuels_mix : dataframe
+        The mix of fuels attributable to consumption within each region. Includes
+        both the columns 'Subregion' for the consumption region and 'from_region'
+        for the production region. Fuel names are listed under 'FuelCategory',
+        and 'trading_gen_ratio' is the fraction of generation from each fuel/region
+        pair.
+    flows : dataframe
+        Flows attributable to generation from each fuel type in each region.
+
+    Returns
+    -------
+    dataframe
+        Joined fuel mix and flows data.
+    """
+
+    results = pd.merge(fuels_mix, flows, left_on=['FuelCategory', 'from_region'],
+                       right_on=['FuelCategory', 'Subregion'])
+
+    return results
 
 
 
