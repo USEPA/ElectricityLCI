@@ -1,5 +1,6 @@
 import json
 import pandas as pd
+from os.path import join
 
 from electricitylci.globals import modulepath, data_dir, set_model_name_with_stdin, list_model_names_in_config
 
@@ -36,6 +37,12 @@ except FileNotFoundError:
 
 electricity_lci_target_year = model_specs["electricity_lci_target_year"]
 egrid_year = model_specs["egrid_year"]
+
+# use 923 and cems rather than egrid, but still use the egrid_year
+# parameter to determine the data year
+replace_egrid = model_specs["replace_egrid"]
+region_column_name = model_specs["region_column_name"]
+eia_gen_year = model_specs["eia_gen_year"]
 inventories_of_interest = model_specs["inventories_of_interest"]
 inventories = inventories_of_interest.keys()
 include_only_egrid_facilities_with_positive_generation = model_specs["include_only_egrid_facilities_with_positive_generation"]
@@ -49,6 +56,6 @@ net_trading = model_specs["net_trading"]
 fedelemflowlist_version = model_specs["fedelemflowlist_version"]
 use_primaryfuel_for_coal = model_specs["use_primaryfuel_for_coal"]
 fuel_name_file = model_specs["fuel_name_file"]
-fuel_name = pd.read_csv(data_dir+fuel_name_file)
+fuel_name = pd.read_csv(join(data_dir, fuel_name_file))
 post_process_generation_emission_factors = model_specs["post_process_generation_emission_factors"]
 gen_mix_from_model_generation_data=False

@@ -23,15 +23,19 @@ def compilation(db,total_gen):
         #keeping the unreported emissions and facilities in separate database
 
         #This check is to make sure that the second database is not empt after droppins all NA. if empty, then we only use first database.  
-        if db2.empty == True:
+        if db2.empty:
             ef1 = np.sum(db1.iloc[:,1])/total_gen
             return ef1
     
         ef1 = np.sum(db1.iloc[:,1])/total_gen
+        # ef1_gen = db1['Electricity'].sum()
         
         ef2 = np.sum(db2.iloc[:,1])/total_gen
+        # ef2_gen = db2['Electricity'].sum()
         
         #weight formula.
+
+        # print('Why is the weight in compilation equal to total_gen/total_gen?')
         weight = total_gen/total_gen
         final_ef = ef2*weight + (1-weight)*ef1
         
@@ -85,7 +89,13 @@ def uncertainty(db,mean_gen,total_gen,total_facility_considered):
             
             #This method will not work with the interval limits are more than 280% of the mean. 
             if pi3 < 2.8:
-              sd1,sd2 = solve(0.5*x*x -(1.16308*np.sqrt(2))*x + (np.log(1+pi3)),x)
+                # sd1,sd2 = solve(0.5*x*x -(1.16308*np.sqrt(2))*x + (np.log(1+pi3)),x)
+              
+                a = 0.5
+                b = -(1.16308*np.sqrt(2))
+                c = np.log(1+pi3)
+                sd1 = (-b + np.sqrt(b**2 - (4 * a * c))) / (2 * a)
+                sd2 = (-b - np.sqrt(b**2 - (4 * a * c))) / (2 * a)
 
             else:#This is a wrong mathematical statement. However, we have to use it if something fails. 
               sd1,sd2 = solve(0.5*x*x -(1.36*np.sqrt(2))*x + (np.log(1+pi3)),x)

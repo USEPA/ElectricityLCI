@@ -4,19 +4,24 @@
 import math
 import time
 import pandas as pd
-from electricitylci.globals import data_dir, electricity_flow_name_generation_and_distribution,electricity_flow_name_consumption
+from os.path import join
+from electricitylci.globals import (
+    data_dir,
+    electricity_flow_name_generation_and_distribution,
+    electricity_flow_name_consumption
+)
 from electricitylci.model_config import egrid_year
 from electricitylci.egrid_facilities import egrid_subregions
 
 year = egrid_year
 
 #Read in general metadata to be used by all processes
-metadata = pd.read_csv(data_dir+'metadata.csv')
+metadata = pd.read_csv(join(data_dir, 'metadata.csv'))
 #Use only first row of metadata for all processes for now
 metadata = metadata.iloc[0,]
 
 #Read in process location uuids
-location_UUID = pd.read_csv(data_dir+'location_UUIDs.csv')
+location_UUID = pd.read_csv(join(data_dir, 'location_UUIDs.csv'))
 def lookup_location_uuid(location):
     try:
         uuid = location_UUID.loc[location_UUID['NAME'] == location]['REF_ID'].iloc[0]
@@ -25,7 +30,7 @@ def lookup_location_uuid(location):
     return uuid
 
 #Read in process name info
-process_name = pd.read_csv(data_dir+'processname_1.csv')
+process_name = pd.read_csv(join(data_dir, 'processname_1.csv'))
 generation_name_parts = process_name[process_name['Stage']=='generation'].iloc[0]
 generation_mix_name_parts = process_name[process_name['Stage']=='generation mix'].iloc[0]
 
@@ -180,7 +185,7 @@ def process_table_creation_genmix(region,exchanges_list):
 #     ar['name'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution'+str(fuelname)
 #     del ar['']
 #     return ar
-    
+
 
 #Will be used later
 def location(region):
@@ -191,7 +196,7 @@ def location(region):
     return ar
 
 def process_doc_creation():
-    
+
     global year;
     ar = dict()
     ar['timeDescription']=''
@@ -248,7 +253,7 @@ def exchange_table_creation_input(data):
     ar['flowProperty']=''
     ar['input'] = True
     ar['baseUncertainty']=''
-    ar['provider']='' 
+    ar['provider']=''
     ar['amount']=data['Emission_factor'].iloc[0]
     ar['amountFormula']='  '
     ar['unit']=unit(data['Unit'].iloc[0]);
@@ -287,7 +292,7 @@ def exchange_table_creation_output(data):
     ar['amount']=data['Emission_factor'].iloc[0]
     ar['amountFormula']=''
     ar['unit']=unit('kg');
-    ar['pedigreeUncertainty']=''  
+    ar['pedigreeUncertainty']=''
     ar['dqEntry'] = '('+str(round(data['Reliability_Score'].iloc[0],1))+\
                     ';'+str(round(data['TemporalCorrelation'].iloc[0],1))+\
                     ';' + str(round(data['GeographicalCorrelation'].iloc[0],1))+\
@@ -302,26 +307,26 @@ def exchange_table_creation_output(data):
     #else:
     #  ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution'+data['FlowName'].iloc[0]
 
-    return ar;    
+    return ar;
 
-        
+
 def uncertainty_table_creation(data):
 
     ar = dict()
     ar['geomMean'] = data['GeomMean'].iloc[0]
-    ar['geomSd']= data['GeomSD'].iloc[0]    
+    ar['geomSd']= data['GeomSD'].iloc[0]
     ar['distributionType']='Logarithmic Normal Distribution'
     ar['mean']=''
-    ar['meanFormula']=''    
+    ar['meanFormula']=''
     ar['geomMeanFormula']=''
     ar['maximum']=data['Maximum'].iloc[0]
     ar['minimum']=data['Minimum'].iloc[0]
     ar['minimumFormula']=''
     ar['sd']=''
-    ar['sdFormula']=''    
+    ar['sdFormula']=''
     ar['geomSdFormula']=''
     ar['mode']=''
-    ar['modeFormula']=''   
+    ar['modeFormula']=''
     ar['maximumFormula']='';
     return ar;
 
