@@ -504,7 +504,7 @@ def uncertainty_creation(data,name,fuelheat,mean,total_gen,total_facility_consid
                     #uncertianty calculations
                     l,b = data.shape
                     if l > 3:
-<<<<<<< HEAD
+
                        u,s = (uncertainty(data,mean,total_gen,total_facility_considered))
                        
                        if u != None:
@@ -513,13 +513,11 @@ def uncertainty_creation(data,name,fuelheat,mean,total_gen,total_facility_consid
                        else:
                            ar['geomMean'] = None
                            ar['geomSd'] = None
-=======
 
                        u,s = (uncertainty(data,mean,total_gen,total_facility_considered))
 
                        ar['geomMean'] = str(round(math.exp(u),12));
                        ar['geomSd']=str(round(math.exp(s),12));
->>>>>>> schivley/split_ef_creation
                     else:
                        ar['geomMean'] = None
                        ar['geomSd']= None
