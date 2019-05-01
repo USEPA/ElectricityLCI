@@ -373,5 +373,5 @@ def build_generation_data(egrid_facilities_to_include=None, generation_years=Non
 
     all_years_gen = all_years_gen.loc[:, ['FacilityID', 'Electricity', 'Year']]
     all_years_gen.reset_index(drop=True, inplace=True)
-
+    all_years_gen['Year']=all_years_gen['Year'].astype('int32')
     return all_years_gen
