@@ -55,52 +55,6 @@ def eia_facility_fuel_region(year):
     return combined
 
 
-def create_generation_process_noDQI(generation_data,emissions_data,subregion):
-
-    emissions_data = emissions_data.drop(columns = ['FacilityID'])
-    combined_data = generation_data.merge(
-        emissions_data,
-        left_on=['FacilityID', 'Year'],
-        right_on=['eGRID_ID', 'Year'],
-        how='right'
-    )
-    cols_to_drop_for_final = ['FacilityID']
-    emissions_gen_data = combined_data.drop(columns = cols_to_drop_for_final)
-
-    final_data['Subregion'] = final_data['Balancing Authority Name']
-
-    subregion_fuel_year_gen = (
-        final_data.groupby(
-            ['Subregion', 'FuelCategory', 'Year'], as_index=False
-        )['Electricity']
-                    .sum()
-    )
-    subregion_fuel_year_gen.rename(columns={
-        'Electricity': 'Ref_Electricity_Subregion_FuelCategory'
-    }, inplace=True)
-    final_data = pd.merge(final_data, subregion_fuel_year_gen,
-                            on=['Subregion', 'FuelCategory', 'Year'])
-
-    #THIS CHECK AND STAMENT IS BEING PUT BECAUSE OF SAME FLOW VALUE ERROR STILL BEING THERE IN THE DATA
-    dup_cols_check = [
-        'Subregion',
-        'PrimaryFuel',
-        'FuelCategory',
-        'FlowName',
-        'FlowAmount',
-        'Compartment',
-    ]
-
-    final_data = final_data.drop_duplicates(subset=dup_cols_check)
-
-    final_data = final_data[final_data['FlowName'] != 'Electricity']
-
-    final_database = map_emissions_to_fedelemflows(final_data)
-
-    group_cols = []
-
-
-
 def combine_gen_emissions_data(generation_data, emissions_data, subregion='all'):
     """
     Merge generation and emissions data. Add region designations using either
