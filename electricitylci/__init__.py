@@ -36,9 +36,19 @@ def get_generation_process_df(source='egrid', regions='all'):
     from electricitylci.eia923_generation import build_generation_data
     from electricitylci.generation import create_generation_process_df
     from electricitylci.model_config import replace_egrid
+    from electricitylci.emissions_other_sources import integrate_replace_emissions
 
     if replace_egrid:
+        # This is a dummy function that doesn't exist yet
+        updated_emissions = build_new_emissions(year)
+
         generation_data = build_generation_data()
+        emissions_and_waste_for_selected_egrid_facilities = (
+            integrate_replace_emissions(
+                updated_emissions,
+                emissions_and_waste_for_selected_egrid_facilities
+            )
+        )
     else:
         generation_data = build_generation_data(
             egrid_facilities_to_include=egrid_facilities_to_include
