@@ -5,7 +5,7 @@ from electricitylci.globals import output_dir
 from electricitylci.model_config import model_name
 
 #Optionally create a US avg generation database
-US_generation_db = electricitylci.get_generation_process_df(regions='US')
+#US_generation_db = electricitylci.get_generation_process_df(regions='US')
 #Write it to a csv
 #US_generation_db.to_csv(output_dir+model_name+'_US_gen_db.csv',index=False)
 

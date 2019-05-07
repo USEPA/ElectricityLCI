@@ -1,6 +1,6 @@
 import os
 
-
+set_model_name_with_stdin = True
 def set_dir(directory):
     if not os.path.exists(directory): os.makedirs(directory)
     return directory
@@ -36,7 +36,6 @@ def list_model_names_in_config():
         modelnames_dict[selection_num]=f
         selection_num+=1
     return modelnames_dict
-
 # EIA923 download url - this is just the base, need to add
 # extension and file name
 EIA923_BASE_URL = 'https://www.eia.gov/electricity/data/eia923/'
