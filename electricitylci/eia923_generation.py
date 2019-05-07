@@ -27,14 +27,14 @@ def eia923_download(year, save_path):
     """
     Download and unzip one year of EIA 923 annual data to a subfolder
     of the data directory
-    
+
     Parameters
     ----------
     year : int or str
         The year of data to download and save
     save_path : path or str
         A folder where the zip file contents should be extracted
-    
+
     """
     current_url = EIA923_BASE_URL + 'xls/f923_{}.zip'.format(year)
     archive_url = EIA923_BASE_URL + 'archive/xls/f923_{}.zip'.format(year)
@@ -89,10 +89,10 @@ def eia923_download_extract(
 ):
     """
     Download (if necessary) and extract a single year of generation/fuel
-    consumption data from EIA-923. 
-    
+    consumption data from EIA-923.
+
     Data are grouped by plant level
-    
+
     Parameters
     ----------
     year : int or str
@@ -100,14 +100,14 @@ def eia923_download_extract(
     group_cols : list, optional
         The columns from EIA923 generation and fuel sheet to use when grouping
         generation and fuel consumption data.
-    
+
     """
     expected_923_folder = join(data_dir, 'f923_{}'.format(year))
 
     if not os.path.exists(expected_923_folder):
         print('Downloading EIA-923 files')
         eia923_download(year=year, save_path=expected_923_folder)
-        
+
         eia923_path, eia923_name = find_file_in_folder(
             folder_path=expected_923_folder,
             file_pattern_match='2_3_4_5',
@@ -158,7 +158,7 @@ def eia923_download_extract(
                 file_pattern_match='2_3_4_5',
                 return_name=True
             )
-            
+
             # # would be more elegent with glob but this works to identify the
             # # Schedule_2_3_4_5 file
             # for f in all_files:
@@ -202,7 +202,7 @@ def eia923_primary_fuel(eia923_gen_fuel=None, year=None,
     generation (wind, sun, hydro, etc), so an additional step to determine
     the primary fuel of these plants if 'Total Fuel Consumption MMBtu' is
     selected as the method.
-    
+
     Parameters
     ----------
     year : int
@@ -211,13 +211,13 @@ def eia923_primary_fuel(eia923_gen_fuel=None, year=None,
         The method to use when determining the primary fuel of a power plant
         (the default is 'Net Generation (Megawatthours)', and the alternative
         is 'Total Fuel Consumption MMBtu')
-    
+
     """
     if year:
         eia923_gen_fuel = eia923_download_extract(year)
     # eia923_gen_fuel['FuelCategory'] = group_fuel_categories(eia923_gen_fuel)
     # eia923_gen_fuel.rename(columns={'Reported Fuel Type Code'})
-    
+
     group_cols = ['Plant Id', 'NAICS Code', 'Reported Fuel Type Code']
 
     sum_cols = [
@@ -227,11 +227,11 @@ def eia923_primary_fuel(eia923_gen_fuel=None, year=None,
     plant_fuel_total = (eia923_gen_fuel.groupby(
                             group_cols, as_index=False
                         )[sum_cols].sum())
-    
+
     # Find the dataframe index for the fuel with the most gen at each plant
     # Use this to slice the dataframe and return plant code and primary fuel
     primary_fuel_idx = (plant_fuel_total.groupby('Plant Id')[method_col].idxmax())
-    
+
     data_cols = [
         'Plant Id',
         'NAICS Code',
@@ -289,7 +289,7 @@ def efficiency_filter(df):
 
     df = df.loc[(df['efficiency'] >= lower)
                 & (df['efficiency'] <= upper), :]
-    
+
     return df
 
 
@@ -301,7 +301,7 @@ def build_generation_data(egrid_facilities_to_include=None, generation_years=Non
     from the primary fuel (if set in the config file). The returned
     dataframe also includes the balancing authority for every power
     plant.
-    
+
     Parameters
     ----------
     egrid_facilities_to_include : list, optional
@@ -310,7 +310,7 @@ def build_generation_data(egrid_facilities_to_include=None, generation_years=Non
         Years of generation data to include in the output (default is None,
         which builds a list from the inventories of interest and eia_gen_year
         parameters)
-    
+
     Returns
     ----------
     DataFrame
@@ -318,7 +318,7 @@ def build_generation_data(egrid_facilities_to_include=None, generation_years=Non
     Dataframe columns include:
     ['FacilityID', 'Electricity', 'Year']
     """
-    
+
     if not generation_years:
         # Use the years from inventories of interest
         generation_years = set(
@@ -355,7 +355,7 @@ def build_generation_data(egrid_facilities_to_include=None, generation_years=Non
             final_gen_df = final_gen_df.loc[
                 final_gen_df['Plant Id'].isin(egrid_facilities_to_include), :
             ]
-        
+
         ba_match = eia860_balancing_authority(year)
 
         final_gen_df = final_gen_df.merge(ba_match, on='Plant Id', how='left')
@@ -363,7 +363,7 @@ def build_generation_data(egrid_facilities_to_include=None, generation_years=Non
         df_list.append(final_gen_df)
 
     all_years_gen = pd.concat(df_list)
-    
+
     all_years_gen = all_years_gen.rename(
         columns={
             'Plant Id': 'FacilityID',
