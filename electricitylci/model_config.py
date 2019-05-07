@@ -2,11 +2,30 @@ import json
 import pandas as pd
 from os.path import join
 
-from electricitylci.globals import modulepath, data_dir
+from electricitylci.globals import modulepath, data_dir, set_model_name_with_stdin, list_model_names_in_config
 
 #################
-#Set model_name here
-model_name = 'ELCI_1'
+model_name_exists = False
+try:
+    model_name
+    model_name_exists = True
+except NameError:
+    model_name_exists = False
+
+if set_model_name_with_stdin and not model_name_exists:
+    model_menu = list_model_names_in_config()
+    print("Select a model number to use:")
+    for k in model_menu.keys():
+        print("\t"+str(k)+": "+model_menu[k])
+    model_num = input()
+    try:
+        model_name = model_menu[int(model_num)]
+        print("Model " + model_name + " selected.")
+    except:
+        print('You must select the menu number for an existing model')
+elif not set_model_name_with_stdin:
+    # Set model_name manually here
+    model_name = 'ELCI_3'
 #################
 
 #pull in model config vars
