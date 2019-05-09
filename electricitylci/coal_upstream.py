@@ -7,7 +7,7 @@ import os
 from os.path import join
 from electricitylci.utils import find_file_in_folder
 import requests
-import PhysicalQuantities as pq
+import electricitylci.PhysicalQuantities as pq
 
 coal_type_codes={'BIT':'B',
                  'LIG':'L',
@@ -69,7 +69,7 @@ def read_eia923_fuel_receipts(year):
         )
         eia_fuel_receipts_df = pd.read_excel(
                 eia923_path, sheet_name='Page 5 Fuel Receipts and Costs',
-                skiprows=4, usecols="A:C,H:M,P:Q")
+                skiprows=4, usecols="A:E,H:M,P:Q")
         csv_fn = eia923_name.split('.')[0] + '_page_5_reduced.csv'
         csv_path = join(expected_923_folder,csv_fn)
         eia_fuel_receipts_df.to_csv(csv_path,index=False)
@@ -83,9 +83,9 @@ def read_eia923_fuel_receipts(year):
         csv_file = [f for f in all_files
                     if '.csv' in f
                     and '_page_5_reduced.csv' in f]
-        csv_path = os.path.join(expected_923_folder,csv_file[0])
-        if os.path.exists(csv_path):
-            eia_fuel_receipts_df=pd.read_csv(csv_path)
+        if csv_file != []:
+            csv_path = os.path.join(expected_923_folder,csv_file[0])
+            eia_fuel_receipts_df=pd.read_csv(csv_path)    
         else:
             eia923_path, eia923_name = find_file_in_folder(
                     folder_path=expected_923_folder,
@@ -93,7 +93,7 @@ def read_eia923_fuel_receipts(year):
                     return_name=True)
             eia_fuel_receipts_df = pd.read_excel(
                 eia923_path, sheet_name='Page 5 Fuel Receipts and Costs',
-                skiprows=4, usecols="A:C,H:M,P:Q")
+                skiprows=4, usecols="A:E,H:M,P:Q")
             csv_fn = eia923_name.split('.')[0] + '_page_5_reduced.csv'
             csv_path = join(expected_923_folder,csv_fn)
             eia_fuel_receipts_df.to_csv(csv_path,index=False)
