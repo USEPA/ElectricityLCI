@@ -36,7 +36,7 @@ transport_dict={'Avg Barge Ton*Miles':'Barge',
 
 def eia_7a_download(year, save_path):
     eia7a_base_url = 'http://www.eia.gov/coal/data/public/xls/'
-    name = 'coalpublic{}'.format(year)+'.xls'
+    name = 'coalpublic{}.xls'.format(year)
     url = eia7a_base_url + name
     try:
         os.makedirs(save_path)
@@ -83,7 +83,7 @@ def read_eia923_fuel_receipts(year):
         csv_file = [f for f in all_files
                     if '.csv' in f
                     and '_page_5_reduced.csv' in f]
-        if csv_file != []:
+        if csv_file:
             csv_path = os.path.join(expected_923_folder,csv_file[0])
             eia_fuel_receipts_df=pd.read_csv(csv_path)    
         else:
@@ -102,9 +102,11 @@ def read_eia923_fuel_receipts(year):
 
 def _coal_code(row):
     #_coal_code_str = basin_codes[basin] + '-' + coal_type_codes[coal_type] + '-' + mine_type
-    coal_code_str=(basin_codes[row['netl_basin']]+'-'+
-                   coal_type_codes[row['energy_source']]+'-'+
-                   row['coalmine_type'])
+    coal_code_str=(
+            f'{basin_codes[row["netl_basin"]]}-'
+            f'{coal_type_codes[row["energy_source"]]}-'
+            f'{row["coalmine_type"]}'
+    )
     return coal_code_str
 
 def _transport_code(row):
@@ -180,7 +182,8 @@ def generate_upstream_coal(year):
     
     Parameters
     ----------
-    None
+    year: int
+        Year of EIA-923 fuel data to use
     
     Returns
     ----------

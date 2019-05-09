@@ -19,7 +19,8 @@ def generate_upstream_ng(year):
     
     Parameters
     ----------
-    None
+    year: int
+        Year of EIA-923 fuel data to use.
     
     Returns
     ----------
