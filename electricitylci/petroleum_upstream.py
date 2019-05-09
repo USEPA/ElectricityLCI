@@ -67,19 +67,26 @@ def generate_petroleum_upstream(year):
     
     #Merging the dataframes within the dictionary to a single datframe
     combined_lci=pd.concat(petroleum_lci,ignore_index=True)
-    eia_fuel_receipts_df['fuel_padd']=(eia_fuel_receipts_df['energy_source']+'_'+eia_fuel_receipts_df['padd'].astype(str))
+    eia_fuel_receipts_df['fuel_padd']=(eia_fuel_receipts_df['energy_source']+
+                        '_'+eia_fuel_receipts_df['padd'].astype(str))
     
     #Merge the inventories for each fuel with the fuel use by each power plant
-    merged_inventory = combined_lci.merge(right=eia_fuel_receipts_df[['plant_id','heat_input','fuel_padd']],
-                                          left_on='fuel_code',
-                                          right_on='fuel_padd',
-                                          how='left').sort_values(['plant_id','fuel_padd','Flow.1'])
+    merged_inventory = combined_lci.merge(
+            right=eia_fuel_receipts_df[['plant_id','heat_input','fuel_padd']],
+            left_on='fuel_code',
+            right_on='fuel_padd',
+            how='left').sort_values(['plant_id','fuel_padd','Flow.1'])
     
     #convert per MJ inventory to annual emissions using plant heat input
-    merged_inventory['Result.1']=merged_inventory['Result.1']*merged_inventory['heat_input']
+    merged_inventory['Result.1']=(
+            merged_inventory['Result.1']*
+            merged_inventory['heat_input'])
     
     #Cleaning up unneeded columns and renaming
-    merged_inventory.drop(columns=['heat_input','fuel_padd','Unit.1','Sub-category.1','Flow UUID.1'],inplace=True)
+    merged_inventory.drop(
+            columns=['heat_input','fuel_padd','Unit.1',
+                     'Sub-category.1','Flow UUID.1'],
+            inplace=True)
     colnames={
             'Flow.1':'FlowName',
             'Category.1':'Compartment',
@@ -96,7 +103,8 @@ def generate_petroleum_upstream(year):
             'NETL database':'NETL',
             'Emission to water':'water',
             'Emission to soil':'soil'}
-    merged_inventory['Compartment']=merged_inventory['Compartment'].map(compartment_dict)
+    merged_inventory['Compartment']=merged_inventory['Compartment'].map(
+            compartment_dict)
     merged_inventory.dropna(inplace=True)
     
     return merged_inventory
