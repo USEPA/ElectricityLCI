@@ -107,6 +107,16 @@ def _unit(unit_name: str) -> Optional[olca.Ref]:
         ref_id = '52765a6c-3896-43c2-b2f4-c679acf13efe'
     elif unit_name == 'kg':
         ref_id = '20aadc24-a391-41cf-b340-3e4529f44bde'
+    elif unit_name == 'sh tn':
+        ref_id = 'd4922696-9c95-4b5d-a876-425e98276978'
+    elif unit_name == 'bbl':
+        ref_id = '91995a9e-3cb4-4fc9-a93b-8c618ff9b948'
+    elif  unit_name == 'cu ft':
+        ref_id = '07973a41-56b3-4e1b-a208-fd75a09fbd4b'
+    elif unit_name == 'btu':
+        ref_id = '55244053-94ba-404e-9172-cb279d905e00'
+    elif unit_name == 'lb*mi':
+        ref_id = '5458351a-f6f7-4e0b-a449-823c9b6374db'
     if ref_id is None:
         log.error('unknown unit %s; no unit reference', unit_name)
         return None
@@ -126,6 +136,21 @@ def _flow_property(unit_name: str) -> Optional[olca.Ref]:
     elif unit_name == 'kg':
         ref_id = '93a60a56-a3c8-11da-a746-0800200b9a66'
         return olca.ref(olca.FlowProperty, ref_id, 'Mass')
+    elif unit_name == 'sh tn':
+        ref_id = '93a60a56-a3c8-11da-a746-0800200b9a66'
+        return olca.ref(olca.FlowProperty, ref_id, 'Mass')
+    elif unit_name == 'bbl':
+        ref_id = '93a60a56-a3c8-22da-a746-0800200c9a66'
+        return olca.ref(olca.FlowProperty, ref_id, 'Volume')
+    elif  unit_name == 'cu ft':
+        ref_id = '93a60a56-a3c8-22da-a746-0800200c9a66'
+        return olca.ref(olca.FlowProperty, ref_id, 'Volume')
+    elif unit_name == 'btu':
+        ref_id = 'f6811440-ee37-11de-8a39-0800200c9a66'
+        return olca.ref(olca.FlowProperty, ref_id, 'Energy')
+    elif unit_name == 'lb*mi':
+        ref_id = '838aaa20-0117-11db-92e3-0800200c9a66'
+        return olca.ref(olca.FlowProperty, ref_id, 'Goods transport (mass*distance)')
     log.error('unknown unit %s; no flow property reference', unit_name)
     return None
 
