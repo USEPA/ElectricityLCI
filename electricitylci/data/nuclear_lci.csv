@@ -1,0 +1,1773 @@
+﻿,FlowName,FlowAmount,unit,directionality,compartment
+1,Crude oil (IISI),-4.20338E-13,kg,resource,
+2,Crude oil (in kg),0.005414377,kg,resource,
+3,Crude oil (in MJ),1.161970142,kg,resource,
+4,Crude oil Algeria,0.000629747,kg,resource,
+5,Crude oil Angola,0.00048225,kg,resource,
+6,Crude oil Argentina,3.95277E-06,kg,resource,
+7,Crude oil Australia,0.000213681,kg,resource,
+8,Crude oil Austria,1.82041E-06,kg,resource,
+9,Crude oil Bolivia,1.31363E-09,kg,resource,
+10,Crude oil Brazil,5.00713E-05,kg,resource,
+11,Crude oil Brunei,8.97773E-13,kg,resource,
+12,Crude oil Bulgaria,2.6898E-10,kg,resource,
+13,Crude oil Cameroon,1.75644E-05,kg,resource,
+14,Crude oil Canada,0.001209431,kg,resource,
+15,Crude oil Central Africa,0,kg,resource,
+16,Crude oil Central America,0,kg,resource,
+17,Crude oil Chile,1.56269E-09,kg,resource,
+18,Crude oil China,4.53119E-06,kg,resource,
+19,Crude oil CIS,0.003980792,kg,resource,
+20,Crude oil Colombia,9.43215E-06,kg,resource,
+21,Crude oil Czech Republic,5.36201E-07,kg,resource,
+22,Crude oil Denmark,0.00020997,kg,resource,
+23,Crude oil Ecuador,0.000237162,kg,resource,
+24,Crude oil Egypt,4.38629E-06,kg,resource,
+25,Crude oil France,1.5422E-06,kg,resource,
+26,Crude oil Gabon,6.85317E-06,kg,resource,
+27,Crude oil Germany,0.000328484,kg,resource,
+28,Crude oil Great Britain,0.001341177,kg,resource,
+29,Crude oil Greece,1.80939E-07,kg,resource,
+30,Crude oil Hungary,1.01745E-06,kg,resource,
+31,Crude oil India,3.77939E-08,kg,resource,
+32,Crude oil Indonesia,7.65458E-05,kg,resource,
+33,Crude oil Iran,4.61771E-05,kg,resource,
+34,Crude oil Iraq,0.000408487,kg,resource,
+35,Crude oil Ireland,1.37133E-11,kg,resource,
+36,Crude oil Italy,1.92736E-05,kg,resource,
+37,Crude oil Japan,8.82811E-14,kg,resource,
+38,Crude oil Kuwait,0.000249827,kg,resource,
+39,Crude oil Libya,0.000899381,kg,resource,
+40,Crude oil Malaysia,5.8386E-13,kg,resource,
+41,Crude oil Mexico,0.001029667,kg,resource,
+42,Crude oil Middle East,0,kg,resource,
+43,Crude oil Netherlands,5.8961E-05,kg,resource,
+44,Crude oil New Zealand,1.28155E-05,kg,resource,
+45,Crude oil Nigeria,0.001002336,kg,resource,
+46,Crude oil North Africa,0,kg,resource,
+47,Crude oil Norway,0.002360144,kg,resource,
+48,Crude oil Oman,1.81796E-06,kg,resource,
+49,Crude oil Poland,1.24371E-05,kg,resource,
+50,Crude oil Qatar,9.78742E-06,kg,resource,
+51,Crude oil Romania,7.68217E-07,kg,resource,
+52,Crude oil Saudi Arabia,0.001383653,kg,resource,
+53,Crude oil Slovakia,4.12336E-09,kg,resource,
+54,Crude oil South Africa,1.01414E-11,kg,resource,
+55,Crude oil Spain,3.00884E-07,kg,resource,
+56,Crude oil Syria,1.47444E-09,kg,resource,
+57,Crude oil Trinidad and Tobago,2.48964E-06,kg,resource,
+58,Crude oil Tunisia,2.92642E-05,kg,resource,
+59,Crude oil Turkey,8.66024E-13,kg,resource,
+60,Crude oil United Arab Emirates,3.09485E-05,kg,resource,
+61,Crude oil USA,0.002908164,kg,resource,
+62,Crude oil Venezuela,0.001057049,kg,resource,
+63,Oil sand (10% bitumen) (in MJ),0.008325229,kg,resource,
+64,Oil sand (100% bitumen) (in MJ),0.000726828,kg,resource,
+65,Hard coal (IISI),3.555E-11,kg,resource,
+66,Hard Coal (Illinois No 6),0.52548547,kg,resource,
+67,Hard coal (in kg),0.00023804,kg,resource,
+68,Hard coal (in MJ),0.605230578,kg,resource,
+69,Hard Coal (PRB),0.540755205,kg,resource,
+70,Hard coal Australia,0.020445699,kg,resource,
+71,Hard coal Belgium,5.38309E-08,kg,resource,
+72,Hard coal Bosnia and Herzegovina,2.47975E-08,kg,resource,
+73,Hard coal Brazil,7.44151E-07,kg,resource,
+74,Hard coal Canada,0.012202468,kg,resource,
+75,Hard coal Chile,1.62915E-07,kg,resource,
+76,Hard coal China,0.000174339,kg,resource,
+77,Hard coal CIS,0.000466671,kg,resource,
+78,Hard coal Colombia,0.001837465,kg,resource,
+79,Hard coal Czech Republic,0.000205264,kg,resource,
+80,Hard coal France,1.44492E-06,kg,resource,
+81,Hard coal Germany,0.00485394,kg,resource,
+82,Hard coal Great Britain,2.62655E-05,kg,resource,
+83,Hard coal India,2.94221E-06,kg,resource,
+84,Hard coal Indonesia,8.57185E-05,kg,resource,
+85,Hard coal Italy,9.27103E-09,kg,resource,
+86,Hard coal Japan,2.29729E-13,kg,resource,
+87,Hard coal Malaysia,2.53286E-14,kg,resource,
+88,Hard coal Mexico,1.3849E-07,kg,resource,
+89,Hard coal New Zealand,1.49002E-07,kg,resource,
+90,Hard coal Poland,0.001535325,kg,resource,
+91,Hard coal Portugal,1.15679E-10,kg,resource,
+92,Hard coal South Africa,0.001529246,kg,resource,
+93,Hard coal Spain,7.11054E-07,kg,resource,
+94,Hard coal Turkey,3.64582E-09,kg,resource,
+95,Hard coal USA,0.188218633,kg,resource,
+96,Hard coal Venezuela,0.000410295,kg,resource,
+97,Hard coal Vietnam,2.79973E-05,kg,resource,
+98,"Hard Coal, Pure, Fuel",4.24099E-09,kg,resource,
+99,"Hard Coal, Raw, Fuel",3.3208E-08,kg,resource,
+100,Lignite (in kg),1.70374E-06,kg,resource,
+101,Lignite (in MJ),0.211892022,kg,resource,
+102,Lignite Australia,0.000214494,kg,resource,
+103,Lignite Austria,1.28328E-07,kg,resource,
+104,Lignite Bosnia and Herzegovina,5.72919E-08,kg,resource,
+105,Lignite Bulgaria,1.67182E-07,kg,resource,
+106,Lignite Canada,2.78347E-05,kg,resource,
+107,Lignite CIS,1.73268E-05,kg,resource,
+108,Lignite Czech Republic,0.000100974,kg,resource,
+109,Lignite France,2.90199E-07,kg,resource,
+110,Lignite Germany,4.03726E-08,kg,resource,
+111,Lignite Germany (Central Germany),0.004629874,kg,resource,
+112,Lignite Germany (Lausitz),0.013624565,kg,resource,
+113,Lignite Germany (Rheinisch),0.023550974,kg,resource,
+114,Lignite Greece,3.35348E-06,kg,resource,
+115,Lignite Hungary,7.68263E-07,kg,resource,
+116,Lignite India,5.61806E-07,kg,resource,
+117,Lignite Macedonia,1.05391E-07,kg,resource,
+118,Lignite Poland,5.62917E-05,kg,resource,
+119,Lignite Romania,1.24517E-08,kg,resource,
+120,Lignite Serbia,3.9254E-07,kg,resource,
+121,Lignite Slovakia,1.27672E-07,kg,resource,
+122,Lignite Slovenia,5.54962E-07,kg,resource,
+123,Lignite Spain,1.45223E-06,kg,resource,
+124,Lignite Turkey,1.07367E-10,kg,resource,
+125,Lignite USA,0.00046106,kg,resource,
+126,Coalbed methane (in MJ),9.0526E-05,kg,resource,
+127,Natural gas (IISI),-2.42539E-12,kg,resource,
+128,Natural gas (in kg),0.001025525,kg,resource,
+129,Natural gas (in MJ),0.436821572,kg,resource,
+130,Natural gas Algeria,8.21567E-05,kg,resource,
+131,Natural gas Angola,5.96872E-05,kg,resource,
+132,Natural gas Argentina,1.51129E-06,kg,resource,
+133,Natural gas Australia,3.96373E-05,kg,resource,
+134,Natural gas Austria,3.23118E-07,kg,resource,
+135,Natural gas Bolivia,2.64018E-06,kg,resource,
+136,Natural gas Brazil,1.04039E-05,kg,resource,
+137,Natural gas Brunei,8.17866E-09,kg,resource,
+138,Natural gas Bulgaria,4.46531E-11,kg,resource,
+139,Natural gas Cameroon,4.389E-06,kg,resource,
+140,Natural gas Canada,9.86605E-05,kg,resource,
+141,Natural gas Chile,3.71802E-07,kg,resource,
+142,Natural gas China,3.53349E-07,kg,resource,
+143,Natural gas CIS,0.017252263,kg,resource,
+144,Natural gas Colombia,1.00857E-06,kg,resource,
+145,Natural gas Czech Republic,7.9398E-08,kg,resource,
+146,Natural gas Denmark,0.001052497,kg,resource,
+147,Natural gas Ecuador,1.46557E-05,kg,resource,
+148,Natural gas Egypt,4.04671E-07,kg,resource,
+149,Natural gas France,8.90044E-07,kg,resource,
+150,Natural gas Gabon,1.01089E-06,kg,resource,
+151,Natural gas Germany,0.011717111,kg,resource,
+152,Natural gas Great Britain,0.001126445,kg,resource,
+153,Natural gas Greece,1.3115E-08,kg,resource,
+154,Natural gas Hungary,3.40287E-07,kg,resource,
+155,Natural gas India,2.15215E-07,kg,resource,
+156,Natural gas Indonesia,3.89895E-06,kg,resource,
+157,Natural gas Iran,4.71229E-06,kg,resource,
+158,Natural gas Iraq,1.87909E-05,kg,resource,
+159,Natural gas Ireland,3.14405E-08,kg,resource,
+160,Natural gas Italy,2.93212E-06,kg,resource,
+161,Natural gas Japan,3.85341E-10,kg,resource,
+162,Natural gas Kuwait,1.13413E-05,kg,resource,
+163,Natural gas Libya,2.26346E-05,kg,resource,
+164,Natural gas Malaysia,7.11631E-09,kg,resource,
+165,Natural gas Mexico,6.02038E-05,kg,resource,
+166,Natural gas Netherlands,0.009757816,kg,resource,
+167,Natural gas New Zealand,8.40762E-07,kg,resource,
+168,Natural gas Nigeria,0.000180108,kg,resource,
+169,Natural gas Norway,0.01123748,kg,resource,
+170,Natural gas Oman,1.85883E-07,kg,resource,
+171,Natural gas Poland,1.17755E-06,kg,resource,
+172,Natural gas Qatar,9.67223E-07,kg,resource,
+173,Natural gas Romania,4.90428E-08,kg,resource,
+174,Natural gas Saudi Arabia,7.5979E-05,kg,resource,
+175,Natural gas Slovakia,2.04531E-08,kg,resource,
+176,Natural gas South Africa,7.38687E-09,kg,resource,
+177,Natural gas Spain,3.89411E-08,kg,resource,
+178,Natural gas Syria,1.58442E-10,kg,resource,
+179,Natural gas Trinidad and Tobago,5.64493E-07,kg,resource,
+180,Natural gas Tunisia,3.81259E-06,kg,resource,
+181,Natural gas Turkey,8.75832E-14,kg,resource,
+182,Natural gas United Arab Emirates,3.51746E-06,kg,resource,
+183,Natural gas USA,0.010410763,kg,resource,
+184,Natural gas Venezuela,5.31247E-05,kg,resource,
+185,"Natural Gas, Fuel",1.32435E-08,kg,resource,
+186,"Natural gas, Raw Material",0.24702448,kg,resource,
+187,Pit gas (in kg),5.88393E-10,kg,resource,
+188,Pit Methane (in kg),0.000250639,kg,resource,
+189,Pit Methane (in MJ),0.004173355,kg,resource,
+190,Shale gas (in MJ),0.000188076,kg,resource,
+191,Tight gas (in MJ),0.000289896,kg,resource,
+192,Peat (in kg),1.27247E-06,kg,resource,
+193,Peat (in MJ),0.000104833,kg,resource,
+194,Nuclear energy,2.34256E-08,kg,resource,
+195,Uranium free ore,1.24256E-14,kg,resource,
+196,Uranium natural (in MJ),2.01755E-05,kg,resource,
+197,"Uranium oxide (U3O8), 332 GJ per kg, in ore",4.16762E-09,kg,resource,
+198,"Uranium, in ground",2.69444E-07,kg,resource,
+199,Non Renewable Energy,0,kg,resource,
+200,Other energetic inputs (IISI),0,kg,resource,
+201,"Energy, gross calorific value, in biomass, primary forest",0,kg,resource,
+202,Feedstock Energy,0,kg,resource,
+203,Primary energy from geothermics,0,kg,resource,
+204,Primary energy from hydro power,0,kg,resource,
+205,Primary energy from solar energy,0,kg,resource,
+206,Primary energy from waves,0,kg,resource,
+207,Primary energy from wind power,0,kg,resource,
+208,Renewable Energy,0,kg,resource,
+209,Energy unspecified (APME),0,kg,resource,
+210,Thermal Energy from Diesel Fuel,0,kg,resource,
+211,Total Primary Energy,0,kg,resource,
+212,Biotic Production,0,kg,resource,
+213,Erosion Resistance,0,kg,resource,
+214,Groundwater Replenishment,0,kg,resource,
+215,Land Occupation,0,kg,resource,
+216,Mechanical Filtration,0,kg,resource,
+217,Physicochemical Filtration,0,kg,resource,
+218,Agriculture,0,kg,resource,
+219,Arable,0,kg,resource,
+220,"Arable, irrigated, intensive",0,kg,resource,
+221,"Arable, irrigated, intensive (regionalized, BR)",0,kg,resource,
+222,"Arable, irrigated, intensive (regionalized, DE)",0,kg,resource,
+223,"Arable, irrigated, intensive (regionalized, ES)",0,kg,resource,
+224,"Arable, irrigated, intensive (regionalized, FR)",0,kg,resource,
+225,"Arable, irrigated, intensive (regionalized, GB)",0,kg,resource,
+226,"Arable, irrigated, intensive (regionalized, IT)",0,kg,resource,
+227,"Arable, irrigated, intensive (regionalized, NL)",0,kg,resource,
+228,"Arable, irrigated, intensive (regionalized, PL)",0,kg,resource,
+229,"Arable, irrigated, intensive (regionalized, RO)",0,kg,resource,
+230,"Arable, irrigated, intensive (regionalized, US)",0,kg,resource,
+231,"Arable, non-irrigated, intensive",0,kg,resource,
+232,"Arable, non-irrigated, intensive (regionalized, BR)",0,kg,resource,
+233,"Arable, non-irrigated, intensive (regionalized, DE)",0,kg,resource,
+234,Forest,0,kg,resource,
+235,"Forest, used",0,kg,resource,
+236,"Forest, used (regionalized, AT)",0,kg,resource,
+237,"Forest, used (regionalized, BE)",0,kg,resource,
+238,"Forest, used (regionalized, BG)",0,kg,resource,
+239,"Forest, used (regionalized, CZ)",0,kg,resource,
+240,"Forest, used (regionalized, DE)",0,kg,resource,
+241,"Forest, used (regionalized, EE)",0,kg,resource,
+242,"Forest, used (regionalized, ES)",0,kg,resource,
+243,"Forest, used (regionalized, FI)",0,kg,resource,
+244,"Forest, used (regionalized, FR)",0,kg,resource,
+245,"Forest, used (regionalized, GB)",0,kg,resource,
+246,"Forest, used (regionalized, HU)",0,kg,resource,
+247,"Forest, used (regionalized, IT)",0,kg,resource,
+248,"Forest, used (regionalized, LT)",0,kg,resource,
+249,"Forest, used (regionalized, LV)",0,kg,resource,
+250,"Forest, used (regionalized, NO)",0,kg,resource,
+251,"Forest, used (regionalized, PL)",0,kg,resource,
+252,"Forest, used (regionalized, PT)",0,kg,resource,
+253,"Forest, used (regionalized, RO)",0,kg,resource,
+254,"Forest, used (regionalized, SE)",0,kg,resource,
+255,"Forest, used (regionalized, SK)",0,kg,resource,
+256,Mineral extraction site,0,kg,resource,
+257,"Mineral extraction site (regionalized, AR)",0,kg,resource,
+258,"Mineral extraction site (regionalized, AU)",0,kg,resource,
+259,"Mineral extraction site (regionalized, BA)",0,kg,resource,
+260,"Mineral extraction site (regionalized, BG)",0,kg,resource,
+261,"Mineral extraction site (regionalized, BR)",0,kg,resource,
+262,"Mineral extraction site (regionalized, CA)",0,kg,resource,
+263,"Mineral extraction site (regionalized, CL)",0,kg,resource,
+264,"Mineral extraction site (regionalized, CN)",0,kg,resource,
+265,"Mineral extraction site (regionalized, CO)",0,kg,resource,
+266,"Mineral extraction site (regionalized, CZ)",0,kg,resource,
+267,"Mineral extraction site (regionalized, DE)",0,kg,resource,
+268,"Mineral extraction site (regionalized, ES)",0,kg,resource,
+269,"Mineral extraction site (regionalized, FR)",0,kg,resource,
+270,"Mineral extraction site (regionalized, GB)",0,kg,resource,
+271,"Mineral extraction site (regionalized, GR)",0,kg,resource,
+272,"Mineral extraction site (regionalized, HU)",0,kg,resource,
+273,"Mineral extraction site (regionalized, ID)",0,kg,resource,
+274,"Mineral extraction site (regionalized, IN)",0,kg,resource,
+275,"Mineral extraction site (regionalized, KR)",0,kg,resource,
+276,"Mineral extraction site (regionalized, KZ)",0,kg,resource,
+277,"Mineral extraction site (regionalized, MK)",0,kg,resource,
+278,"Mineral extraction site (regionalized, MX)",0,kg,resource,
+279,"Mineral extraction site (regionalized, MY)",0,kg,resource,
+280,"Mineral extraction site (regionalized, NO)",0,kg,resource,
+281,"Mineral extraction site (regionalized, NZ)",0,kg,resource,
+282,"Mineral extraction site (regionalized, PL)",0,kg,resource,
+283,"Mineral extraction site (regionalized, RO)",0,kg,resource,
+284,"Mineral extraction site (regionalized, RS)",0,kg,resource,
+285,"Mineral extraction site (regionalized, RU)",0,kg,resource,
+286,"Mineral extraction site (regionalized, SE)",0,kg,resource,
+287,"Mineral extraction site (regionalized, SK)",0,kg,resource,
+288,"Mineral extraction site (regionalized, SL)",0,kg,resource,
+289,"Mineral extraction site (regionalized, TH)",0,kg,resource,
+290,"Mineral extraction site (regionalized, TR)",0,kg,resource,
+291,"Mineral extraction site (regionalized, US)",0,kg,resource,
+292,"Mineral extraction site (regionalized, VE)",0,kg,resource,
+293,"Mineral extraction site (regionalized, VN)",0,kg,resource,
+294,"Mineral extraction site (regionalized, ZA)",0,kg,resource,
+295,Permanent crops,0,kg,resource,
+296,"Permanent crops (regionalized, BR)",0,kg,resource,
+297,"Permanent crops (regionalized, MY)",0,kg,resource,
+298,"Urban, green areas",0,kg,resource,
+299,Biotic Production,0,kg,resource,
+300,Erosion Resistance,0,kg,resource,
+301,Groundwater Replenishment,0,kg,resource,
+302,Land Transformation,8.4158E-06,kg,resource,
+303,Mechanical Filtration,0,kg,resource,
+304,Physicochemical Filtration,0,kg,resource,
+305,From agriculture,0,kg,resource,
+306,From arable,0,kg,resource,
+307,"From arable, irrigated, intensive",0,kg,resource,
+308,"From arable, irrigated, intensive (regionalized, BR)",0,kg,resource,
+309,"From arable, irrigated, intensive (regionalized, CZ)",0,kg,resource,
+310,"From arable, irrigated, intensive (regionalized, DE)",0,kg,resource,
+311,"From arable, irrigated, intensive (regionalized, ES)",0,kg,resource,
+312,"From arable, irrigated, intensive (regionalized, FR)",0,kg,resource,
+313,"From arable, irrigated, intensive (regionalized, GB)",0,kg,resource,
+314,"From arable, irrigated, intensive (regionalized, IT)",0,kg,resource,
+315,"From arable, irrigated, intensive (regionalized, NL)",0,kg,resource,
+316,"From arable, irrigated, intensive (regionalized, PL)",0,kg,resource,
+317,"From arable, irrigated, intensive (regionalized, RO)",0,kg,resource,
+318,"From arable, irrigated, intensive (regionalized, US)",0,kg,resource,
+319,"From arable, non-irrigated, intensive",0,kg,resource,
+320,"From arable, non-irrigated, intensive (regionalized, BR)",0,kg,resource,
+321,"From arable, non-irrigated, intensive (regionalized, CA)",0,kg,resource,
+322,"From arable, non-irrigated, intensive (regionalized, DE)",0,kg,resource,
+323,"From arable, non-irrigated, intensive (regionalized, GB)",0,kg,resource,
+324,"From arable, non-irrigated, intensive (regionalized, US)",0,kg,resource,
+325,"From forest, natural",0,kg,resource,
+326,"From forest, natural (regionalized, AU)",0,kg,resource,
+327,"From forest, natural (regionalized, BR)",0,kg,resource,
+328,"From forest, natural (regionalized, CA)",0,kg,resource,
+329,"From forest, natural (regionalized, CO)",0,kg,resource,
+330,"From forest, natural (regionalized, ID)",0,kg,resource,
+331,"From forest, natural (regionalized, IN)",0,kg,resource,
+332,"From forest, natural (regionalized, KR)",0,kg,resource,
+333,"From forest, natural (regionalized, MY)",0,kg,resource,
+334,"From forest, natural (regionalized, NO)",0,kg,resource,
+335,"From forest, natural (regionalized, RU)",0,kg,resource,
+336,"From forest, natural (regionalized, TH)",0,kg,resource,
+337,"From forest, natural (regionalized, US)",0,kg,resource,
+338,"From forest, natural (regionalized, VE)",0,kg,resource,
+339,"From forest, natural (regionalized, VN)",0,kg,resource,
+340,"From forest, primary (regionalized, BR)",0,kg,resource,
+341,"From forest, used",0,kg,resource,
+342,"From forest, used (regionalized, AT)",0,kg,resource,
+343,"From forest, used (regionalized, BE)",0,kg,resource,
+344,"From forest, used (regionalized, BG)",0,kg,resource,
+345,"From forest, used (regionalized, CZ)",0,kg,resource,
+346,"From forest, used (regionalized, DE)",0,kg,resource,
+347,"From forest, used (regionalized, EE)",0,kg,resource,
+348,"From forest, used (regionalized, ES)",0,kg,resource,
+349,"From forest, used (regionalized, FI)",0,kg,resource,
+350,"From forest, used (regionalized, FR)",0,kg,resource,
+351,"From forest, used (regionalized, GB)",0,kg,resource,
+352,"From forest, used (regionalized, HU)",0,kg,resource,
+353,"From forest, used (regionalized, IT)",0,kg,resource,
+354,"From forest, used (regionalized, LT)",0,kg,resource,
+355,"From forest, used (regionalized, LV)",0,kg,resource,
+356,"From forest, used (regionalized, NO)",0,kg,resource,
+357,"From forest, used (regionalized, NZ)",0,kg,resource,
+358,"From forest, used (regionalized, PL)",0,kg,resource,
+359,"From forest, used (regionalized, PT)",0,kg,resource,
+360,"From forest, used (regionalized, RO)",0,kg,resource,
+361,"From forest, used (regionalized, SE)",0,kg,resource,
+362,"From forest, used (regionalized, SK)",0,kg,resource,
+363,From grassland,0,kg,resource,
+364,From grassland/pasture/meadow,0,kg,resource,
+365,"From grassland/pasture/meadow (regionalized, CL)",0,kg,resource,
+366,"From grassland/pasture/meadow (regionalized, CN)",0,kg,resource,
+367,"From grassland/pasture/meadow (regionalized, DE)",0,kg,resource,
+368,"From grassland/pasture/meadow (regionalized, ES)",0,kg,resource,
+369,"From grassland/pasture/meadow (regionalized, KZ)",0,kg,resource,
+370,From permanent crops,0,kg,resource,
+371,"From permanent crops (regionalized, BR)",0,kg,resource,
+372,"From permanent crops (regionalized, MY)",0,kg,resource,
+373,"From permanent crops, non-irrigated, extensive",0,kg,resource,
+374,"From permanent crops, non-irrigated, extensive (regionalized, RO)",0,kg,resource,
+375,"From permanent crops, non-irrigated, extensive (regionalized, RU)",0,kg,resource,
+376,From shrub land,0,kg,resource,
+377,"From shrub land (regionalized, AR)",0,kg,resource,
+378,"From shrub land (regionalized, AU)",0,kg,resource,
+379,"From shrub land (regionalized, BA)",0,kg,resource,
+380,"From shrub land (regionalized, GR)",0,kg,resource,
+381,"From shrub land (regionalized, MK)",0,kg,resource,
+382,"From shrub land (regionalized, RS)",0,kg,resource,
+383,"From shrub land (regionalized, SK)",0,kg,resource,
+384,"From shrub land (regionalized, SL)",0,kg,resource,
+385,"From shrub land (regionalized, TR)",0,kg,resource,
+386,"From shrub land (regionalized, ZA)",0,kg,resource,
+387,From unspecified,0,kg,resource,
+388,"From unspecified, natural",0,kg,resource,
+389,"From unspecified, natural (regionalized, AU)",0,kg,resource,
+390,"From unspecified, natural (regionalized, CL)",0,kg,resource,
+391,"From unspecified, natural (regionalized, MX)",0,kg,resource,
+392,To agriculture,0,kg,resource,
+393,"To arable, irrigated, intensive",0,kg,resource,
+394,"To arable, irrigated, intensive (regionalized, BR)",0,kg,resource,
+395,"To arable, irrigated, intensive (regionalized, DE)",0,kg,resource,
+396,"To arable, irrigated, intensive (regionalized, ES)",0,kg,resource,
+397,"To arable, irrigated, intensive (regionalized, FR)",0,kg,resource,
+398,"To arable, irrigated, intensive (regionalized, GB)",0,kg,resource,
+399,"To arable, irrigated, intensive (regionalized, IT)",0,kg,resource,
+400,"To arable, irrigated, intensive (regionalized, NL)",0,kg,resource,
+401,"To arable, irrigated, intensive (regionalized, PL)",0,kg,resource,
+402,"To arable, irrigated, intensive (regionalized, RO)",0,kg,resource,
+403,"To arable, irrigated, intensive (regionalized, US)",0,kg,resource,
+404,"To arable, non-irrigated, intensive",0,kg,resource,
+405,"To arable, non-irrigated, intensive (regionalized, BR)",0,kg,resource,
+406,"To arable, non-irrigated, intensive (regionalized, DE)",0,kg,resource,
+407,To bare area,0,kg,resource,
+408,"To bare area (regionalized, CN)",0,kg,resource,
+409,To forest,0,kg,resource,
+410,"To forest, used",0,kg,resource,
+411,"To forest, used (regionalized, AT)",0,kg,resource,
+412,"To forest, used (regionalized, BE)",0,kg,resource,
+413,"To forest, used (regionalized, BG)",0,kg,resource,
+414,"To forest, used (regionalized, CZ)",0,kg,resource,
+415,"To forest, used (regionalized, DE)",0,kg,resource,
+416,"To forest, used (regionalized, EE)",0,kg,resource,
+417,"To forest, used (regionalized, ES)",0,kg,resource,
+418,"To forest, used (regionalized, FI)",0,kg,resource,
+419,"To forest, used (regionalized, FR)",0,kg,resource,
+420,"To forest, used (regionalized, GB)",0,kg,resource,
+421,"To forest, used (regionalized, HU)",0,kg,resource,
+422,"To forest, used (regionalized, IT)",0,kg,resource,
+423,"To forest, used (regionalized, LT)",0,kg,resource,
+424,"To forest, used (regionalized, LV)",0,kg,resource,
+425,"To forest, used (regionalized, NO)",0,kg,resource,
+426,"To forest, used (regionalized, PL)",0,kg,resource,
+427,"To forest, used (regionalized, PT)",0,kg,resource,
+428,"To forest, used (regionalized, RO)",0,kg,resource,
+429,"To forest, used (regionalized, RU)",0,kg,resource,
+430,"To forest, used (regionalized, SE)",0,kg,resource,
+431,"To forest, used (regionalized, SK)",0,kg,resource,
+432,To mineral extraction site,0,kg,resource,
+433,To permanent crops,0,kg,resource,
+434,"To permanent crops (regionalized, BR)",0,kg,resource,
+435,"To permanent crops (regionalized, MY)",0,kg,resource,
+436,To shrub land,0,kg,resource,
+437,"To shrub land (regionalized, AU)",0,kg,resource,
+438,"To shrub land (regionalized, BA)",0,kg,resource,
+439,"To shrub land (regionalized, BG)",0,kg,resource,
+440,"To shrub land (regionalized, CA)",0,kg,resource,
+441,"To shrub land (regionalized, CL)",0,kg,resource,
+442,"To shrub land (regionalized, CZ)",0,kg,resource,
+443,"To shrub land (regionalized, DE)",0,kg,resource,
+444,"To shrub land (regionalized, ES)",0,kg,resource,
+445,"To shrub land (regionalized, FR)",0,kg,resource,
+446,"To shrub land (regionalized, GB)",0,kg,resource,
+447,"To shrub land (regionalized, HU)",0,kg,resource,
+448,"To shrub land (regionalized, IN)",0,kg,resource,
+449,"To shrub land (regionalized, KZ)",0,kg,resource,
+450,"To shrub land (regionalized, MK)",0,kg,resource,
+451,"To shrub land (regionalized, NZ)",0,kg,resource,
+452,"To shrub land (regionalized, PL)",0,kg,resource,
+453,"To shrub land (regionalized, RO)",0,kg,resource,
+454,"To shrub land (regionalized, RS)",0,kg,resource,
+455,"To shrub land (regionalized, RU)",0,kg,resource,
+456,"To shrub land (regionalized, SK)",0,kg,resource,
+457,"To shrub land (regionalized, SL)",0,kg,resource,
+458,"To shrub land (regionalized, US)",0,kg,resource,
+459,"To unspecified, natural",0,kg,resource,
+460,"To unspecified, natural (regionalized, AR)",0,kg,resource,
+461,"To unspecified, natural (regionalized, AU)",0,kg,resource,
+462,"To unspecified, natural (regionalized, BR)",0,kg,resource,
+463,"To unspecified, natural (regionalized, CA)",0,kg,resource,
+464,"To unspecified, natural (regionalized, CL)",0,kg,resource,
+465,"To unspecified, natural (regionalized, CN)",0,kg,resource,
+466,"To unspecified, natural (regionalized, CO)",0,kg,resource,
+467,"To unspecified, natural (regionalized, DE)",0,kg,resource,
+468,"To unspecified, natural (regionalized, GR)",0,kg,resource,
+469,"To unspecified, natural (regionalized, ID)",0,kg,resource,
+470,"To unspecified, natural (regionalized, MX)",0,kg,resource,
+471,"To unspecified, natural (regionalized, MY)",0,kg,resource,
+472,"To unspecified, natural (regionalized, NO)",0,kg,resource,
+473,"To unspecified, natural (regionalized, SE)",0,kg,resource,
+474,"To unspecified, natural (regionalized, TH)",0,kg,resource,
+475,"To unspecified, natural (regionalized, TR)",0,kg,resource,
+476,"To unspecified, natural (regionalized, VE)",0,kg,resource,
+477,"To unspecified, natural (regionalized, VN)",0,kg,resource,
+478,"To unspecified, natural (regionalized, ZA)",0,kg,resource,
+479,"To urban, discontinuously built (regionalized, KR)",0,kg,resource,
+480,Indirect land transformation,0,kg,resource,
+481,"Land use area, IL, no reversion",0,kg,resource,
+482,"Land use area, no reversion",0,kg,resource,
+483,"Land use area, reversion",0,kg,resource,
+484,Land use piece,0,kg,resource,
+485,Aluminium,1.34187E-11,kg,resource,
+486,Antimony,8.36604E-09,kg,resource,
+487,Chromium,1.04129E-05,kg,resource,
+488,Cobalt,1.67019E-10,kg,resource,
+489,Copper,0.002970803,kg,resource,
+490,Gold,3.54303E-08,kg,resource,
+491,Iridium,3.09294E-13,kg,resource,
+492,Iron,0.007231845,kg,resource,
+493,Lead,0.000813469,kg,resource,
+494,Magnesium,4.51679E-06,kg,resource,
+495,Manganese,7.47087E-05,kg,resource,
+496,Mercury,5.24023E-09,kg,resource,
+497,Molybdenum,1.29906E-06,kg,resource,
+498,Nickel,9.72106E-07,kg,resource,
+499,Osmium,3.77339E-13,kg,resource,
+500,Palladium,5.4745E-12,kg,resource,
+501,Phosphorus,3.74784E-05,kg,resource,
+502,Platinum,9.27882E-12,kg,resource,
+503,Rare-earth metals,6.35614E-10,kg,resource,
+504,Rhodium,9.28852E-13,kg,resource,
+505,Ruthenium,1.83102E-12,kg,resource,
+506,Silicon,4.98729E-06,kg,resource,
+507,Silver,5.8816E-06,kg,resource,
+508,Sulphur,0.000245018,kg,resource,
+509,Tantalum,6.14348E-09,kg,resource,
+510,Tin,1.56195E-18,kg,resource,
+511,Titanium,3.59965E-08,kg,resource,
+512,Vanadium,1.08156E-07,kg,resource,
+513,Zinc,0.003979396,kg,resource,
+514,Zirconium,2.3999E-13,kg,resource,
+515,Anhydrite (Rock),3.98839E-15,kg,resource,
+516,Barium sulphate,1.11409E-14,kg,resource,
+517,Basalt,7.69115E-06,kg,resource,
+518,Bauxite,0.040705594,kg,resource,
+519,Bentonite,0.002158336,kg,resource,
+520,Borax,4.24656E-09,kg,resource,
+521,Calcium carbonate (CaCO3),8.73291E-08,kg,resource,
+522,Calcium chloride,1.14067E-12,kg,resource,
+523,Chromium ore (39%),0.000745538,kg,resource,
+524,Clay,0.0148195,kg,resource,
+525,Colemanite ore,8.62567E-05,kg,resource,
+526,"Copper - Gold - Ore (1,07% Cu; 0,54 g/t Au)",1.37249E-10,kg,resource,
+527,"Copper - Gold - Silver - ore (0,51% Cu; 0,6 g/t Au; 1,5 g/t Ag)",3.9541E-10,kg,resource,
+528,"Copper - Gold - Silver - ore (1,0% Cu; 0,4 g/t Au; 66 g/t Ag)",1.1484E-07,kg,resource,
+529,"Copper - Gold - Silver - ore (1,1% Cu; 0,01 g/t Au; 2,86 g/t Ag)",9.12404E-08,kg,resource,
+530,"Copper - Gold - Silver - ore (1,13% Cu; 1,05 g/t Au; 3,72 g/t Ag)",4.26244E-09,kg,resource,
+531,"Copper - Gold - Silver - ore (1,16% Cu; 0,002 g/t Au; 1,06 g/t Ag)",5.15004E-08,kg,resource,
+532,"Copper - Gold - Silver - ore (1,7% Cu; 0,7 g/t Au; 3,5 g/t Ag)",3.21081E-10,kg,resource,
+533,"Copper - Molybdenum - Gold - Silver - ore (1,13% Cu; 0,02% Mo; 0,01 g/t Au; 2,86 g/t Ag)",6.60458E-08,kg,resource,
+534,"Copper - Silver - ore (3,3% Cu; 5,5 g/t Ag)",2.21928E-10,kg,resource,
+535,Copper ore (0.14%),4.21284E-06,kg,resource,
+536,Copper ore (1.2%),1.1909E-08,kg,resource,
+537,Copper ore (4%),7.06462E-17,kg,resource,
+538,"Copper ore (sulphidic, 1.1%)",5.9887E-09,kg,resource,
+539,Dolomite,0.000599624,kg,resource,
+540,Feldspar (aluminium silicates),1.44987E-09,kg,resource,
+541,Ferro manganese,2.78578E-09,kg,resource,
+542,Fluorspar (calcium fluoride; fluorite),0.000226463,kg,resource,
+543,Granite,3.94275E-16,kg,resource,
+544,Graphite,6.93052E-10,kg,resource,
+545,Gravel,0.000571337,kg,resource,
+546,Gypsum (natural gypsum),0.000188506,kg,resource,
+547,Heavy spar (BaSO4),0.000441249,kg,resource,
+548,Ilmenite (titanium ore),5.30046E-05,kg,resource,
+549,Inert rock,8.878161486,kg,resource,
+550,"Iron ore (56,86%)",-0.001071296,kg,resource,
+551,Iron ore (65%),0.295599124,kg,resource,
+552,Kaolin ore,0.000148778,kg,resource,
+553,"Lead - Zinc - Silver - ore (5,49% Pb; 12,15% Zn; 57,4 gpt Ag)",8.89223E-11,kg,resource,
+554,Lead - zinc ore (4.6%-0.6%),3.54536E-05,kg,resource,
+555,Limestone (calcium carbonate),3.906697474,kg,resource,
+556,Magnesit (Magnesium carbonate),0.000201665,kg,resource,
+557,Magnesium chloride leach (40%),0.00065208,kg,resource,
+558,Manganese ore,1.37654E-07,kg,resource,
+559,Manganese ore (R.O.M.),2.2274E-05,kg,resource,
+560,"Molybdenite (Mo 0,24%)",4.03465E-08,kg,resource,
+561,Molybdenum ore (0.1%),1.67101E-07,kg,resource,
+562,Natural Aggregate,0.016096741,kg,resource,
+563,Natural pumice,1.80173E-06,kg,resource,
+564,"Nickel ore (1,5%)",0.000455406,kg,resource,
+565,Nickel ore (1.6%),0.000434696,kg,resource,
+566,Olivine,2.87741E-08,kg,resource,
+567,Phosphate ore,0.002723046,kg,resource,
+568,Phosphorus minerals,1.85122E-10,kg,resource,
+569,Phosphorus ore (29% P2O5),1.09424E-09,kg,resource,
+570,"Potashsalt, crude (hard salt, 10% K2O)",0.011748143,kg,resource,
+571,Potassium chloride,1.99348E-06,kg,resource,
+572,Precious metal ore (R.O.M),4.87555E-06,kg,resource,
+573,Pyrite,2.19438E-07,kg,resource,
+574,Quartz sand (silica sand; silicon dioxide),0.01248398,kg,resource,
+575,Rutile (titanium ore),7.20212E-12,kg,resource,
+576,Sand,0.005087975,kg,resource,
+577,Shale,0.006385419,kg,resource,
+578,Slate,0.000129627,kg,resource,
+579,Sodium chloride (rock salt),4.398685676,kg,resource,
+580,Sodium nitrate,2.68955E-14,kg,resource,
+581,Sodium sulphate,1.58537E-09,kg,resource,
+582,Soil,0.325228499,kg,resource,
+583,Stone from mountains,0.158279972,kg,resource,
+584,Sulphur (bonded),1.16358E-09,kg,resource,
+585,Talc,5.76553E-09,kg,resource,
+586,Tin ore (0.01%),8.31868E-07,kg,resource,
+587,Titanium ore,5.24039E-07,kg,resource,
+588,Vanadium ore (ROM),2.40103E-07,kg,resource,
+589,Zinc - copper ore (4.07%-2.59%),6.25235E-06,kg,resource,
+590,Zinc - lead - copper ore (12%-3%-2%),2.61373E-06,kg,resource,
+591,"Zinc - Lead - Silver - Ore (7,5% Zn; 4,0% Pb; 40,8 g/t Ag)",2.31255E-10,kg,resource,
+592,"Zinc - Lead - Silver - ore (8,54% Zn; 5,48% Pb; 94 g/t Ag)",1.20534E-10,kg,resource,
+593,Zinc - lead ore (4.21%-4.96%),2.41231E-17,kg,resource,
+594,Zinc ore (4%),1.78641E-05,kg,resource,
+595,"Zinc ore (sulphidic, 4%)",5.97198E-16,kg,resource,
+596,Brackish water,0.503754255,kg,resource,
+597,Brine,0.000259516,kg,resource,
+598,Fresh water,332.4630653,kg,resource,
+599,Ground water,38.65893428,kg,resource,
+600,"Ground water, regionalized, AU",0.03180746,kg,resource,
+601,"Ground water, regionalized, BA",0.000145117,kg,resource,
+602,"Ground water, regionalized, BG",0.001086893,kg,resource,
+603,"Ground water, regionalized, BR",0.005303447,kg,resource,
+604,"Ground water, regionalized, CA",0.101036276,kg,resource,
+605,"Ground water, regionalized, CL",0.000215923,kg,resource,
+606,"Ground water, regionalized, CN",0.001843331,kg,resource,
+607,"Ground water, regionalized, CO",0.144631499,kg,resource,
+608,"Ground water, regionalized, CZ",0.044875273,kg,resource,
+609,"Ground water, regionalized, DE",1.829045559,kg,resource,
+610,"Ground water, regionalized, EE",1.24992E-06,kg,resource,
+611,"Ground water, regionalized, ES",0.002493469,kg,resource,
+612,"Ground water, regionalized, FI",4.58922E-05,kg,resource,
+613,"Ground water, regionalized, FR",0.097737231,kg,resource,
+614,"Ground water, regionalized, GB",0.010369965,kg,resource,
+615,"Ground water, regionalized, GR",0.00214231,kg,resource,
+616,"Ground water, regionalized, HU",0.000550848,kg,resource,
+617,"Ground water, regionalized, ID",0.000452143,kg,resource,
+618,"Ground water, regionalized, IE",3.17453E-05,kg,resource,
+619,"Ground water, regionalized, IN",1.02263E-05,kg,resource,
+620,"Ground water, regionalized, IT",2.4447E-05,kg,resource,
+621,"Ground water, regionalized, KR",1.14781E-08,kg,resource,
+622,"Ground water, regionalized, KZ",1.82126E-05,kg,resource,
+623,"Ground water, regionalized, MK",0.000120138,kg,resource,
+624,"Ground water, regionalized, MX",4.47647E-06,kg,resource,
+625,"Ground water, regionalized, MY",0.000813279,kg,resource,
+626,"Ground water, regionalized, NL",0.00141984,kg,resource,
+627,"Ground water, regionalized, NO",0.000520475,kg,resource,
+628,"Ground water, regionalized, NZ",1.17019E-06,kg,resource,
+629,"Ground water, regionalized, PL",0.156211925,kg,resource,
+630,"Ground water, regionalized, RO",0.001354725,kg,resource,
+631,"Ground water, regionalized, RS",0.000454025,kg,resource,
+632,"Ground water, regionalized, RU",0.192839904,kg,resource,
+633,"Ground water, regionalized, SE",1.07345E-05,kg,resource,
+634,"Ground water, regionalized, SI",0.000551975,kg,resource,
+635,"Ground water, regionalized, SK",7.4222E-05,kg,resource,
+636,"Ground water, regionalized, TH",1.82579E-06,kg,resource,
+637,"Ground water, regionalized, TR",0.000186375,kg,resource,
+638,"Ground water, regionalized, UA",0.001947138,kg,resource,
+639,"Ground water, regionalized, US",0.11752513,kg,resource,
+640,"Ground water, regionalized, VE",0.000502266,kg,resource,
+641,"Ground water, regionalized, VN",5.16987E-06,kg,resource,
+642,"Ground water, regionalized, ZA",0.002286138,kg,resource,
+643,Lake water,1.857678395,kg,resource,
+644,"Lake water to turbine, regionalized, AR",0.000105013,kg,resource,
+645,"Lake water to turbine, regionalized, AT",2.630678079,kg,resource,
+646,"Lake water to turbine, regionalized, AU",0.254432315,kg,resource,
+647,"Lake water to turbine, regionalized, BA",0.005821519,kg,resource,
+648,"Lake water to turbine, regionalized, BE",0.004000778,kg,resource,
+649,"Lake water to turbine, regionalized, BG",0.050639129,kg,resource,
+650,"Lake water to turbine, regionalized, BR",0.131845644,kg,resource,
+651,"Lake water to turbine, regionalized, CA",2.710776553,kg,resource,
+652,"Lake water to turbine, regionalized, CH",3.88469257,kg,resource,
+653,"Lake water to turbine, regionalized, CL",1.086483308,kg,resource,
+654,"Lake water to turbine, regionalized, CN",0.471736769,kg,resource,
+655,"Lake water to turbine, regionalized, CZ",0.191240828,kg,resource,
+656,"Lake water to turbine, regionalized, DE",6.837750025,kg,resource,
+657,"Lake water to turbine, regionalized, ES",1.714858821,kg,resource,
+658,"Lake water to turbine, regionalized, FI",0.146357581,kg,resource,
+659,"Lake water to turbine, regionalized, FR",92.42221494,kg,resource,
+660,"Lake water to turbine, regionalized, GB",1.266057379,kg,resource,
+661,"Lake water to turbine, regionalized, GR",0.059215073,kg,resource,
+662,"Lake water to turbine, regionalized, ID",0.000154309,kg,resource,
+663,"Lake water to turbine, regionalized, IE",0.006522315,kg,resource,
+664,"Lake water to turbine, regionalized, IN",0.000670223,kg,resource,
+665,"Lake water to turbine, regionalized, IS",0.010757913,kg,resource,
+666,"Lake water to turbine, regionalized, IT",0.894336257,kg,resource,
+667,"Lake water to turbine, regionalized, JP",0.00097891,kg,resource,
+668,"Lake water to turbine, regionalized, KR",3.11914E-06,kg,resource,
+669,"Lake water to turbine, regionalized, KZ",0.297732468,kg,resource,
+670,"Lake water to turbine, regionalized, LT",0.00751235,kg,resource,
+671,"Lake water to turbine, regionalized, LU",0.059662954,kg,resource,
+672,"Lake water to turbine, regionalized, MK",0.00198608,kg,resource,
+673,"Lake water to turbine, regionalized, MX",0.018425055,kg,resource,
+674,"Lake water to turbine, regionalized, MY",0.000727249,kg,resource,
+675,"Lake water to turbine, regionalized, NG",0.065991853,kg,resource,
+676,"Lake water to turbine, regionalized, NO",30.97994846,kg,resource,
+677,"Lake water to turbine, regionalized, NZ",0.000657138,kg,resource,
+678,"Lake water to turbine, regionalized, PL",0.098327544,kg,resource,
+679,"Lake water to turbine, regionalized, PT",0.254580887,kg,resource,
+680,"Lake water to turbine, regionalized, RO",0.19242744,kg,resource,
+681,"Lake water to turbine, regionalized, RS",0.005635629,kg,resource,
+682,"Lake water to turbine, regionalized, RU",37.06320647,kg,resource,
+683,"Lake water to turbine, regionalized, SE",1.588066079,kg,resource,
+684,"Lake water to turbine, regionalized, SK",0.044848623,kg,resource,
+685,"Lake water to turbine, regionalized, TH",6.44341E-06,kg,resource,
+686,"Lake water to turbine, regionalized, TR",0.063452573,kg,resource,
+687,"Lake water to turbine, regionalized, UA",0.008621965,kg,resource,
+688,"Lake water to turbine, regionalized, US",0.117908842,kg,resource,
+689,"Lake water to turbine, regionalized, VE",0.050119155,kg,resource,
+690,"Lake water to turbine, regionalized, ZA",0.009999639,kg,resource,
+691,"Lake water, regionalized, BR",0.01130466,kg,resource,
+692,"Lake water, regionalized, CA",52.87150836,kg,resource,
+693,"Lake water, regionalized, DE",0.034794871,kg,resource,
+694,"Lake water, regionalized, ES",0.001397664,kg,resource,
+695,"Lake water, regionalized, FR",0.059620284,kg,resource,
+696,"Lake water, regionalized, GB",0.004446857,kg,resource,
+697,"Lake water, regionalized, IT",4.84323E-06,kg,resource,
+698,"Lake water, regionalized, MY",0.00458763,kg,resource,
+699,"Lake water, regionalized, NL",0.00051408,kg,resource,
+700,"Lake water, regionalized, PL",6.12615E-05,kg,resource,
+701,"Lake water, regionalized, RO",1.08142E-05,kg,resource,
+702,"Lake water, regionalized, US",0.00776961,kg,resource,
+703,"Lake water, to turbine",0.865041051,kg,resource,
+704,Rain water,22.66634487,kg,resource,
+705,River water,0,kg,resource,
+706,River water to turbine,56.18401406,kg,resource,
+707,"River water to turbine, regionalized, AR",0.000273227,kg,resource,
+708,"River water to turbine, regionalized, AT",205.6874907,kg,resource,
+709,"River water to turbine, regionalized, AU",0.151939007,kg,resource,
+710,"River water to turbine, regionalized, BA",0.671875176,kg,resource,
+711,"River water to turbine, regionalized, BE",1.326379658,kg,resource,
+712,"River water to turbine, regionalized, BG",0.062962291,kg,resource,
+713,"River water to turbine, regionalized, CA",8.702174049,kg,resource,
+714,"River water to turbine, regionalized, CH",99.27622756,kg,resource,
+715,"River water to turbine, regionalized, CN",0.712354508,kg,resource,
+716,"River water to turbine, regionalized, CZ",14.83448245,kg,resource,
+717,"River water to turbine, regionalized, DE",1173.572993,kg,resource,
+718,"River water to turbine, regionalized, DK",0.068669901,kg,resource,
+719,"River water to turbine, regionalized, EE",0.01200428,kg,resource,
+720,"River water to turbine, regionalized, FI",1.057952249,kg,resource,
+721,"River water to turbine, regionalized, FR",3028.477119,kg,resource,
+722,"River water to turbine, regionalized, HU",0.080388853,kg,resource,
+723,"River water to turbine, regionalized, ID",0.006671753,kg,resource,
+724,"River water to turbine, regionalized, IE",0.04089555,kg,resource,
+725,"River water to turbine, regionalized, IN",0.028727917,kg,resource,
+726,"River water to turbine, regionalized, IT",16.05502906,kg,resource,
+727,"River water to turbine, regionalized, JP",0.054409778,kg,resource,
+728,"River water to turbine, regionalized, KR",0.000626124,kg,resource,
+729,"River water to turbine, regionalized, KZ",5.639109528,kg,resource,
+730,"River water to turbine, regionalized, LV",1.061670567,kg,resource,
+731,"River water to turbine, regionalized, MK",0.132826453,kg,resource,
+732,"River water to turbine, regionalized, MX",0.027570469,kg,resource,
+733,"River water to turbine, regionalized, MY",0.048912777,kg,resource,
+734,"River water to turbine, regionalized, NG",4.379203737,kg,resource,
+735,"River water to turbine, regionalized, NL",0.273887851,kg,resource,
+736,"River water to turbine, regionalized, NO",239.3935292,kg,resource,
+737,"River water to turbine, regionalized, NZ",0.000991089,kg,resource,
+738,"River water to turbine, regionalized, PT",0.907251604,kg,resource,
+739,"River water to turbine, regionalized, RS",0.570851773,kg,resource,
+740,"River water to turbine, regionalized, RU",466.496454,kg,resource,
+741,"River water to turbine, regionalized, SE",11.35571738,kg,resource,
+742,"River water to turbine, regionalized, SI",3.394354885,kg,resource,
+743,"River water to turbine, regionalized, SK",0.256575873,kg,resource,
+744,"River water to turbine, regionalized, TH",0.00027683,kg,resource,
+745,"River water to turbine, regionalized, TR",0.453342492,kg,resource,
+746,"River water to turbine, regionalized, UA",0.16848721,kg,resource,
+747,"River water to turbine, regionalized, US",0.405945808,kg,resource,
+748,"River water to turbine, regionalized, ZA",0.121667373,kg,resource,
+749,"River water, regionalized, AR",2.46576E-05,kg,resource,
+750,"River water, regionalized, AT",0.123275257,kg,resource,
+751,"River water, regionalized, AU",0.061444598,kg,resource,
+752,"River water, regionalized, BA",0.005588498,kg,resource,
+753,"River water, regionalized, BE",0.447856353,kg,resource,
+754,"River water, regionalized, BG",0.033977185,kg,resource,
+755,"River water, regionalized, BR",0.027144733,kg,resource,
+756,"River water, regionalized, CA",0.22701831,kg,resource,
+757,"River water, regionalized, CH",0.263447635,kg,resource,
+758,"River water, regionalized, CL",0.182659598,kg,resource,
+759,"River water, regionalized, CN",0.035443162,kg,resource,
+760,"River water, regionalized, CO",0.026430122,kg,resource,
+761,"River water, regionalized, CZ",0.199976157,kg,resource,
+762,"River water, regionalized, DE",34.22859359,kg,resource,
+763,"River water, regionalized, DK",0.004429068,kg,resource,
+764,"River water, regionalized, EE",0.022162814,kg,resource,
+765,"River water, regionalized, ES",0.284450462,kg,resource,
+766,"River water, regionalized, FI",0.002388597,kg,resource,
+767,"River water, regionalized, FR",27.45281449,kg,resource,
+768,"River water, regionalized, GB",0.290809453,kg,resource,
+769,"River water, regionalized, GR",0.001758414,kg,resource,
+770,"River water, regionalized, HU",0.040880791,kg,resource,
+771,"River water, regionalized, ID",0.000441809,kg,resource,
+772,"River water, regionalized, IE",0.00216257,kg,resource,
+773,"River water, regionalized, IN",0.000294665,kg,resource,
+774,"River water, regionalized, IS",7.94213E-07,kg,resource,
+775,"River water, regionalized, IT",0.131308019,kg,resource,
+776,"River water, regionalized, JP",7.08267E-05,kg,resource,
+777,"River water, regionalized, KR",4.42902E-05,kg,resource,
+778,"River water, regionalized, KZ",0.185061633,kg,resource,
+779,"River water, regionalized, LT",0.000880827,kg,resource,
+780,"River water, regionalized, LU",0.018519864,kg,resource,
+781,"River water, regionalized, LV",0.000114993,kg,resource,
+782,"River water, regionalized, MK",0.000470745,kg,resource,
+783,"River water, regionalized, MX",0.011608973,kg,resource,
+784,"River water, regionalized, MY",0.006999852,kg,resource,
+785,"River water, regionalized, NG",0.084792612,kg,resource,
+786,"River water, regionalized, NL",0.182064843,kg,resource,
+787,"River water, regionalized, NO",0.003382932,kg,resource,
+788,"River water, regionalized, NZ",1.49496E-05,kg,resource,
+789,"River water, regionalized, PL",0.344962483,kg,resource,
+790,"River water, regionalized, PT",0.017010169,kg,resource,
+791,"River water, regionalized, RO",0.016593109,kg,resource,
+792,"River water, regionalized, RS",0.006991275,kg,resource,
+793,"River water, regionalized, RU",1.288944045,kg,resource,
+794,"River water, regionalized, SE",0.009201229,kg,resource,
+795,"River water, regionalized, SG",2.07267E-06,kg,resource,
+796,"River water, regionalized, SI",0.007890503,kg,resource,
+797,"River water, regionalized, SK",0.016100093,kg,resource,
+798,"River water, regionalized, TH",2.51641E-05,kg,resource,
+799,"River water, regionalized, TR",0.003654847,kg,resource,
+800,"River water, regionalized, UA",0.019413191,kg,resource,
+801,"River water, regionalized, US",0.843477753,kg,resource,
+802,"River water, regionalized, VE",0.002591245,kg,resource,
+803,"River water, regionalized, VN",9.44748E-07,kg,resource,
+804,"River water, regionalized, ZA",0.011639272,kg,resource,
+805,Sea water,29.17796789,kg,resource,
+806,"Water (ground water, fresh)",0.000947366,kg,resource,
+807,"Water (ground water, saline)",0.002165409,kg,resource,
+808,Water (municipal),4.282969332,kg,resource,
+809,Water (municipal),0.001708529,kg,resource,
+810,Water (storm runoff),0,kg,resource,
+811,"Water (surface water, fresh)",0.002463152,kg,resource,
+812,Water (wastewater),0,kg,resource,
+813,Water (well-produced water),0.000191345,kg,resource,
+814,"Water, from heater-treater",-0.000116782,kg,resource,
+815,"Water, turbine use, unspecified natural origin",0.016547004,kg,resource,
+816,Air,13.18982812,kg,resource,
+817,Carbon dioxide,0.186650397,kg,resource,
+818,Nitrogen,0.000145245,kg,resource,
+819,Oxygen,0.00082834,kg,resource,
+820,Primary forest,5.25921E-05,kg,resource,
+821,Renewable fuels,5.1599E-10,kg,resource,
+822,"Wood and wood waste, 9.5 MJ per kg",-1.43451E-07,kg,resource,
+823,Unspecified minerals,8.76009E-10,kg,resource,
+824,Unspecified resources,2.97452E-09,kg,resource,
+825,"Water (ground water, saline)",0.032797012,kg,resource,
+826,"Natural gas, Associated oil wells, NGS, Avg",0,kg,resource,
+827,Use of non renewable secondary fuels (NRSF),0,kg,resource,
+828,Use of renewable secondary fuels (RSF),0,kg,resource,
+829,Spoil (deposited),0,kg,resource,
+830,Non Renewable Energy,0,kg,emission,
+831,Feedstock Energy,0,kg,emission,
+832,Renewable Energy,0,kg,emission,
+833,Thermal Energy from Diesel Fuel,0,kg,emission,
+834,Total Primary Energy,0,kg,emission,
+835,Forest,0,kg,emission,
+836,Indirect land transformation,0,kg,emission,
+837,"Land use area, IL, no reversion",0,kg,emission,
+838,"Land use area, no reversion",0,kg,emission,
+839,"Land use area, reversion",0,kg,emission,
+840,Land use piece,0,kg,emission,
+841,Brackish water,0,kg,emission,water
+842,Fresh water,0,kg,emission,water
+843,River water,82.27826816,kg,emission,water
+844,Water (Evaporated),4.51904E-05,kg,emission,water
+845,Water (storm runoff),0.196774712,kg,emission,water
+846,Water (wastewater),12.57332633,kg,emission,water
+847,Nitrogen,0,kg,emission,
+848,Oxygen,0,kg,emission,
+849,"Natural gas, Associated oil wells, NGS, Avg",0,kg,emission,
+850,High radioactive waste,7.43721E-06,kg,emission,
+851,Low radioactive wastes,7.68299E-05,kg,emission,
+852,Medium radioactive wastes,3.49883E-05,kg,emission,
+853,Radioactive tailings,0.010941836,kg,emission,
+854,Demolition waste (deposited),6.82877E-05,kg,emission,
+855,Hazardous waste (deposited),1.45398E-06,kg,emission,
+856,Overburden (deposited),9.298436018,kg,emission,
+857,Slag (deposited),9.32004E-06,kg,emission,
+858,Spoil (deposited),0.023733497,kg,emission,
+859,Tailings (deposited),0.133326964,kg,emission,
+860,"Treatment residue (mineral, deposited)",0.154799315,kg,emission,
+861,Waste (deposited),0.165711471,kg,emission,
+862,"Ethane, 1,1-dichloro-1-fluoro-, HCFC-141b",0,kg,emission,air
+863,Antimony,5.96852E-09,kg,emission,air
+864,Arsenic,2.36872E-10,kg,emission,air
+865,Arsenic (+V),6.5761E-08,kg,emission,air
+866,Arsenic trioxide,3.76269E-13,kg,emission,air
+867,Cadmium,3.29274E-08,kg,emission,air
+868,Chromium,2.29046E-07,kg,emission,air
+869,Chromium (+III),3.11031E-10,kg,emission,air
+870,Chromium (+VI),9.83915E-12,kg,emission,air
+871,Cobalt,3.60356E-08,kg,emission,air
+872,Copper,5.8785E-07,kg,emission,air
+873,Heavy metals to air (unspecified),2.71576E-09,kg,emission,air
+874,Hydrogen arsenic (arsine),3.12305E-11,kg,emission,air
+875,Iron,6.68581E-07,kg,emission,air
+876,Lanthanum,9.20621E-14,kg,emission,air
+877,Lead,1.61769E-06,kg,emission,air
+878,Manganese,6.80053E-07,kg,emission,air
+879,Mercury,2.14674E-07,kg,emission,air
+880,Molybdenum,2.31303E-08,kg,emission,air
+881,Nickel,4.41084E-07,kg,emission,air
+882,Palladium,3.16872E-17,kg,emission,air
+883,Rhodium,3.05887E-17,kg,emission,air
+884,Scandium,4.43711E-14,kg,emission,air
+885,Selenium,1.34414E-07,kg,emission,air
+886,Silver,1.05723E-08,kg,emission,air
+887,Tellurium,1.78457E-11,kg,emission,air
+888,Thallium,1.6942E-10,kg,emission,air
+889,Tin,7.83108E-08,kg,emission,air
+890,Titanium,7.01249E-09,kg,emission,air
+891,Vanadium,1.50956E-06,kg,emission,air
+892,Zinc,8.62235E-07,kg,emission,air
+893,Aluminium,1.05519E-08,kg,emission,air
+894,Ammonia,0.008832635,kg,emission,air
+895,Ammonium,2.84297E-08,kg,emission,air
+896,Ammonium nitrate,4.61081E-14,kg,emission,air
+897,Argon,8.14597E-06,kg,emission,air
+898,Barium,4.99873E-07,kg,emission,air
+899,Beryllium,2.3942E-09,kg,emission,air
+900,Boron,2.84876E-13,kg,emission,air
+901,Boron compounds (unspecified),1.72997E-06,kg,emission,air
+902,Bromine,3.86399E-07,kg,emission,air
+903,Carbon dioxide,12.73811643,kg,emission,air
+904,Carbon dioxide (aviation),1.58249E-05,kg,emission,air
+905,Carbon dioxide (biotic),0.171956356,kg,emission,air
+906,Carbon dioxide (land use change),0.004988873,kg,emission,air
+907,Carbon dioxide (peat oxidation),3.36474E-08,kg,emission,air
+908,Carbon disulphide,2.40745E-11,kg,emission,air
+909,Carbon monoxide,0.03207479,kg,emission,air
+910,"Carbon monoxide, non-fossil",1.40369E-10,kg,emission,air
+911,Chloride (unspecified),4.73478E-06,kg,emission,air
+912,Chlorine,8.36987E-07,kg,emission,air
+913,Copper sulfate,0,kg,emission,air
+914,Cyanide (unspecified),1.10842E-07,kg,emission,air
+915,Fluoride,3.23765E-06,kg,emission,air
+916,Fluorine,1.57741E-09,kg,emission,air
+917,Helium,1.45796E-06,kg,emission,air
+918,Hydrazine (N2H4),1.47532E-13,kg,emission,air
+919,Hydrogen,1.32718E-05,kg,emission,air
+920,Hydrogen bromide (hydrobromic acid),9.55155E-11,kg,emission,air
+921,Hydrogen chloride,7.00004E-05,kg,emission,air
+922,Hydrogen cyanide (prussic acid),6.60336E-09,kg,emission,air
+923,Hydrogen fluoride,5.78796E-06,kg,emission,air
+924,Hydrogen iodide,8.86543E-14,kg,emission,air
+925,Hydrogen phosphorous,7.46959E-11,kg,emission,air
+926,Hydrogen sulphide,0.000252843,kg,emission,air
+927,Lead dioxide,2.74894E-13,kg,emission,air
+928,Magnesium,1.31207E-09,kg,emission,air
+929,Nitrogen (atmospheric nitrogen),0.000746406,kg,emission,air
+930,Nitrogen (N-compounds),1.2291E-06,kg,emission,air
+931,Nitrogen dioxide,9.6882E-05,kg,emission,air
+932,Nitrogen monoxide,2.37177E-05,kg,emission,air
+933,Nitrogen oxides,0.07925208,kg,emission,air
+934,"Nitrogen, total",2.57953E-11,kg,emission,air
+935,Nitrogentriflouride,2.79683E-11,kg,emission,air
+936,Nitrous oxide (laughing gas),0.000786588,kg,emission,air
+937,Oxygen,0.013098846,kg,emission,air
+938,Phosphoric acid,0,kg,emission,air
+939,Phosphorus,2.61497E-09,kg,emission,air
+940,Silicium tetrafluoride,5.16302E-12,kg,emission,air
+941,Strontium,1.77856E-12,kg,emission,air
+942,Sulphur,4.76223E-09,kg,emission,air
+943,Sulphur dioxide,0.165161472,kg,emission,air
+944,Sulphur hexafluoride,1.38474E-05,kg,emission,air
+945,sulphur oxide,1.78808E-05,kg,emission,air
+946,Sulphur oxides,1.62577E-06,kg,emission,air
+947,Sulphur trioxide,2.65688E-07,kg,emission,air
+948,Sulphuric acid,2.92278E-08,kg,emission,air
+949,Tin oxide,4.3051E-16,kg,emission,air
+950,Unspecified Particles,9.35004E-09,kg,emission,air
+951,Water (evapotranspiration),23.3358628,kg,emission,air
+952,Water vapour,15.78923891,kg,emission,air
+953,Zinc chloride,4.52469E-22,kg,emission,air
+954,Zinc oxide,8.61022E-16,kg,emission,air
+955,Zinc sulphate,6.67823E-10,kg,emission,air
+956,Acenaphthylene,5.02048E-10,kg,emission,air
+957,Anthracene,8.32613E-11,kg,emission,air
+958,Benzo{a}anthracene,4.39582E-11,kg,emission,air
+959,Benzo{a}pyrene,4.05381E-09,kg,emission,air
+960,Benzo{b}fluoranthene,2.04547E-13,kg,emission,air
+961,Benzo{e}pyrene,0,kg,emission,air
+962,Benzo{ghi}perylene,3.66596E-11,kg,emission,air
+963,Benzo{k}fluoranthene,3.20371E-13,kg,emission,air
+964,Benzofluoranthene,7.08372E-11,kg,emission,air
+965,Chrysene,9.83474E-11,kg,emission,air
+966,Dibenz(a)anthracene,2.35461E-11,kg,emission,air
+967,Inden,2.7331E-11,kg,emission,air
+968,Naphthalene,3.73787E-08,kg,emission,air
+969,"Naphthalene, 2-methyl-",0,kg,emission,air
+970,Phenanthrene,2.67445E-09,kg,emission,air
+971,"Polycyclic aromatic hydrocarbons (PAH, carcinogenic)",5.45103E-07,kg,emission,air
+972,"Polycyclic aromatic hydrocarbons (PAH, unspec.)",4.50787E-13,kg,emission,air
+973,Pyrene,0,kg,emission,air
+974,Pyrene (Copy),1.23547E-11,kg,emission,air
+975,"1,1,1,2-Tetrachloroethane",0,kg,emission,air
+976,"1,1,1-Trichloroethane",3.40035E-13,kg,emission,air
+977,"1,1,2-Trichloroethane",0,kg,emission,air
+978,"1,2-Dibromoethane",1.04141E-15,kg,emission,air
+979,"1,3-dichloropropene",0,kg,emission,air
+980,2-chloro-1-phenylethanone,6.07486E-15,kg,emission,air
+981,Bromoform,3.38721E-14,kg,emission,air
+982,Carbon tetrachloride (tetrachloromethane),-6.14008E-12,kg,emission,air
+983,Chlorobenzene,1.90924E-14,kg,emission,air
+984,Chloromethane (methyl chloride),1.43993E-12,kg,emission,air
+985,Chlorotoluene (Benzylchloride),6.07486E-13,kg,emission,air
+986,Dichloroethane (ethylene dichloride),9.17105E-08,kg,emission,air
+987,Dichloromethane (methylene chloride),6.88282E-10,kg,emission,air
+988,Dichloropropane,0,kg,emission,air
+989,Dioxins (unspec.),1.04915E-12,kg,emission,air
+990,Ethyl chloride,3.63963E-14,kg,emission,air
+991,Halon (1301),1.55944E-17,kg,emission,air
+992,HFC (unspec.),2.3433E-09,kg,emission,air
+993,"Hydrocarbons, chloro-/fluoro-",2.02275E-12,kg,emission,air
+994,"Hydrocarbons, halogenated",2.81664E-08,kg,emission,air
+995,Methyl bromide,1.39759E-13,kg,emission,air
+996,Organic chlorine compounds,1.96052E-08,kg,emission,air
+997,Polychlorinated biphenyls (PCB unspecified),9.56318E-11,kg,emission,air
+998,"Polychlorinated dibenzo-p-dioxins (2,3,7,8 - TCDD)",8.18832E-14,kg,emission,air
+999,R 11 (trichlorofluoromethane),1.68427E-09,kg,emission,air
+1000,R 114 (dichlorotetrafluoroethane),1.78602E-09,kg,emission,air
+1001,R 116 (hexafluoroethane),4.6266E-08,kg,emission,air
+1002,R 12 (dichlorodifluoromethane),3.62504E-10,kg,emission,air
+1003,R 124 (chlorotetrafluoroethane),3.70644E-19,kg,emission,air
+1004,R 125 (pentafluoroethane),4.6344E-10,kg,emission,air
+1005,R 13 (chlorotrifluoromethane),2.27379E-10,kg,emission,air
+1006,R 134a (tetrafluoroethane),2.85534E-10,kg,emission,air
+1007,R 143 (trifluoroethane),4.14021E-10,kg,emission,air
+1008,R 22 (chlorodifluoromethane),5.24416E-10,kg,emission,air
+1009,R 23 (trifluoromethane),3.17777E-09,kg,emission,air
+1010,"R 245fa (1,1,1,3,3-Pentafluoropropane)",8.2365E-09,kg,emission,air
+1011,R 32 (difluoromethane),6.9516E-11,kg,emission,air
+1012,Tetrachloroethene (perchloroethylene),5.23952E-12,kg,emission,air
+1013,Tetrafluoromethane,3.84793E-07,kg,emission,air
+1014,Trichloroethene (isomers),2.31563E-10,kg,emission,air
+1015,Trichloromethane (chloroform),5.12288E-14,kg,emission,air
+1016,Vinyl chloride (VCM; chloroethene),1.4924E-07,kg,emission,air
+1017,"1,2,4-Trimethylbenzene",0,kg,emission,air
+1018,"1,3,5-Trimethylbenzene",2.67978E-12,kg,emission,air
+1019,1-Butylene (Vinylacetylene),1.54703E-10,kg,emission,air
+1020,1-Methoxy-2-propanol,1.66981E-11,kg,emission,air
+1021,1-Methyl-2-pyrrolidone,0,kg,emission,air
+1022,1-Pentene,5.48455E-10,kg,emission,air
+1023,1-Tetradecane,4.02393E-14,kg,emission,air
+1024,1-Tridecane,1.24998E-13,kg,emission,air
+1025,1-Undecane,5.86035E-14,kg,emission,air
+1026,"2,2,4-Trimethylpentane",1.00939E-05,kg,emission,air
+1027,"2,2-Dimethylbutane",1.05529E-10,kg,emission,air
+1028,"2,4-Dimethylpentane",4.14388E-11,kg,emission,air
+1029,"2,4-Dinitrotoluene",2.42995E-16,kg,emission,air
+1030,2-Methyl-1-butene,3.96548E-10,kg,emission,air
+1031,2-Methylpentane,7.17729E-10,kg,emission,air
+1032,3-Methylpentane,3.59755E-10,kg,emission,air
+1033,Acenaphthene,2.4871E-10,kg,emission,air
+1034,Acetaldehyde (Ethanal),1.5526E-07,kg,emission,air
+1035,Acetic acid,9.74458E-07,kg,emission,air
+1036,Acetone (dimethylcetone),1.48453E-07,kg,emission,air
+1037,Acetophenone,1.30176E-14,kg,emission,air
+1038,Acrolein,7.89317E-10,kg,emission,air
+1039,Acrylonitrile,1.83296E-13,kg,emission,air
+1040,Aldehyde (unspecified),3.36174E-07,kg,emission,air
+1041,Alkane (unspecified),2.22678E-06,kg,emission,air
+1042,Alkene (unspecified),1.68362E-06,kg,emission,air
+1043,Benzene,4.56909E-05,kg,emission,air
+1044,Benzo(b)fluoranthene,0,kg,emission,air
+1045,Biphenyl,2.58E-13,kg,emission,air
+1046,Bis(2-ethylhexyl) adipate,0,kg,emission,air
+1047,Butadiene,1.0517E-10,kg,emission,air
+1048,Butane,2.49895E-05,kg,emission,air
+1049,Butane (n-butane),0.002906767,kg,emission,air
+1050,Butanone (methyl ethyl ketone),3.38721E-13,kg,emission,air
+1051,Butene,8.01624E-09,kg,emission,air
+1052,C12-14 fatty alcohol,7.27235E-15,kg,emission,air
+1053,Caprolactam,7.70754E-12,kg,emission,air
+1054,cis-2-Pentene,4.09146E-10,kg,emission,air
+1055,Cumene (isopropylbenzene),4.51895E-11,kg,emission,air
+1056,Cyclohexane (hexahydro benzene),6.86176E-06,kg,emission,air
+1057,Cyclopentane,2.31794E-05,kg,emission,air
+1058,Decane,2.42708E-12,kg,emission,air
+1059,Diethylamine,-3.86803E-15,kg,emission,air
+1060,Dimethylamine,1.52359E-13,kg,emission,air
+1061,Dioctylphthalate (DOP),6.3405E-14,kg,emission,air
+1062,"Diphenylmethane-4,4 di-isocyanate (MDI)",0,kg,emission,air
+1063,Dodecane,1.30774E-13,kg,emission,air
+1064,Ethane,0.011417857,kg,emission,air
+1065,Ethanol,3.00438E-07,kg,emission,air
+1066,Ethene (ethylene),3.24955E-08,kg,emission,air
+1067,Ethyl benzene,7.86016E-06,kg,emission,air
+1068,Ethylene glycol,0,kg,emission,air
+1069,Ethylene oxide,2.32735E-14,kg,emission,air
+1070,Fatty methylester,7.36932E-15,kg,emission,air
+1071,Fluoranthene,2.76349E-10,kg,emission,air
+1072,Fluorene,8.90422E-10,kg,emission,air
+1073,Formaldehyde (methanal),5.49715E-06,kg,emission,air
+1074,Furan,5.49607E-16,kg,emission,air
+1075,Heptane (isomers),5.72099E-05,kg,emission,air
+1076,Hexamethylene diamine (HMDA),2.91202E-14,kg,emission,air
+1077,Hexane (isomers),0.000921989,kg,emission,air
+1078,"Hydrocarbons, aromatic",9.52776E-08,kg,emission,air
+1079,iso-Butane,0.001251684,kg,emission,air
+1080,iso-Pentane,0.000425181,kg,emission,air
+1081,Isophorone,5.03874E-13,kg,emission,air
+1082,Isoprene,2.41374E-07,kg,emission,air
+1083,Isopropanol,1.0396E-08,kg,emission,air
+1084,Mercaptan (unspecified),7.71708E-09,kg,emission,air
+1085,meta-Cresol,9.99512E-13,kg,emission,air
+1086,Methacrylate,2.87888E-13,kg,emission,air
+1087,Methacrylic acid,1.73568E-14,kg,emission,air
+1088,Methanethiol,2.3767E-10,kg,emission,air
+1089,Methanol,1.38149E-06,kg,emission,air
+1090,Methyl cyclohexane,1.10863E-05,kg,emission,air
+1091,Methyl cyclopentane,1.42858E-10,kg,emission,air
+1092,Methyl methacrylate (MMA),4.41674E-11,kg,emission,air
+1093,Methyl tert-butylether,4.02411E-10,kg,emission,air
+1094,n-Butyl acetate,6.69106E-15,kg,emission,air
+1095,NMVOC (unspecified),0.004282083,kg,emission,air
+1096,Nonane,3.1931E-09,kg,emission,air
+1097,Octane,1.62926E-06,kg,emission,air
+1098,ortho-Cresol,3.75763E-10,kg,emission,air
+1099,para-Cresol,4.06449E-10,kg,emission,air
+1100,Paraffin oil,4.86154E-10,kg,emission,air
+1101,Pentane (n-pentane),0.000773246,kg,emission,air
+1102,Phenol (hydroxy benzene),2.88117E-07,kg,emission,air
+1103,Polycyclic hydrocarbons,1.50186E-35,kg,emission,air
+1104,Propane,0.007666613,kg,emission,air
+1105,Propene (propylene),3.06704E-07,kg,emission,air
+1106,Propionaldehyde,3.30307E-13,kg,emission,air
+1107,Propionic acid (propane acid),5.68218E-11,kg,emission,air
+1108,Propylene glycol methyl ether acetate,1.85615E-09,kg,emission,air
+1109,Styrene,2.43543E-07,kg,emission,air
+1110,Toluene (methyl benzene),2.85218E-05,kg,emission,air
+1111,trans-2-Butene,3.09407E-10,kg,emission,air
+1112,trans-2-Pentene,7.66608E-10,kg,emission,air
+1113,Triethylamine,0,kg,emission,air
+1114,Vinyl acetat,6.59292E-15,kg,emission,air
+1115,Xylene (dimethyl benzene),7.13953E-06,kg,emission,air
+1116,"Xylene (meta-Xylene; 1,3-Dimethylbenzene)",1.04276E-10,kg,emission,air
+1117,"Xylene (ortho-Xylene; 1,2-Dimethylbenzene)",1.01325E-11,kg,emission,air
+1118,"Xylene (para-Xylene; 1,4-Dimethylbenzene)",1.18592E-05,kg,emission,air
+1119,Hydrocarbons (unspecified),3.78423E-05,kg,emission,
+1120,Methane,0.151913062,kg,emission,
+1121,Methane (biotic),0.000159801,kg,emission,
+1122,Unspecified Organic Compounds,6.50297E-15,kg,emission,
+1123,VOC (unspecified),5.12581E-05,kg,emission,
+1124,"Acid gases, unspecified",-1.42521E-08,kg,emission,air
+1125,"Acids, unspecified",-5.08191E-08,kg,emission,air
+1126,"Aldehydes, unspecified",3.24884E-15,kg,emission,air
+1127,Ammonium chloride,2.78288E-10,kg,emission,air
+1128,Carbonyl sulfide,2.18643E-08,kg,emission,air
+1129,Clean gas,0.003009433,kg,emission,air
+1130,Exhaust,5.300585445,kg,emission,air
+1131,Isocyanic acid,0,kg,emission,air
+1132,N-Nitrodimethylamine,-8.77317E-13,kg,emission,air
+1133,"Particulate Matter, unspecified",6.69734E-05,kg,emission,air
+1134,Sand (Silica) (SiO2),6.19059E-11,kg,emission,air
+1135,"Sulfuric acid, dimethyl ester",4.17091E-14,kg,emission,air
+1136,Total organic carbon,1.97854E-10,kg,emission,air
+1137,Unused primary energy from solar energy,1.383152186,kg,emission,air
+1138,Unused primary energy from wind power,0,kg,emission,air
+1139,Used air,1.521125129,kg,emission,air
+1140,Waste heat,0,kg,emission,air
+1141,Aluminium oxide (dust),7.10973E-08,kg,emission,air
+1142,Black carbon (Copy),6.50491E-07,kg,emission,air
+1143,Dust (> PM10),0.000372107,kg,emission,air
+1144,Dust (PM10),0.010475342,kg,emission,air
+1145,"Dust (PM2,5 - PM10)",0.000169518,kg,emission,air
+1146,Dust (PM2.5),0.001532503,kg,emission,air
+1147,Dust (Portland cement kiln),1.5906E-05,kg,emission,air
+1148,Dust (unspecified),0.001900494,kg,emission,air
+1149,Metals (unspecified),9.27477E-09,kg,emission,air
+1150,Organic carbon,2.59708E-08,kg,emission,air
+1151,Silicon dioxide (silica),9.9345E-10,kg,emission,air
+1152,Tar,8.27744E-15,kg,emission,air
+1153,Unspecified Organic Chlorine Compounds,4.28677E-14,kg,emission,air
+1154,Wood (dust),1.5885E-13,kg,emission,air
+1155,Acetochlor,1.98592E-15,kg,emission,air
+1156,Atrazine,3.47886E-15,kg,emission,air
+1157,Benomyl,5.41937E-10,kg,emission,air
+1158,Bentazone,3.75115E-11,kg,emission,air
+1159,Carbofuran,1.20803E-11,kg,emission,air
+1160,Chlormequat-chloride,7.02326E-14,kg,emission,air
+1161,Cypermethrin,8.51305E-16,kg,emission,air
+1162,Cyprodinil (CGA-219417),1.91544E-14,kg,emission,air
+1163,Deltamethrin,1.37477E-10,kg,emission,air
+1164,Dicamba,1.32916E-16,kg,emission,air
+1165,Diflufenican,4.46935E-15,kg,emission,air
+1166,Dimethenamid,3.94054E-16,kg,emission,air
+1167,Ethephon,2.12826E-16,kg,emission,air
+1168,Fenvalerate,5.44705E-15,kg,emission,air
+1169,Fipronil,1.35264E-17,kg,emission,air
+1170,Glyphosate,7.34638E-11,kg,emission,air
+1171,Imidacloprid,4.25652E-16,kg,emission,air
+1172,Ioxynil,1.38337E-14,kg,emission,air
+1173,Isoproturon,1.80902E-14,kg,emission,air
+1174,Mancozeb,9.30307E-09,kg,emission,air
+1175,MCPA,2.97957E-14,kg,emission,air
+1176,Mecoprop,2.02185E-14,kg,emission,air
+1177,Methomyl,4.00066E-12,kg,emission,air
+1178,Parathion-methyl,2.13047E-12,kg,emission,air
+1179,Terbufos,1.49573E-16,kg,emission,air
+1180,Thiram,2.39678E-11,kg,emission,air
+1181,Trifluralin,7.09768E-09,kg,emission,air
+1182,Antimony (Sb124),0,kg,emission,air
+1183,Argon (Ar41),0,kg,emission,air
+1184,Carbon (C14),0,kg,emission,air
+1185,Cesium (Cs134),0,kg,emission,air
+1186,Cesium (Cs137),0,kg,emission,air
+1187,Cobalt (Co58),0,kg,emission,air
+1188,Cobalt (Co60),0,kg,emission,air
+1189,"Hydrogen-3, Tritium",0,kg,emission,air
+1190,Inert gases,0,kg,emission,air
+1191,Iodine (I129),0,kg,emission,air
+1192,Iodine (I131),0,kg,emission,air
+1193,Krypton (Kr85),0,kg,emission,air
+1194,Krypton (Kr85m),0,kg,emission,air
+1195,Lead (Pb210),0,kg,emission,air
+1196,Plutonium (Pu alpha),0,kg,emission,air
+1197,Polonium (Po210),0,kg,emission,air
+1198,Protactinium (Pa234m),0,kg,emission,air
+1199,Radioactive emissions (general),0,kg,emission,air
+1200,Radioactive isotopes (unspecific),0,kg,emission,air
+1201,radionuclides,0,kg,emission,air
+1202,Radium (Ra226),0,kg,emission,air
+1203,Radon (Rn220),0,kg,emission,air
+1204,Radon (Rn222),0,kg,emission,air
+1205,Technetium (Tc99),0,kg,emission,air
+1206,Thorium (Th230),4.43822E-14,kg,emission,air
+1207,Thorium (Th234),0,kg,emission,air
+1208,Uranium,6.27002E-05,kg,emission,air
+1209,Uranium (total),6.99276E-07,kg,emission,air
+1210,Uranium (U234),0,kg,emission,air
+1211,Uranium (U235),0,kg,emission,air
+1212,Uranium (U236),0,kg,emission,air
+1213,Uranium (U238),0,kg,emission,air
+1214,Xenon (Xe131m),0,kg,emission,air
+1215,Xenon (Xe133),0,kg,emission,air
+1216,Xenon (Xe133m),0,kg,emission,air
+1217,Xenon (Xe135),0,kg,emission,air
+1218,Xenon (Xe135m),0,kg,emission,air
+1219,Xenon (Xe137),0,kg,emission,air
+1220,Xenon (Xe138),0,kg,emission,air
+1221,Organic carbon,1.04134E-07,kg,emission,air
+1222,Total organic carbon,0,kg,emission,air
+1223,Unspecified Heavy Metals,3.34862E-18,kg,emission,air
+1224,Adsorbable organic halogen compounds (AOX),4.65739E-06,kg,emission,water
+1225,Biological oxygen demand (BOD),7.03349E-05,kg,emission,water
+1226,Chemical oxygen demand (COD),0.001487788,kg,emission,water
+1227,"Nitrogenous Matter (unspecified, as N)",4.02045E-05,kg,emission,water
+1228,Solids (dissolved),0.000611977,kg,emission,water
+1229,Total Biochemical Oxygen Demand,2.29427E-06,kg,emission,water
+1230,Total dissolved organic bound carbon (TOC),1.80468E-05,kg,emission,water
+1231,Total Dissolved Solids,0.023144649,kg,emission,water
+1232,Total organic bound carbon (TOC),3.34414E-05,kg,emission,water
+1233,Total Suspended Solids,0.000454658,kg,emission,water
+1234,Chloride,0.001271028,kg,emission,water
+1235,"DOC, Dissolved Organic Carbon",1.59099E-13,kg,emission,water
+1236,"Total organic carbon, TOC (Ecoinvent)",1.13728E-06,kg,emission,water
+1237,Aluminium,5.14707E-07,kg,emission,water
+1238,Antimony,2.86151E-09,kg,emission,water
+1239,Arsenic,2.7271E-13,kg,emission,water
+1240,Arsenic (+V),2.13016E-05,kg,emission,water
+1241,Cadmium,1.31677E-06,kg,emission,water
+1242,Chromium,8.60654E-06,kg,emission,water
+1243,Chromium (+III),6.16001E-07,kg,emission,water
+1244,Chromium (+VI),8.44985E-08,kg,emission,water
+1245,Cobalt,1.50077E-09,kg,emission,water
+1246,Copper,7.5623E-06,kg,emission,water
+1247,Heavy metals to water (unspecified),3.31431E-07,kg,emission,water
+1248,Iron,0.000591496,kg,emission,water
+1249,Lead,1.36961E-06,kg,emission,water
+1250,Manganese,8.58537E-05,kg,emission,water
+1251,Mercury,1.28227E-08,kg,emission,water
+1252,Molybdenum,4.97403E-07,kg,emission,water
+1253,Nickel,0.000173271,kg,emission,water
+1254,Scandium,1.58285E-11,kg,emission,water
+1255,Selenium,7.49375E-06,kg,emission,water
+1256,Silver,3.02983E-08,kg,emission,water
+1257,Tantalum,6.87565E-15,kg,emission,water
+1258,Thallium,1.51684E-10,kg,emission,water
+1259,Tin,3.63361E-09,kg,emission,water
+1260,Titanium,1.67016E-07,kg,emission,water
+1261,Tungsten,5.19733E-10,kg,emission,water
+1262,Unspecified Substance,2.221E-14,kg,emission,water
+1263,Uranium,0.001502319,kg,emission,water
+1264,Vanadium,1.55255E-07,kg,emission,water
+1265,Zinc,6.55063E-05,kg,emission,water
+1266,Acid (calculated as H+),5.02953E-06,kg,emission,water
+1267,Acidity,-1.60173E-05,kg,emission,water
+1268,Aluminium,2.34168E-05,kg,emission,water
+1269,Ammonia,1.82792E-05,kg,emission,water
+1270,"Ammonia, as N",1.0211E-06,kg,emission,water
+1271,Ammonium (total N),8.01543E-07,kg,emission,water
+1272,Ammonium / ammonia,0.001318531,kg,emission,water
+1273,Barium,0.000461639,kg,emission,water
+1274,Beryllium,8.06574E-10,kg,emission,water
+1275,Bicarbonate,3.09181E-05,kg,emission,water
+1276,Boron,2.28553E-06,kg,emission,water
+1277,Bromate,7.87898E-10,kg,emission,water
+1278,Bromine,2.65288E-06,kg,emission,water
+1279,Calcium,0.298794865,kg,emission,water
+1280,Carbon disulphide,1.12403E-10,kg,emission,water
+1281,Carbonate,0.004597373,kg,emission,water
+1282,Chlorate,4.57103E-07,kg,emission,water
+1283,Chloride,0.90398641,kg,emission,water
+1284,Chlorine,1.58644E-11,kg,emission,water
+1285,Chlorine (dissolved),3.2089E-05,kg,emission,water
+1286,Cyanide,-6.88457E-07,kg,emission,water
+1287,Fluoride,0.000636962,kg,emission,water
+1288,Fluorine,4.23284E-09,kg,emission,water
+1289,Hydrogen chloride,4.23732E-08,kg,emission,water
+1290,Hydrogen cyanide (prussic acid),1.23535E-15,kg,emission,water
+1291,Hydrogen fluoride (hydrofluoric acid),7.66741E-09,kg,emission,water
+1292,Hydrogen Ions (H+),4.95845E-12,kg,emission,water
+1293,Hydrogen peroxide,1.3654E-06,kg,emission,water
+1294,Hydroxide,1.0268E-06,kg,emission,water
+1295,Inorganic dissolved matter (unspecified),1.86501E-19,kg,emission,water
+1296,Inorganic salts and acids (unspecified),1.37748E-18,kg,emission,water
+1297,Iodide,7.53747E-16,kg,emission,water
+1298,Lithium,9.39474E-07,kg,emission,water
+1299,Magnesium,9.87762E-05,kg,emission,water
+1300,Magnesium chloride,4.45121E-09,kg,emission,water
+1301,Metal ions (unspecific),1.3831E-08,kg,emission,water
+1302,Neutral salts,2.58054E-12,kg,emission,water
+1303,Nitrate,0.000459422,kg,emission,water
+1304,Nitrate (as total N),8.62442E-11,kg,emission,water
+1305,Nitric acid,3.72399E-12,kg,emission,water
+1306,Nitrite,7.48807E-07,kg,emission,water
+1307,Nitrogen,0.015443472,kg,emission,water
+1308,Nitrogen (as total N),2.13168E-06,kg,emission,water
+1309,Nitrogen organic bound,8.89445E-05,kg,emission,water
+1310,Nitrogen oxides,3.31553E-12,kg,emission,water
+1311,Phosphate,2.05855E-05,kg,emission,water
+1312,Phosphorus,5.82258E-06,kg,emission,water
+1313,Potassium,2.59942E-05,kg,emission,water
+1314,Salinity (dissolved salts),8.90378E-06,kg,emission,water
+1315,Silicate particles,8.11291E-09,kg,emission,water
+1316,Sodium,0.153897069,kg,emission,water
+1317,Sodium chloride (rock salt),0.001247799,kg,emission,water
+1318,Sodium hypochlorite,1.00525E-05,kg,emission,water
+1319,Sodium sulphate,2.8384E-05,kg,emission,water
+1320,Strontium,7.49722E-06,kg,emission,water
+1321,Sulfate,0.004718941,kg,emission,water
+1322,Sulfates,0.000122084,kg,emission,water
+1323,Sulphide,0.000298225,kg,emission,water
+1324,Sulphite,6.34982E-07,kg,emission,water
+1325,Sulphur,3.31208E-08,kg,emission,water
+1326,Sulphur dioxide,7.55565E-10,kg,emission,water
+1327,Sulphur trioxide,7.24786E-09,kg,emission,water
+1328,Sulphuric acid,4.78494E-06,kg,emission,water
+1329,Total Dissolved Solids,0.000120791,kg,emission,water
+1330,Unspecified Iron Oxides,5.68741E-14,kg,emission,water
+1331,Unspecified Oil,2.01499E-13,kg,emission,water
+1332,Unspecified Organic Chlorine compounds,4.56633E-16,kg,emission,water
+1333,Unspecified Salt,1.82695E-12,kg,emission,water
+1334,Unspecified Solids (Suspended),7.09264E-12,kg,emission,water
+1335,"1,1,1-Trichloroethane",0,kg,emission,water
+1336,"1,2-Dibromoethane",8.18373E-14,kg,emission,water
+1337,Carbon tetrachloride (tetrachloromethane),0,kg,emission,water
+1338,Chlorinated hydrocarbons (unspecified),1.15756E-10,kg,emission,water
+1339,Chlorobenzene,0,kg,emission,water
+1340,Chloromethane (methyl chloride),2.38462E-11,kg,emission,water
+1341,"Dichlorobenzene (p-DCB; 1,4-dichlorobenzene)",0,kg,emission,water
+1342,Dichloroethane (ethylene dichloride),3.84206E-09,kg,emission,water
+1343,Dichloromethane (methylene chloride),0,kg,emission,water
+1344,Dichloropropane,2.31976E-17,kg,emission,water
+1345,Pentachlorophenol (PCP),2.3626E-12,kg,emission,water
+1346,"Polychlorinated dibenzo-p-dioxins (2,3,7,8 - TCDD)",1.2506E-11,kg,emission,water
+1347,Tetrachloroethene (perchloroethylene),3.142E-14,kg,emission,water
+1348,Trichloromethane (chloroform),3.1433E-14,kg,emission,water
+1349,Vinyl chloride (VCM; chloroethene),1.81359E-08,kg,emission,water
+1350,Acenaphthene,4.28497E-09,kg,emission,water
+1351,Acenaphthylene,1.83907E-09,kg,emission,water
+1352,Acetic acid,2.68448E-08,kg,emission,water
+1353,Acrylonitrile,1.69737E-12,kg,emission,water
+1354,Alkane (unspecified),9.85562E-16,kg,emission,water
+1355,Anthracene,8.01251E-09,kg,emission,water
+1356,Aromatic hydrocarbons (unspecified),5.81508E-08,kg,emission,water
+1357,Benzene,9.9045E-06,kg,emission,water
+1358,Benzo{a}anthracene,4.89967E-10,kg,emission,water
+1359,Benzo{a}pyrene,-6.83868E-09,kg,emission,water
+1360,Benzofluoranthene,5.99195E-11,kg,emission,water
+1361,Chrysene,1.79394E-09,kg,emission,water
+1362,Cresol (methyl phenol),2.75618E-12,kg,emission,water
+1363,Ethyl benzene,5.35624E-07,kg,emission,water
+1364,Fluoranthene,5.6538E-10,kg,emission,water
+1365,Formaldehyde (methanal),1.54562E-15,kg,emission,water
+1366,Hexane (isomers),3.01191E-13,kg,emission,water
+1367,Hydrocarbons (unspecified),2.40252E-06,kg,emission,water
+1368,Methanol,0.000410645,kg,emission,water
+1369,Naphthalene,3.61222E-07,kg,emission,water
+1370,Oil (unspecified),0.000954803,kg,emission,water
+1371,Phenanthrene,3.39671E-12,kg,emission,water
+1372,Phenol (hydroxy benzene),9.97895E-06,kg,emission,water
+1373,"Polycyclic aromatic hydrocarbons (PAH, unspec.)",9.29069E-09,kg,emission,water
+1374,Styrene,8.13885E-15,kg,emission,water
+1375,Toluene (methyl benzene),5.99036E-06,kg,emission,water
+1376,Triethylene glycol,4.13578E-16,kg,emission,water
+1377,VOC (unspecified),3.97928E-09,kg,emission,water
+1378,Xylene (isomers; dimethyl benzene),2.14565E-06,kg,emission,water
+1379,"Xylene (meta-Xylene; 1,3-Dimethylbenzene)",3.75156E-10,kg,emission,water
+1380,"2,4-dimethylphenol",3.46835E-10,kg,emission,water
+1381,2-hexanone,8.08514E-11,kg,emission,water
+1382,Acetone (dimethylcetone),1.23822E-10,kg,emission,water
+1383,Biphenyl,3.72081E-11,kg,emission,water
+1384,Butanediol,3.91781E-12,kg,emission,water
+1385,Butanone (methyl ethyl ketone),9.96755E-13,kg,emission,water
+1386,"Carbon, organically bound",0.000974221,kg,emission,water
+1387,Dodecane,6.84823E-10,kg,emission,water
+1388,Furan,8.22106E-14,kg,emission,water
+1389,Hexadecane,7.47487E-10,kg,emission,water
+1390,iso-Butanol,0,kg,emission,water
+1391,Mineral oil (tetradecane),3.00131E-10,kg,emission,water
+1392,Nitrobenzene,0,kg,emission,water
+1393,N-unspecified (N),1.57689E-13,kg,emission,water
+1394,Organic chlorine compounds (unspecified),1.19093E-09,kg,emission,water
+1395,Organic compounds (dissolved),1.78477E-06,kg,emission,water
+1396,Organic compounds (unspecified),1.92794E-05,kg,emission,water
+1397,"Phosphonic acid,",1.30625E-07,kg,emission,water
+1398,Unspecified wastewater,1.19239E-10,kg,emission,water
+1399,Acetochlor,1.24102E-16,kg,emission,water
+1400,Alachlor,1.85937E-08,kg,emission,water
+1401,Atrazine,2.17397E-16,kg,emission,water
+1402,Benomyl,3.38708E-11,kg,emission,water
+1403,Bentazone,2.34447E-12,kg,emission,water
+1404,Carbofuran,7.55006E-13,kg,emission,water
+1405,Chlormequat-chloride,4.38948E-15,kg,emission,water
+1406,Cypermethrin,5.32058E-17,kg,emission,water
+1407,Cyprodinil (CGA-219417),1.19713E-15,kg,emission,water
+1408,Deltamethrin,8.5923E-12,kg,emission,water
+1409,Dicamba,8.30609E-18,kg,emission,water
+1410,Diflufenican,2.7933E-16,kg,emission,water
+1411,Dimethenamid,2.46249E-17,kg,emission,water
+1412,Ethephon,1.33014E-17,kg,emission,water
+1413,Fenvalerate,3.40429E-16,kg,emission,water
+1414,Fipronil,8.45279E-19,kg,emission,water
+1415,Glyphosate,4.59149E-12,kg,emission,water
+1416,Imidacloprid,2.66029E-17,kg,emission,water
+1417,Ioxynil,8.64594E-16,kg,emission,water
+1418,Isoproturon,1.13062E-15,kg,emission,water
+1419,Mancozeb,5.81437E-10,kg,emission,water
+1420,MCPA,1.8622E-15,kg,emission,water
+1421,Mecoprop,1.26364E-15,kg,emission,water
+1422,Methomyl,2.50041E-13,kg,emission,water
+1423,Parathion-methyl,1.33154E-13,kg,emission,water
+1424,Terbufos,9.34697E-18,kg,emission,water
+1425,Thiram,1.49799E-12,kg,emission,water
+1426,Trifluralin,4.43601E-10,kg,emission,water
+1427,"Acidity, unspecified",-8.48342E-14,kg,emission,water
+1428,"Acids, unspecified",2.19715E-09,kg,emission,water
+1429,Chromate,-3.73468E-12,kg,emission,water
+1430,Collected rainwater to river,0.119049664,kg,emission,water
+1431,"Cooling water to lake, regionalized, CA",48.06500759,kg,emission,water
+1432,Cooling water to river,2.043545297,kg,emission,water
+1433,"Cooling water to river, regionalized, AR",2.44057E-05,kg,emission,water
+1434,"Cooling water to river, regionalized, AT",0.121069384,kg,emission,water
+1435,"Cooling water to river, regionalized, AU",0.01104366,kg,emission,water
+1436,"Cooling water to river, regionalized, BA",0.005522988,kg,emission,water
+1437,"Cooling water to river, regionalized, BE",0.439200662,kg,emission,water
+1438,"Cooling water to river, regionalized, BG",0.033259955,kg,emission,water
+1439,"Cooling water to river, regionalized, BR",0.015314623,kg,emission,water
+1440,"Cooling water to river, regionalized, CA",0.207887735,kg,emission,water
+1441,"Cooling water to river, regionalized, CH",0.253005,kg,emission,water
+1442,"Cooling water to river, regionalized, CL",0.180435989,kg,emission,water
+1443,"Cooling water to river, regionalized, CN",0.031409572,kg,emission,water
+1444,"Cooling water to river, regionalized, CZ",0.159413967,kg,emission,water
+1445,"Cooling water to river, regionalized, DE",32.85631849,kg,emission,water
+1446,"Cooling water to river, regionalized, DK",0.002412557,kg,emission,water
+1447,"Cooling water to river, regionalized, EE",0.022010338,kg,emission,water
+1448,"Cooling water to river, regionalized, ES",0.270998273,kg,emission,water
+1449,"Cooling water to river, regionalized, FI",0.001226257,kg,emission,water
+1450,"Cooling water to river, regionalized, FR",25.15264991,kg,emission,water
+1451,"Cooling water to river, regionalized, GB",0.153524282,kg,emission,water
+1452,"Cooling water to river, regionalized, GR",0.000916101,kg,emission,water
+1453,"Cooling water to river, regionalized, HU",0.040446368,kg,emission,water
+1454,"Cooling water to river, regionalized, ID",0.000353493,kg,emission,water
+1455,"Cooling water to river, regionalized, IE",0.001886666,kg,emission,water
+1456,"Cooling water to river, regionalized, IN",0.000271342,kg,emission,water
+1457,"Cooling water to river, regionalized, IS",7.89339E-07,kg,emission,water
+1458,"Cooling water to river, regionalized, IT",0.125554947,kg,emission,water
+1459,"Cooling water to river, regionalized, JP",2.41846E-05,kg,emission,water
+1460,"Cooling water to river, regionalized, KR",3.95962E-05,kg,emission,water
+1461,"Cooling water to river, regionalized, KZ",0.183558773,kg,emission,water
+1462,"Cooling water to river, regionalized, LT",0.000872027,kg,emission,water
+1463,"Cooling water to river, regionalized, LU",0.018406132,kg,emission,water
+1464,"Cooling water to river, regionalized, LV",0.000102545,kg,emission,water
+1465,"Cooling water to river, regionalized, MK",0.000433199,kg,emission,water
+1466,"Cooling water to river, regionalized, MX",0.01146632,kg,emission,water
+1467,"Cooling water to river, regionalized, MY",0.00237927,kg,emission,water
+1468,"Cooling water to river, regionalized, NG",0.084272198,kg,emission,water
+1469,"Cooling water to river, regionalized, NL",0.176449687,kg,emission,water
+1470,"Cooling water to river, regionalized, NO",0.003264003,kg,emission,water
+1471,"Cooling water to river, regionalized, NZ",1.42793E-05,kg,emission,water
+1472,"Cooling water to river, regionalized, PL",0.298469168,kg,emission,water
+1473,"Cooling water to river, regionalized, PT",0.01649435,kg,emission,water
+1474,"Cooling water to river, regionalized, RO",0.015884479,kg,emission,water
+1475,"Cooling water to river, regionalized, RS",0.006929434,kg,emission,water
+1476,"Cooling water to river, regionalized, RU",1.163934154,kg,emission,water
+1477,"Cooling water to river, regionalized, SE",0.003221662,kg,emission,water
+1478,"Cooling water to river, regionalized, SG",1.96115E-06,kg,emission,water
+1479,"Cooling water to river, regionalized, SI",0.007382794,kg,emission,water
+1480,"Cooling water to river, regionalized, SK",0.015658836,kg,emission,water
+1481,"Cooling water to river, regionalized, TH",2.48134E-05,kg,emission,water
+1482,"Cooling water to river, regionalized, TR",0.003421323,kg,emission,water
+1483,"Cooling water to river, regionalized, UA",0.018927512,kg,emission,water
+1484,"Cooling water to river, regionalized, US",0.780057092,kg,emission,water
+1485,"Cooling water to river, regionalized, VE",0.002472152,kg,emission,water
+1486,"Cooling water to river, regionalized, ZA",0.00166763,kg,emission,water
+1487,Detergent (unspecified),1.04646E-08,kg,emission,water
+1488,Docosane,1.32499E-11,kg,emission,water
+1489,Eicosane,1.88549E-10,kg,emission,water
+1490,Lead-210/kg,1.28657E-18,kg,emission,water
+1491,"Process solvents, unspecified",8.22106E-12,kg,emission,water
+1492,Processed water to groundwater,0.009192268,kg,emission,water
+1493,Processed water to river,16.99063055,kg,emission,water
+1494,"Processed water to river, regionalized, AU",0.063475185,kg,emission,water
+1495,"Processed water to river, regionalized, BA",0.000122705,kg,emission,water
+1496,"Processed water to river, regionalized, BG",0.000869514,kg,emission,water
+1497,"Processed water to river, regionalized, BR",2.78806E-08,kg,emission,water
+1498,"Processed water to river, regionalized, CA",0.094906192,kg,emission,water
+1499,"Processed water to river, regionalized, CL",0.000233035,kg,emission,water
+1500,"Processed water to river, regionalized, CN",0.001820124,kg,emission,water
+1501,"Processed water to river, regionalized, CO",0.136849297,kg,emission,water
+1502,"Processed water to river, regionalized, CZ",0.037797579,kg,emission,water
+1503,"Processed water to river, regionalized, DE",1.324790948,kg,emission,water
+1504,"Processed water to river, regionalized, EE",9.99939E-07,kg,emission,water
+1505,"Processed water to river, regionalized, ES",0.000751705,kg,emission,water
+1506,"Processed water to river, regionalized, FI",3.67137E-05,kg,emission,water
+1507,"Processed water to river, regionalized, FR",0.001628204,kg,emission,water
+1508,"Processed water to river, regionalized, GB",0.005349733,kg,emission,water
+1509,"Processed water to river, regionalized, GR",0.001713848,kg,emission,water
+1510,"Processed water to river, regionalized, HU",0.000440678,kg,emission,water
+1511,"Processed water to river, regionalized, ID",0.000431825,kg,emission,water
+1512,"Processed water to river, regionalized, IE",2.53962E-05,kg,emission,water
+1513,"Processed water to river, regionalized, IN",8.3022E-06,kg,emission,water
+1514,"Processed water to river, regionalized, IT",2.2108E-05,kg,emission,water
+1515,"Processed water to river, regionalized, KR",1.23877E-08,kg,emission,water
+1516,"Processed water to river, regionalized, KZ",2.28843E-05,kg,emission,water
+1517,"Processed water to river, regionalized, MK",9.61102E-05,kg,emission,water
+1518,"Processed water to river, regionalized, MX",4.83123E-06,kg,emission,water
+1519,"Processed water to river, regionalized, MY",1.2595E-05,kg,emission,water
+1520,"Processed water to river, regionalized, NO",0.000584808,kg,emission,water
+1521,"Processed water to river, regionalized, NZ",1.14459E-06,kg,emission,water
+1522,"Processed water to river, regionalized, PL",0.17965892,kg,emission,water
+1523,"Processed water to river, regionalized, RO",0.001069623,kg,emission,water
+1524,"Processed water to river, regionalized, RS",0.00036322,kg,emission,water
+1525,"Processed water to river, regionalized, RU",0.229695203,kg,emission,water
+1526,"Processed water to river, regionalized, SE",8.58757E-06,kg,emission,water
+1527,"Processed water to river, regionalized, SI",0.00044158,kg,emission,water
+1528,"Processed water to river, regionalized, SK",5.93776E-05,kg,emission,water
+1529,"Processed water to river, regionalized, TH",1.46063E-06,kg,emission,water
+1530,"Processed water to river, regionalized, TR",0.000151077,kg,emission,water
+1531,"Processed water to river, regionalized, UA",0.00208744,kg,emission,water
+1532,"Processed water to river, regionalized, US",0.087231167,kg,emission,water
+1533,"Processed water to river, regionalized, VE",0.000555437,kg,emission,water
+1534,"Processed water to river, regionalized, VN",5.35029E-06,kg,emission,water
+1535,"Processed water to river, regionalized, ZA",0.008255771,kg,emission,water
+1536,"Spent chlorofluorocarbon solvents, unspecified",0,kg,emission,water
+1537,Turbined water to river,76.81389613,kg,emission,water
+1538,"Turbined water to river, regionalized, AR",0.000375497,kg,emission,water
+1539,"Turbined water to river, regionalized, AT",208.2897827,kg,emission,water
+1540,"Turbined water to river, regionalized, AU",0.398963341,kg,emission,water
+1541,"Turbined water to river, regionalized, BA",0.677624483,kg,emission,water
+1542,"Turbined water to river, regionalized, BE",1.328794438,kg,emission,water
+1543,"Turbined water to river, regionalized, BG",0.112477809,kg,emission,water
+1544,"Turbined water to river, regionalized, BR",0.12916753,kg,emission,water
+1545,"Turbined water to river, regionalized, CA",11.38284,kg,emission,water
+1546,"Turbined water to river, regionalized, CH",103.1303409,kg,emission,water
+1547,"Turbined water to river, regionalized, CL",1.060647593,kg,emission,water
+1548,"Turbined water to river, regionalized, CN",1.175582791,kg,emission,water
+1549,"Turbined water to river, regionalized, CZ",15.02008192,kg,emission,water
+1550,"Turbined water to river, regionalized, DE",1180.226147,kg,emission,water
+1551,"Turbined water to river, regionalized, DK",0.068669926,kg,emission,water
+1552,"Turbined water to river, regionalized, EE",0.012004284,kg,emission,water
+1553,"Turbined water to river, regionalized, ES",1.667774959,kg,emission,water
+1554,"Turbined water to river, regionalized, FI",1.202795924,kg,emission,water
+1555,"Turbined water to river, regionalized, FR",3118.84837,kg,emission,water
+1556,"Turbined water to river, regionalized, GB",1.240385334,kg,emission,water
+1557,"Turbined water to river, regionalized, GR",0.057604157,kg,emission,water
+1558,"Turbined water to river, regionalized, HU",0.08038888,kg,emission,water
+1559,"Turbined water to river, regionalized, ID",0.006823969,kg,emission,water
+1560,"Turbined water to river, regionalized, IE",0.04735157,kg,emission,water
+1561,"Turbined water to river, regionalized, IN",0.029383451,kg,emission,water
+1562,"Turbined water to river, regionalized, IS",0.010715833,kg,emission,water
+1563,"Turbined water to river, regionalized, IT",16.92768935,kg,emission,water
+1564,"Turbined water to river, regionalized, JP",0.055365006,kg,emission,water
+1565,"Turbined water to river, regionalized, KR",0.000628831,kg,emission,water
+1566,"Turbined water to river, regionalized, KZ",5.928631257,kg,emission,water
+1567,"Turbined water to river, regionalized, LT",0.007302932,kg,emission,water
+1568,"Turbined water to river, regionalized, LU",0.053832993,kg,emission,water
+1569,"Turbined water to river, regionalized, LV",1.06167094,kg,emission,water
+1570,"Turbined water to river, regionalized, MK",0.134774902,kg,emission,water
+1571,"Turbined water to river, regionalized, MX",0.045500169,kg,emission,water
+1572,"Turbined water to river, regionalized, MY",0.049630294,kg,emission,water
+1573,"Turbined water to river, regionalized, NG",4.443441874,kg,emission,water
+1574,"Turbined water to river, regionalized, NL",0.273887933,kg,emission,water
+1575,"Turbined water to river, regionalized, NO",270.1782246,kg,emission,water
+1576,"Turbined water to river, regionalized, NZ",0.001635616,kg,emission,water
+1577,"Turbined water to river, regionalized, PL",0.095673343,kg,emission,water
+1578,"Turbined water to river, regionalized, PT",1.155344254,kg,emission,water
+1579,"Turbined water to river, regionalized, RO",0.189272375,kg,emission,water
+1580,"Turbined water to river, regionalized, RS",0.576318483,kg,emission,water
+1581,"Turbined water to river, regionalized, RU",503.0081917,kg,emission,water
+1582,"Turbined water to river, regionalized, SE",12.92771776,kg,emission,water
+1583,"Turbined water to river, regionalized, SI",3.394355869,kg,emission,water
+1584,"Turbined water to river, regionalized, SK",0.300762765,kg,emission,water
+1585,"Turbined water to river, regionalized, TH",0.000283147,kg,emission,water
+1586,"Turbined water to river, regionalized, TR",0.515409998,kg,emission,water
+1587,"Turbined water to river, regionalized, UA",0.176935801,kg,emission,water
+1588,"Turbined water to river, regionalized, US",0.521420883,kg,emission,water
+1589,"Turbined water to river, regionalized, VE",0.048962235,kg,emission,water
+1590,"Turbined water to river, regionalized, ZA",0.131383964,kg,emission,water
+1591,Unused primary energy from geothermal,0,kg,emission,water
+1592,Unused primary energy from hydro power,0,kg,emission,water
+1593,Waste heat,0,kg,emission,water
+1594,Yttrium,8.34465E-11,kg,emission,water
+1595,Metals (unspecified),7.68275E-08,kg,emission,water
+1596,Silicon,7.90265E-09,kg,emission,water
+1597,Silicon dioxide (silica),2.52139E-09,kg,emission,water
+1598,Soil loss by erosion into water,0.009494923,kg,emission,water
+1599,Solids (suspended),0.084990966,kg,emission,water
+1600,Tar,9.3833E-17,kg,emission,water
+1601,Total suspended solids,2.86989E-06,kg,emission,water
+1602,Unspecified Oxides,4.72809E-14,kg,emission,water
+1603,Americium (Am241),0,kg,emission,water
+1604,Antimony (Sb124),0,kg,emission,water
+1605,Antimony (Sb125),0,kg,emission,water
+1606,Carbon (C14),0,kg,emission,water
+1607,Cesium (Cs134),0,kg,emission,water
+1608,Cesium (Cs137),0,kg,emission,water
+1609,Cobalt (Co58),0,kg,emission,water
+1610,Cobalt (Co60),0,kg,emission,water
+1611,Curium (Cm alpha),0,kg,emission,water
+1612,"Hydrogen-3, Tritium",0,kg,emission,water
+1613,Iodine (I129),0,kg,emission,water
+1614,Iodine (I131),0,kg,emission,water
+1615,Manganese (Mn54),0,kg,emission,water
+1616,Plutonium (Pu alpha),0,kg,emission,water
+1617,Protactinium (Pa234m),0,kg,emission,water
+1618,Radioactive isotopes (unspecific),0,kg,emission,water
+1619,Radionuclides,0,kg,emission,water
+1620,Radium (Ra224),0,kg,emission,water
+1621,Radium (Ra226),327.3930436,kg,emission,water
+1622,Radium (Ra228),7.53715E-13,kg,emission,water
+1623,Ruthenium (Ru106),0,kg,emission,water
+1624,Silver (Ag110m),0,kg,emission,water
+1625,Strontium (Sr90),0,kg,emission,water
+1626,Thorium (Th228),0,kg,emission,water
+1627,Thorium (Th230),0,kg,emission,water
+1628,Thorium (Th234),0,kg,emission,water
+1629,Uranium,0,kg,emission,water
+1630,Uranium (U234),0,kg,emission,water
+1631,Uranium (U235),0,kg,emission,water
+1632,Uranium (U236),0,kg,emission,water
+1633,Uranium (U238),0,kg,emission,water
+1634,Bromide,9.40275E-06,kg,emission,water
+1635,Radionuclide,0,kg,emission,water
+1636,Sulfite,3.55424E-07,kg,emission,water
+1637,Unspecified Solids (Dissolved),1.36708E-11,kg,emission,water
+1638,Uranium (total),1.34093E-10,kg,emission,water
+1639,Adsorbable organic halogen compounds (AOX),7.9201E-13,kg,emission,water
+1640,Biological oxygen demand (BOD),8.74149E-07,kg,emission,water
+1641,Chemical oxygen demand (COD),4.09861E-05,kg,emission,water
+1642,Total organic bound carbon (TOC),8.74149E-07,kg,emission,water
+1643,Arsenic (+V),7.55407E-07,kg,emission,water
+1644,Cadmium,3.23919E-07,kg,emission,water
+1645,Chromium,1.18221E-06,kg,emission,water
+1646,Cobalt,2.37204E-09,kg,emission,water
+1647,Copper,2.71163E-07,kg,emission,water
+1648,Iron,3.76445E-08,kg,emission,water
+1649,Lead,2.26164E-07,kg,emission,water
+1650,Manganese,3.9311E-09,kg,emission,water
+1651,Mercury,1.88326E-09,kg,emission,water
+1652,Molybdenum,0.00044072,kg,emission,water
+1653,Nickel,4.21345E-07,kg,emission,water
+1654,Silver,2.60434E-10,kg,emission,water
+1655,Tin,3.1194E-10,kg,emission,water
+1656,Titanium,3.17744E-11,kg,emission,water
+1657,Vanadium,1.44674E-09,kg,emission,water
+1658,Zinc,4.93586E-08,kg,emission,water
+1659,Aluminium,1.02304E-09,kg,emission,water
+1660,Aluminium,1.18958E-09,kg,emission,water
+1661,Ammonia,3.0396E-08,kg,emission,water
+1662,Ammonium / ammonia,3.20844E-10,kg,emission,water
+1663,Barite,9.14351E-19,kg,emission,water
+1664,Barium,6.65817E-06,kg,emission,water
+1665,Beryllium,1.124E-10,kg,emission,water
+1666,Boron,1.65401E-08,kg,emission,water
+1667,Calcium,1.80635E-06,kg,emission,water
+1668,Carbonate,0.000418788,kg,emission,water
+1669,Chloride,0.03308499,kg,emission,water
+1670,Cyanide,3.00273E-14,kg,emission,water
+1671,Fluoride,1.51985E-06,kg,emission,water
+1672,Magnesium,5.88579E-07,kg,emission,water
+1673,Nitrate,1.14984E-05,kg,emission,water
+1674,Nitrate (as total N),1.29165E-15,kg,emission,water
+1675,Nitrite,1.55852E-07,kg,emission,water
+1676,Nitrogen (as total N),4.16933E-16,kg,emission,water
+1677,Phosphorus,2.79617E-09,kg,emission,water
+1678,Potassium,1.84688E-13,kg,emission,water
+1679,Sodium,1.74571E-05,kg,emission,water
+1680,Strontium,2.27075E-07,kg,emission,water
+1681,Sulphate,0.000176574,kg,emission,water
+1682,Sulphide,7.62146E-05,kg,emission,water
+1683,Sulphur,4.46047E-08,kg,emission,water
+1684,Tetrachloroethene (perchloroethylene),1.29529E-17,kg,emission,water
+1685,Acenaphthene,1.19319E-09,kg,emission,water
+1686,Acenaphthylene,5.0694E-10,kg,emission,water
+1687,Acetic acid,3.23861E-10,kg,emission,water
+1688,Anthracene,2.03478E-09,kg,emission,water
+1689,Aromatic hydrocarbons (unspecified),8.74148E-09,kg,emission,water
+1690,Benzene,2.49246E-06,kg,emission,water
+1691,Benzo{a}anthracene,1.50135E-10,kg,emission,water
+1692,Benzofluoranthene,4.52581E-11,kg,emission,water
+1693,Chrysene,6.03963E-10,kg,emission,water
+1694,Cresol (methyl phenol),2.2924E-10,kg,emission,water
+1695,Ethyl benzene,1.38904E-07,kg,emission,water
+1696,Fluoranthene,1.70954E-10,kg,emission,water
+1697,Hexane (isomers),2.50278E-11,kg,emission,water
+1698,Hydrocarbons (unspecified),1.52137E-12,kg,emission,water
+1699,Oil (unspecified),1.27567E-05,kg,emission,water
+1700,Phenol (hydroxy benzene),2.53493E-06,kg,emission,water
+1701,Toluene (methyl benzene),1.5183E-06,kg,emission,water
+1702,Xylene (isomers; dimethyl benzene),5.44765E-07,kg,emission,water
+1703,Ethylene Glycol,3.05881E-14,kg,emission,water
+1704,Naphthalene,8.12904E-08,kg,emission,water
+1705,Cooling water to sea,28.90797835,kg,emission,water
+1706,Processed water to sea,2.545367775,kg,emission,water
+1707,Waste heat,0,kg,emission,water
+1708,Waste water,2.76338E-11,kg,emission,water
+1709,Solids (suspended),0.000695698,kg,emission,water
+1710,Carbon (C14),0,kg,emission,water
+1711,Cesium (Cs134),0,kg,emission,water
+1712,Cesium (Cs137),0,kg,emission,water
+1713,Cobalt (Co60),0,kg,emission,water
+1714,"Hydrogen-3, Tritium",0,kg,emission,water
+1715,Iodine (I131),0,kg,emission,water
+1716,Ruthenium (Ru106),0,kg,emission,water
+1717,Strontium (Sr90),0,kg,emission,water
+1718,Uranium (U234),0,kg,emission,water
+1719,Uranium (U238),0,kg,emission,water
+1720,Arsenic (+V),1.45936E-15,kg,emission,ground
+1721,Cadmium,2.51896E-08,kg,emission,ground
+1722,Chromium,-2.8071E-08,kg,emission,ground
+1723,Chromium (+III),4.18973E-07,kg,emission,ground
+1724,Cobalt,1.45936E-15,kg,emission,ground
+1725,Copper,2.18085E-07,kg,emission,ground
+1726,Iron,1.62819E-12,kg,emission,ground
+1727,Lead,5.44318E-07,kg,emission,ground
+1728,Manganese,1.07156E-13,kg,emission,ground
+1729,Mercury,4.18979E-09,kg,emission,ground
+1730,Molybdenum,8.7449E-15,kg,emission,ground
+1731,Nickel,1.7663E-07,kg,emission,ground
+1732,Tin,2.33707E-12,kg,emission,ground
+1733,Vanadium,8.7449E-15,kg,emission,ground
+1734,Zinc,9.68758E-07,kg,emission,ground
+1735,Aluminium,8.97846E-12,kg,emission,ground
+1736,Chlorine,3.78544E-12,kg,emission,ground
+1737,Sulphur,1.95855E-12,kg,emission,ground
+1738,Xylenes (isomers; dimethyl benzene),2.39159E-12,kg,emission,ground
+1739,Antimony,1.00205E-13,kg,emission,ground
+1740,Arsenic (+V),0.341250041,kg,emission,ground
+1741,Cadmium,1.12361E-10,kg,emission,ground
+1742,Chromium,9.16244E-09,kg,emission,ground
+1743,Chromium (+III),2.71738E-11,kg,emission,ground
+1744,Chromium (+VI),3.31642E-13,kg,emission,ground
+1745,Cobalt,2.51432E-10,kg,emission,ground
+1746,Copper,2.38616E-10,kg,emission,ground
+1747,Iron,610.657968,kg,emission,ground
+1748,Lead,2.440066082,kg,emission,ground
+1749,Manganese,2.26041E-09,kg,emission,ground
+1750,Mercury,0.006311843,kg,emission,ground
+1751,Nickel,3.55343E-09,kg,emission,ground
+1752,Selenium,0.040539479,kg,emission,ground
+1753,Thallium,0.295065825,kg,emission,ground
+1754,Vanadium,1.862763381,kg,emission,ground
+1755,Zinc,1.0849E-09,kg,emission,ground
+1756,Aluminium,1.37054E-08,kg,emission,ground
+1757,Ammonia,4.82104E-06,kg,emission,ground
+1758,Beryllium,9.75906E-17,kg,emission,ground
+1759,Bromide,1.40018E-09,kg,emission,ground
+1760,Calcium,1.55967E-07,kg,emission,ground
+1761,Chloride,1.58336E-05,kg,emission,ground
+1762,Chlorine,8.5303E-11,kg,emission,ground
+1763,Fluoride,6.23191E-08,kg,emission,ground
+1764,Magnesium,4.2345E-09,kg,emission,ground
+1765,Nitric acid,2.62002E-14,kg,emission,ground
+1766,Nitrogen,7.50673E-13,kg,emission,ground
+1767,Phosphorus,4.95111E-07,kg,emission,ground
+1768,Potassium,1.18507E-06,kg,emission,ground
+1769,Sodium,8.42269E-09,kg,emission,ground
+1770,Strontium,3.01856E-06,kg,emission,ground
+1771,Sulphate,1.50829E-07,kg,emission,ground
+1772,Sulphide,9.0495E-07,kg,emission,ground
