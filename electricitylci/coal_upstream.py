@@ -15,7 +15,8 @@ coal_type_codes={'BIT':'B',
                  'WC':'W'}
 mine_type_codes={'Surface':'S',
                  'Underground':'U',
-                 'Facility':'F'}
+                 'Facility':'F',
+                 'Processing':'P'}
 basin_codes={'Central Appalachia':'CA',
              'Central Interior':'CI',
              'Gulf Lignite':'GL',
@@ -242,19 +243,19 @@ def generate_upstream_coal(year):
     
     #Keep the plant ID and air emissions columns
     merged_input_eia_coal_a = merged_input_eia_coal_a[
-            ['plant_id','coal_source_code'] + column_air_emission]
+            ['plant_id','coal_source_code','quantity'] + column_air_emission]
     
     #Groupby the plant ID since some plants have multiple row entries 
     #(receive coal from multiple basins)
     merged_input_eia_coal_a = (
             merged_input_eia_coal_a.groupby(
                     ['plant_id','coal_source_code'],
-                    as_index=False)[column_air_emission].sum())
+                    as_index=False)[['quantity']+column_air_emission].sum())
     merged_input_eia_coal_a = merged_input_eia_coal_a.reset_index()
     
     #Melting the database on Plant ID
     melted_database_air = merged_input_eia_coal_a.melt(
-            id_vars = ['plant_id','coal_source_code'], 
+            id_vars = ['plant_id','coal_source_code','quantity'], 
             var_name = 'FlowName', 
             value_name = 'FlowAmount')
     
@@ -282,15 +283,15 @@ def generate_upstream_coal(year):
     #(receive coal from multiple basins)
     merged_input_eia_coal_w = merged_input_eia_coal_w.groupby(
             ['plant_id','coal_source_code'], 
-            as_index=False)[column_water_emission].sum()
+            as_index=False)[['quantity']+column_water_emission].sum()
     merged_input_eia_coal_w = merged_input_eia_coal_w.reset_index()
     
     #Keep the plant ID and water emissions columns
     merged_input_eia_coal_w = merged_input_eia_coal_w[
-            ['plant_id','coal_source_code'] + column_water_emission]
+            ['plant_id','coal_source_code','quantity'] + column_water_emission]
     #Melting the database on Plant ID
     melted_database_water = merged_input_eia_coal_w.melt(
-            id_vars = ['plant_id','coal_source_code'], 
+            id_vars = ['plant_id','coal_source_code','quantity'], 
             var_name = 'FlowName', 
             value_name = 'FlowAmount')
     #Adding to new columns for the compartment (water) and 
@@ -310,7 +311,7 @@ def generate_upstream_coal(year):
     #multiply transportation emission factor (kg/kg-mi) by total transportation
     #(ton-miles)
     merged_transport_coal[column_air_emission] = (
-            pq.convert(1,'ton','kg')*
+            #pq.convert(1,'ton','kg')*
             merged_transport_coal[column_air_emission].multiply(
                     merged_transport_coal['value'],axis = "index"))
     
@@ -320,18 +321,19 @@ def generate_upstream_coal(year):
     #Groupby the plant ID since some plants have multiple row entries 
     #(receive coal from multiple basins)
     merged_transport_coal= merged_transport_coal.groupby(
-            ['plant_id','Transport'])[column_air_emission].sum()
+            ['plant_id','Transport'])[['value']+column_air_emission].sum()
     merged_transport_coal= merged_transport_coal.reset_index()
     
     #Keep the plant ID and emissions columns
     merged_transport_coal = (
             merged_transport_coal[
-                    ['plant_id','Transport'] + column_air_emission])
-    merged_transport_coal.rename(columns={'Transport':'coal_source_code'},
+                    ['plant_id','Transport','value'] + column_air_emission])
+    merged_transport_coal.rename(columns={'Transport':'coal_source_code',
+                                          'value':'quantity'},
                                  inplace=True)
     #Melting the database on Plant ID
     melted_database_transport = merged_transport_coal.melt(
-            id_vars = ['plant_id','coal_source_code'], 
+            id_vars = ['plant_id','coal_source_code','quantity'], 
             var_name = 'FlowName', 
             value_name = 'FlowAmount')
     melted_database_transport['coal_source_code']=melted_database_transport.apply(
@@ -356,6 +358,6 @@ def generate_upstream_coal(year):
     return merged_coal_upstream
 
 if __name__=='__main__':
-    year=2014
+    year=2016
     df = generate_upstream_coal(year)
     df.to_csv(output_dir+'/coal_emissions_{}.csv'.format(year))
