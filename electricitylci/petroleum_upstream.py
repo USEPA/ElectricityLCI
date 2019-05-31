@@ -85,14 +85,15 @@ def generate_petroleum_upstream(year):
     
     #Cleaning up unneeded columns and renaming
     merged_inventory.drop(
-            columns=['heat_input','fuel_padd','Unit.1',
+            columns=['fuel_padd','Unit.1',
                      'Sub-category.1','Flow UUID.1'],
             inplace=True)
     colnames={
             'Flow.1':'FlowName',
             'Category.1':'Compartment',
             'Result.1':'FlowAmount',
-            'fuel_code':'stage_code'}
+            'fuel_code':'stage_code',
+            'heat_input':'quantity'}
     merged_inventory.rename(columns=colnames,inplace=True)
     merged_inventory['fuel_type']='Petroleum'
     merged_inventory['stage']='well-to-tank'
