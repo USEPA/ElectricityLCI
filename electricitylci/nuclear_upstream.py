@@ -76,6 +76,8 @@ def generate_upstream_nuc(year):
     nuc_merged['stage']='mine-to-plant'
     nuc_merged['stage_code']='NUC'
     nuc_merged.drop(columns=['unit'])
+    nuc_merged.rename(columns={'compartment':'Compartment',
+                               'Plant Id':'plant_id'},inplace=True)
     return nuc_merged
 
 if __name__=='__main__':
