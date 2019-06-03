@@ -30,6 +30,7 @@ def write(processes: dict, file_path: str):
             process.location = _location(_val(d, 'location'), writer, created_ids)
             process.process_documentation = _process_doc(
                 _val(d, 'processDocumentation'), writer, created_ids)
+            process.last_change = datetime.datetime.now(pytz.utc).isoformat()
             _process_dq(d, process)
             process.exchanges = []
             last_id = 0
