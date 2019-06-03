@@ -74,17 +74,7 @@ def generate_upstream_geo(year):
                     value_name='FlowAmount'
               )
     geo_lci['stage_code']=geo_lci['stage_code'].map(geothermal_state_dict)
-    #There is no column to merge the inventory and generation data on,
-    #so we iterate through the plants and make a new column in the lci
-    #dataframe using the plant id. And add a copy of that dataframe to a 
-    #running list. Finally we concatenate all of the dataframes in the list
-    #together for a final merged dataframe.
-#    merged_list=list()
-#    for idx1, plant in geo_generation_data.iterrows():
-#        print(plant['Plant Id'])
-#        geo_lci['Plant Id']=plant['Plant Id']
-#        merged_list.append(copy.copy(geo_lci))
-#    geo_lci=pd.concat(merged_list)
+
     geo_merged = pd.merge(
             left=geo_generation_data, right =geo_lci,
             left_on=['State'], right_on=['stage_code'],
