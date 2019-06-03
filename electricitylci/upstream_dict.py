@@ -20,6 +20,7 @@ def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
             'Coal':'21: Mining, Quarrying, and Oil and Gas Extraction/2121: Coal Mining',
             'Natural gas':'21: Mining, Quarrying, and Oil and Gas Extraction/2111: Oil and Gas Extraction',
             'Petroleum':'21: Mining, Quarrying, and Oil and Gas Extraction/2111: Oil and Gas Extraction',
+            'Nuclear':'21: Mining, Quarrying, and Oil and Gas Extraction/2122: Metal Ore Mining'
     }    
     ar = dict()
     ar['@type'] = 'Process'
@@ -68,7 +69,13 @@ def _exchange_table_creation_ref(fuel_type):
             'id':'',
             'category':'21: Mining, Quarrying, and Oil and Gas Extraction'
     }
-    
+    nuclear_flow={
+            'flowType':'PRODUCT_FLOW',
+            'flowProperties':'',
+            'name':'nuclear fuel, through transportation',
+            'id':'',
+            'category':'21: Mining, Quarrying, and Oil and Gas Extraction'
+    }
     ar = dict()
     ar['internalId']=''
     ar['@type']='Exchange'
@@ -89,6 +96,10 @@ def _exchange_table_creation_ref(fuel_type):
         ar['flow']=transport_flow
         ar['unit']=_unit('lb*mi')
         ar['amount']=2000
+    elif fuel_type == 'Nuclear':
+        ar['flow']=nuclear_flow
+        ar['unit']=_unit('MWh')
+        ar['amount']=1
     ar['flowProperty']=''
     ar['input']=False
     ar['quantitativeReference']=True
@@ -280,6 +291,9 @@ def olcaschema_genupstream_processes(merged):
                     f'PADD {split_name[1]}'                
             )
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
+        elif fuel_type=='Nuclear':
+            combined_name=('nuclear fuel extraction, prococessing, and transport')
+            exchanges_list.append(_exchange_table_creation_ref(fuel_type))
         process_name=f'{combined_name}'
         final = _process_table_creation_gen(
                 process_name, 
@@ -296,7 +310,9 @@ if __name__=='__main__':
     coal=pd.read_csv(output_dir+f'/coal_emissions_{year}.csv')
     naturalgas=pd.read_csv(output_dir+f'/ng_emissions_{year}.csv')
     petroleum=pd.read_csv(output_dir+f'/petroleum_emissions_{year}.csv')
-    merged = pd.concat([coal,naturalgas,petroleum],ignore_index=True)
+    nuclear=pd.read_csv(output_dir+f'/nuclear_emissions_{year}.csv',
+                        usecols=[1,2,5,6,7,8,9,10])
+    merged = pd.concat([coal,naturalgas,petroleum,nuclear],ignore_index=True)
     upstream_process_dict=olcaschema_genupstream_processes(merged)
     write_process_dicts_to_jsonld(upstream_process_dict)
     
