@@ -57,6 +57,7 @@ def create_ba_region_map(match_fn='BA code match.csv', region_col='ferc_region')
 
     match_path = join(data_dir, match_fn)
     region_match = pd.read_csv(match_path, index_col=0)
+    region_match['Balancing Authority Code']=region_match.index
     map_series = region_match[region_col]
 
     return map_series
