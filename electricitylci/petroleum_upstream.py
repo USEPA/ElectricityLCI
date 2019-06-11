@@ -95,7 +95,7 @@ def generate_petroleum_upstream(year):
             'fuel_code':'stage_code',
             'heat_input':'quantity'}
     merged_inventory.rename(columns=colnames,inplace=True)
-    merged_inventory['fuel_type']='Petroleum'
+    merged_inventory['fuel_type']='Oil'
     merged_inventory['stage']='well-to-tank'
     merged_inventory.reset_index(inplace=True,drop=True)
     
