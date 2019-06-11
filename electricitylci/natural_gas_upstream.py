@@ -10,7 +10,7 @@ from electricitylci.globals import (
     output_dir)
 
 from electricitylci.eia923_generation import eia923_download_extract
-import PhysicalQuantities as pq
+import electricitylci.PhysicalQuantities as pq
 
 
 strings = [' air','unspecified','Organic intermediate products',
@@ -66,10 +66,10 @@ def generate_upstream_ng(year):
     
     #Get the EIA generation data for the specified year, this dataset includes
     #the fuel consumption for generating electricity for each facility
-    #and fuel type. Filter the data to only include NG facilities and on positive
-    #fuel consumption. Group that data by Plant Id as it is possible to have
-    #multiple rows for the same facility and fuel based on different prime
-    #movers (e.g., gas turbine and combined cycle). 
+    #and fuel type. Filter the data to only include NG facilities and on 
+    #positive fuel consumption. Group that data by Plant Id as it is possible 
+    #to have multiple rows for the same facility and fuel based on different 
+    #prime movers (e.g., gas turbine and combined cycle). 
     eia_generation_data = eia923_download_extract(year)
     
     column_filt = ((eia_generation_data['Reported Fuel Type Code'] == 'NG') & 
@@ -108,7 +108,8 @@ def generate_upstream_ng(year):
     
     # This line can go away once the elementary flow names are replaced in the 
     #NG_LCI.xlsx file.
-    emissions_list = [emission.replace(' (kg/MJ)','') for emission in emissions_list] 
+    emissions_list = [
+            emission.replace(' (kg/MJ)','') for emission in emissions_list] 
    
     ng_lci_cols = ['Basin', 'Stage'] + emissions_list
     
@@ -166,13 +167,14 @@ def generate_upstream_ng(year):
 #    ng_lci_basin_grouped['Compartment']=ng_lci_basin_grouped.apply(
 #        determine_compartment, axis=1)
     determine_compartment(ng_lci_basin_grouped)    
-    ng_lci_basin_grouped['fuel_type']='Natural gas'
+    ng_lci_basin_grouped['fuel_type']='GAS'
     ng_lci_basin_grouped.rename(columns={
             'Plant Id':'plant_id',
             'NG_LCI_Name':'stage_code',
             'Stage':'stage'
             },inplace=True)
-    ng_lci_basin_grouped['FlowName']=ng_lci_basin_grouped['FlowName'].map(_remove_brackets)
+    ng_lci_basin_grouped['FlowName']=ng_lci_basin_grouped['FlowName'].map(
+            _remove_brackets)
     return ng_lci_basin_grouped
 
 if __name__=='__main__':
