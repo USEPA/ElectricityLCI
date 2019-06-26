@@ -21,7 +21,7 @@ from electricitylci.model_config import (
     eia_gen_year,
 )
 from electricitylci.eia860_facilities import eia860_balancing_authority
-
+from functools import lru_cache
 
 def eia923_download(year, save_path):
     """
@@ -74,7 +74,9 @@ def load_eia923_excel(eia923_path):
 
     return eia
 
-
+#This function is called multiple times by the various upstream modules.
+#lru_cache allows us to only read from the csv only once.
+@lru_cache(maxsize=10)
 def eia923_download_extract(
     year,
     group_cols = [
@@ -357,7 +359,8 @@ def build_generation_data(egrid_facilities_to_include=None, generation_years=Non
             ]
         
         ba_match = eia860_balancing_authority(year)
-
+        ba_match['Plant Id'] = ba_match['Plant Id'].astype(int)
+        final_gen_df['Plant Id']=final_gen_df['Plant Id'].astype(int)
         final_gen_df = final_gen_df.merge(ba_match, on='Plant Id', how='left')
         final_gen_df['Year'] = int(year)
         df_list.append(final_gen_df)
