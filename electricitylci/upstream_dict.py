@@ -387,18 +387,14 @@ if __name__ == "__main__":
     from combinator import concat_map_upstream_databases
 
     year = 2016
-#    coal_df = coal.generate_upstream_coal(year)
-#    ng_df = ng.generate_upstream_ng(year)
-#    petro_df = petro.generate_petroleum_upstream(year)
-#    geo_df = geo.generate_upstream_geo(year)
-#    solar_df = solar.generate_upstream_solar(year)
-#    wind_df = wind.generate_upstream_wind(year)
-#    nuke_df = nuke.generate_upstream_nuc(year)
-#    merged = concat_map_upstream_databases(
-#        coal_df, ng_df, petro_df, geo_df, solar_df, wind_df, nuke_df
-#    )
-#    merged.to_csv(f"{output_dir}/total_upstream_{year}.csv")
-    merged = pd.read_csv(f"{output_dir}/total_upstream_{year}.csv")
+    coal_df = coal.generate_upstream_coal(year)
+    ng_df = ng.generate_upstream_ng(year)
+    petro_df = petro.generate_petroleum_upstream(year)
+    nuke_df = nuke.generate_upstream_nuc(year)
+    merged = concat_map_upstream_databases(
+        coal_df, ng_df, petro_df, nuke_df
+    )
+    merged.to_csv(f"{output_dir}/total_upstream_{year}.csv")
     upstream_process_dict = olcaschema_genupstream_processes(merged)
     upstream_olca_processes = write_process_dicts_to_jsonld(upstream_process_dict)
 
