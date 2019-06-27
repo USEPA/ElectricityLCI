@@ -36,7 +36,8 @@ def eia_facility_fuel_region(year):
 
     primary_fuel = eia923_primary_fuel(year=year)
     ba_match = eia860_balancing_authority(year)
-
+    primary_fuel["Plant Id"]=primary_fuel["Plant Id"].astype(int)
+    ba_match["Plant Id"]=ba_match["Plant Id"].astype(int)
     combined = primary_fuel.merge(ba_match, on='Plant Id')
     combined['primary fuel percent gen'] = (
         combined['primary fuel percent gen'] / 100
@@ -287,6 +288,7 @@ def create_generation_process_df(generation_data, emissions_data, subregion='all
         'Balancing Authority Code', 'Ref_Electricity_Subregion_FuelCategory'
     ]
     df_list = []
+    regions = ['ERCO']
     for reg in regions:
 
         print("Creating generation process database for " + reg + " ...")
@@ -310,8 +312,8 @@ def create_generation_process_df(generation_data, emissions_data, subregion='all
         database['TechnologicalCorrelation'] = 5
         database['TemporalCorrelation'] = 5
         database['DataCollection'] = 5
-
-        for index, row in fuel_name.iterrows():
+        fuel_name_sub=fuel_name.loc[fuel_name['FuelList']=='COAL',:]
+        for index, row in fuel_name_sub.iterrows():
             # Reading complete fuel name and heat content information
             fuelname = row['FuelList']
             fuelheat = float(row['Heatcontent'])
@@ -326,12 +328,13 @@ def create_generation_process_df(generation_data, emissions_data, subregion='all
                 exchange_list = list(pd.unique(database_f1['FlowName']))
                 if use_primaryfuel_for_coal:
                     database_f1['FuelCategory'].loc[database_f1['FuelCategory'] == 'COAL'] = database_f1['PrimaryFuel']
-
+                exchange_list=['Hexane']
                 for exchange in exchange_list:
                     database_f2 = database_f1[database_f1['FlowName'] == exchange]
                     database_f2 = database_f2[database_f2_cols]
-
+                    
                     compartment_list = list(pd.unique(database_f2['Compartment']))
+                    compartment_list = ['air']
                     for compartment in compartment_list:
                         database_f3 = database_f2[database_f2['Compartment'] == compartment]
 
@@ -445,7 +448,7 @@ def create_generation_process_df(generation_data, emissions_data, subregion='all
 
 
     print("Generation process database for " + subregion + " complete.")
-    return result_database
+    return result_database, final_database
 
     # return b
 
@@ -516,8 +519,14 @@ def uncertainty_creation(data,name,fuelheat,mean,total_gen,total_facility_consid
 
                        u,s = (uncertainty(data,mean,total_gen,total_facility_considered))
 
-                       ar['geomMean'] = str(round(math.exp(u),12));
-                       ar['geomSd']=str(round(math.exp(s),12));
+                       if u:
+                           ar['geomMean'] = str(round(math.exp(u),12))
+                       else:
+                           ar['geoMean'] = float('nan')
+                       if s:
+                           ar['geomSd'] = str(round(math.exp(s),12))
+                       else:
+                           ar['geomSd']= float('nan');
                     else:
                        ar['geomMean'] = None
                        ar['geomSd']= None
@@ -602,7 +611,7 @@ def olcaschema_genprocess(database,subregion):
 
 
    if subregion == 'all':
-        region = egrid_subregions
+        region = ['SAT','WNC','ESC','WSC','MAT','ENC']#egrid_subregions
    elif subregion == 'NERC':
         region = list(pd.unique(database['NERC']))
    elif subregion == 'BA':
@@ -666,3 +675,24 @@ def olcaschema_genprocess(database,subregion):
 
    print("Generation process dictionaries complete.")
    return generation_process_dict
+
+def olcaschema_genupstream_process(database,subregion):
+    generation_process_dict = {}
+
+    #Map heat flows for renewable fuels to energy elementary flows. This must be applied after emission mapping
+    database = map_renewable_heat_flows_to_fedelemflows(database)
+    #Add FlowType to the database
+    database = map_compartment_to_flow_type(database)
+    #Add FlowDirection, muist be applied before fuel mapping!
+    database = add_flow_direction(database)
+ 
+
+    #Map input flows to
+    database = map_heat_inputs_to_fuel_names(database)
+
+
+    upstream_list = list(database['stage_code'].values)
+    
+        
+        
+        
