@@ -135,7 +135,7 @@ def generate_upstream_ng(year):
         
     ng_lci_basin = ng_lci_basin.rename(columns=
             {'Total Fuel Consumption MMBtu':'quantity'})
-    
+    ng_lci_basin["quantity"]=ng_lci_basin["quantity"]*pq.convert(10**6,"Btu","MJ")
     #Output is kg emission for the specified year by facility Id, 
     #not normalized to electricity output
     ng_lci_basin_melt = ng_lci_basin.melt(
