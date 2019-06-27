@@ -219,7 +219,7 @@ def process_table_creation_genmix(region, exchanges_list):
     ar["parameters"] = ""
     ar["processDocumentation"] = process_doc_creation()
     ar["processType"] = "UNIT_PROCESS"
-    ar["name"] = generation_mix_name
+    ar["name"] = generation_mix_name + " - " +str(region)
     ar[
         "category"
     ] = "22: Utilities/2211: Electric Power Generation, Transmission and Distribution"
