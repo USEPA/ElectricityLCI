@@ -329,7 +329,10 @@ def _process_ref(dict_d: dict) -> Optional[olca.ProcessRef]:
         return None
     pr = olca.ProcessRef()
     pr.name = _val(dict_d, 'name')
-    category_path = _val(dict_d, 'categoryPath').split("/")
+    try:
+        category_path = _val(dict_d, 'categoryPath').split("/")
+    except:
+        category_path= _val(dict_d,'categoryPath')
     location_code = _val(dict_d, 'location', default='')
     if isinstance(category_path, list):
         category_path = '/'.join(category_path)
