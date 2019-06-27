@@ -171,6 +171,7 @@ def generate_upstream_coal_map(year):
     eia_fuel_receipts_df['coal_source_code']=eia_fuel_receipts_df.apply(
             _coal_code,axis=1)
     eia_fuel_receipts_df['heat_input']=eia_fuel_receipts_df['quantity']*eia_fuel_receipts_df['average_heat_content']
+    eia_fuel_receipts_df.drop_duplicates(inplace=True)
     final_df=eia_fuel_receipts_df.groupby(
             ['plant_id','coal_source_code'],
             as_index=False)['quantity','heat_input'].sum()
