@@ -1,6 +1,10 @@
 from electricitylci.model_config import model_name
-
-
+from electricitylci.globals import output_dir
+import datetime
+namestr=(
+        f"{output_dir}/{model_name}_jsonld_"
+        f"{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
+)
 def get_generation_process_df(source="egrid", regions="all"):
     """
     Create a dataframe of emissions from power generation by fuel type in each
@@ -140,10 +144,10 @@ def write_generation_process_database_to_dict(gen_database, regions="all"):
     return gen_dict
 
 
-def write_generation_mix_database_to_dict(genmix_database, regions="all"):
+def write_generation_mix_database_to_dict(genmix_database, gen_dict, regions="all"):
     from electricitylci.generation_mix import olcaschema_genmix
 
-    genmix_dict = olcaschema_genmix(genmix_database, subregion=regions)
+    genmix_dict = olcaschema_genmix(genmix_database, gen_dict, subregion=regions)
     return genmix_dict
 
 
@@ -175,13 +179,13 @@ def write_process_dicts_to_jsonld(*process_dicts):
 
     """
     from electricitylci.olca_jsonld_writer import write
-    from electricitylci.globals import output_dir
 
     all_process_dicts = dict()
     for d in process_dicts:
         all_process_dicts = {**all_process_dicts, **d}
+
     olca_dicts = write(
-        all_process_dicts, output_dir + "/" + model_name + "_jsonld.zip"
+        all_process_dicts, namestr
     )
     return olca_dicts
 
@@ -294,6 +298,10 @@ def get_alternate_gen_plus_netl():
     solar_df = solar.generate_upstream_solar(eia_gen_year)
     wind_df = wind.generate_upstream_wind(eia_gen_year)
     netl_gen = concat_map_upstream_databases(geo_df, solar_df, wind_df)
+    netl_gen["DataCollection"] = 5
+    netl_gen["GeographicalCorrelation"] = 1
+    netl_gen["TechnologicalCorrelation"] = 1
+    netl_gen["ReliabilityScore"] = 1
     gen_df = alt_gen.create_generation_process_df()
     combined_gen = concat_clean_upstream_and_plant(gen_df, netl_gen)
     return combined_gen
