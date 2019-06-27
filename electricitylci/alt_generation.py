@@ -246,9 +246,11 @@ def calculate_electricity_by_source(db, subregion="BA"):
     elec_sum_lists = list()
     for src in unique_source_lists:
         print(f"Calculating electricity for {src}")
-        src_filter = db.apply(lambda x: x["Source"] in src, axis=1)
+        #src_filter = db.apply(lambda x: x["Source"] in src, axis=1)
+        db["temp_src"]=src
+        src_filter = [a in b for a, b in zip(db["Source"].values.tolist(), db["temp_src"].values.tolist())]
         sub_db = db.loc[src_filter, :]
-        sub_db.drop_duplicates(subset=["eGRID_ID"], inplace=True)
+        sub_db.drop_duplicates(subset=fuel_agg+["eGRID_ID"], inplace=True)
         sub_db_group = sub_db.groupby(elec_groupby_cols, as_index=False).agg(
             {"Electricity": [np.sum, np.mean], "eGRID_ID": "count"}
         )
@@ -257,6 +259,7 @@ def calculate_electricity_by_source(db, subregion="BA"):
             "electricity_mean",
             "facility_count",
         ]
+#        zero_elec_filter = sub_db_group["electricity_sum"]==0
         sub_db_group["source_string"] = src
         elec_sum_lists.append(sub_db_group)
     elec_sums = pd.concat(elec_sum_lists, ignore_index=True)
@@ -392,7 +395,7 @@ def aggregate_data(total_db, subregion="BA"):
                 f"{df.loc[p_series.index[0],groupby_cols].values}"
             )
             try:
-                result = lognorm.fit(p_series.to_numpy(), floc=0)
+                result = str(lognorm.fit(p_series.to_numpy(), floc=0))
             except:
                 return None
             if result is not None:
@@ -467,7 +470,19 @@ def aggregate_data(total_db, subregion="BA"):
     )
     total_db.dropna(subset=["facility_emission_factor"], inplace=True)
 
-    wm = lambda x: np.average(x, weights=total_db.loc[x.index, "Electricity"])
+    def wtd_mean(pdser,total_db,cols):
+        try:
+            wts = total_db.loc[pdser.index,"Electricity"]
+            result = np.average(pdser,weights=wts)
+        except:
+            print(
+                    f"Error calculating weighted mean for {pdser.name}-"
+                    f"{total_db.loc[pdser.index[0],cols]}"
+            )
+            result = float("nan")
+        return result
+    
+    wm = lambda x: wtd_mean(x, total_db,groupby_cols)
     geo_mean = lambda x: geometric_mean(x, total_db, groupby_cols)
     geo_mean.__name__ = "geo_mean"
     geo_std = lambda x: geometric_std(x, total_db, groupby_cols)
@@ -475,7 +490,7 @@ def aggregate_data(total_db, subregion="BA"):
     #    criteria = (total_db["Compartment"] != "output") & (
     #        total_db["Compartment"] != "input"
     #    )
-    # criteria = (total_db["Compartment"] != "input")
+    criteria = (total_db["Compartment"] == "input")
     database_f3 = total_db.groupby(
         groupby_cols + ["Year", "source_string"], as_index=False
     ).agg(
@@ -503,6 +518,9 @@ def aggregate_data(total_db, subregion="BA"):
         "uncertaintyMax",
         "uncertaintyLognormParams",
     ]
+    #Kind of a waste from the fitting already done but it felt like applying
+    #the groupby twice - once for inputs and once for outputs - was a bit much
+    database_f3.loc[criteria,"uncertaintyLognormParams"]=None
     database_f3 = database_f3.merge(
         right=electricity_df,
         left_on=elec_df_groupby_cols,
@@ -625,8 +643,9 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
         data["unit"] = ""
         data["ElementaryFlowPrimeContext"] = data["Compartment"]
         default_unit = unit("kg")
-        for index, row in data.iterrows():
-            data.at[index, "unit"] = default_unit
+#        for index, row in data.iterrows():
+#            data.at[index, "unit"] = default_unit
+        data["unit"]=([default_unit] * len(data))
         data["FlowType"] = "ELEMENTARY_FLOW"
         data["flow"] = ""
         provider_filter = data["stage_code"].isin(upstream_dict.keys())
@@ -650,6 +669,13 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
                 data.at[index, "GeomSD"], data.at[index, "GeomLoc"], data.at[
                     index, "GeomMean"
                 ] = data.at[index, "uncertaintyLognormParams"].strip("()").split(",")
+                #For whatever reason - the lognorm.fit routine returns the 
+                #geometric mean in the fit, but the ln of the geometric 
+                #standard deviation or equivalently the standard deviation
+                #of the ln of x. Anyways, this corrects the data for openLCA.
+                #If we revert to the old method of generating parameters for
+                #the lognormal distribution, this will need to change.
+                data.at[index,"GeomSD"]=str(np.exp(float(data.at[index,"GeomSD"])))
 #            else:
 #                data.at[index,"GeomSD"]=None
 #                data.at[index,"GoemMean"]=None
@@ -708,7 +734,7 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
         process_df["name"] = (
                 "Electricity - "
                 +process_df[fuel_agg].values
-                +"- US"
+                +" - US"
         )
     else:
         process_df["description"] = (
