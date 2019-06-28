@@ -3,19 +3,19 @@ import fedelemflowlist
 from electricitylci.model_config import inventories, fedelemflowlist_version
 
 #flowlist = fedelemflowlist.get_flowlist()
-mapping_to_fedelemflows = fedelemflowlist.get_flowmapping(version=fedelemflowlist_version,source_list=inventories)
-mapping_to_fedelemflows = mapping_to_fedelemflows[['Source','OriginalName','OriginalCategory','OriginalProperty',
-                                                   'NewName','NewCategory', 'NewSubCategory', 'NewUnit','UUID']]
+mapping_to_fedelemflows = fedelemflowlist.get_flowmapping()
+mapping_to_fedelemflows = mapping_to_fedelemflows[['SourceListName','SourceFlowName','SourceFlowContext','SourceUnit',
+                                                   'TargetFlowName','TargetFlowUUID', 'TargetFlowContext', 'TargetUnit','TargetFlowUUID']]
 
 def map_emissions_to_fedelemflows(df_with_flows_compartments):
     mapped_df = pd.merge(df_with_flows_compartments,mapping_to_fedelemflows,
                          left_on=['Source','FlowName','Compartment'],
-                         right_on=['Source','OriginalName','OriginalCategory'],
+                         right_on=['SourceListName','SourceFlowName','SourceFlowContext'],
                          how='left')
     #If a NewName is present there was a match, replace FlowName and Compartment with new names
-    mapped_df.loc[mapped_df['NewName'].notnull(), 'FlowName'] = mapped_df['NewName']
-    mapped_df.loc[mapped_df['NewName'].notnull(), 'Compartment'] = mapped_df['NewCategory']
-    mapped_df.loc[mapped_df['NewName'].notnull(), 'Unit'] = mapped_df['NewUnit']
+    mapped_df.loc[mapped_df['TargetFlowName'].notnull(), 'FlowName'] = mapped_df['TargetFlowName']
+    mapped_df.loc[mapped_df['TargetFlowName'].notnull(), 'Compartment'] = mapped_df['TargetFlowContext']
+    mapped_df.loc[mapped_df['TargetFlowName'].notnull(), 'Unit'] = mapped_df['TargetUnit']
 
     mapped_df = mapped_df.rename(columns={'UUID':'FlowUUID'})
 
@@ -24,7 +24,7 @@ def map_emissions_to_fedelemflows(df_with_flows_compartments):
     mapped_df.loc[mapped_df['Compartment'].isin(emission_compartments), 'ElementaryFlowPrimeContext'] = 'emission'
 
     #Drop all unneeded cols
-    mapped_df = mapped_df.drop(columns=['OriginalName','OriginalCategory','OriginalProperty','NewName','NewCategory','NewSubCategory','NewUnit'])
+    mapped_df = mapped_df.drop(columns=['SourceFlowName','SourceFlowContext','SourceUnit','TargetFlowName','TargetFlowContext','TargetFlowContext','TargetUnit'])
     return mapped_df
 
 #Manually mapping of input 'Heat' to energy types for renewables

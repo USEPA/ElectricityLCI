@@ -345,12 +345,16 @@ def create_generation_process_df():
         "FlowAmount",
         "Compartment",
     ]
+    final_database = final_database.loc[:,~final_database.columns.duplicated()]
     final_database = final_database.drop_duplicates(subset=dup_cols_check)
     final_database.drop(
         columns=["FuelCategory", "FacilityID_x", "FacilityID_y"], inplace=True
     )
     final_database.rename(
-        columns={"Final_fuel_agg": "FuelCategory"}, inplace=True
+        columns={
+                "Final_fuel_agg": "FuelCategory",
+                "TargetFlowUUID":"FlowUUID",
+                }, inplace=True
     )
     final_database = add_temporal_correlation_score(final_database)
     final_database = add_technological_correlation_score(final_database)
