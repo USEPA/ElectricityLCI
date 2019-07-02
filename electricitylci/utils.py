@@ -26,11 +26,11 @@ def download_unzip(url, unzip_path):
     
     """
     r = requests.get(url)
-    content_type = r.headers['Content-Type']
-    if 'zip' not in content_type and '-stream' not in content_type:
+    content_type = r.headers["Content-Type"]
+    if "zip" not in content_type and "-stream" not in content_type:
         print(content_type)
-        raise ValueError('URL does not point to valid zip file')
-        
+        raise ValueError("URL does not point to valid zip file")
+
     z = zipfile.ZipFile(io.BytesIO(r.content))
     z.extractall(path=unzip_path)
 
@@ -42,7 +42,9 @@ def find_file_in_folder(folder_path, file_pattern_match, return_name=True):
     # would be more elegent with glob but this works to identify the
     # file in question
     for f in files:
-        if file_pattern_match in f:
+        # modified this so that we can search for multiple strings in the
+        # file name - mostly to support different pages of csv files from 923.
+        if all(a in f for a in file_pattern_match):
             file_name = f
 
     file_path = join(folder_path, file_name)
@@ -53,11 +55,13 @@ def find_file_in_folder(folder_path, file_pattern_match, return_name=True):
         return (file_path, file_name)
 
 
-def create_ba_region_map(match_fn='BA code match.csv', region_col='ferc_region'):
+def create_ba_region_map(
+    match_fn="BA code match.csv", region_col="ferc_region"
+):
 
     match_path = join(data_dir, match_fn)
     region_match = pd.read_csv(match_path, index_col=0)
-    region_match['Balancing Authority Code']=region_match.index
+    region_match["Balancing Authority Code"] = region_match.index
     map_series = region_match[region_col]
 
     return map_series
