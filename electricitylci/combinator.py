@@ -25,59 +25,80 @@ def concat_map_upstream_databases(*arg):
     datafame
     """
     mapped_column_dict = {
-        "UUID (EPA)": "FlowUUID",
-        "FlowName": "model_flow_name",
-        "Flow name (EPA)": "FlowName",
+        #        "UUID (EPA)": "FlowUUID",
+        #         "FlowName": "model_flow_name",
+        #        "Flow name (EPA)": "FlowName",
+        "Flowable": "FlowName",
+        "Flow UUID": "FlowUUID",
+        "Compartment_path_y": "Compartment_path",
+    }
+    compartment_mapping = {
+        "air": "emission/air",
+        "water": "emission/water",
+        "ground": "emission/ground",
+        "soil": "emission/soil",
+        "resource": "resource",
     }
     print(f"Concatenating and flow-mapping {len(arg)} upstream databases.")
     upstream_df_list = list()
     for df in arg:
         upstream_df_list.append(df)
     upstream_df = pd.concat(upstream_df_list, ignore_index=True, sort=False)
+    upstream_df["Compartment_path"] = upstream_df["Compartment"].map(
+        compartment_mapping
+    )
     netl_epa_flows = pd.read_csv(
-        data_dir + "/Elementary_Flows_NETL.csv",
-        skiprows=2,
-        usecols=[0, 1, 2, 6, 7, 8],
-    )
-    netl_epa_flows["Category"] = (
-        netl_epa_flows["Category"].str.replace("Emissions to ", "").str.lower()
-    )
-    netl_epa_flows["Category"] = (
-        netl_epa_flows["Category"].str.replace("emission to ", "").str.lower()
+        data_dir + "/netl_fedelem_crosswalk.csv",
+        header=0,
+        usecols=[
+            1,
+            4,
+            9,
+            13,
+            19,
+            17,
+        ],  # FlowName_netl, Compartment_path_netl, CAS, Compartment_path, Flowable, Flow UUID
     )
 
     upstream_df = upstream_df.groupby(
-        ["fuel_type", "stage_code", "FlowName", "Compartment", "plant_id"],
+        [
+            "fuel_type",
+            "stage_code",
+            "FlowName",
+            "Compartment",
+            "plant_id",
+            "Compartment_path",
+        ],
         as_index=False,
     ).agg({"FlowAmount": "sum", "quantity": "mean", "Electricity": "mean"})
     upstream_mapped_df = pd.merge(
         left=upstream_df,
         right=netl_epa_flows,
-        left_on=["FlowName", "Compartment"],
-        right_on=["NETL Flows", "Category"],
+        left_on=["FlowName", "Compartment_path"],
+        right_on=["FlowName_netl", "Compartment_path_netl"],
         how="left",
+    )
+    upstream_mapped_df.drop(
+        columns=[
+            "Compartment_path_x",
+            "FlowName",
+            "Compartment_path_x",
+            "Compartment_path_netl",
+            "Compartment_path_netl",
+        ],
+        inplace=True,
     )
     upstream_mapped_df = upstream_mapped_df.rename(
         columns=mapped_column_dict, copy=False
     )
     upstream_mapped_df.drop_duplicates(
-        subset=["FlowName", "Compartment", "FlowAmount"], inplace=True
+        subset=["FlowName", "Compartment_path", "FlowAmount"], inplace=True
     )
     upstream_mapped_df.dropna(subset=["FlowName"], inplace=True)
     garbage = upstream_mapped_df.loc[
         upstream_mapped_df["FlowName"] == "[no match]", :
     ].index
     upstream_mapped_df.drop(garbage, inplace=True)
-    upstream_mapped_df.drop(
-        columns=[
-            "model_flow_name",
-            "Category",
-            "CAS",
-            "Category.2",
-            "NETL Flows",
-        ],
-        inplace=True,
-    )
     upstream_mapped_df.rename(
         columns={"fuel_type": "FuelCategory"}, inplace=True
     )
@@ -157,13 +178,13 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
         subset=["plant_id", "stage_code", "quantity"]
     )
     fuel_df = pd.DataFrame(columns=gen_df.columns)
-    #The upstream reduced should only have one instance of each plant/stage code
+    # The upstream reduced should only have one instance of each plant/stage code
     # combination. We'll first map the upstream dictionary to each plant
     # and then expand that dictionary into columns we can use. The goal is
     # to generate the fuels and associated metadata with each plant. That will
-    # then be merged with the generation database.    
+    # then be merged with the generation database.
     fuel_df["flowdict"] = upstream_reduced["stage_code"].map(upstream_dict)
-    
+
     expand_fuel_df = fuel_df["flowdict"].apply(pd.Series)
     fuel_df.drop(columns=["flowdict"], inplace=True)
 
