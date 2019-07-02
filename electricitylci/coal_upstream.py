@@ -65,7 +65,7 @@ def read_eia923_fuel_receipts(year):
         
         eia923_path, eia923_name = find_file_in_folder(
             folder_path=expected_923_folder,
-            file_pattern_match='2_3_4_5',
+            file_pattern_match=['2_3_4_5'],
             return_name=True
         )
         eia_fuel_receipts_df = pd.read_excel(
@@ -90,7 +90,7 @@ def read_eia923_fuel_receipts(year):
         else:
             eia923_path, eia923_name = find_file_in_folder(
                     folder_path=expected_923_folder,
-                    file_pattern_match='2_3_4_5',
+                    file_pattern_match=['2_3_4_5'],
                     return_name=True)
             eia_fuel_receipts_df = pd.read_excel(
                 eia923_path, sheet_name='Page 5 Fuel Receipts and Costs',
@@ -121,12 +121,12 @@ def generate_upstream_coal_map(year):
         eia_7a_download(year,expected_7a_folder)
         eia7a_path,eia7a_name = find_file_in_folder(
             folder_path=expected_7a_folder,
-            file_pattern_match='coalpublic',
+            file_pattern_match=['coalpublic'],
             return_name=True)
     else:
         eia7a_path,eia7a_name = find_file_in_folder(
             folder_path=expected_7a_folder,
-            file_pattern_match='coalpublic',
+            file_pattern_match=['coalpublic'],
             return_name=True)
     eia7a_df = pd.read_excel(eia7a_path,sheet_name='Hist_Coal_Prod',
                              skiprows=3)
