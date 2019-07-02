@@ -114,8 +114,8 @@ def _exchange_table_creation_ref(fuel_type):
         ar["amount"] = 1.0
     elif fuel_type == "GAS":
         ar["flow"] = natural_gas_flow
-        ar["unit"] = _unit("btu")
-        ar["amount"] = 10 ** 6
+        ar["unit"] = _unit("MJ")
+        ar["amount"] = 1
     elif fuel_type == "OIL":
         ar["flow"] = petroleum_flow
         ar["unit"] = _unit("MJ")
