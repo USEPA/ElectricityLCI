@@ -119,6 +119,52 @@ def get_generation_mix_process_df(source="egrid", regions="all"):
             )
     return generation_mix_process_df
 
+def get_consumption_mix_process_df(source="egrid", regions="all"):
+    """
+    Create a dataframe of consumption mixes by fuel type in each subregion.
+
+    This function imports and uses the parameter 'gen_mix_from_model_generation_data'
+    from globals.py. If the value is False it cannot currently handle regions
+    other than 'BA', 'NERC', 'US', or a single eGRID subregion.
+
+    Parameters
+    ----------
+    source : str, optional
+        Not currently used (the default is 'egrid', which [default_description])
+    regions : str, optional
+        Which regions to include (the default is 'all', which includes all eGRID
+        subregions)
+
+    Returns
+    -------
+    DataFrame
+        Sample output:
+        >>> all_gen_mix_db.head()
+            Subregion FuelCategory   Electricity  NERC  Generation_Ratio
+        0        AKGD         COAL  5.582922e+05  ASCC          0.116814
+        22       AKGD          OIL  3.355753e+05  ASCC          0.070214
+        48       AKGD          GAS  3.157474e+06  ASCC          0.660651
+        90       AKGD        HYDRO  5.477350e+05  ASCC          0.114605
+        114      AKGD      BIOMASS  5.616577e+04  ASCC          0.011752
+    """
+
+    import pandas as pd
+    from electricitylci.globals import data_dir, output_dir
+    df_gen_mix = get_generation_mix_process_df(source="egrid", regions='BA')
+    
+    regions = 'BA'
+    
+    if regions == 'BA':
+        df_trade = pd.read_csv(data_dir + '/BAA_final_trade_2016.csv')
+    elif regions == 'NERC':
+        df_trade = pd.read_csv(data_dir + '/ferc_final_trade_2016.csv')
+        
+       
+    df_cons_mix = df_gen_mix.merge(df_trade, left_on = 'Subregion', right_on = 'import subregion')
+    df_cons_mix['subregion_fuel_fraction'] = df_cons_mix['Generation_Ratio']*df_cons_mix['fraction']
+    
+
+
 
 def write_generation_process_database_to_dict(gen_database, regions="all"):
     """
