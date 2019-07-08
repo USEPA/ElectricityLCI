@@ -1,10 +1,15 @@
 from electricitylci.model_config import model_name
 from electricitylci.globals import output_dir
 import datetime
+import pandas as pd
+import logging
 namestr=(
         f"{output_dir}/{model_name}_jsonld_"
         f"{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
 )
+
+logging.basicConfig(level=logging.INFO)
+
 def get_generation_process_df(source="egrid", regions="all"):
     """
     Create a dataframe of emissions from power generation by fuel type in each
@@ -202,7 +207,7 @@ def get_upstream_process_df():
     import electricitylci.nuclear_upstream as nuke
     from electricitylci.combinator import concat_map_upstream_databases
     from electricitylci.model_config import eia_gen_year
-
+    print("Generating upstream inventories...")
     coal_df = coal.generate_upstream_coal(eia_gen_year)
     ng_df = ng.generate_upstream_ng(eia_gen_year)
     petro_df = petro.generate_petroleum_upstream(eia_gen_year)
@@ -228,7 +233,7 @@ def write_upstream_process_database_to_dict(upstream_df):
     dictionary
     """
     import electricitylci.upstream_dict as upd
-
+    print("Writing upstream processes to dictionaries")
     upstream_dicts = upd.olcaschema_genupstream_processes(upstream_df)
     return upstream_dicts
 
@@ -265,9 +270,12 @@ def combine_upstream_and_gen_df(gen_df, upstream_df):
     """
     
     import electricitylci.combinator as combine
-    
+    import electricitylci.import_impacts as import_impacts
+    print("Combining upstream and generation inventories")
     combined_df = combine.concat_clean_upstream_and_plant(gen_df, upstream_df)
-    return combined_df
+    canadian_gen = import_impacts.generate_canadian_mixes(combined_df)
+    combined_df = pd.concat([combined_df,canadian_gen],ignore_index=True)
+    return combined_df, canadian_gen
 
 
 def get_alternate_gen_plus_netl():
@@ -293,7 +301,7 @@ def get_alternate_gen_plus_netl():
     import electricitylci.geothermal as geo
     import electricitylci.solar_upstream as solar
     import electricitylci.wind_upstream as wind
-
+    print("Generating inventories for geothermal, solar, and wind...")
     geo_df = geo.generate_upstream_geo(eia_gen_year)
     solar_df = solar.generate_upstream_solar(eia_gen_year)
     wind_df = wind.generate_upstream_wind(eia_gen_year)
@@ -302,6 +310,7 @@ def get_alternate_gen_plus_netl():
     netl_gen["GeographicalCorrelation"] = 1
     netl_gen["TechnologicalCorrelation"] = 1
     netl_gen["ReliabilityScore"] = 1
+    print("Getting reported emissions for generators...")
     gen_df = alt_gen.create_generation_process_df()
     combined_gen = concat_clean_upstream_and_plant(gen_df, netl_gen)
     return combined_gen
@@ -326,12 +335,12 @@ def aggregate_gen(gen_df, subregion="BA"):
         are 'all', 'NERC', 'BA', 'US', by default 'BA', by default "BA"
     """
     import electricitylci.alt_generation as alt_gen
-
+    print(f"Aggregating to subregion - {subregion}")
     aggregate_df = alt_gen.aggregate_data(gen_df, subregion=subregion)
     return aggregate_df
 
 
-def add_fuels_to_gen(gen_df, fuel_df, upstream_dict):
+def add_fuels_to_gen(gen_df, fuel_df, canadian_gen, upstream_dict):
     """
     Add the upstream fuels to the generation dataframe as fuel inputs.
     
@@ -349,8 +358,9 @@ def add_fuels_to_gen(gen_df, fuel_df, upstream_dict):
         "unit processes" are only generated when written to json-ld.
     """
     from electricitylci.combinator import add_fuel_inputs
-
+    print("Adding fuel inputs to generator emissions...")
     gen_plus_fuel = add_fuel_inputs(gen_df, fuel_df, upstream_dict)
+    gen_plus_fuel = pd.concat([gen_plus_fuel,canadian_gen],ignore_index=True)
     return gen_plus_fuel
 
 
@@ -381,7 +391,7 @@ def write_gen_fuel_database_to_dict(
         openLCA.
     """
     from electricitylci.alt_generation import olcaschema_genprocess
-
+    print("Converting generator dataframe to dictionaries...")
     gen_plus_fuel_dict = olcaschema_genprocess(
         gen_plus_fuel_df, upstream_dict, subregion=subregion
     )
