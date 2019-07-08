@@ -92,7 +92,7 @@ def concat_map_upstream_databases(*arg):
         columns=mapped_column_dict, copy=False
     )
     upstream_mapped_df.drop_duplicates(
-        subset=["FlowName", "Compartment_path", "FlowAmount"], inplace=True
+        subset=["plant_id","FlowName", "Compartment_path", "FlowAmount"], inplace=True
     )
     upstream_mapped_df.dropna(subset=["FlowName"], inplace=True)
     garbage = upstream_mapped_df.loc[
