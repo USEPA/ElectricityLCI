@@ -76,22 +76,22 @@ def generate_petroleum_upstream(year):
             right=eia_fuel_receipts_df[['plant_id','heat_input','fuel_padd']],
             left_on='fuel_code',
             right_on='fuel_padd',
-            how='left').sort_values(['plant_id','fuel_padd','Flow.1'])
+            how='left').sort_values(['plant_id','fuel_padd','Flow'])
     
     #convert per MJ inventory to annual emissions using plant heat input
-    merged_inventory['Result.1']=(
-            merged_inventory['Result.1']*
+    merged_inventory['Result']=(
+            merged_inventory['Result']*
             merged_inventory['heat_input'])
     
     #Cleaning up unneeded columns and renaming
     merged_inventory.drop(
-            columns=['fuel_padd','Unit.1',
-                     'Sub-category.1','Flow UUID.1'],
+            columns=['fuel_padd','Unit',
+                     'Sub-category','Flow UUID'],
             inplace=True)
     colnames={
-            'Flow.1':'FlowName',
-            'Category.1':'Compartment',
-            'Result.1':'FlowAmount',
+            'Flow':'FlowName',
+            'Category':'Compartment',
+            'Result':'FlowAmount',
             'fuel_code':'stage_code',
             'heat_input':'quantity'}
     merged_inventory.rename(columns=colnames,inplace=True)
