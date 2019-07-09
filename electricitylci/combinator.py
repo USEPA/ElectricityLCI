@@ -6,6 +6,26 @@ import electricitylci.import_impacts as import_impacts
 from electricitylci.model_config import eia_gen_year
 
 
+def fill_nans(df, key_column = "FacilityID", target_columns=[],dropna=True):
+    if not target_columns:
+        target_columns=[
+                "Balancing Authority Code",
+                "Balancing Authority Name",
+                "FRS_ID",
+                "FuelCategory",
+                "NERC",
+                "PrimaryFuel",
+                "PercentGenerationfromDesignatedFuelCategory",
+                "eGRID_ID",
+                "Subregion"
+                ]
+    key_df = df[[key_column]+target_columns].drop_duplicates(subset="FacilityID").set_index("FacilityID")
+    for col in target_columns:
+        df.loc[df[col].isnull(),col]=df.loc[df[col].isnull(),"FacilityID"].map(key_df[col])
+    if dropna:
+        df.dropna(subset=target_columns,inplace=True)
+    return df
+
 def concat_map_upstream_databases(*arg):
     """
     Concatenates all of the upstream databases given as args. Then all of the
@@ -145,6 +165,7 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
     combined_df = pd.concat([pl_df, up_df], ignore_index=True)
     combined_df.drop(columns=["plant_id"], inplace=True)
     combined_df["FacilityID"] = combined_df["eGRID_ID"]
+    combined_df = fill_nans(combined_df)
     return combined_df
 
 
