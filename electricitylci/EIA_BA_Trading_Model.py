@@ -34,10 +34,7 @@ from electricitylci.model_config import (
     region_column_name,
 )
 
-#%%
-
-def ba_io_trading_model(year, subregion)
-        """
+"""
     Merge generation and emissions data. Add region designations using either
     eGRID or EIA-860. Same for primary fuel by plant (eGRID or 923). Calculate
     and merge in the total generation by region. Create the column "Subregion"
@@ -66,14 +63,16 @@ def ba_io_trading_model(year, subregion)
             3              CAISO             ISO-NE  0.000000e+00  3.225829e+08  0.000000
             4              CAISO               MISO  0.000000e+00  3.225829e+08  0.000000
         
-    """
+"""
 
+def ba_io_trading_model(year, subregion):
+    
     
     #Read in BAA file which contains the names and abbreviations
-    df_BA = pd.read_excel(data_dir + '/BA_Codes_930.xlsx', sheetname = 'Table 1', header = 4)
+    df_BA = pd.read_excel(data_dir + '/BA_Codes_930.xlsx', sheetname = 'US', header = 4)
     df_BA.rename(columns={'etag ID': 'BA_Acronym', 'Entity Name': 'BA_Name','NCR_ID#': 'NRC_ID', 'Region': 'Region'}, inplace=True)
     BA = pd.np.array(df_BA['BA_Acronym'])
-    BA_acronyms = df_BA['BA_Acronym'].tolist()
+    US_BA_acronyms = df_BA['BA_Acronym'].tolist()
     
     #Read in BAA file which contains the names and abbreviations
     #Original df_BAA does not include the Canadian balancing authorities
@@ -144,7 +143,7 @@ def ba_io_trading_model(year, subregion)
     
     df_net_gen = row_to_df(NET_GEN_ROWS, 'net_gen')
     df_net_gen = df_net_gen.pivot(index = 'datetime', columns = 'region', values = 'net_gen')
-    ba_cols = BA_acronyms
+    ba_cols = US_BA_acronyms
     
     gen_cols = list(df_net_gen.columns.values)
     
@@ -421,13 +420,13 @@ def ba_io_trading_model(year, subregion)
     
     #Merge to bring in import region name matched with BAA
     df_final_trade_out_filt_melted_merge = df_final_trade_out_filt_melted.merge(df_BA_NA, left_on = 'import BAA', right_on = 'BA_Acronym')
-    df_final_trade_out_filt_melted_merge.rename(columns={'FERC Region': 'import ferc region'}, inplace=True)
-    df_final_trade_out_filt_melted_merge.drop(columns = ['BA_Acronym', 'BA_Name', 'NCR ID#', 'Region'], inplace = True)
+    df_final_trade_out_filt_melted_merge.rename(columns={'FERC_Region': 'import ferc region', 'FERC_Region_Abbr':'import ferc region abbr'}, inplace=True)
+    df_final_trade_out_filt_melted_merge.drop(columns = ['BA_Acronym', 'BA_Name', 'NCR ID#', 'EIA_Region', 'EIA_Region_Abbr'], inplace = True)
     
     #Merge to bring in export region name matched with BAA                                                     
     df_final_trade_out_filt_melted_merge = df_final_trade_out_filt_melted_merge.merge(df_BA_NA, left_on = 'export BAA', right_on = 'BA_Acronym')
-    df_final_trade_out_filt_melted_merge.rename(columns={'FERC Region': 'export ferc region'}, inplace=True)
-    df_final_trade_out_filt_melted_merge.drop(columns = ['BA_Acronym', 'BA_Name', 'NCR ID#', 'Region'], inplace = True)                                                   
+    df_final_trade_out_filt_melted_merge.rename(columns={'FERC_Region': 'export ferc region', 'FERC_Region_Abbr':'export ferc region abbr'}, inplace=True)
+    df_final_trade_out_filt_melted_merge.drop(columns = ['BA_Acronym', 'BA_Name', 'NCR ID#', 'EIA_Region', 'EIA_Region_Abbr'], inplace = True)                                                   
                                                          
     BAA_import_grouped_tot = df_final_trade_out_filt_melted_merge.groupby(['import BAA'])['value'].sum().reset_index()
     ferc_import_grouped_tot = df_final_trade_out_filt_melted_merge.groupby(['import ferc region'])['value'].sum().reset_index()                                                     
@@ -438,14 +437,14 @@ def ba_io_trading_model(year, subregion)
     BAA_final_trade = BAA_final_trade.merge(BAA_import_grouped_tot, left_on = 'import BAA', right_on = 'import BAA')
     BAA_final_trade = BAA_final_trade.rename(columns = {'value_x':'value','value_y':'total'})
     BAA_final_trade['fraction'] = BAA_final_trade['value']/BAA_final_trade['total']
-    BAA_final_trade.to_csv(output_dir + '/BAA_final_trade_2016.csv')
+    BAA_final_trade.to_csv(output_dir + '/BAA_final_trade_{}.csv'.format(year))
     
     #Develop final df for FERC Market Region
     ferc_final_trade = df_final_trade_out_filt_melted_merge.groupby(['import ferc region','export ferc region'])['value'].sum().reset_index()
     ferc_final_trade = ferc_final_trade.merge(ferc_import_grouped_tot, left_on = 'import ferc region', right_on = 'import ferc region')
     ferc_final_trade = ferc_final_trade.rename(columns = {'value_x':'value','value_y':'total'})
     ferc_final_trade['fraction'] = ferc_final_trade['value']/ferc_final_trade['total']
-    ferc_final_trade.to_csv(output_dir + '/ferc_final_trade_2016.csv')
+    ferc_final_trade.to_csv(output_dir + '/ferc_final_trade_{}.csv'.format(year))
     
     if subregion == 'BA':
         return BAA_final_trade
@@ -453,4 +452,7 @@ def ba_io_trading_model(year, subregion)
         return ferc_final_trade
 
 
-
+if __name__=='__main__':
+    year=2016
+    subregion = 'BA'
+    df = ba_io_trading_model(year, subregion)
