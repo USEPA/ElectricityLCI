@@ -301,6 +301,7 @@ def get_alternate_gen_plus_netl():
     import electricitylci.geothermal as geo
     import electricitylci.solar_upstream as solar
     import electricitylci.wind_upstream as wind
+    import electricitylci.plant_water_use as water
     print("Generating inventories for geothermal, solar, and wind...")
     geo_df = geo.generate_upstream_geo(eia_gen_year)
     solar_df = solar.generate_upstream_solar(eia_gen_year)
@@ -312,6 +313,8 @@ def get_alternate_gen_plus_netl():
     netl_gen["ReliabilityScore"] = 1
     print("Getting reported emissions for generators...")
     gen_df = alt_gen.create_generation_process_df()
+    water_df = water.generate_plant_water_use(eia_gen_year)
+    gen_df = pd.concat([gen_df,water_df])
     combined_gen = concat_clean_upstream_and_plant(gen_df, netl_gen)
     return combined_gen
 

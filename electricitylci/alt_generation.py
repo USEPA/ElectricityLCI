@@ -809,7 +809,7 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
         data["avoidedProduct"] = False
         data["flowProperty"] = ""
         data["input"] = False
-        input_filter = data["Compartment"] == "input"
+        input_filter = ((data["Compartment"] == "input") | (data["Compartment"].str.find("resource")!=-1))
         data.loc[input_filter, "input"] = True
         data["baseUncertainty"] = ""
         data["provider"] = ""
