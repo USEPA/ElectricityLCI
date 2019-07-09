@@ -5,7 +5,7 @@ import pandas as pd
 import pickle as pkl
 
 
-use_cache = True
+use_cache = False
 subregion = "NERC"
 if use_cache is True:
     with open("upstream_dict.pickle", "rb") as handle:
