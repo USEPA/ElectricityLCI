@@ -150,7 +150,7 @@ def get_consumption_mix_process_df(source="egrid", regions="all"):
 
     import pandas as pd
     from electricitylci.globals import data_dir, output_dir
-    df_gen_mix = get_generation_mix_process_df(source="egrid", regions='BA')
+    df_gen_mix = get_generation_mix_process_df(source="egrid", regions = 'NERC')
     
     regions = 'BA'
     
