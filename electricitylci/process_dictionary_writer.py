@@ -145,7 +145,7 @@ def exchange_table_creation_input_genmix(database, fuelname):
     ar["quantitativeReference"] = "True"
     ar["baseUncertainty"] = ""
     ar["provider"] = gen_process_ref(fuelname, region)
-    ar["amount"] = database["Generation_Ratio"].iloc[0]
+    ar["amount"] = round(database["Generation_Ratio"].iloc[0], 6)
     ar["unit"] = unit("MWh")
     ar["pedigreeUncertainty"] = ""
     # ar['category']='22: Utilities/2211: Electric Power Generation, Transmission and Distribution'+fuelname
@@ -169,7 +169,7 @@ def exchange_table_creation_input_con_mix(
         ar["provider"] = con_process_ref(loc, "consumption")
     else:
         ar["provider"] = con_process_ref(loc)
-    ar["amount"] = generation
+    ar["amount"] = round(generation, 6)
     ar["unit"] = unit("MWh")
     ar["pedigreeUncertainty"] = ""
     ar["uncertainty"] = ""
@@ -219,7 +219,7 @@ def process_table_creation_genmix(region, exchanges_list):
     ar["parameters"] = ""
     ar["processDocumentation"] = process_doc_creation()
     ar["processType"] = "UNIT_PROCESS"
-    ar["name"] = generation_mix_name + " - " +str(region)
+    ar["name"] = generation_mix_name + " - " + str(region)
     ar[
         "category"
     ] = "22: Utilities/2211: Electric Power Generation, Transmission and Distribution"
@@ -314,7 +314,7 @@ def exchange_table_creation_input(data):
     ar["input"] = True
     ar["baseUncertainty"] = ""
     ar["provider"] = ""
-    ar["amount"] = data["Emission_factor"].iloc[0]
+    ar["amount"] = round(data["Emission_factor"].iloc[0], 6)
     ar["amountFormula"] = "  "
     ar["unit"] = unit(data["Unit"].iloc[0])
     ar["dqEntry"] = ""
@@ -351,7 +351,7 @@ def exchange_table_creation_output(data):
     ar["quantitativeReference"] = False
     ar["baseUncertainty"] = ""
     ar["provider"] = ""
-    ar["amount"] = data["Emission_factor"].iloc[0]
+    ar["amount"] = round(data["Emission_factor"].iloc[0], 6)
     ar["amountFormula"] = ""
     ar["unit"] = unit("kg")
     ar["pedigreeUncertainty"] = ""
@@ -383,14 +383,17 @@ def exchange_table_creation_output(data):
 def uncertainty_table_creation(data):
 
     ar = dict()
-    ar["geomMean"] = data["GeomMean"].iloc[0]
-    ar["geomSd"] = data["GeomSD"].iloc[0]
+    #    print(data["GeomMean"].iloc[0] + ' - ' +data["GeomSD"].iloc[0])
+    if data["GeomMean"].iloc[0] is not None:
+        ar["geomMean"] = str(round(float(data["GeomMean"].iloc[0]), 6))
+    if data["GeomSD"].iloc[0] is not None:
+        ar["geomSd"] = str(round(float(data["GeomSD"].iloc[0]), 6))
     ar["distributionType"] = "Logarithmic Normal Distribution"
     ar["mean"] = ""
     ar["meanFormula"] = ""
     ar["geomMeanFormula"] = ""
-    ar["maximum"] = data["Maximum"].iloc[0]
-    ar["minimum"] = data["Minimum"].iloc[0]
+    ar["maximum"] = round(data["Maximum"].iloc[0], 6)
+    ar["minimum"] = round(data["Minimum"].iloc[0], 6)
     ar["minimumFormula"] = ""
     ar["sd"] = ""
     ar["sdFormula"] = ""

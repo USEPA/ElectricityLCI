@@ -12,7 +12,83 @@ import numpy as np
 from electricitylci.globals import output_dir
 from datetime import datetime
 from electricitylci.dqi import lookup_score_with_bound_key
-from scipy.stats import gmean, lognorm
+from scipy.stats import gmean, lognorm, t, norm
+import ast
+import logging
+
+
+def aggregate_facility_flows(df):
+    emission_compartments = [
+        "emission/air",
+        "emission/water",
+        "emission/ground",
+        "emission/soil",
+        "air",
+        "water",
+        "soil",
+        "ground",
+    ]
+    groupby_cols = [
+        "FuelCategory",
+        "FacilityID",
+        "Electricity",
+        "FlowUUID",
+        "Source",
+        "Compartment_path",
+    ]
+    non_group_cols = [
+        "Age",
+        "Balancing Authority Code",
+        "Balancing Authority Name",
+        "CAS",
+        "Compartment",
+        "DataCollection",
+        "ElementaryFlowPrimeContext",
+        "FRS_ID",
+        "FlowAmount",
+        "FlowName",
+        "FlowName_netl",
+        "FlowUUID",
+        "GeographicalCorrelation",
+        "NERC",
+        "PercentGenerationfromDesignatedFuelCategory",
+        "PrimaryFuel",
+        "ReliabilityScore",
+        "Source",
+        "SourceListName",
+        "Subregion",
+        "TechnologicalCorrelation",
+        "TemporalCorrelation",
+        "Unit",
+        "Year",
+        "eGRID_ID",
+        "quantity",
+        "stage_code",
+    ]
+    emissions = df["Compartment"].isin(emission_compartments)
+    df_emissions = df[emissions]
+    df_nonemissions = df[~emissions]
+    df_dupes = df_emissions.duplicated(subset=groupby_cols, keep=False)
+    df_red = df_emissions.drop(df_emissions[df_dupes].index)
+    group_db = (
+        df_emissions.loc[df_dupes, :]
+        .groupby(groupby_cols, as_index=False)["FlowAmount"]
+        .sum()
+    )
+    #    group_db=df.loc[emissions,:].groupby(groupby_cols,as_index=False)['FlowAmount'].sum()
+    group_db_merge = group_db.merge(
+        right=df_emissions.drop_duplicates(subset=groupby_cols),
+        on=groupby_cols,
+        how="left",
+        suffixes=("", "_right"),
+    )
+    try:
+        delete_cols = ["FlowAmount_right"]
+        group_db_merge.drop(columns=delete_cols, inplace=True)
+    except KeyError:
+        pass
+    df = pd.concat([df_nonemissions,df_red, group_db_merge], ignore_index=True)
+    return df
 
 
 def _combine_sources(p_series, df, cols, source_limit=None):
@@ -33,7 +109,7 @@ def _combine_sources(p_series, df, cols, source_limit=None):
     ----------
     dataframe
     """
-    print(
+    logging.info(
         f"Combining sources for {str(df.loc[p_series.index[0],cols].values)}"
     )
     source_list = list(np.unique(p_series))
@@ -243,14 +319,24 @@ def calculate_electricity_by_source(db, subregion="BA"):
     unique_source_lists = [
         x for x in unique_source_lists if ((str(x) != "nan"))
     ]
+    # One set of emissions passed into this routine may be life cycle emissions
+    # used as proxies for Canadian generation. In those cases the electricity
+    # generation will be equal to the Electricity already in the dataframe.
+
     elec_sum_lists = list()
     for src in unique_source_lists:
-        print(f"Calculating electricity for {src}")
-        #src_filter = db.apply(lambda x: x["Source"] in src, axis=1)
-        db["temp_src"]=src
-        src_filter = [a in b for a, b in zip(db["Source"].values.tolist(), db["temp_src"].values.tolist())]
+        logging.info(f"Calculating electricity for {src}")
+        # src_filter = db.apply(lambda x: x["Source"] in src, axis=1)
+        db["temp_src"] = src
+        src_filter = [
+            a in b
+            for a, b in zip(
+                db["Source"].values.tolist(), db["temp_src"].values.tolist()
+            )
+        ]
+        #        total_filter = ~fuelcat_all & src_filter
         sub_db = db.loc[src_filter, :]
-        sub_db.drop_duplicates(subset=fuel_agg+["eGRID_ID"], inplace=True)
+        sub_db.drop_duplicates(subset=fuel_agg + ["eGRID_ID"], inplace=True)
         sub_db_group = sub_db.groupby(elec_groupby_cols, as_index=False).agg(
             {"Electricity": [np.sum, np.mean], "eGRID_ID": "count"}
         )
@@ -259,7 +345,7 @@ def calculate_electricity_by_source(db, subregion="BA"):
             "electricity_mean",
             "facility_count",
         ]
-#        zero_elec_filter = sub_db_group["electricity_sum"]==0
+        #        zero_elec_filter = sub_db_group["electricity_sum"]==0
         sub_db_group["source_string"] = src
         elec_sum_lists.append(sub_db_group)
     elec_sums = pd.concat(elec_sum_lists, ignore_index=True)
@@ -345,16 +431,19 @@ def create_generation_process_df():
         "FlowAmount",
         "Compartment",
     ]
-    final_database = final_database.loc[:,~final_database.columns.duplicated()]
+    final_database = final_database.loc[
+        :, ~final_database.columns.duplicated()
+    ]
     final_database = final_database.drop_duplicates(subset=dup_cols_check)
     final_database.drop(
         columns=["FuelCategory", "FacilityID_x", "FacilityID_y"], inplace=True
     )
     final_database.rename(
         columns={
-                "Final_fuel_agg": "FuelCategory",
-                "TargetFlowUUID":"FlowUUID",
-                }, inplace=True
+            "Final_fuel_agg": "FuelCategory",
+            "TargetFlowUUID": "FlowUUID",
+        },
+        inplace=True,
     )
     final_database = add_temporal_correlation_score(final_database)
     final_database = add_technological_correlation_score(final_database)
@@ -394,19 +483,62 @@ def aggregate_data(total_db, subregion="BA"):
         # and provide the parameters
         if (len(p_series) > 3) & (p_series.quantile(0.5) > 0):
             # result = gmean(p_series.to_numpy()+1)-1
-            print(
-                f"Fitting lognormal distribution for"
+            logging.info(
+                f"Calculating confidence interval for"
                 f"{df.loc[p_series.index[0],groupby_cols].values}"
             )
+            logging.debug(f"{p_series.values}")
             try:
-                result = str(lognorm.fit(p_series.to_numpy(), floc=0))
+                data = p_series.to_numpy()
+            except ArithmeticError:
+                logging.warning("Problem with input data")
+                return None
+            try:
+                log_data = np.log(data)
+            except ArithmeticError:
+                logging.warning("Problem with log function")
+                return None
+            try:
+                mean = np.mean(log_data)
+            except ArithmeticError:
+                logging.warning("Problem with mean function")
+                return None
+            l = len(data)
+            try:
+                sd = np.std(log_data)
+                sd2 = sd ** 2
+            except ArithmeticError:
+                logging.warning("Problem with std function")
+                return None
+            try:
+                pi1, pi2 = t.interval(alpha=0.90, df=l - 2, loc=mean, scale=sd)
+            except ArithmeticError:
+                logging.warning("Problem with t function")
+                return None
+            try:
+                upper_interval = np.max(
+                    [
+                        mean
+                        + sd2 / 2
+                        + pi2 * np.sqrt(sd2 / l + sd2 ** 2 / (2 * (l - 1))),
+                        mean
+                        + sd2 / 2
+                        - pi2 * np.sqrt(sd2 / l + sd2 ** 2 / (2 * (l - 1))),
+                    ]
+                )
             except:
+                logging.warning("Problem with interval function")
+                return None
+            try:
+                result = (np.exp(mean), 0, np.exp(upper_interval))
+            except ArithmeticError:
+                print("Prolem with result")
                 return None
             if result is not None:
                 return result
             else:
-                print(
-                    f"geometric mean could not be calculated for \n"
+                logging.info(
+                    f"Problem generating uncertainty parameters \n"
                     f"{df.loc[p_series.index[0],groupby_cols].values}\n"
                     f"{p_series.values}"
                     f"{p_series.values+1}"
@@ -415,28 +547,42 @@ def aggregate_data(total_db, subregion="BA"):
         else:
             return None
 
-    def geometric_std(p_series, df, cols):
-        # I think I actually need to replace this with the function contained in
-        # process_exchange_aggregator_uncertainty.py. The approach to add 1 will
-        # also lead to some large errors.
-        if (len(p_series) > 3) & (p_series.quantile(0.5) > 0):
-            geomean_adj = gmean(p_series.to_numpy() + 1)
-            log_ratio = np.log((p_series.to_numpy() + 1) / geomean_adj) ** 2
-            sum_log_ratio = np.sum(log_ratio)
-            b = sum_log_ratio / float(len(p_series))
-            result = np.exp(b)
-            if result is not None:
-                return result
-            else:
-                print(
-                    f"geometric standard deviation could not be calculated for \n"
-                    f"{df.loc[p_series.index[0],groupby_cols].values}\n"
-                    f"{p_series.values}"
-                    f"{p_series.values+1}"
+    def calc_geom_std(df):
+        ####There are some pretty crazy uncertainties created in here
+        # need o put a cap on how high it can go. By default, I don't think
+        # it's a crazy idea to see if the calculated standard deviation
+        # results in distributions with some percentage above max.
+        if df["uncertaintyLognormParams"] is None:
+            return None, None
+        if isinstance(df["uncertaintyLognormParams"], str):
+            params = ast.literal_eval(df["uncertaintyLognormParams"])
+        if len(df["uncertaintyLognormParams"]) != 3:
+            logging.info(
+                f"Error estimate standard deviation - length: {len(params)}"
+            )
+        try:
+            geomean = df["Emission_factor"]
+            geostd = np.exp(
+                (
+                    np.log(df["uncertaintyLognormParams"][2])
+                    - np.log(df["Emission_factor"])
                 )
-                return None
-        else:
-            return None
+                / norm.ppf(0.95)
+            )
+        except ArithmeticError:
+            logging.info("Error estimating standard deviation")
+            return None, None
+        if (
+            (geostd is np.inf)
+            or (geostd is np.NINF)
+            or (geostd is np.nan)
+            or (geostd is float("nan"))
+            or str(geostd) == "nan"
+        ):
+            return None, None
+        if geostd * geomean > df["uncertaintyMax"]:
+            return None, None
+        return str(geomean), str(geostd)
 
     if subregion == "all":
         region_agg = ["eia_region"]
@@ -464,7 +610,7 @@ def aggregate_data(total_db, subregion="BA"):
             "FlowUUID",
         ]
         elec_df_groupby_cols = fuel_agg + ["Year", "source_string"]
-
+    total_db = aggregate_facility_flows(total_db)
     total_db, electricity_df = calculate_electricity_by_source(
         total_db, subregion
     )
@@ -474,27 +620,24 @@ def aggregate_data(total_db, subregion="BA"):
     )
     total_db.dropna(subset=["facility_emission_factor"], inplace=True)
 
-    def wtd_mean(pdser,total_db,cols):
+    def wtd_mean(pdser, total_db, cols):
         try:
-            wts = total_db.loc[pdser.index,"Electricity"]
-            result = np.average(pdser,weights=wts)
+            wts = total_db.loc[pdser.index, "Electricity"]
+            result = np.average(pdser, weights=wts)
         except:
-            print(
-                    f"Error calculating weighted mean for {pdser.name}-"
-                    f"{total_db.loc[pdser.index[0],cols]}"
+            logging.info(
+                f"Error calculating weighted mean for {pdser.name}-"
+                f"{total_db.loc[pdser.index[0],cols]}"
             )
             result = float("nan")
         return result
-    
-    wm = lambda x: wtd_mean(x, total_db,groupby_cols)
+
+    wm = lambda x: wtd_mean(x, total_db, groupby_cols)
     geo_mean = lambda x: geometric_mean(x, total_db, groupby_cols)
     geo_mean.__name__ = "geo_mean"
-    geo_std = lambda x: geometric_std(x, total_db, groupby_cols)
-    geo_std.__name__ = "geo_std"
-    #    criteria = (total_db["Compartment"] != "output") & (
-    #        total_db["Compartment"] != "input"
-    #    )
-    criteria = (total_db["Compartment"] == "input")
+    print(
+        "Aggregating flow amounts, dqi information, and calculating uncertainty"
+    )
     database_f3 = total_db.groupby(
         groupby_cols + ["Year", "source_string"], as_index=False
     ).agg(
@@ -522,17 +665,42 @@ def aggregate_data(total_db, subregion="BA"):
         "uncertaintyMax",
         "uncertaintyLognormParams",
     ]
-    #Kind of a waste from the fitting already done but it felt like applying
-    #the groupby twice - once for inputs and once for outputs - was a bit much
-    database_f3.loc[criteria,"uncertaintyLognormParams"]=None
+
+    criteria = database_f3["Compartment"] == "input"
+    database_f3.loc[criteria, "uncertaintyLognormParams"] = None
     database_f3 = database_f3.merge(
         right=electricity_df,
         left_on=elec_df_groupby_cols,
         right_on=elec_df_groupby_cols,
         how="left",
     )
+    #############
+    # Need to put a  check somewhere in here for the Canadian "rollups"
+    # Each emission should be divided by the electricity in the same row
+    canadian_criteria = database_f3["FuelCategory"] == "ALL"
+    canada_db = pd.merge(
+        left=database_f3.loc[canadian_criteria, :],
+        right=total_db[groupby_cols + ["Electricity"]],
+        left_on=groupby_cols,
+        right_on=groupby_cols,
+        how="left",
+    )
+    canada_db.index = database_f3.loc[canadian_criteria, :].index
+    database_f3.loc[canada_db.index, "electricity_sum"] = canada_db[
+        "Electricity"
+    ]
     database_f3["Emission_factor"] = (
         database_f3["FlowAmount"] / database_f3["electricity_sum"]
+    )
+    database_f3["GeomMean"], database_f3["GeomSD"] = zip(
+        *database_f3[
+            [
+                "Emission_factor",
+                "uncertaintyLognormParams",
+                "uncertaintyMin",
+                "uncertaintyMax",
+            ]
+        ].apply(calc_geom_std, axis=1)
     )
     database_f3.sort_values(by=groupby_cols, inplace=True)
     return database_f3
@@ -584,6 +752,8 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
         "uncertaintyMax",
         "uncertaintyLognormParams",
         "Emission_factor",
+        "GeomMean",
+        "GeomSD",
     ]
 
     def turn_data_to_dict(data, upstream_dict):
@@ -592,7 +762,7 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
         # keys for the exchanges dictionary the better. Also easier to do some
         # operations here like use map to assign default provider name,
         # category, and uuid columns.
-        print(f"Turning flows from {data.name} into dictionaries")
+        logging.info(f"Turning flows from {data.name} into dictionaries")
         incoming_cols = [
             "stage_code",
             "FlowName",
@@ -608,6 +778,8 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
             "uncertaintyMax",
             "uncertaintyLognormParams",
             "Emission_factor",
+            "GeomMean",
+            "GeomSD",
         ]
         cols_for_exchange_dict = [
             "internalId",
@@ -629,9 +801,6 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
         ]
         year = ",".join(data["Year"].astype(str).unique())
         datasources = ",".join(data["source_string"].astype(str).unique())
-        data["GeomSD"] = None
-        data["GeomMean"] = None
-        data["GeomLoc"] = ""
         data["Maximum"] = data["uncertaintyMax"]
         data["Minimum"] = data["uncertaintyMin"]
         data["uncertainty"] = ""
@@ -640,16 +809,16 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
         data["avoidedProduct"] = False
         data["flowProperty"] = ""
         data["input"] = False
-        input_filter = data["Compartment"] == "input"
+        input_filter = ((data["Compartment"] == "input") | (data["Compartment"].str.find("resource")!=-1))
         data.loc[input_filter, "input"] = True
         data["baseUncertainty"] = ""
         data["provider"] = ""
         data["unit"] = ""
         data["ElementaryFlowPrimeContext"] = data["Compartment"]
         default_unit = unit("kg")
-#        for index, row in data.iterrows():
-#            data.at[index, "unit"] = default_unit
-        data["unit"]=([default_unit] * len(data))
+        #        for index, row in data.iterrows():
+        #            data.at[index, "unit"] = default_unit
+        data["unit"] = [default_unit] * len(data)
         data["FlowType"] = "ELEMENTARY_FLOW"
         data["flow"] = ""
         provider_filter = data["stage_code"].isin(upstream_dict.keys())
@@ -660,7 +829,7 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
                     "category"
                 ],
                 "processType": "UNIT_PROCESS",
-                "@id": upstream_dict[getattr(row,"stage_code")]["uuid"],
+                "@id": upstream_dict[getattr(row, "stage_code")]["uuid"],
             }
             data.at[index, "provider"] = provider_dict
             data.at[index, "unit"] = unit(
@@ -668,28 +837,13 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
             )
             data.at[index, "FlowType"] = "PRODUCT_FLOW"
         for index, row in data.iterrows():
-#            print(type(data.at[index,"uncertaintyLognormParams"]))
-            if isinstance(data.at[index, "uncertaintyLognormParams"], str):
-                data.at[index, "GeomSD"], data.at[index, "GeomLoc"], data.at[
-                    index, "GeomMean"
-                ] = data.at[index, "uncertaintyLognormParams"].strip("()").split(",")
-                #For whatever reason - the lognorm.fit routine returns the 
-                #geometric mean in the fit, but the ln of the geometric 
-                #standard deviation or equivalently the standard deviation
-                #of the ln of x. Anyways, this corrects the data for openLCA.
-                #If we revert to the old method of generating parameters for
-                #the lognormal distribution, this will need to change.
-                data.at[index,"GeomSD"]=str(np.exp(float(data.at[index,"GeomSD"])))
-#            else:
-#                data.at[index,"GeomSD"]=None
-#                data.at[index,"GoemMean"]=None
             data.at[index, "uncertainty"] = uncertainty_table_creation(
                 data.loc[index:index, :]
             )
             data.at[index, "flow"] = flow_table_creation(
                 data.loc[index:index, :]
             )
-        data["amount"] = data["Emission_factor"]
+        data["amount"] = round(data["Emission_factor"], 6)
         data["amountFormula"] = ""
         data["quantitativeReference"] = False
         data["dqEntry"] = (
@@ -708,17 +862,21 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
         data["pedigreeUncertainty"] = ""
         data["comment"] = f"{datasources} - {year}"
         data_for_dict = data[cols_for_exchange_dict]
-        data_for_dict = data_for_dict.append(ref_exchange_creator(), ignore_index=True)
+        data_for_dict = data_for_dict.append(
+            ref_exchange_creator(), ignore_index=True
+        )
         data_dict = data_for_dict.to_dict("records")
         return data_dict
+
     database_groupby = database.groupby(by=base_cols)
     process_df = pd.DataFrame(
         database_groupby[non_agg_cols].apply(
-            turn_data_to_dict, (upstream_dict))
+            turn_data_to_dict, (upstream_dict)
+        )
     )
     process_df.columns = ["exchanges"]
     process_df.reset_index(inplace=True)
-    process_df["@type"]="Process"
+    process_df["@type"] = "Process"
     process_df["allocationFactors"] = ""
     process_df["defaultAllocationMethod"] = ""
     process_df["location"] = ""
@@ -727,46 +885,44 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
     process_df["processType"] = "UNIT_PROCESS"
     process_df["category"] = (
         "22: Utilities/2211: Electric Power Generation, Transmission and Distribution/"
-        +process_df[fuel_agg].values
+        + process_df[fuel_agg].values
     )
     if region_agg is None:
         process_df["description"] = (
-                "Electricity from "
-                +process_df[fuel_agg].values
-                +" produced at generating facilities in the US"
+            "Electricity from "
+            + process_df[fuel_agg].values
+            + " produced at generating facilities in the US"
         )
         process_df["name"] = (
-                "Electricity - "
-                +process_df[fuel_agg].values
-                +" - US"
+            "Electricity - " + process_df[fuel_agg].values + " - US"
         )
     else:
         process_df["description"] = (
-                "Electricity from "
-                +process_df[fuel_agg].values
-                +" produced at generating facilities in the "
-                +process_df[region_agg].values
-                +" region"
+            "Electricity from "
+            + process_df[fuel_agg].values
+            + " produced at generating facilities in the "
+            + process_df[region_agg].values
+            + " region"
         )
         process_df["name"] = (
-                "Electricity - "
-                +process_df[fuel_agg].values
-                +" - "
-                +process_df[region_agg].values
+            "Electricity - "
+            + process_df[fuel_agg].values
+            + " - "
+            + process_df[region_agg].values
         )
 
     process_cols = [
-            "@type",
-            "allocationFactors",
-            "defaultAllocationMethod",
-            "exchanges",
-            "location",
-            "parameters",
-            "processDocumentation",
-            "processType",
-            "name",
-            "category",
-            "description",
+        "@type",
+        "allocationFactors",
+        "defaultAllocationMethod",
+        "exchanges",
+        "location",
+        "parameters",
+        "processDocumentation",
+        "processType",
+        "name",
+        "category",
+        "description",
     ]
     result = process_df[process_cols].to_dict("index")
     return result
