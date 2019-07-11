@@ -126,8 +126,8 @@ def _unit(unit_name: str) -> Optional[olca.Ref]:
         ref_id = '07973a41-56b3-4e1b-a208-fd75a09fbd4b'
     elif unit_name == 'btu':
         ref_id = '55244053-94ba-404e-9172-cb279d905e00'
-    elif unit_name == 'lb*mi':
-        ref_id = '5458351a-f6f7-4e0b-a449-823c9b6374db'
+    elif unit_name == 'kg*km':
+        ref_id = 'a40229e6-7275-42e3-a304-23d590044770'
     elif unit_name == 'Item(s)':
         ref_id='6dabe201-aaac-4509-92f0-d00c26cb72ab'
     if ref_id is None:
@@ -161,7 +161,7 @@ def _flow_property(unit_name: str) -> Optional[olca.Ref]:
     elif unit_name == 'btu':
         ref_id = 'f6811440-ee37-11de-8a39-0800200c9a66'
         return olca.ref(olca.FlowProperty, ref_id, 'Energy')
-    elif unit_name == 'lb*mi':
+    elif unit_name == 'kg*km':
         ref_id = '838aaa20-0117-11db-92e3-0800200c9a66'
         return olca.ref(olca.FlowProperty, ref_id, 'Goods transport (mass*distance)')
     elif unit_name == 'Item(s)':
