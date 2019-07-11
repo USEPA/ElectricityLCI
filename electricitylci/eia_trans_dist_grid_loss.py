@@ -155,13 +155,63 @@ def generate_regional_grid_loss(final_database,year,subregion='all'):
         aggregation_column = 'NERC'
     elif subregion == 'BA':
         aggregation_column = 'Balancing Authority Code'
-    
+    elif subregion == 'US':
+        aggregation_column = None
     wm = lambda x: np.average(x, weights=td_by_plant.loc[x.index,'Electricity'])
-    
-    td_by_region = td_by_plant.groupby(aggregation_column, as_index=False).agg(
-            {'t_d_losses':wm}
-    )
+    if aggregation_column is not None:
+        td_by_region = td_by_plant.groupby(aggregation_column, as_index=False).agg(
+                {'t_d_losses':wm}
+        )
+    else:
+        td_by_region = pd.DataFrame(td_by_plant.agg({'t_d_losses':wm}),columns=['t_d_losses'])
+        td_by_region["Region"]="US"
     return td_by_region
+
+def olca_schema_distribution_mix(td_by_region,gen_mix_dict,subregion="BA"):
+    from electricitylci.process_dictionary_writer import exchange_table_creation_ref, exchange, ref_exchange_creator,electricity_at_user_flow,electricity_at_grid_flow,process_table_creation_distribution
+    distribution_mix_dict = {}
+    if subregion == 'all':
+        aggregation_column = 'Subregion'
+        region = list(pd.unique(td_by_region[aggregation_column]))
+    elif subregion == 'NERC':
+        aggregation_column = 'NERC'
+        region = list(pd.unique(td_by_region[aggregation_column]))
+    elif subregion == 'BA':
+        aggregation_column = 'Balancing Authority Code'
+        region = list(pd.unique(td_by_region[aggregation_column]))
+    else:
+        aggregation_column = None
+        region = ["US"]
+    for reg in region:
+        if aggregation_column is None:
+            database_reg = td_by_region
+        else:
+            database_reg = td_by_region.loc[td_by_region[aggregation_column] == reg,:]
+        exchanges_list = []
+        # Creating the reference output
+        exchange(ref_exchange_creator(electricity_flow=electricity_at_user_flow), exchanges_list)
+        exchange(ref_exchange_creator(electricity_flow=electricity_at_grid_flow), exchanges_list)
+        exchanges_list[1]["input"]=True
+        exchanges_list[1]["quantitativeReference"]=False
+        exchanges_list[1]["amount"]=1+database_reg["t_d_losses"].values[0]
+        matching_dict = None
+        for gen_mix in gen_mix_dict:
+            if gen_mix_dict[gen_mix]["name"] == "Electricity; at grid; generation mix - " + reg:
+                matching_dict = gen_mix_dict[gen_mix]
+                break
+        if matching_dict is None:
+            print(f"Trouble matching dictionary for {reg}")
+        else:
+            exchanges_list[1]["provider"] = {
+                "name": matching_dict["name"],
+                "@id": matching_dict["uuid"],
+                "category":matching_dict["category"].split("/")
+            }    
+                # Writing final file
+        final = process_table_creation_distribution(reg, exchanges_list)
+        final["name"] = "Electricity; at user; generation mix - " + reg
+        distribution_mix_dict[reg] = final
+    return distribution_mix_dict
 
 if __name__ == '__main__':
     from electricitylci.egrid_filter import (
