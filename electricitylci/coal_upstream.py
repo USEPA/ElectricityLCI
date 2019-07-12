@@ -303,6 +303,7 @@ def generate_upstream_coal(year):
     #Repeat the same methods for emissions from transportation 
     coal_transportation = coal_transportation.melt(
             'Plant Government ID',var_name = 'Transport')
+    coal_transportation["value"]=coal_transportation["value"]*pq.convert(1,"ton","kg")*pq.convert(1,"mi","km")
     merged_transport_coal = coal_transportation.merge(
             coal_inventory_transportation, 
             left_on = ['Transport'], 
@@ -352,6 +353,8 @@ def generate_upstream_coal(year):
             'coal_source_code':'stage_code',
             'Source':'stage'
             },inplace=True)
+    zero_rows = merged_coal_upstream.loc[merged_coal_upstream["quantity"]==0,:].index
+    merged_coal_upstream.drop(zero_rows,inplace=True)
     merged_coal_upstream.sort_values(
             ['plant_id','stage','stage_code','Compartment','FlowName'],
             inplace=True)

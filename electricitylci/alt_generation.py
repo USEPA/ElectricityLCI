@@ -378,7 +378,15 @@ def create_generation_process_df():
         add_technological_correlation_score,
         add_temporal_correlation_score,
     )
-
+    COMPARTMENT_DICT={
+            'emission/air':"air",
+            'emission/water':"water",
+            'emission/ground':"ground",
+            "input":"input",
+            "output":"output",
+            "waste":"waste"
+            
+    }
     if replace_egrid:
         generation_data = build_generation_data()
     else:
@@ -456,6 +464,8 @@ def create_generation_process_df():
         by=["eGRID_ID", "Compartment", "FlowName"], inplace=True
     )
     final_database["stage_code"] = "Power plant"
+    final_database["Compartment_path"]=final_database["Compartment"]
+    final_database["Compartment"]=final_database["Compartment_path"].map(COMPARTMENT_DICT)
     return final_database
 
 
@@ -678,13 +688,23 @@ def aggregate_data(total_db, subregion="BA"):
     # Need to put a  check somewhere in here for the Canadian "rollups"
     # Each emission should be divided by the electricity in the same row
     canadian_criteria = database_f3["FuelCategory"] == "ALL"
-    canada_db = pd.merge(
-        left=database_f3.loc[canadian_criteria, :],
-        right=total_db[groupby_cols + ["Electricity"]],
-        left_on=groupby_cols,
-        right_on=groupby_cols,
-        how="left",
-    )
+    if region_agg:
+        canada_db = pd.merge(
+            left=database_f3.loc[canadian_criteria, :],
+            right=total_db[groupby_cols + ["Electricity"]],
+            left_on=groupby_cols,
+            right_on=groupby_cols,
+            how="left",
+        )
+    else:
+        total_grouped = total_db.groupby(by=groupby_cols,as_index=False)["Electricity"].sum()
+        canada_db = pd.merge(
+                left=database_f3.loc[canadian_criteria, :],
+                right=total_grouped,
+                left_on=groupby_cols,
+                right_on=groupby_cols,
+                how="left",
+                )
     canada_db.index = database_f3.loc[canadian_criteria, :].index
     database_f3.loc[canada_db.index, "electricity_sum"] = canada_db[
         "Electricity"
@@ -843,7 +863,7 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
             data.at[index, "flow"] = flow_table_creation(
                 data.loc[index:index, :]
             )
-        data["amount"] = round(data["Emission_factor"], 6)
+        data["amount"] = data["Emission_factor"]
         data["amountFormula"] = ""
         data["quantitativeReference"] = False
         data["dqEntry"] = (

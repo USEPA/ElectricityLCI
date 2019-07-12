@@ -162,7 +162,7 @@ def exchange_table_creation_input_genmix(database, fuelname):
     ar["quantitativeReference"] = "True"
     ar["baseUncertainty"] = ""
     ar["provider"] = gen_process_ref(fuelname, region)
-    ar["amount"] = round(database["Generation_Ratio"].iloc[0], 6)
+    ar["amount"] = database["Generation_Ratio"].iloc[0]
     ar["unit"] = unit("MWh")
     ar["pedigreeUncertainty"] = ""
     # ar['category']='22: Utilities/2211: Electric Power Generation, Transmission and Distribution'+fuelname
@@ -186,7 +186,7 @@ def exchange_table_creation_input_con_mix(
         ar["provider"] = con_process_ref(loc, "consumption")
     else:
         ar["provider"] = con_process_ref(loc)
-    ar["amount"] = round(generation, 6)
+    ar["amount"] = generation
     ar["unit"] = unit("MWh")
     ar["pedigreeUncertainty"] = ""
     ar["uncertainty"] = ""
@@ -353,7 +353,7 @@ def exchange_table_creation_input(data):
     ar["input"] = True
     ar["baseUncertainty"] = ""
     ar["provider"] = ""
-    ar["amount"] = round(data["Emission_factor"].iloc[0], 6)
+    ar["amount"] = data["Emission_factor"].iloc[0]
     ar["amountFormula"] = "  "
     ar["unit"] = unit(data["Unit"].iloc[0])
     ar["dqEntry"] = ""
@@ -390,7 +390,7 @@ def exchange_table_creation_output(data):
     ar["quantitativeReference"] = False
     ar["baseUncertainty"] = ""
     ar["provider"] = ""
-    ar["amount"] = round(data["Emission_factor"].iloc[0], 6)
+    ar["amount"] = data["Emission_factor"].iloc[0]
     ar["amountFormula"] = ""
     ar["unit"] = unit("kg")
     ar["pedigreeUncertainty"] = ""
@@ -424,15 +424,15 @@ def uncertainty_table_creation(data):
     ar = dict()
     #    print(data["GeomMean"].iloc[0] + ' - ' +data["GeomSD"].iloc[0])
     if data["GeomMean"].iloc[0] is not None:
-        ar["geomMean"] = str(round(float(data["GeomMean"].iloc[0]), 6))
+        ar["geomMean"] = str(float(data["GeomMean"].iloc[0]))
     if data["GeomSD"].iloc[0] is not None:
-        ar["geomSd"] = str(round(float(data["GeomSD"].iloc[0]), 6))
+        ar["geomSd"] = str(float(data["GeomSD"].iloc[0]))
     ar["distributionType"] = "Logarithmic Normal Distribution"
     ar["mean"] = ""
     ar["meanFormula"] = ""
     ar["geomMeanFormula"] = ""
-    ar["maximum"] = round(data["Maximum"].iloc[0], 6)
-    ar["minimum"] = round(data["Minimum"].iloc[0], 6)
+    ar["maximum"] = data["Maximum"].iloc[0]
+    ar["minimum"] = data["Minimum"].iloc[0]
     ar["minimumFormula"] = ""
     ar["sd"] = ""
     ar["sdFormula"] = ""
@@ -540,7 +540,7 @@ def process_table_creation_distribution(region, exchanges_list):
     ar["parameters"] = ""
     ar["processDocumentation"] = process_doc_creation()
     ar["processType"] = ""
-    ar["name"] = distribution_to_end_user_name
+    ar["name"] = distribution_to_end_user_name + " - " + region
     ar[
         "category"
     ] = "22: Utilities/2211: Electric Power Generation, Transmission and Distribution"

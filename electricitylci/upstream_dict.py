@@ -122,8 +122,8 @@ def _exchange_table_creation_ref(fuel_type):
         ar["amount"] = 1
     elif fuel_type == "Coal transport":
         ar["flow"] = transport_flow
-        ar["unit"] = _unit("lb*mi")
-        ar["amount"] = 2000
+        ar["unit"] = _unit("kg*km")
+        ar["amount"] = 1
     elif fuel_type == "NUCLEAR":
         ar["flow"] = nuclear_flow
         ar["unit"] = _unit("MWh")
@@ -380,9 +380,6 @@ if __name__ == "__main__":
     import electricitylci.coal_upstream as coal
     import electricitylci.natural_gas_upstream as ng
     import electricitylci.petroleum_upstream as petro
-    import electricitylci.geothermal as geo
-    import electricitylci.solar_upstream as solar
-    import electricitylci.wind_upstream as wind
     import electricitylci.nuclear_upstream as nuke
     from combinator import concat_map_upstream_databases
 

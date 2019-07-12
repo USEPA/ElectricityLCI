@@ -72,6 +72,10 @@ def generate_plant_water_use(year):
         "withdrawal_annual": "resource/water",
         "discharge_annual": "emission/water",
     }
+    WATER_FLOW_COMPARTMENT={
+        "withdrawal_annual": "input",
+        "discharge_annual": "water",
+    }
     eia_generation_data = eia923_download_extract(year)
     eia_generation_data["Plant Id"] = eia_generation_data["Plant Id"].astype(
         int
@@ -171,6 +175,7 @@ def generate_plant_water_use(year):
     final_water["Compartment_path"] = final_water["direction"].map(
         WATER_FLOW_COMPARTMENTPATH
     )
+    final_water["Compartment"] = final_water["direction"].map(WATER_FLOW_COMPARTMENT)
     resource_filter = final_water["Compartment_path"] == "resource/water"
     final_water.loc[resource_filter, "FlowDict"] = final_water[
         "Water Type"
@@ -202,7 +207,6 @@ def generate_plant_water_use(year):
     final_water["TemporalCorrelation"] = 1
     final_water["DataCollection"] = 5
     final_water["ReliabilityScore"] = 1
-    final_water["Compartment"] = final_water["Compartment_path"]
     return final_water
 
 

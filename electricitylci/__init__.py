@@ -348,10 +348,12 @@ def get_alternate_gen_plus_netl():
     import electricitylci.solar_upstream as solar
     import electricitylci.wind_upstream as wind
     import electricitylci.plant_water_use as water
-    print("Generating inventories for geothermal, solar, and wind...")
+    import electricitylci.hydro_upstream as hydro
+    print("Generating inventories for geothermal, solar, wind, and hydro...")
     geo_df = geo.generate_upstream_geo(eia_gen_year)
     solar_df = solar.generate_upstream_solar(eia_gen_year)
     wind_df = wind.generate_upstream_wind(eia_gen_year)
+    hydro_df = hydro.generate_hydro_emissions()
     netl_gen = concat_map_upstream_databases(geo_df, solar_df, wind_df)
     netl_gen["DataCollection"] = 5
     netl_gen["GeographicalCorrelation"] = 1
@@ -360,7 +362,7 @@ def get_alternate_gen_plus_netl():
     print("Getting reported emissions for generators...")
     gen_df = alt_gen.create_generation_process_df()
     water_df = water.generate_plant_water_use(eia_gen_year)
-    gen_df = pd.concat([gen_df,water_df])
+    gen_df = pd.concat([gen_df,water_df,hydro_df])
     combined_gen = concat_clean_upstream_and_plant(gen_df, netl_gen)
     return combined_gen
 
@@ -445,3 +447,14 @@ def write_gen_fuel_database_to_dict(
         gen_plus_fuel_df, upstream_dict, subregion=subregion
     )
     return gen_plus_fuel_dict
+
+def get_distribution_mix_df(combined_df,subregion="BA"):
+    import electricitylci.eia_trans_dist_grid_loss as tnd
+    from electricitylci.model_config import eia_gen_year
+    td_loss_df = tnd.generate_regional_grid_loss(combined_df,eia_gen_year,subregion=subregion)
+    return td_loss_df
+
+def write_distribution_mix_to_dict(dist_mix_df,gen_mix_dict,subregion="BA"):
+    import electricitylci.eia_trans_dist_grid_loss as tnd
+    dist_mix_dict = tnd.olca_schema_distribution_mix(dist_mix_df,gen_mix_dict,subregion=subregion)
+    return dist_mix_dict
