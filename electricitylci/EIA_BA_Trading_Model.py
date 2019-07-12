@@ -67,6 +67,9 @@ from electricitylci.model_config import (
 
 def ba_io_trading_model(year, subregion):
     
+    year=2016
+    subregion = 'BA'
+    
     
     #Read in BAA file which contains the names and abbreviations
     df_BA = pd.read_excel(data_dir + '/BA_Codes_930.xlsx', sheetname = 'US', header = 4)
@@ -433,14 +436,16 @@ def ba_io_trading_model(year, subregion):
     
     #Develop final df for BAA
     BAA_final_trade = df_final_trade_out_filt_melted_merge.copy()
-    BAA_final_trade = BAA_final_trade.drop(columns = ['import ferc region', 'export ferc region'])
+    BAA_final_trade = BAA_final_trade.drop(columns = ['import ferc region', 'export ferc region', 'import ferc region abbr', 'export ferc region abbr'])
     BAA_final_trade = BAA_final_trade.merge(BAA_import_grouped_tot, left_on = 'import BAA', right_on = 'import BAA')
     BAA_final_trade = BAA_final_trade.rename(columns = {'value_x':'value','value_y':'total'})
     BAA_final_trade['fraction'] = BAA_final_trade['value']/BAA_final_trade['total']
+    BAA_final_trade = BAA_final_trade.fillna(value = 0)
     BAA_final_trade.to_csv(output_dir + '/BAA_final_trade_{}.csv'.format(year))
     
     #Develop final df for FERC Market Region
-    ferc_final_trade = df_final_trade_out_filt_melted_merge.groupby(['import ferc region','export ferc region'])['value'].sum().reset_index()
+    ferc_final_trade = df_final_trade_out_filt_melted_merge.copy()
+    ferc_final_trade = ferc_final_trade.drop(columns = ['export BAA', 'import BAA'])
     ferc_final_trade = ferc_final_trade.merge(ferc_import_grouped_tot, left_on = 'import ferc region', right_on = 'import ferc region')
     ferc_final_trade = ferc_final_trade.rename(columns = {'value_x':'value','value_y':'total'})
     ferc_final_trade['fraction'] = ferc_final_trade['value']/ferc_final_trade['total']
