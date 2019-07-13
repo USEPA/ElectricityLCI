@@ -21,6 +21,7 @@ import pandas as pd
 #from pudl.settings import SETTINGS
 #import pudl.constants as pc
 from electricitylci.globals import data_dir, output_dir
+import logging
 
 data_years = {
     'epacems': tuple(range(1995, 2019)),
@@ -253,28 +254,21 @@ def extract(epacems_years, states, verbose=True):
     for extracted DataFrames.
     """
     # TODO: this is really slow. Can we do some parallel processing?
-    if verbose:
-        print("Extracting EPA CEMS data...", flush=True)
+    logging.info("Extracting EPA CEMS data...")
     dfs=[]
     for year in epacems_years:
-        if verbose:
-            print(f"    {year}:", flush=True)
         # The keys of the us_states dictionary are the state abbrevs
         for state in states:
-            if verbose:
-                print(f"        {state}:", end=" ", flush=True)
             #dfs = []
             for qtr in range(1, 5):
                 filename = get_epacems_file(year, qtr, state)
 
-                if verbose:
-                    print(f"{qtr}", end=" ", flush=True)
+                logging.info(f"Reading {year} - {state} - qtr {qtr}")
                 dfs.append(read_cems_csv(filename))
             # Return a dictionary where the key identifies this dataset
             # (just like the other extract functions), but unlike the
             # others, this is yielded as a generator (and it's a one-item
             # dictionary).
-            print(" ", flush=True)  # newline...
 #            yield {
 #                (year, state): pd.concat(dfs, sort=True, copy=False, ignore_index=True)
 #            }
@@ -742,8 +736,8 @@ def check_if_need_update(source, year, states, datadir, clobber, verbose):
         else:
             message = ''
             need_update = True
-    if verbose and message is not None:
-        print(message)
+#    if verbose and message is not None:
+    logging.info(message)
     return need_update
 
 
