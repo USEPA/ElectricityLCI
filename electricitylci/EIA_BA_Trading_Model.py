@@ -441,7 +441,7 @@ def ba_io_trading_model(year, subregion):
     BAA_final_trade = BAA_final_trade.rename(columns = {'value_x':'value','value_y':'total'})
     BAA_final_trade['fraction'] = BAA_final_trade['value']/BAA_final_trade['total']
     BAA_final_trade = BAA_final_trade.fillna(value = 0)
-    BAA_final_trade.to_csv(output_dir + '/BAA_final_trade_{}.csv'.format(year))
+    BAA_final_trade.to_csv(data_dir + '/BAA_final_trade_{}.csv'.format(year))
     
     #Develop final df for FERC Market Region
     ferc_final_trade = df_final_trade_out_filt_melted_merge.copy()
@@ -449,7 +449,7 @@ def ba_io_trading_model(year, subregion):
     ferc_final_trade = ferc_final_trade.merge(ferc_import_grouped_tot, left_on = 'import ferc region', right_on = 'import ferc region')
     ferc_final_trade = ferc_final_trade.rename(columns = {'value_x':'value','value_y':'total'})
     ferc_final_trade['fraction'] = ferc_final_trade['value']/ferc_final_trade['total']
-    ferc_final_trade.to_csv(output_dir + '/ferc_final_trade_{}.csv'.format(year))
+    ferc_final_trade.to_csv(data_dir + '/ferc_final_trade_{}.csv'.format(year))
     
     if subregion == 'BA':
         return BAA_final_trade
