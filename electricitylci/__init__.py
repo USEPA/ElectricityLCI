@@ -8,7 +8,10 @@ namestr=(
         f"{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
 )
 
-logging.basicConfig(level=logging.INFO)
+formatter = logging.Formatter('%(levelname)s:%(filename)s:%(funcName)s:%(message)s')
+logging.basicConfig(format='%(levelname)s:%(filename)s:%(funcName)s:%(message)s',level=logging.INFO)
+logger = logging.getLogger("electricitylci")
+
 
 def get_generation_process_df(source="egrid", regions="all"):
     """
@@ -316,7 +319,7 @@ def get_alternate_gen_plus_netl():
     print("Getting reported emissions for generators...")
     gen_df = alt_gen.create_generation_process_df()
     water_df = water.generate_plant_water_use(eia_gen_year)
-    gen_df = pd.concat([gen_df,water_df,hydro_df])
+    gen_df = pd.concat([gen_df,water_df,hydro_df],ignore_index=True)
     combined_gen = concat_clean_upstream_and_plant(gen_df, netl_gen)
     return combined_gen
 

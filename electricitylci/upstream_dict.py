@@ -8,7 +8,9 @@ from electricitylci.coal_upstream import (
     basin_codes,
 )
 from electricitylci import write_process_dicts_to_jsonld
+import logging
 
+module_logger=logging.getLogger("upstream_dict.py")
 
 def _unit(unt):
     ar = dict()
@@ -289,11 +291,11 @@ def olcaschema_genupstream_processes(merged):
     upstream_process_dict = dict()
     # upstream_list=['Appalachian']
     for upstream in upstream_list:
-        print(f"Building diciontary for {upstream}", end="...")
+        module_logger.info(f"Building dictionary for {upstream}")
         exchanges_list = list()
         # upstream = upstream_list[0]
         upstream_filter = merged_summary["stage_code"] == upstream
-        merged_summary_filter = merged_summary.loc[upstream_filter, :]
+        merged_summary_filter = merged_summary.loc[upstream_filter, :].copy()
         # merged_summary_filter_mapped = pd.merge(
         #         left=merged_summary_filter,
         #         right=netl_epa_flows,
@@ -372,7 +374,7 @@ def olcaschema_genupstream_processes(merged):
         upstream_process_dict[
             merged_summary_filter.loc[first_row, "stage_code"]
         ] = final
-        print("complete")
+#        print("complete")
     return upstream_process_dict
 
 
