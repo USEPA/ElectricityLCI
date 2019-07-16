@@ -4,27 +4,37 @@ from electricitylci.globals import output_dir, data_dir
 import electricitylci.alt_generation as altg
 import electricitylci.import_impacts as import_impacts
 from electricitylci.model_config import eia_gen_year
+import logging
+
+module_logger = logging.getLogger("combinator.py")
 
 
-def fill_nans(df, key_column = "FacilityID", target_columns=[],dropna=True):
+def fill_nans(df, key_column="FacilityID", target_columns=[], dropna=True):
     if not target_columns:
-        target_columns=[
-                "Balancing Authority Code",
-                "Balancing Authority Name",
-                "FRS_ID",
-                "FuelCategory",
-                "NERC",
-                "PrimaryFuel",
-                "PercentGenerationfromDesignatedFuelCategory",
-                "eGRID_ID",
-                "Subregion"
-                ]
-    key_df = df[[key_column]+target_columns].drop_duplicates(subset="FacilityID").set_index("FacilityID")
+        target_columns = [
+            "Balancing Authority Code",
+            "Balancing Authority Name",
+            #                "FRS_ID",
+            "FuelCategory",
+            "NERC",
+            #                "PrimaryFuel",
+            "PercentGenerationfromDesignatedFuelCategory",
+            "eGRID_ID",
+            "Subregion",
+        ]
+    key_df = (
+        df[[key_column] + target_columns]
+        .drop_duplicates(subset="FacilityID")
+        .set_index("FacilityID")
+    )
     for col in target_columns:
-        df.loc[df[col].isnull(),col]=df.loc[df[col].isnull(),"FacilityID"].map(key_df[col])
+        df.loc[df[col].isnull(), col] = df.loc[
+            df[col].isnull(), "FacilityID"
+        ].map(key_df[col])
     if dropna:
-        df.dropna(subset=target_columns,inplace=True)
+        df.dropna(subset=target_columns, inplace=True)
     return df
+
 
 def concat_map_upstream_databases(*arg):
     """
@@ -112,7 +122,8 @@ def concat_map_upstream_databases(*arg):
         columns=mapped_column_dict, copy=False
     )
     upstream_mapped_df.drop_duplicates(
-        subset=["plant_id","FlowName", "Compartment_path", "FlowAmount"], inplace=True
+        subset=["plant_id", "FlowName", "Compartment_path", "FlowAmount"],
+        inplace=True,
     )
     upstream_mapped_df.dropna(subset=["FlowName"], inplace=True)
     garbage = upstream_mapped_df.loc[
@@ -163,9 +174,27 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
     )
     up_df.dropna(subset=region_cols + ["Electricity"], inplace=True)
     combined_df = pd.concat([pl_df, up_df], ignore_index=True)
-    combined_df.drop(columns=["plant_id"], inplace=True)
+    categories_to_delete = [
+        "plant_id",
+        "FuelCategory_right",
+        "Net Generation (MWh)",
+        "PrimaryFuel_right",
+    ]
+    for x in categories_to_delete:
+        try:
+            combined_df.drop(columns=[x], inplace=True)
+        except KeyError:
+            module_logger.warning(f"Error deleting column {x}")
     combined_df["FacilityID"] = combined_df["eGRID_ID"]
     combined_df = fill_nans(combined_df)
+    # The hard-coded cutoff is a workaround for now. Changing the parameter
+    # to 0 in the config file allowed the inventory to be kept for generators
+    # that are now being tagged as mixed.
+    generation_filter = (
+        combined_df["PercentGenerationfromDesignatedFuelCategory"] < 0.9
+    )
+    combined_df.loc[generation_filter, "FuelCategory"] = "MIXED"
+    combined_df.loc[generation_filter, "PrimaryFuel"] = "Mixed Fuel Type"
     return combined_df
 
 
@@ -224,7 +253,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
         "Balancing Authority Code",
         "Balancing Authority Name",
         "Electricity",
-        "FRS_ID",
+        #        "FRS_ID",
         "NERC",
         "Subregion",
     ]
@@ -239,7 +268,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
         right_on="eGRID_ID",
         how="left",
     )
-    fuel_df.dropna(subset=["FRS_ID"], inplace=True)
+    fuel_df.dropna(subset=["Electricity"], inplace=True)
     fuel_df["Source"] = "eia"
     fuel_df = add_temporal_correlation_score(fuel_df)
     fuel_df["DataCollection"] = 5
@@ -247,6 +276,14 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     fuel_df["TechnologicalCorrelation"] = 1
     fuel_df["ReliabilityScore"] = 1
     fuel_df["ElementaryFlowPrimeContext"] = "input"
+    fuel_cat_key = (
+        gen_df[["FacilityID", "FuelCategory"]]
+        .drop_duplicates(subset="FacilityID")
+        .set_index("FacilityID")
+    )
+    fuel_df["FuelCategory"] = fuel_df["FacilityID"].map(
+        fuel_cat_key["FuelCategory"]
+    )
     gen_plus_up_df = pd.concat([gen_df, fuel_df], ignore_index=True)
     return gen_plus_up_df
 
