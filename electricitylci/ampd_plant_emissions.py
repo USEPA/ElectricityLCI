@@ -30,7 +30,7 @@ def generate_plant_emissions(year):
         as Source = "cems") or from ap42 emission factors applied at either 
         the boiler or generator fuel type level (market as Source = "ap42").
     """
-
+    COMPARTMENT_MAP = {"emission/air": "air"}
     FUELCAT_MAP = {
         "AB": "BIOMASS",
         #            "BFG",
@@ -390,54 +390,7 @@ def generate_plant_emissions(year):
             * emissions.loc[criteria, "Emission_Factor"]
             * emissions.loc[criteria, "Total Fuel Consumption Quantity"]
         )
-        #        for row in ef_so2.itertuples():
-        #
-        #            if row.Boiler_Firing_Type_Code == "None":
-        #                wtd_sulfur_content = wtd_sulfur_content_fuel.loc[
-        #                    row.Reported_Fuel_Type_Code, "Avg Sulfur Content (%)"
-        #                ]
-        #                fuel_type = eia923_gen_fuel_sub.loc[
-        #                    eia923_gen_fuel_sub["Reported Fuel Type Code"]
-        #                    == row.Reported_Fuel_Type_Code
-        #                ]
-        #                prime_mover = fuel_type.loc[
-        #                    fuel_type["Reported Prime Mover"]
-        #                    == row.Reported_Prime_Mover
-        #                ]
-        #                if row.Multiply_by_S_Content == "No":
-        #                    if row.Emission_Factor_Denominator == "MMBtu":
-        #                        prime_mover["SO2 (lbs)"] = (
-        #                            row.Emission_Factor
-        #                        ) * prime_mover["Total Fuel Consumption MMBtu"].astype(
-        #                            float, errors="ignore"
-        #                        )
-        #                    else:
-        #                        prime_mover["SO2 (lbs)"] = (
-        #                            row.Emission_Factor
-        #                        ) * prime_mover[
-        #                            "Total Fuel Consumption Quantity"
-        #                        ].astype(
-        #                            float, errors="ignore"
-        #                        )
-        #                    emissions = pd.concat([emissions, prime_mover])
-        #                elif row.Multiply_by_S_Content == "Yes":
-        #                    if row.Emission_Factor_Denominator == "MMBtu":
-        #                        prime_mover["SO2 (lbs)"] = (
-        #                            wtd_sulfur_content
-        #                            * (row.Emission_Factor)
-        #                            * prime_mover[
-        #                                "Total Fuel Consumption MMBtu"
-        #                            ].astype(float, errors="ignore")
-        #                        )
-        #                    else:
-        #                        prime_mover["SO2 (lbs)"] = (
-        #                            wtd_sulfur_content
-        #                            * (row.Emission_Factor)
-        #                            * prime_mover[
-        #                                "Total Fuel Consumption Quantity"
-        #                            ].astype(float, errors="ignore")
-        #                        )
-        #                    emissions = pd.concat([emissions, prime_mover])
+
         emissions_agg = emissions.groupby(
             ["Plant Id", "Plant Name", "Operator Name"], as_index=False
         )[
@@ -445,7 +398,6 @@ def generate_plant_emissions(year):
             "Total Fuel Consumption Quantity",
             "Total Fuel Consumption MMBtu",
         ].sum()
-        # emissions_agg.to_csv('Output/' + 'Aggregated Generation Fuel SO2 Emissions.csv', index =  False)
         emissions_agg["Plant Id"] = emissions_agg["Plant Id"].astype(str)
 
         return emissions_agg
@@ -542,54 +494,6 @@ def generate_plant_emissions(year):
             eia923_boiler_firing_type[fuel_heating_value_monthly],
             eia923_boiler_firing_type[fuel_quantity_monthly],
         )
-
-        #        emissions = pd.DataFrame()
-
-        #        for row in ef_so2.itertuples():
-        #            fuel_type = eia923_boiler_firing_type.loc[
-        #                eia923_boiler_firing_type["Reported Fuel Type Code"]
-        #                == row.Reported_Fuel_Type_Code
-        #            ]
-        #            prime_mover = fuel_type.loc[
-        #                fuel_type["Reported Prime Mover"] == row.Reported_Prime_Mover
-        #            ]
-        #            firing_type = prime_mover.loc[
-        #                fuel_type["Firing Type 1"] == row.Boiler_Firing_Type_Code
-        #            ]
-        #
-        #            if row.Multiply_by_S_Content == "No":
-        #                if row.Emission_Factor_Denominator == "MMBtu":
-        #                    firing_type[so2_emissions_monthly] = (
-        #                        row.Emission_Factor
-        #                    ) * firing_type[fuel_heat_quantity_monthly].astype(
-        #                        float, errors="ignore"
-        #                    )
-        #                else:
-        #                    firing_type[so2_emissions_monthly] = (
-        #                        row.Emission_Factor
-        #                    ) * firing_type[fuel_quantity_monthly].astype(
-        #                        float, errors="ignore"
-        #                    )
-        #                emissions = pd.concat([emissions, firing_type])
-        #
-        #            elif row.Multiply_by_S_Content == "Yes":
-        #                if row.Emission_Factor_Denominator == "MMBtu":
-        #                    firing_type[so2_emissions_monthly] = np.multiply(
-        #                        (row.Emission_Factor),
-        #                        np.multiply(
-        #                            firing_type[sulfur_content_monthly],
-        #                            firing_type[fuel_heat_quantity_monthly],
-        #                        ),
-        #                    )
-        #                else:
-        #                    firing_type[so2_emissions_monthly] = np.multiply(
-        #                        (row.Emission_Factor),
-        #                        np.multiply(
-        #                            firing_type[sulfur_content_monthly],
-        #                            firing_type[fuel_quantity_monthly],
-        #                        ),
-        #                    )
-        #                emissions = pd.concat([emissions, firing_type])
         emissions = eia923_boiler_firing_type.merge(
             ef_so2,
             left_on=[
@@ -674,7 +578,6 @@ def generate_plant_emissions(year):
                 "SO2 Removal Efficiency Rate at Annual Operating Factor"
             ]
         )
-        # emissions_merge.to_csv('Output/' + 'Boiler SO2 Emissions.csv', index =  False)
         emissions_agg = emissions_merge.groupby(
             ["Plant Id", "Plant Name", "Operator Name"], as_index=False
         )[
@@ -682,7 +585,6 @@ def generate_plant_emissions(year):
             "Total Fuel Consumption Quantity",
             "Total Fuel Consumption MMBtu",
         ].sum()
-        # emissions_agg.to_csv('Output/' + 'Aggregated Boiler SO2 Emissions.csv', index =  False)
         emissions_agg["Plant Id"] = emissions_agg["Plant Id"].astype(str)
         emissions_agg = emissions_agg.rename(
             columns={"SO2 (lbs) with AEC": "SO2 (lbs)"}
@@ -710,30 +612,6 @@ def generate_plant_emissions(year):
             emissions.loc[criteria, "Emission_Factor"]
             * emissions.loc[criteria, "Total Fuel Consumption Quantity"]
         )
-        #        for row in ef_nox.itertuples():
-        #
-        #            if row.Boiler_Firing_Type_Code == "None":
-        #                fuel_type = eia923_gen_fuel_sub.loc[
-        #                    eia923_gen_fuel_sub["Reported Fuel Type Code"]
-        #                    == row.Reported_Fuel_Type_Code
-        #                ]
-        #                prime_mover = fuel_type.loc[
-        #                    fuel_type["Reported Prime Mover"]
-        #                    == row.Reported_Prime_Mover
-        #                ]
-        #                if row.Emission_Factor_Denominator == "MMBtu":
-        #                    prime_mover["NOx (lbs)"] = (
-        #                        row.Emission_Factor
-        #                    ) * prime_mover["Total Fuel Consumption MMBtu"].astype(
-        #                        float, errors="ignore"
-        #                    )
-        #                else:
-        #                    prime_mover["NOx (lbs)"] = (
-        #                        row.Emission_Factor
-        #                    ) * prime_mover["Total Fuel Consumption Quantity"].astype(
-        #                        float, errors="ignore"
-        #                    )
-        #                emissions = pd.concat([emissions, prime_mover])
         emissions_agg = emissions.groupby(
             ["Plant Id", "Plant Name", "Operator Name"], as_index=False
         )[
@@ -784,24 +662,7 @@ def generate_plant_emissions(year):
         emissions["NOx (lbs)"] = emissions["Emission_Factor"] * emissions[
             "Total Fuel Consumption Quantity"
         ].astype(float, errors="ignore")
-        #        criteria=((eia923_boiler_firing_type["Reported Fuel Type Code"]==ef_nox["Reported_Fuel_Type_Code"])&
-        #                  (eia923_boiler_firing_type["Reported Prime Mover"]==ef_nox["Reported_Prime_Mover"]))
 
-        #        for row in ef_nox.itertuples():
-        #            fuel_type = eia923_boiler_firing_type.loc[
-        #                eia923_boiler_firing_type["Reported Fuel Type Code"]
-        #                == row.Reported_Fuel_Type_Code
-        #            ]
-        #            prime_mover = fuel_type.loc[
-        #                fuel_type["Reported Prime Mover"] == row.Reported_Prime_Mover
-        #            ]
-        #            firing_type = prime_mover.loc[
-        #                fuel_type["Firing Type 1"] == row.Boiler_Firing_Type_Code
-        #            ]
-        #            firing_type["NOx (lbs)"] = (row.Emission_Factor) * firing_type[
-        #                "Total Fuel Consumption Quantity"
-        #            ].astype(float, errors="ignore")
-        #            emissions = pd.concat([emissions, firing_type])
         emissions.dropna(subset=["NOx (lbs)"], inplace=True)
         emissions["Total Fuel Consumption MMBtu"] = emissions[
             fuel_heat_quantity_monthly
@@ -986,11 +847,9 @@ def generate_plant_emissions(year):
     eia923_gen_fuel = pd.read_pickle(
         f"{data_dir}/EIA 923/Pickle Files/Generation and Fuel/EIA 923 Generation and Fuel {year}.pkl"
     )
-    #    eia923_gen_fuel = eia923.build_generation_data(generation_years=[year])
     eia923_boiler = pd.read_pickle(
         f"{data_dir}/EIA 923/Pickle Files/Boiler Fuel/EIA 923 Boiler Fuel {year}.pkl"
     )
-    #    eia923_generator = pd.read_pickle(f'{data_dir}/EIA/EIA 923/Pickle Files/Generator/EIA 923 Generator ' + year + '.pkl')
     eia923_aec = pd.read_pickle(
         f"{data_dir}/EIA 923/Pickle Files/Air Emissions Control/EIA 923 AEC {year}.pkl"
     )
@@ -1003,8 +862,6 @@ def generate_plant_emissions(year):
     eia860_boiler_design = pd.read_pickle(
         f"{data_dir}/EIA 860/Pickle Files/Boiler Info & Design Parameters/EIA 860 Boiler Design {year}.pkl"
     )
-    #    eia860_plant = pd.read_pickle(f'{data_dir}/EIA/EIA 860/Pickle Files/Plant/EIA 860 Plant ' + year + '.pkl')
-    #    eia860_generator = pd.read_pickle(f'{data_dir}/EIA/EIA 860/Pickle Files/Generator/EIA 860 Generator ' + year + '.pkl')
     ef_co2_ch4_n2o = pd.read_excel(
         f"{data_dir}/EFs/eLCI EFs.xlsx", sheet_name="CO2,CH4,N2O"
     )
@@ -1425,18 +1282,46 @@ def generate_plant_emissions(year):
     )
     result_agg["Plant Id"] = result_agg["Plant Id"].astype(int)
 
-    result_agg_final = result_agg.assign(
-        CO2_emissions_tons=result_agg.apply(emissions_logic_CO2, axis=1)
+    result_agg_final = result_agg.copy()
+    result_agg_final["CO2_emissions_tons"] = result_agg_final["CO2 (Tons)"]
+    result_agg_final["CO2_Source"] = "ap42"
+    fuel_input_criteria = result_agg_final["ampd Heat Input (MMBtu)"].between(
+        result_agg_final["Total Fuel Consumption MMBtu"] * 0.8,
+        result_agg_final["Total Fuel Consumption MMBtu"] * 1.2,
     )
-    result_agg_final["CO2_emissions_tons"], result_agg_final[
-        "CO2_Source"
-    ] = zip(*result_agg_final["CO2_emissions_tons"])
-    result_agg_final = result_agg_final.assign(
-        SO2_emissions_lbs=result_agg_final.apply(emissions_logic_SO2, axis=1)
+    emission_criteria = result_agg_final["ampd CO2 (Tons)"].between(
+        result_agg_final["CO2 (Tons)"] * (1 / 100),
+        result_agg_final["CO2 (Tons)"] * 100,
     )
-    result_agg_final["SO2_emissions_lbs"], result_agg_final[
-        "SO2_Source"
-    ] = zip(*result_agg_final["SO2_emissions_lbs"])
+    total_criteria = (fuel_input_criteria) & (emission_criteria)
+    result_agg_final.loc[
+        total_criteria, "CO2_emissions_tons"
+    ] = result_agg_final.loc[total_criteria, "ampd CO2 (Tons)"]
+    result_agg_final.loc[total_criteria, "CO2_Source"] = "ampd"
+
+    result_agg_final["SO2_emissions_lbs"] = result_agg_final["SO2 (lbs)"]
+    result_agg_final["SO2_Source"] = "ap42"
+    emission_criteria = result_agg_final["ampd SO2 (lbs)"].between(
+        result_agg_final["SO2 (lbs)"] * (1 / 100),
+        result_agg_final["SO2 (lbs)"] * 100,
+    )
+    total_criteria = (fuel_input_criteria) & (emission_criteria)
+    result_agg_final.loc[
+        total_criteria, "SO2_emissions_lbs"
+    ] = result_agg_final.loc[total_criteria, "SO2 (lbs)"]
+    result_agg_final.loc[total_criteria, "SO2_Source"] = "ampd"
+
+    result_agg_final["NOx_emissions_lbs"] = result_agg_final["NOx (lbs)"]
+    result_agg_final["NOx_Source"] = "ap42"
+    emission_criteria = result_agg_final["ampd NOX (lbs)"].between(
+        result_agg_final["NOx (lbs)"] * (1 / 100),
+        result_agg_final["NOx (lbs)"] * 100,
+    )
+    total_criteria = (fuel_input_criteria) & (emission_criteria)
+    result_agg_final.loc[
+        total_criteria, "NOx_emissions_lbs"
+    ] = result_agg_final.loc[total_criteria, "NOx (lbs)"]
+    result_agg_final["NOx_Source"] = "ampd"
     result_agg_final = result_agg_final.assign(
         NOx_emissions_lbs=result_agg_final.apply(emissions_logic_NOx, axis=1)
     )
@@ -1514,7 +1399,7 @@ def generate_plant_emissions(year):
         netl_harmonized_melt["value"] * netl_harmonized_melt["Conv_factor"]
     )
     netl_harmonized_melt.drop(columns=["Conv_factor"], inplace=True)
-    netl_harmonized_melt["unit"] = "kg"
+    netl_harmonized_melt["Unit"] = "kg"
     netl_harmonized_melt["Year"] = int(year)
     netl_harmonized_melt["Source"] = "ap42"
     netl_harmonized_melt.loc[
@@ -1580,18 +1465,36 @@ def generate_plant_emissions(year):
     )
     netl_harmonized_melt.drop(columns=["Flow"], inplace=True)
     netl_harmonized_melt.rename(
-        columns={"value": "FlowAmount", "Flowable": "FlowName"}, inplace=True
+        columns={
+            "value": "FlowAmount",
+            "Flowable": "FlowName",
+            "Plant Id": "eGRID_ID",
+            "Context": "Compartment_path",
+            "Flow UUID": "FlowUUID",
+            "Primary_Fuel": "PrimaryFuel",
+        },
+        inplace=True,
     )
+    netl_harmonized_melt["Compartment"] = netl_harmonized_melt[
+        "Compartment_path"
+    ].map(COMPARTMENT_MAP)
     netl_harmonized_melt["FuelCategory"] = netl_harmonized_melt[
-        "Primary_Fuel"
+        "PrimaryFuel"
     ].map(FUELCAT_MAP)
     if use_primaryfuel_for_coal:
         netl_harmonized_melt.loc[
             netl_harmonized_melt["FuelCategory"] == "COAL", "FuelCategory"
         ] = netl_harmonized_melt.loc[
-            netl_harmonized_melt["FuelCategory"] == "COAL", "Primary_Fuel"
+            netl_harmonized_melt["FuelCategory"] == "COAL", "PrimaryFuel"
         ]
-    netl_harmonized_melt.sort_values(by=["Plant Id", "FlowName"], inplace=True)
+    netl_harmonized_melt["DataCollection"] = 5
+    netl_harmonized_melt["GeographicalCorrelation"] = 1
+    netl_harmonized_melt["TechnologicalCorrelation"] = 1
+    netl_harmonized_melt["ReliabilityScore"] = 1
+    netl_harmonized_melt.sort_values(by=["eGRID_ID", "FlowName"], inplace=True)
+    netl_harmonized_melt["eGRID_ID"] = netl_harmonized_melt["eGRID_ID"].astype(
+        int
+    )
     netl_harmonized_melt.reset_index(inplace=True, drop=True)
     return netl_harmonized_melt
 
