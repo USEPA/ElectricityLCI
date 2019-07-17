@@ -4,6 +4,7 @@ from electricitylci.globals import data_dir, output_dir
 import electricitylci.PhysicalQuantities as pq
 import electricitylci.cems_data as cems
 import electricitylci.eia923_generation as eia923
+import electricitylci.eia860_facilities as eia860
 import fedelemflowlist
 from electricitylci.model_config import use_primaryfuel_for_coal
 import logging
@@ -76,33 +77,33 @@ def generate_plant_emissions(year):
 
     def emissions_check_gen_fuel(df):
         emissions_check = eia923_gen_fuel_sub_agg.merge(
-            df, on="Plant Id", how="left"
+            df, on="plant_id", how="left"
         )
         emissions_check["Check Heat Input MMBtu"] = emissions_check[
-            "Total Fuel Consumption MMBtu"
+            "total_fuel_consumption_mmbtu"
         ].fillna(0) - emissions_check[
             "Sheet 1_Total Fuel Consumption (MMBtu)"
         ].fillna(
             0
         )
         emissions_check["Check Heat Input Quantity"] = emissions_check[
-            "Total Fuel Consumption Quantity"
+            "total_fuel_consumption_quantity"
         ].fillna(0) - emissions_check[
-            "Sheet 1_Total Fuel Consumption Quantity"
+            "Sheet 1_total_fuel_consumption_quantity"
         ].fillna(
             0
         )
         emissions_check["Check Heat Input MMBtu Ratio"] = emissions_check[
-            "Total Fuel Consumption MMBtu"
+            "total_fuel_consumption_mmbtu"
         ].fillna(0) / emissions_check[
             "Sheet 1_Total Fuel Consumption (MMBtu)"
         ].fillna(
             0
         )
         emissions_check["Check Heat Input Quantity Ratio"] = emissions_check[
-            "Total Fuel Consumption Quantity"
+            "total_fuel_consumption_quantity"
         ].fillna(0) / emissions_check[
-            "Sheet 1_Total Fuel Consumption Quantity"
+            "Sheet 1_total_fuel_consumption_quantity"
         ].fillna(
             0
         )
@@ -119,25 +120,25 @@ def generate_plant_emissions(year):
         emissions_check = df_list[0]
         for df_ in df_list[1:]:
             emissions_check = emissions_check.merge(
-                df_, on=["Plant Id"], how="left"
+                df_, on=["plant_id"], how="left"
             )
         emissions_check["Check Heat Input MMBtu_Boiler"] = emissions_check[
-            "Total Fuel Consumption MMBtu"
+            "total_fuel_consumption_mmbtu"
         ].fillna(0) - emissions_check[
             "Sheet 3_Total Fuel Consumption (MMBtu)"
         ].fillna(
             0
         )
         emissions_check["Check Heat Input Quantity_Boiler"] = emissions_check[
-            "Total Fuel Consumption Quantity"
+            "total_fuel_consumption_quantity"
         ].fillna(0) - emissions_check[
-            "Sheet 3_Total Fuel Consumption Quantity"
+            "Sheet 3_total_fuel_consumption_quantity"
         ].fillna(
             0
         )
         emissions_check[
             "Check Heat Input MMBtu_Boiler Ratio"
-        ] = emissions_check["Total Fuel Consumption MMBtu"].fillna(
+        ] = emissions_check["total_fuel_consumption_mmbtu"].fillna(
             0
         ) / emissions_check[
             "Sheet 3_Total Fuel Consumption (MMBtu)"
@@ -146,39 +147,39 @@ def generate_plant_emissions(year):
         )
         emissions_check[
             "Check Heat Input Quantity_Boiler Ratio"
-        ] = emissions_check["Total Fuel Consumption Quantity"].fillna(
+        ] = emissions_check["total_fuel_consumption_quantity"].fillna(
             0
         ) / emissions_check[
-            "Sheet 3_Total Fuel Consumption Quantity"
+            "Sheet 3_total_fuel_consumption_quantity"
         ].fillna(
             0
         )
         emissions_check["Check Heat Input MMBtu_Boiler_Gen"] = (
-            emissions_check["Total Fuel Consumption MMBtu"].fillna(0)
+            emissions_check["total_fuel_consumption_mmbtu"].fillna(0)
             + emissions_check[
                 "Sheet 1_Union Total Fuel Consumption (MMBtu)"
             ].fillna(0)
         ) - emissions_check["Sheet 1_Total Fuel Consumption (MMBtu)"].fillna(0)
         emissions_check["Check Heat Input Quantity_Boiler_Gen"] = (
-            emissions_check["Total Fuel Consumption Quantity"].fillna(0)
+            emissions_check["total_fuel_consumption_quantity"].fillna(0)
             + emissions_check[
-                "Sheet 1_Union Total Fuel Consumption Quantity"
+                "Sheet 1_Union total_fuel_consumption_quantity"
             ].fillna(0)
-        ) - emissions_check["Sheet 1_Total Fuel Consumption Quantity"].fillna(
+        ) - emissions_check["Sheet 1_total_fuel_consumption_quantity"].fillna(
             0
         )
         emissions_check["Check Heat Input MMBtu_Boiler_Gen Ratio"] = (
-            emissions_check["Total Fuel Consumption MMBtu"].fillna(0)
+            emissions_check["total_fuel_consumption_mmbtu"].fillna(0)
             + emissions_check[
                 "Sheet 1_Union Total Fuel Consumption (MMBtu)"
             ].fillna(0)
         ) / emissions_check["Sheet 1_Total Fuel Consumption (MMBtu)"].fillna(0)
         emissions_check["Check Heat Input Quantity_Boiler_Gen Ratio"] = (
-            emissions_check["Total Fuel Consumption Quantity"].fillna(0)
+            emissions_check["total_fuel_consumption_quantity"].fillna(0)
             + emissions_check[
-                "Sheet 1_Union Total Fuel Consumption Quantity"
+                "Sheet 1_Union total_fuel_consumption_quantity"
             ].fillna(0)
-        ) / emissions_check["Sheet 1_Total Fuel Consumption Quantity"].fillna(
+        ) / emissions_check["Sheet 1_total_fuel_consumption_quantity"].fillna(
             0
         )
 
@@ -191,33 +192,33 @@ def generate_plant_emissions(year):
         for row in ef_co2_ch4_n2o.itertuples():
 
             fuel_type = eia923_gen_fuel_sub.loc[
-                eia923_gen_fuel_sub["Reported Fuel Type Code"].astype(str)
+                eia923_gen_fuel_sub["reported_fuel_type_code"].astype(str)
                 == str(row.EIA_Fuel_Type_Code)
             ].copy()
 
             fuel_type["CO2 (Tons)"] = (row.ton_CO2_mmBtu) * fuel_type[
-                "Total Fuel Consumption MMBtu"
+                "total_fuel_consumption_mmbtu"
             ].astype(float, errors="ignore")
             fuel_type["CH4 (lbs)"] = (row.pound_methane_per_mmbtu) * fuel_type[
-                "Total Fuel Consumption MMBtu"
+                "total_fuel_consumption_mmbtu"
             ].astype(float, errors="ignore")
             fuel_type["N2O (lbs)"] = (row.pound_n2o_per_mmBtu) * fuel_type[
-                "Total Fuel Consumption MMBtu"
+                "total_fuel_consumption_mmbtu"
             ].astype(float, errors="ignore")
 
             emissions = pd.concat([emissions, fuel_type])
 
         emissions_agg = emissions.groupby(
-            ["Plant Id", "Plant Name", "Operator Name"]
+            ["plant_id", "plant_name", "operator_name"]
         )[
             "CO2 (Tons)",
             "CH4 (lbs)",
             "N2O (lbs)",
-            "Total Fuel Consumption MMBtu",
-            "Total Fuel Consumption Quantity",
+            "total_fuel_consumption_mmbtu",
+            "total_fuel_consumption_quantity",
         ].sum()
         emissions_agg = emissions_agg.reset_index()
-        emissions_agg["Plant Id"] = emissions_agg["Plant Id"].astype(str)
+        emissions_agg["plant_id"] = emissions_agg["plant_id"].astype(str)
 
         return emissions_agg
 
@@ -228,40 +229,40 @@ def generate_plant_emissions(year):
         for row in ef_co2_ch4_n2o.itertuples():
 
             fuel_type = eia923_boiler_sub.loc[
-                eia923_boiler_sub["Reported Fuel Type Code"].astype(str)
+                eia923_boiler_sub["reported_fuel_type_code"].astype(str)
                 == str(row.EIA_Fuel_Type_Code)
             ].copy()
 
             fuel_heating_value_monthly = [
-                "MMBtu Per Unit January",
-                "MMBtu Per Unit February",
-                "MMBtu Per Unit March",
-                "MMBtu Per Unit April",
-                "MMBtu Per Unit May",
-                "MMBtu Per Unit June",
-                "MMBtu Per Unit July",
-                "MMBtu Per Unit August",
-                "MMBtu Per Unit September",
-                "MMBtu Per Unit October",
-                "MMBtu Per Unit November",
-                "MMBtu Per Unit December",
+                "mmbtu_per_unit_january",
+                "mmbtu_per_unit_february",
+                "mmbtu_per_unit_march",
+                "mmbtu_per_unit_april",
+                "mmbtu_per_unit_may",
+                "mmbtu_per_unit_june",
+                "mmbtu_per_unit_july",
+                "mmbtu_per_unit_august",
+                "mmbtu_per_unit_september",
+                "mmbtu_per_unit_october",
+                "mmbtu_per_unit_november",
+                "mmbtu_per_unit_december",
             ]
             fuel_quantity_monthly = [
-                "Quantity Of Fuel Consumed January",
-                "Quantity Of Fuel Consumed February",
-                "Quantity Of Fuel Consumed March",
-                "Quantity Of Fuel Consumed April",
-                "Quantity Of Fuel Consumed May",
-                "Quantity Of Fuel Consumed June",
-                "Quantity Of Fuel Consumed July",
-                "Quantity Of Fuel Consumed August",
-                "Quantity Of Fuel Consumed September",
-                "Quantity Of Fuel Consumed October",
-                "Quantity Of Fuel Consumed November",
-                "Quantity Of Fuel Consumed December",
+                "quantity_of_fuel_consumed_january",
+                "quantity_of_fuel_consumed_february",
+                "quantity_of_fuel_consumed_march",
+                "quantity_of_fuel_consumed_april",
+                "quantity_of_fuel_consumed_may",
+                "quantity_of_fuel_consumed_june",
+                "quantity_of_fuel_consumed_july",
+                "quantity_of_fuel_consumed_august",
+                "quantity_of_fuel_consumed_september",
+                "quantity_of_fuel_consumed_october",
+                "quantity_of_fuel_consumed_november",
+                "quantity_of_fuel_consumed_december",
             ]
 
-            fuel_type["Total Fuel Consumption MMBtu"] = (
+            fuel_type["total_fuel_consumption_mmbtu"] = (
                 np.multiply(
                     fuel_type[fuel_heating_value_monthly],
                     fuel_type[fuel_quantity_monthly],
@@ -269,77 +270,77 @@ def generate_plant_emissions(year):
             ).sum(axis=1, skipna=True)
 
             fuel_type["CO2 (Tons)"] = (row.ton_CO2_mmBtu) * fuel_type[
-                "Total Fuel Consumption MMBtu"
+                "total_fuel_consumption_mmbtu"
             ].astype(float, errors="ignore")
             fuel_type["CH4 (lbs)"] = (row.pound_methane_per_mmbtu) * fuel_type[
-                "Total Fuel Consumption MMBtu"
+                "total_fuel_consumption_mmbtu"
             ].astype(float, errors="ignore")
             fuel_type["N2O (lbs)"] = (row.pound_n2o_per_mmBtu) * fuel_type[
-                "Total Fuel Consumption MMBtu"
+                "total_fuel_consumption_mmbtu"
             ].astype(float, errors="ignore")
 
             emissions = pd.concat([emissions, fuel_type])
 
         emissions_agg = emissions.groupby(
-            ["Plant Id", "Plant Name", "Operator Name"], as_index=False
+            ["plant_id", "plant_name", "operator_name"], as_index=False
         )[
             "CH4 (lbs)",
             "N2O (lbs)",
             "CO2 (Tons)",
-            "Total Fuel Consumption MMBtu",
-            "Total Fuel Consumption Quantity",
+            "total_fuel_consumption_mmbtu",
+            "total_fuel_consumption_quantity",
         ].sum()
-        emissions_agg["Plant Id"] = emissions_agg["Plant Id"].astype(str)
+        emissions_agg["plant_id"] = emissions_agg["plant_id"].astype(str)
 
         return emissions_agg
 
     def eia_gen_fuel_net_gen(eia923_gen_fuel):
 
         net_gen_monthly = [
-            "Netgen January",
-            "Netgen February",
-            "Netgen March",
-            "Netgen April",
-            "Netgen May",
-            "Netgen June",
-            "Netgen July",
-            "Netgen August",
-            "Netgen September",
-            "Netgen October",
-            "Netgen November",
-            "Netgen December",
+            "netgen_january",
+            "netgen_february",
+            "netgen_march",
+            "netgen_april",
+            "netgen_may",
+            "netgen_june",
+            "netgen_july",
+            "netgen_august",
+            "netgen_september",
+            "netgen_october",
+            "netgen_november",
+            "netgen_december",
         ]
         eia923_gen_fuel["Annual Net Generation (MWh)"] = eia923_gen_fuel[
             net_gen_monthly
         ].sum(axis=1, skipna=True)
         eia_923_gen_fuel_agg = eia923_gen_fuel.groupby(
-            ["Plant Id", "Plant Name", "Operator Name"]
+            ["plant_id", "plant_name", "operator_name"]
         )["Annual Net Generation (MWh)"].sum()
         eia_923_gen_fuel_agg = eia_923_gen_fuel_agg.reset_index()
         eia_923_gen_fuel_agg_fuel_type = eia923_gen_fuel.groupby(
             [
-                "Plant Id",
-                "Plant Name",
-                "Operator Name",
-                "Reported Fuel Type Code",
+                "plant_id",
+                "plant_name",
+                "operator_name",
+                "reported_fuel_type_code",
             ]
         )["Annual Net Generation (MWh)"].sum()
         eia_923_gen_fuel_agg_fuel_type = (
             eia_923_gen_fuel_agg_fuel_type.reset_index()
         )
         eia_923_gen_fuel_agg_fuel_type_pivot = eia_923_gen_fuel_agg_fuel_type.pivot(
-            index="Plant Id",
-            columns="Reported Fuel Type Code",
+            index="plant_id",
+            columns="reported_fuel_type_code",
             values="Annual Net Generation (MWh)",
         )
         eia_923_gen_fuel_agg_fuel_type_pivot = (
             eia_923_gen_fuel_agg_fuel_type_pivot.reset_index()
         )
         eia_923_gen_fuel_agg = eia_923_gen_fuel_agg.merge(
-            eia_923_gen_fuel_agg_fuel_type_pivot, on="Plant Id", how="left"
+            eia_923_gen_fuel_agg_fuel_type_pivot, on="plant_id", how="left"
         )
-        eia_923_gen_fuel_agg["Plant Id"] = eia_923_gen_fuel_agg[
-            "Plant Id"
+        eia_923_gen_fuel_agg["plant_id"] = eia_923_gen_fuel_agg[
+            "plant_id"
         ].astype(str)
 
         return eia_923_gen_fuel_agg
@@ -349,7 +350,7 @@ def generate_plant_emissions(year):
         #        emissions = pd.DataFrame()
         emissions = eia923_gen_fuel_sub.merge(
             ef_so2.loc[ef_so2["Boiler_Firing_Type_Code"] == "None", :],
-            left_on=["Reported Prime Mover", "Reported Fuel Type Code"],
+            left_on=["reported_prime_mover", "reported_fuel_type_code"],
             right_on=["Reported_Prime_Mover", "Reported_Fuel_Type_Code"],
             how="left",
         )
@@ -364,14 +365,14 @@ def generate_plant_emissions(year):
             emissions["Multiply_by_S_Content"] == "No"
         )
         emissions.loc[criteria, "SO2 (lbs)"] = (
-            emissions.loc[criteria, "Total Fuel Consumption Quantity"]
+            emissions.loc[criteria, "total_fuel_consumption_quantity"]
             * emissions.loc[criteria, "Emission_Factor"]
         )
         criteria = (emissions["Emission_Factor_Denominator"] == "MMBtu") & (
             emissions["Multiply_by_S_Content"] == "No"
         )
         emissions.loc[criteria, "SO2 (lbs)"] = (
-            emissions.loc[criteria, "Total Fuel Consumption MMBtu"]
+            emissions.loc[criteria, "total_fuel_consumption_mmbtu"]
             * emissions.loc[criteria, "Emission_Factor"]
         )
         criteria = (emissions["Emission_Factor_Denominator"] == "MMBtu") & (
@@ -380,7 +381,7 @@ def generate_plant_emissions(year):
         emissions.loc[criteria, "SO2 (lbs)"] = (
             emissions.loc[criteria, "Avg Sulfur Content (%)"]
             * emissions.loc[criteria, "Emission_Factor"]
-            * emissions.loc[criteria, "Total Fuel Consumption MMBtu"]
+            * emissions.loc[criteria, "total_fuel_consumption_mmbtu"]
         )
         criteria = (emissions["Emission_Factor_Denominator"] != "MMBtu") & (
             emissions["Multiply_by_S_Content"] == "Yes"
@@ -388,49 +389,49 @@ def generate_plant_emissions(year):
         emissions.loc[criteria, "SO2 (lbs)"] = (
             emissions.loc[criteria, "Avg Sulfur Content (%)"]
             * emissions.loc[criteria, "Emission_Factor"]
-            * emissions.loc[criteria, "Total Fuel Consumption Quantity"]
+            * emissions.loc[criteria, "total_fuel_consumption_quantity"]
         )
 
         emissions_agg = emissions.groupby(
-            ["Plant Id", "Plant Name", "Operator Name"], as_index=False
+            ["plant_id", "plant_name", "operator_name"], as_index=False
         )[
             "SO2 (lbs)",
-            "Total Fuel Consumption Quantity",
-            "Total Fuel Consumption MMBtu",
+            "total_fuel_consumption_quantity",
+            "total_fuel_consumption_mmbtu",
         ].sum()
-        emissions_agg["Plant Id"] = emissions_agg["Plant Id"].astype(str)
+        emissions_agg["plant_id"] = emissions_agg["plant_id"].astype(str)
 
         return emissions_agg
 
     def eia_boiler_so2_emissions(eia923_boiler_firing_type):
 
         fuel_heating_value_monthly = [
-            "MMBtu Per Unit January",
-            "MMBtu Per Unit February",
-            "MMBtu Per Unit March",
-            "MMBtu Per Unit April",
-            "MMBtu Per Unit May",
-            "MMBtu Per Unit June",
-            "MMBtu Per Unit July",
-            "MMBtu Per Unit August",
-            "MMBtu Per Unit September",
-            "MMBtu Per Unit October",
-            "MMBtu Per Unit November",
-            "MMBtu Per Unit December",
+            "mmbtu_per_unit_january",
+            "mmbtu_per_unit_february",
+            "mmbtu_per_unit_march",
+            "mmbtu_per_unit_april",
+            "mmbtu_per_unit_may",
+            "mmbtu_per_unit_june",
+            "mmbtu_per_unit_july",
+            "mmbtu_per_unit_august",
+            "mmbtu_per_unit_september",
+            "mmbtu_per_unit_october",
+            "mmbtu_per_unit_november",
+            "mmbtu_per_unit_december",
         ]
         fuel_quantity_monthly = [
-            "Quantity Of Fuel Consumed January",
-            "Quantity Of Fuel Consumed February",
-            "Quantity Of Fuel Consumed March",
-            "Quantity Of Fuel Consumed April",
-            "Quantity Of Fuel Consumed May",
-            "Quantity Of Fuel Consumed June",
-            "Quantity Of Fuel Consumed July",
-            "Quantity Of Fuel Consumed August",
-            "Quantity Of Fuel Consumed September",
-            "Quantity Of Fuel Consumed October",
-            "Quantity Of Fuel Consumed November",
-            "Quantity Of Fuel Consumed December",
+            "quantity_of_fuel_consumed_january",
+            "quantity_of_fuel_consumed_february",
+            "quantity_of_fuel_consumed_march",
+            "quantity_of_fuel_consumed_april",
+            "quantity_of_fuel_consumed_may",
+            "quantity_of_fuel_consumed_june",
+            "quantity_of_fuel_consumed_july",
+            "quantity_of_fuel_consumed_august",
+            "quantity_of_fuel_consumed_september",
+            "quantity_of_fuel_consumed_october",
+            "quantity_of_fuel_consumed_november",
+            "quantity_of_fuel_consumed_december",
         ]
         so2_emissions_monthly = [
             "SO2 (lbs) January",
@@ -447,18 +448,18 @@ def generate_plant_emissions(year):
             "SO2 (lbs) December",
         ]
         sulfur_content_monthly = [
-            "Sulfur Content January",
-            "Sulfur Content February",
-            "Sulfur Content March",
-            "Sulfur Content April",
-            "Sulfur Content May",
-            "Sulfur Content June",
-            "Sulfur Content July",
-            "Sulfur Content August",
-            "Sulfur Content September",
-            "Sulfur Content October",
-            "Sulfur Content November",
-            "Sulfur Content December",
+            "sulfur_content_january",
+            "sulfur_content_february",
+            "sulfur_content_march",
+            "sulfur_content_april",
+            "sulfur_content_may",
+            "sulfur_content_june",
+            "sulfur_content_july",
+            "sulfur_content_august",
+            "sulfur_content_september",
+            "sulfur_content_october",
+            "sulfur_content_november",
+            "sulfur_content_december",
         ]
         fuel_heat_quantity_monthly = [
             "MMBtu January",
@@ -497,9 +498,9 @@ def generate_plant_emissions(year):
         emissions = eia923_boiler_firing_type.merge(
             ef_so2,
             left_on=[
-                "Reported Prime Mover",
-                "Reported Fuel Type Code",
-                "Firing Type 1",
+                "reported_prime_mover",
+                "reported_fuel_type_code",
+                "firing_type_1",
             ],
             right_on=[
                 "Reported_Prime_Mover",
@@ -557,16 +558,16 @@ def generate_plant_emissions(year):
         #        emissions["SO2 (lbs)"] = (emissions[so2_emissions_monthly]).sum(
         #            axis=1, skipna=True
         #        )
-        emissions["Total Fuel Consumption MMBtu"] = emissions[
+        emissions["total_fuel_consumption_mmbtu"] = emissions[
             fuel_heat_quantity_monthly
         ].sum(axis=1)
         emissions_merge = emissions.merge(
-            eia_so2_rem_eff, on=["Plant Id", "Boiler Id"], how="left"
+            eia_so2_rem_eff, on=["plant_id", "boiler_id"], how="left"
         )
         emissions_merge[
-            "SO2 Removal Efficiency Rate at Annual Operating Factor"
+            "so2_removal_efficiency_rate_at_annual_operating_factor"
         ] = emissions_merge[
-            "SO2 Removal Efficiency Rate at Annual Operating Factor"
+            "so2_removal_efficiency_rate_at_annual_operating_factor"
         ].fillna(
             0
         )
@@ -575,17 +576,17 @@ def generate_plant_emissions(year):
         ] * (
             1
             - emissions_merge[
-                "SO2 Removal Efficiency Rate at Annual Operating Factor"
+                "so2_removal_efficiency_rate_at_annual_operating_factor"
             ]
         )
         emissions_agg = emissions_merge.groupby(
-            ["Plant Id", "Plant Name", "Operator Name"], as_index=False
+            ["plant_id", "plant_name", "operator_name"], as_index=False
         )[
             "SO2 (lbs) with AEC",
-            "Total Fuel Consumption Quantity",
-            "Total Fuel Consumption MMBtu",
+            "total_fuel_consumption_quantity",
+            "total_fuel_consumption_mmbtu",
         ].sum()
-        emissions_agg["Plant Id"] = emissions_agg["Plant Id"].astype(str)
+        emissions_agg["plant_id"] = emissions_agg["plant_id"].astype(str)
         emissions_agg = emissions_agg.rename(
             columns={"SO2 (lbs) with AEC": "SO2 (lbs)"}
         )
@@ -597,7 +598,7 @@ def generate_plant_emissions(year):
         #        emissions = pd.DataFrame()
         emissions = eia923_gen_fuel_sub.merge(
             ef_nox,
-            left_on=["Reported Fuel Type Code", "Reported Prime Mover"],
+            left_on=["reported_fuel_type_code", "reported_prime_mover"],
             right_on=["Reported_Fuel_Type_Code", "Reported_Prime_Mover"],
             how="left",
         )
@@ -605,26 +606,26 @@ def generate_plant_emissions(year):
         criteria = emissions["Emission_Factor_Denominator"] == "MMBtu"
         emissions.loc[criteria, "NOx (lbs)"] = (
             emissions.loc[criteria, "Emission_Factor"]
-            * emissions.loc[criteria, "Total Fuel Consumption MMBtu"]
+            * emissions.loc[criteria, "total_fuel_consumption_mmbtu"]
         )
         criteria = emissions["Emission_Factor_Denominator"] != "MMBtu"
         emissions.loc[criteria, "NOx (lbs)"] = (
             emissions.loc[criteria, "Emission_Factor"]
-            * emissions.loc[criteria, "Total Fuel Consumption Quantity"]
+            * emissions.loc[criteria, "total_fuel_consumption_quantity"]
         )
         emissions_agg = emissions.groupby(
-            ["Plant Id", "Plant Name", "Operator Name"], as_index=False
+            ["plant_id", "plant_name", "operator_name"], as_index=False
         )[
             "NOx (lbs)",
-            "Total Fuel Consumption Quantity",
-            "Total Fuel Consumption MMBtu",
+            "total_fuel_consumption_quantity",
+            "total_fuel_consumption_mmbtu",
         ].sum()
-        emissions_agg["Plant Id"] = emissions_agg["Plant Id"].astype(str)
+        emissions_agg["plant_id"] = emissions_agg["plant_id"].astype(str)
 
         return emissions_agg
 
     def eia_boiler_nox(row):
-        if row["NOX Emission Rate Entire Year (lbs/MMBtu)"] > 0:
+        if row["nox_emission_rate_entire_year_lbs_mmbtu"] > 0:
             return row["NOx Based on Annual Rate (lbs)"]
         else:
             return row["NOx (lbs)"]
@@ -648,9 +649,9 @@ def generate_plant_emissions(year):
         emissions = eia923_boiler_firing_type.merge(
             ef_nox,
             left_on=[
-                "Reported Fuel Type Code",
-                "Reported Prime Mover",
-                "Firing Type 1",
+                "reported_fuel_type_code",
+                "reported_prime_mover",
+                "firing_type_1",
             ],
             right_on=[
                 "Reported_Fuel_Type_Code",
@@ -660,31 +661,31 @@ def generate_plant_emissions(year):
             how="left",
         )
         emissions["NOx (lbs)"] = emissions["Emission_Factor"] * emissions[
-            "Total Fuel Consumption Quantity"
+            "total_fuel_consumption_quantity"
         ].astype(float, errors="ignore")
 
         emissions.dropna(subset=["NOx (lbs)"], inplace=True)
-        emissions["Total Fuel Consumption MMBtu"] = emissions[
+        emissions["total_fuel_consumption_mmbtu"] = emissions[
             fuel_heat_quantity_monthly
         ].sum(axis=1)
         emissions_boiler = emissions.merge(
-            eia_nox_rate, on=["Plant Id", "Boiler Id"], how="left"
+            eia_nox_rate, on=["plant_id", "boiler_id"], how="left"
         )
         emissions_boiler["NOx Based on Annual Rate (lbs)"] = (
-            emissions_boiler["Total Fuel Consumption MMBtu"]
-            * emissions_boiler["NOX Emission Rate Entire Year (lbs/MMBtu)"]
+            emissions_boiler["total_fuel_consumption_mmbtu"]
+            * emissions_boiler["nox_emission_rate_entire_year_lbs_mmbtu"]
         )
         emissions_boiler = emissions_boiler.assign(
             NOx_lbs=emissions_boiler.apply(eia_boiler_nox, axis=1)
         )
         emissions_agg = emissions_boiler.groupby(
-            ["Plant Id", "Plant Name", "Operator Name"], as_index=False
+            ["plant_id", "plant_name", "operator_name"], as_index=False
         )[
             "NOx_lbs",
-            "Total Fuel Consumption Quantity",
-            "Total Fuel Consumption MMBtu",
+            "total_fuel_consumption_quantity",
+            "total_fuel_consumption_mmbtu",
         ].sum()
-        emissions_agg["Plant Id"] = emissions_agg["Plant Id"].astype(str)
+        emissions_agg["plant_id"] = emissions_agg["plant_id"].astype(str)
         emissions_agg = emissions_agg.rename(columns={"NOx_lbs": "NOx (lbs)"})
         return emissions_agg
 
@@ -710,47 +711,47 @@ def generate_plant_emissions(year):
 
         sulfur_content = pd.DataFrame()
         eia923_boiler_drop_na = eia923_boiler.dropna(
-            subset=["Reported Fuel Type Code"]
+            subset=["reported_fuel_type_code"]
         )
         eia923_boiler_unique_fuel_codes = (
-            eia923_boiler[["Reported Fuel Type Code"]]
+            eia923_boiler[["reported_fuel_type_code"]]
             .drop_duplicates()
             .dropna()
         )
-        eia923_boiler_unique_fuel_codes.columns = ["Reported_Fuel_Type_Code"]
+        eia923_boiler_unique_fuel_codes.columns = ["reported_fuel_type_code"]
 
         for row in eia923_boiler_unique_fuel_codes.itertuples():
             fuel_type = eia923_boiler_drop_na.loc[
-                eia923_boiler_drop_na["Reported Fuel Type Code"].astype(str)
-                == str(row.Reported_Fuel_Type_Code)
+                eia923_boiler_drop_na["reported_fuel_type_code"].astype(str)
+                == str(row.reported_fuel_type_code)
             ].copy()
             fuel_quantity_monthly = [
-                "Quantity Of Fuel Consumed January",
-                "Quantity Of Fuel Consumed February",
-                "Quantity Of Fuel Consumed March",
-                "Quantity Of Fuel Consumed April",
-                "Quantity Of Fuel Consumed May",
-                "Quantity Of Fuel Consumed June",
-                "Quantity Of Fuel Consumed July",
-                "Quantity Of Fuel Consumed August",
-                "Quantity Of Fuel Consumed September",
-                "Quantity Of Fuel Consumed October",
-                "Quantity Of Fuel Consumed November",
-                "Quantity Of Fuel Consumed December",
+                "quantity_of_fuel_consumed_january",
+                "quantity_of_fuel_consumed_february",
+                "quantity_of_fuel_consumed_march",
+                "quantity_of_fuel_consumed_april",
+                "quantity_of_fuel_consumed_may",
+                "quantity_of_fuel_consumed_june",
+                "quantity_of_fuel_consumed_july",
+                "quantity_of_fuel_consumed_august",
+                "quantity_of_fuel_consumed_september",
+                "quantity_of_fuel_consumed_october",
+                "quantity_of_fuel_consumed_november",
+                "quantity_of_fuel_consumed_december",
             ]
             sulfur_content_monthly = [
-                "Sulfur Content January",
-                "Sulfur Content February",
-                "Sulfur Content March",
-                "Sulfur Content April",
-                "Sulfur Content May",
-                "Sulfur Content June",
-                "Sulfur Content July",
-                "Sulfur Content August",
-                "Sulfur Content September",
-                "Sulfur Content October",
-                "Sulfur Content November",
-                "Sulfur Content December",
+                "sulfur_content_january",
+                "sulfur_content_february",
+                "sulfur_content_march",
+                "sulfur_content_april",
+                "sulfur_content_may",
+                "sulfur_content_june",
+                "sulfur_content_july",
+                "sulfur_content_august",
+                "sulfur_content_september",
+                "sulfur_content_october",
+                "sulfur_content_november",
+                "sulfur_content_december",
             ]
             fuel_type["Sulfur Weighted"] = (
                 np.multiply(
@@ -761,14 +762,14 @@ def generate_plant_emissions(year):
             frames = [sulfur_content, fuel_type]
             sulfur_content = pd.concat(frames)
         sulfur_content_agg = sulfur_content.groupby(
-            ["Reported Fuel Type Code"], as_index=False
-        )["Sulfur Weighted", "Total Fuel Consumption Quantity"].sum()
+            ["reported_fuel_type_code"], as_index=False
+        )["Sulfur Weighted", "total_fuel_consumption_quantity"].sum()
         sulfur_content_agg["Avg Sulfur Content (%)"] = (
             sulfur_content_agg["Sulfur Weighted"]
-            / sulfur_content_agg["Total Fuel Consumption Quantity"]
+            / sulfur_content_agg["total_fuel_consumption_quantity"]
         )
         sulfur_content_agg = sulfur_content_agg[
-            ["Reported Fuel Type Code", "Avg Sulfur Content (%)"]
+            ["reported_fuel_type_code", "Avg Sulfur Content (%)"]
         ]
 
         return sulfur_content_agg
@@ -783,11 +784,11 @@ def generate_plant_emissions(year):
         if (
             (
                 row["ampd Heat Input (MMBtu)"]
-                < row["Total Fuel Consumption MMBtu"] * 1.2
+                < row["total_fuel_consumption_mmbtu"] * 1.2
             )
             | (
                 row["ampd Heat Input (MMBtu)"]
-                > row["Total Fuel Consumption MMBtu"] * 0.8
+                > row["total_fuel_consumption_mmbtu"] * 0.8
             )
         ) & (
             (row["ampd CO2 (Tons)"] < row["CO2 (Tons)"] * 100)
@@ -803,11 +804,11 @@ def generate_plant_emissions(year):
         if (
             (
                 row["ampd Heat Input (MMBtu)"]
-                < row["Total Fuel Consumption MMBtu"] * 1.2
+                < row["total_fuel_consumption_mmbtu"] * 1.2
             )
             | (
                 row["ampd Heat Input (MMBtu)"]
-                > row["Total Fuel Consumption MMBtu"] * 0.8
+                > row["total_fuel_consumption_mmbtu"] * 0.8
             )
         ) & (
             (row["ampd SO2 (lbs)"] < row["SO2 (lbs)"] * 100)
@@ -823,11 +824,11 @@ def generate_plant_emissions(year):
         if (
             (
                 row["ampd Heat Input (MMBtu)"]
-                < row["Total Fuel Consumption MMBtu"] * 1.2
+                < row["total_fuel_consumption_mmbtu"] * 1.2
             )
             | (
                 row["ampd Heat Input (MMBtu)"]
-                > row["Total Fuel Consumption MMBtu"] * 0.8
+                > row["total_fuel_consumption_mmbtu"] * 0.8
             )
         ) & (
             (row["ampd NOX (lbs)"] < row["NOx (lbs)"] * 100)
@@ -844,24 +845,30 @@ def generate_plant_emissions(year):
     )
     logging.info("Loading data")
     ampd = cems.build_cems_df(year)
-    eia923_gen_fuel = pd.read_pickle(
-        f"{data_dir}/EIA 923/Pickle Files/Generation and Fuel/EIA 923 Generation and Fuel {year}.pkl"
-    )
-    eia923_boiler = pd.read_pickle(
-        f"{data_dir}/EIA 923/Pickle Files/Boiler Fuel/EIA 923 Boiler Fuel {year}.pkl"
-    )
-    eia923_aec = pd.read_pickle(
-        f"{data_dir}/EIA 923/Pickle Files/Air Emissions Control/EIA 923 AEC {year}.pkl"
-    )
-    eia860_env_assoc_boiler_NOx = pd.read_pickle(
-        f"{data_dir}/EIA 860/Pickle Files/Environmental Associations/EIA 860 Boiler NOx {year}.pkl"
-    )
-    eia860_env_assoc_boiler_SO2 = pd.read_pickle(
-        f"{data_dir}/EIA 860/Pickle Files/Environmental Associations/EIA 860 Boiler SO2 {year}.pkl"
-    )
-    eia860_boiler_design = pd.read_pickle(
-        f"{data_dir}/EIA 860/Pickle Files/Boiler Info & Design Parameters/EIA 860 Boiler Design {year}.pkl"
-    )
+    eia923_gen_fuel = eia923.eia923_generation_and_fuel(year)
+    #    eia923_gen_fuel = pd.read_pickle(
+    #        f"{data_dir}/EIA 923/Pickle Files/Generation and Fuel/EIA 923 Generation and Fuel {year}.pkl"
+    #    )
+    eia923_boiler = eia923.eia923_boiler_fuel(year)
+    #    eia923_boiler = pd.read_pickle(
+    #        f"{data_dir}/EIA 923/Pickle Files/Boiler Fuel/EIA 923 Boiler Fuel {year}.pkl"
+    #    )
+    eia923_aec = eia923.eia923_sched8_aec(year)
+    #    eia923_aec = pd.read_pickle(
+    #        f"{data_dir}/EIA 923/Pickle Files/Air Emissions Control/EIA 923 AEC {year}.pkl"
+    #    )
+    eia860_env_assoc_boiler_NOx = eia860.eia860_EnviroAssoc_nox(year)
+    #    eia860_env_assoc_boiler_NOx = pd.read_pickle(
+    #        f"{data_dir}/EIA 860/Pickle Files/Environmental Associations/EIA 860 Boiler NOx {year}.pkl"
+    #    )
+    eia860_env_assoc_boiler_SO2 = eia860.eia860_EnviroAssoc_so2(year)
+    #    eia860_env_assoc_boiler_SO2 = pd.read_pickle(
+    #        f"{data_dir}/EIA 860/Pickle Files/Environmental Associations/EIA 860 Boiler SO2 {year}.pkl"
+    #    )
+    eia860_boiler_design = eia860.eia860_boiler_info_design(year)
+    #    eia860_boiler_design = pd.read_pickle(
+    #        f"{data_dir}/EIA 860/Pickle Files/Boiler Info & Design Parameters/EIA 860 Boiler Design {year}.pkl"
+    #    )
     ef_co2_ch4_n2o = pd.read_excel(
         f"{data_dir}/EFs/eLCI EFs.xlsx", sheet_name="CO2,CH4,N2O"
     )
@@ -869,86 +876,86 @@ def generate_plant_emissions(year):
     ef_nox = pd.read_csv(f"{data_dir}/EFs/eLCI EFs_NOx.csv", index_col=0)
     eia_nox_rate = eia923_aec[
         [
-            "Plant Id",
-            "NOX Control Id",
-            "NOX Emission Rate Entire Year (lbs/MMBtu)",
+            "plant_id",
+            "nox_control_id",
+            "nox_emission_rate_entire_year_lbs_mmbtu",
         ]
     ].copy()
 
-    eia_nox_rate["NOX Emission Rate Entire Year (lbs/MMBtu)"] = eia_nox_rate[
-        "NOX Emission Rate Entire Year (lbs/MMBtu)"
+    eia_nox_rate["nox_emission_rate_entire_year_lbs_mmbtu"] = eia_nox_rate[
+        "nox_emission_rate_entire_year_lbs_mmbtu"
     ].apply(pd.to_numeric, errors="coerce")
     eia_nox_rate = eia_nox_rate.dropna().drop_duplicates()
-    eia_nox_rate["NOX Control Id"] = eia_nox_rate["NOX Control Id"].astype(str)
-    eia_nox_rate["Plant Id"] = eia_nox_rate["Plant Id"].astype(str)
+    eia_nox_rate["nox_control_id"] = eia_nox_rate["nox_control_id"].astype(str)
+    eia_nox_rate["plant_id"] = eia_nox_rate["plant_id"].astype(str)
     eia_nox_rate = eia_nox_rate.merge(
         eia860_env_assoc_boiler_NOx[
-            ["Plant Id", "NOX Control Id", "Boiler Id"]
+            ["plant_id", "nox_control_id", "boiler_id"]
         ],
-        on=["Plant Id", "NOX Control Id"],
+        on=["plant_id", "nox_control_id"],
         how="left",
     )
     eia_nox_rate = eia_nox_rate.dropna()
     eia_nox_rate = eia_nox_rate[
-        ["Plant Id", "NOX Emission Rate Entire Year (lbs/MMBtu)", "Boiler Id"]
-    ].drop_duplicates(["Plant Id", "Boiler Id"])
+        ["plant_id", "nox_emission_rate_entire_year_lbs_mmbtu", "boiler_id"]
+    ].drop_duplicates(["plant_id", "boiler_id"])
 
     eia_so2_rem_eff = eia923_aec[
         [
-            "Plant Id",
-            "SO2 Control Id",
-            "SO2 Removal Efficiency Rate at Annual Operating Factor",
+            "plant_id",
+            "so2_control_id",
+            "so2_removal_efficiency_rate_at_annual_operating_factor",
         ]
     ].copy()
     eia_so2_rem_eff[
-        "SO2 Removal Efficiency Rate at Annual Operating Factor"
+        "so2_removal_efficiency_rate_at_annual_operating_factor"
     ] = eia_so2_rem_eff[
-        "SO2 Removal Efficiency Rate at Annual Operating Factor"
+        "so2_removal_efficiency_rate_at_annual_operating_factor"
     ].apply(
         pd.to_numeric, errors="coerce"
     )
     eia_so2_rem_eff = eia_so2_rem_eff.dropna().drop_duplicates()
-    eia_so2_rem_eff["SO2 Control Id"] = eia_so2_rem_eff[
-        "SO2 Control Id"
+    eia_so2_rem_eff["so2_control_id"] = eia_so2_rem_eff[
+        "so2_control_id"
     ].astype(str)
-    eia_so2_rem_eff["Plant Id"] = eia_so2_rem_eff["Plant Id"].astype(str)
+    eia_so2_rem_eff["plant_id"] = eia_so2_rem_eff["plant_id"].astype(str)
     eia_so2_rem_eff = eia_so2_rem_eff.merge(
         eia860_env_assoc_boiler_SO2[
-            ["Plant Id", "SO2 Control Id", "Boiler Id"]
+            ["plant_id", "so2_control_id", "boiler_id"]
         ],
-        on=["Plant Id", "SO2 Control Id"],
+        on=["plant_id", "so2_control_id"],
         how="left",
     )
     eia_so2_rem_eff = eia_so2_rem_eff.dropna()
     eia_so2_rem_eff = eia_so2_rem_eff[
         [
-            "Plant Id",
-            "SO2 Removal Efficiency Rate at Annual Operating Factor",
-            "Boiler Id",
+            "plant_id",
+            "so2_removal_efficiency_rate_at_annual_operating_factor",
+            "boiler_id",
         ]
-    ].drop_duplicates(["Plant Id", "Boiler Id"])
+    ].drop_duplicates(["plant_id", "boiler_id"])
 
     eia923_gen_fuel_unique_fuel_codes = (
-        eia923_gen_fuel[["Reported Fuel Type Code"]].drop_duplicates().dropna()
+        eia923_gen_fuel[["reported_fuel_type_code"]].drop_duplicates().dropna()
     )
     wtd_sulfur_content_fuel = eia923_gen_fuel_unique_fuel_codes.merge(
         # Check this routine
         eia_wtd_sulfur_content(eia923_boiler),
-        on=["Reported Fuel Type Code"],
+        on=["reported_fuel_type_code"],
         how="outer",
     ).fillna(0)
-    wtd_sulfur_content_fuel.set_index("Reported Fuel Type Code", inplace=True)
+    wtd_sulfur_content_fuel.set_index("reported_fuel_type_code", inplace=True)
 
-    eia923_gen_fuel = eia923_gen_fuel.rename(
-        columns={"Prime Mover": "Reported Prime Mover"}
-    )
+    #    eia923_gen_fuel = eia923_gen_fuel.rename(
+    #        columns={"prime_mover": "Reported Prime Mover"}
+    #    )
     index1 = pd.MultiIndex.from_arrays(
         [
             eia923_gen_fuel[col]
             for col in [
-                "Plant Id",
-                "Reported Prime Mover",
-                "Reported Fuel Type Code",
+                "plant_id",
+                "reported_prime_mover",
+                "reported_fuel_type_code",
             ]
         ]
     )
@@ -956,9 +963,9 @@ def generate_plant_emissions(year):
         [
             eia923_boiler[col]
             for col in [
-                "Plant Id",
-                "Reported Prime Mover",
-                "Reported Fuel Type Code",
+                "plant_id",
+                "reported_prime_mover",
+                "reported_fuel_type_code",
             ]
         ]
     )
@@ -970,127 +977,127 @@ def generate_plant_emissions(year):
     index1 = pd.MultiIndex.from_arrays(
         [
             eia923_gen_fuel[col]
-            for col in ["Reported Prime Mover", "Reported Fuel Type Code"]
+            for col in ["reported_prime_mover", "reported_fuel_type_code"]
         ]
     )
     index2 = pd.MultiIndex.from_arrays(
         [
             eia923_boiler[col]
-            for col in ["Reported Prime Mover", "Reported Fuel Type Code"]
+            for col in ["reported_prime_mover", "reported_fuel_type_code"]
         ]
     )
     eia923_gen_fuel_union_boiler = eia923_gen_fuel.loc[~index1.isin(index2)]
     eia923_gen_fuel_union_boiler = eia923_gen_fuel_union_boiler.loc[
-        eia923_gen_fuel_union_boiler["Plant Id"].isin(
-            eia923_boiler["Plant Id"]
+        eia923_gen_fuel_union_boiler["plant_id"].isin(
+            eia923_boiler["plant_id"]
         )
     ]
 
     del index1, index2
     logging.info("Summing eia923 fuel generation")
     eia923_gen_fuel_sub_agg = eia923_gen_fuel_sub.groupby(
-        ["Plant Id"], as_index=False
-    )["Total Fuel Consumption MMBtu", "Total Fuel Consumption Quantity"].sum()
+        ["plant_id"], as_index=False
+    )["total_fuel_consumption_mmbtu", "total_fuel_consumption_quantity"].sum()
     eia923_gen_fuel_sub_agg.columns = [
-        "Plant Id",
+        "plant_id",
         "Sheet 1_Total Fuel Consumption (MMBtu)",
-        "Sheet 1_Total Fuel Consumption Quantity",
+        "Sheet 1_total_fuel_consumption_quantity",
     ]
-    eia923_gen_fuel_sub_agg["Plant Id"] = eia923_gen_fuel_sub_agg[
-        "Plant Id"
+    eia923_gen_fuel_sub_agg["plant_id"] = eia923_gen_fuel_sub_agg[
+        "plant_id"
     ].astype(str)
 
     eia923_boiler_sub_agg = eia923_boiler_sub.copy()
     fuel_heating_value_monthly = [
-        "MMBtu Per Unit January",
-        "MMBtu Per Unit February",
-        "MMBtu Per Unit March",
-        "MMBtu Per Unit April",
-        "MMBtu Per Unit May",
-        "MMBtu Per Unit June",
-        "MMBtu Per Unit July",
-        "MMBtu Per Unit August",
-        "MMBtu Per Unit September",
-        "MMBtu Per Unit October",
-        "MMBtu Per Unit November",
-        "MMBtu Per Unit December",
+        "mmbtu_per_unit_january",
+        "mmbtu_per_unit_february",
+        "mmbtu_per_unit_march",
+        "mmbtu_per_unit_april",
+        "mmbtu_per_unit_may",
+        "mmbtu_per_unit_june",
+        "mmbtu_per_unit_july",
+        "mmbtu_per_unit_august",
+        "mmbtu_per_unit_september",
+        "mmbtu_per_unit_october",
+        "mmbtu_per_unit_november",
+        "mmbtu_per_unit_december",
     ]
     fuel_quantity_monthly = [
-        "Quantity Of Fuel Consumed January",
-        "Quantity Of Fuel Consumed February",
-        "Quantity Of Fuel Consumed March",
-        "Quantity Of Fuel Consumed April",
-        "Quantity Of Fuel Consumed May",
-        "Quantity Of Fuel Consumed June",
-        "Quantity Of Fuel Consumed July",
-        "Quantity Of Fuel Consumed August",
-        "Quantity Of Fuel Consumed September",
-        "Quantity Of Fuel Consumed October",
-        "Quantity Of Fuel Consumed November",
-        "Quantity Of Fuel Consumed December",
+        "quantity_of_fuel_consumed_january",
+        "quantity_of_fuel_consumed_february",
+        "quantity_of_fuel_consumed_march",
+        "quantity_of_fuel_consumed_april",
+        "quantity_of_fuel_consumed_may",
+        "quantity_of_fuel_consumed_june",
+        "quantity_of_fuel_consumed_july",
+        "quantity_of_fuel_consumed_august",
+        "quantity_of_fuel_consumed_september",
+        "quantity_of_fuel_consumed_october",
+        "quantity_of_fuel_consumed_november",
+        "quantity_of_fuel_consumed_december",
     ]
     logging.info("Summing eia923 boiler data")
-    eia923_boiler_sub_agg["Total Fuel Consumption MMBtu"] = (
+    eia923_boiler_sub_agg["total_fuel_consumption_mmbtu"] = (
         np.multiply(
             eia923_boiler_sub_agg[fuel_heating_value_monthly],
             eia923_boiler_sub_agg[fuel_quantity_monthly],
         )
     ).sum(axis=1, skipna=True)
     eia923_boiler_sub_agg = eia923_boiler_sub_agg.groupby(
-        ["Plant Id"], as_index=False
-    )["Total Fuel Consumption MMBtu", "Total Fuel Consumption Quantity"].sum()
+        ["plant_id"], as_index=False
+    )["total_fuel_consumption_mmbtu", "total_fuel_consumption_quantity"].sum()
     eia923_boiler_sub_agg.columns = [
-        "Plant Id",
+        "plant_id",
         "Sheet 3_Total Fuel Consumption (MMBtu)",
-        "Sheet 3_Total Fuel Consumption Quantity",
+        "Sheet 3_total_fuel_consumption_quantity",
     ]
-    eia923_boiler_sub_agg["Plant Id"] = eia923_boiler_sub_agg[
-        "Plant Id"
+    eia923_boiler_sub_agg["plant_id"] = eia923_boiler_sub_agg[
+        "plant_id"
     ].astype(str)
 
     eia923_gen_fuel_union_boiler_agg = eia923_gen_fuel_union_boiler.groupby(
-        ["Plant Id"], as_index=False
-    )["Total Fuel Consumption MMBtu", "Total Fuel Consumption Quantity"].sum()
+        ["plant_id"], as_index=False
+    )["total_fuel_consumption_mmbtu", "total_fuel_consumption_quantity"].sum()
     eia923_gen_fuel_union_boiler_agg.columns = [
-        "Plant Id",
+        "plant_id",
         "Sheet 1_Union Total Fuel Consumption (MMBtu)",
-        "Sheet 1_Union Total Fuel Consumption Quantity",
+        "Sheet 1_Union total_fuel_consumption_quantity",
     ]
     eia923_gen_fuel_union_boiler_agg[
-        "Plant Id"
-    ] = eia923_gen_fuel_union_boiler_agg["Plant Id"].astype(str)
+        "plant_id"
+    ] = eia923_gen_fuel_union_boiler_agg["plant_id"].astype(str)
 
     eia923_gen_fuel_boiler_agg = eia923_gen_fuel.loc[
-        eia923_gen_fuel["Plant Id"].isin(eia923_boiler["Plant Id"])
+        eia923_gen_fuel["plant_id"].isin(eia923_boiler["plant_id"])
     ]
     eia923_gen_fuel_boiler_agg = eia923_gen_fuel_boiler_agg.groupby(
-        ["Plant Id"], as_index=False
-    )["Total Fuel Consumption MMBtu", "Total Fuel Consumption Quantity"].sum()
+        ["plant_id"], as_index=False
+    )["total_fuel_consumption_mmbtu", "total_fuel_consumption_quantity"].sum()
     eia923_gen_fuel_boiler_agg.columns = [
-        "Plant Id",
+        "plant_id",
         "Sheet 1_Total Fuel Consumption (MMBtu)",
-        "Sheet 1_Total Fuel Consumption Quantity",
+        "Sheet 1_total_fuel_consumption_quantity",
     ]
-    eia923_gen_fuel_boiler_agg["Plant Id"] = eia923_gen_fuel_boiler_agg[
-        "Plant Id"
+    eia923_gen_fuel_boiler_agg["plant_id"] = eia923_gen_fuel_boiler_agg[
+        "plant_id"
     ].astype(str)
 
     del fuel_heating_value_monthly, fuel_quantity_monthly
 
     eia_860_boiler_firing_type = eia860_boiler_design[
-        ["Plant Id", "Boiler Id", "Firing Type 1"]
+        ["plant_id", "boiler_id", "firing_type_1"]
     ].copy()
-    eia_860_boiler_firing_type["Plant Id"] = eia_860_boiler_firing_type[
-        "Plant Id"
-    ].astype(float, errors="ignore")
+    eia_860_boiler_firing_type["plant_id"] = eia_860_boiler_firing_type[
+        "plant_id"
+    ].astype(str, errors="ignore")
     eia923_boiler_firing_type = eia923_boiler_sub.merge(
-        eia_860_boiler_firing_type, on=["Plant Id", "Boiler Id"], how="left"
+        eia_860_boiler_firing_type, on=["plant_id", "boiler_id"], how="left"
     )
-    eia923_boiler_firing_type["Firing Type 1"] = eia923_boiler_firing_type[
-        "Firing Type 1"
+    eia923_boiler_firing_type["firing_type_1"] = eia923_boiler_firing_type[
+        "firing_type_1"
     ].fillna("None")
-    eia923_boiler_firing_type["Plant Id"] = eia923_boiler_firing_type[
-        "Plant Id"
+    eia923_boiler_firing_type["plant_id"] = eia923_boiler_firing_type[
+        "plant_id"
     ].astype(str)
 
     eia_gen_fuel_net_gen_output = eia_gen_fuel_net_gen(eia923_gen_fuel)
@@ -1197,9 +1204,9 @@ def generate_plant_emissions(year):
         )
     )
     plant_fuel_class = eia_gen_fuel_net_gen_output[
-        ["Plant Id", "Primary_Fuel", "Primary Fuel %"]
+        ["plant_id", "Primary_Fuel", "Primary Fuel %"]
     ].copy()
-    plant_fuel_class["Plant Id"] = plant_fuel_class["Plant Id"].astype(str)
+    plant_fuel_class["plant_id"] = plant_fuel_class["plant_id"].astype(str)
     logging.info("Generating co2, ch4, n2o from gen fuel")
     eia_gen_fuel_co2_ch4_n2o_output = eia_gen_fuel_co2_ch4_n2o_emissions(
         eia923_gen_fuel
@@ -1249,13 +1256,13 @@ def generate_plant_emissions(year):
             "ampd Heat Input (MMBtu)",
         ]
     ]
-    ampd_rev["Plant Id"] = ampd_rev["plant_id_eia"].astype(str)
+    ampd_rev["plant_id"] = ampd_rev["plant_id_eia"].astype(str)
 
     eia_923_gen_fuel_plant = eia923_gen_fuel.groupby(
-        ["Plant Id", "Plant Name", "Operator Name"], as_index=False
-    )["Net Generation (MWh)", "Total Fuel Consumption MMBtu"].sum()
-    eia_923_gen_fuel_plant["Plant Id"] = eia_923_gen_fuel_plant[
-        "Plant Id"
+        ["plant_id", "plant_name", "operator_name"], as_index=False
+    )["net_generation_megawatthours", "total_fuel_consumption_mmbtu"].sum()
+    eia_923_gen_fuel_plant["plant_id"] = eia_923_gen_fuel_plant[
+        "plant_id"
     ].astype(str)
 
     df_list = [
@@ -1269,25 +1276,25 @@ def generate_plant_emissions(year):
     logging.info("Choosing emission sources")
     emissions_comparer = pd.concat(df_list, sort=True)
     eia_plant = emissions_comparer.groupby(
-        ["Plant Id", "Plant Name", "Operator Name"], as_index=False
+        ["plant_id", "plant_name", "operator_name"], as_index=False
     )["CO2 (Tons)", "CH4 (lbs)", "N2O (lbs)", "SO2 (lbs)", "NOx (lbs)"].sum()
     eia_plant = eia_plant.merge(
         eia_923_gen_fuel_plant,
-        on=["Plant Id", "Plant Name", "Operator Name"],
+        on=["plant_id", "plant_name", "operator_name"],
         how="left",
     )
-    result_agg = eia_plant.merge(ampd_rev, on=["Plant Id"], how="left")
+    result_agg = eia_plant.merge(ampd_rev, on=["plant_id"], how="left")
     result_agg = result_agg.merge(
-        plant_fuel_class, on=["Plant Id"], how="left"
+        plant_fuel_class, on=["plant_id"], how="left"
     )
-    result_agg["Plant Id"] = result_agg["Plant Id"].astype(int)
+    result_agg["plant_id"] = result_agg["plant_id"].astype(int)
 
     result_agg_final = result_agg.copy()
     result_agg_final["CO2_emissions_tons"] = result_agg_final["CO2 (Tons)"]
     result_agg_final["CO2_Source"] = "ap42"
     fuel_input_criteria = result_agg_final["ampd Heat Input (MMBtu)"].between(
-        result_agg_final["Total Fuel Consumption MMBtu"] * 0.8,
-        result_agg_final["Total Fuel Consumption MMBtu"] * 1.2,
+        result_agg_final["total_fuel_consumption_mmbtu"] * 0.8,
+        result_agg_final["total_fuel_consumption_mmbtu"] * 1.2,
     )
     emission_criteria = result_agg_final["ampd CO2 (Tons)"].between(
         result_agg_final["CO2 (Tons)"] * (1 / 100),
@@ -1322,18 +1329,12 @@ def generate_plant_emissions(year):
         total_criteria, "NOx_emissions_lbs"
     ] = result_agg_final.loc[total_criteria, "NOx (lbs)"]
     result_agg_final["NOx_Source"] = "ampd"
-    result_agg_final = result_agg_final.assign(
-        NOx_emissions_lbs=result_agg_final.apply(emissions_logic_NOx, axis=1)
-    )
-    result_agg_final["NOx_emissions_lbs"], result_agg_final[
-        "NOx_Source"
-    ] = zip(*result_agg_final["NOx_emissions_lbs"])
 
     result_agg_final["Net Efficiency"] = (
-        result_agg_final["Net Generation (MWh)"]
+        result_agg_final["net_generation_megawatthours"]
         * pq.convert(1, "MW*h", "Btu")
         / 10 ** 6
-        / result_agg_final["Total Fuel Consumption MMBtu"]
+        / result_agg_final["total_fuel_consumption_mmbtu"]
     )
     result_agg_final["Gross Efficiency"] = (
         result_agg_final["ampd Gross Generation (MWh)"]
@@ -1344,12 +1345,12 @@ def generate_plant_emissions(year):
 
     netl_harmonized = result_agg_final[
         [
-            "Plant Id",
-            "Plant Name",
-            "Operator Name",
+            "plant_id",
+            "plant_name",
+            "operator_name",
             "Primary_Fuel",
-            "Net Generation (MWh)",
-            "Total Fuel Consumption MMBtu",
+            "net_generation_megawatthours",
+            "total_fuel_consumption_mmbtu",
             "Net Efficiency",
             "CO2_emissions_tons",
             "CH4 (lbs)",
@@ -1366,17 +1367,17 @@ def generate_plant_emissions(year):
             "CO2_emissions_tons": "CO2 (Tons)",
             "SO2_emissions_lbs": "SO2 (lbs)",
             "NOx_emissions_lbs": "NOx (lbs)",
-            "Total Fuel Consumption MMBtu": "Total Fuel Consumption (MMBtu)",
+            "total_fuel_consumption_mmbtu": "Total Fuel Consumption (MMBtu)",
         }
     )
     logging.info("Melting and mapping")
     netl_harmonized_melt = netl_harmonized.melt(
         id_vars=[
-            "Plant Id",
-            "Plant Name",
-            "Operator Name",
+            "plant_id",
+            "plant_name",
+            "operator_name",
             "Primary_Fuel",
-            "Net Generation (MWh)",
+            "net_generation_megawatthours",
             "Total Fuel Consumption (MMBtu)",
             "Net Efficiency",
             "CO2_Source",
@@ -1468,7 +1469,7 @@ def generate_plant_emissions(year):
         columns={
             "value": "FlowAmount",
             "Flowable": "FlowName",
-            "Plant Id": "eGRID_ID",
+            "plant_id": "eGRID_ID",
             "Context": "Compartment_path",
             "Flow UUID": "FlowUUID",
             "Primary_Fuel": "PrimaryFuel",
