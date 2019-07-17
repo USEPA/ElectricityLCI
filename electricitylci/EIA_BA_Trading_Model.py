@@ -67,9 +67,9 @@ from electricitylci.model_config import (
 
 def ba_io_trading_model(year, subregion):
     
-    year=2016
-    subregion = 'BA'
-    
+#    year=2016
+#    subregion = 'BA'
+#    
     
     #Read in BAA file which contains the names and abbreviations
     df_BA = pd.read_excel(data_dir + '/BA_Codes_930.xlsx', sheetname = 'US', header = 4)
@@ -445,7 +445,7 @@ def ba_io_trading_model(year, subregion):
     
     #Develop final df for FERC Market Region
     ferc_final_trade = df_final_trade_out_filt_melted_merge.copy()
-    ferc_final_trade = ferc_final_trade.drop(columns = ['export BAA', 'import BAA'])
+    ferc_final_trade = ferc_final_trade.groupby(['import ferc region abbr', 'import ferc region', 'export ferc region','export ferc region abbr'])['value'].sum().reset_index()
     ferc_final_trade = ferc_final_trade.merge(ferc_import_grouped_tot, left_on = 'import ferc region', right_on = 'import ferc region')
     ferc_final_trade = ferc_final_trade.rename(columns = {'value_x':'value','value_y':'total'})
     ferc_final_trade['fraction'] = ferc_final_trade['value']/ferc_final_trade['total']
