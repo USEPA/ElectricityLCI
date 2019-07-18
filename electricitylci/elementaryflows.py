@@ -14,7 +14,6 @@ mapping_to_fedelemflows = mapping_to_fedelemflows[
         "TargetFlowUUID",
         "TargetFlowContext",
         "TargetUnit",
-        "TargetFlowUUID",
     ]
 ]
 
@@ -41,7 +40,7 @@ def map_emissions_to_fedelemflows(df_with_flows_compartments):
         "TargetUnit"
     ]
 
-    mapped_df = mapped_df.rename(columns={"UUID": "FlowUUID"})
+    mapped_df = mapped_df.rename(columns={"TargetFlowUUID": "FlowUUID"})
 
     # If air, soil, or water assigned it directionality of emission. Others will get assigned later as needed
     emission_compartments = ["air", "soil", "water"]
