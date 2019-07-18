@@ -156,7 +156,7 @@ def generate_regional_grid_loss(final_database, year, subregion="all"):
         "FuelCategory",
         "PrimaryFuel",
         "NERC",
-        "Balancing Authority Code",
+        "Balancing Authority Name",
         "Electricity",
         "Year",
         "Subregion",
@@ -178,7 +178,7 @@ def generate_regional_grid_loss(final_database, year, subregion="all"):
     elif subregion == "NERC":
         aggregation_column = "NERC"
     elif subregion == "BA":
-        aggregation_column = "Balancing Authority Code"
+        aggregation_column = "Balancing Authority Name"
     elif subregion == "US":
         aggregation_column = None
     wm = lambda x: np.average(
@@ -214,7 +214,7 @@ def olca_schema_distribution_mix(td_by_region, gen_mix_dict, subregion="BA"):
         aggregation_column = "NERC"
         region = list(pd.unique(td_by_region[aggregation_column]))
     elif subregion == "BA":
-        aggregation_column = "Balancing Authority Code"
+        aggregation_column = "Balancing Authority Name"
         region = list(pd.unique(td_by_region[aggregation_column]))
     else:
         aggregation_column = None

@@ -109,7 +109,11 @@ def create_generation_mix_process_df_from_model_generation_data(
         ]
     elif subregion == "BA":
         database_for_genmix_final["Subregion"] = database_for_genmix_final[
-            "Balancing Authority Code"
+            "Balancing Authority Name"
+        ]
+    elif subregion == "all":
+        database_for_genmix_final["Subregion"] = database_for_genmix_final[
+            "NERC"
         ]
 
     if use_primaryfuel_for_coal:
