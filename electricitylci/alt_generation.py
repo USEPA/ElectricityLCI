@@ -29,12 +29,14 @@ def aggregate_facility_flows(df):
         "water",
         "soil",
         "ground",
+        "waste"
     ]
     groupby_cols = [
         "FuelCategory",
         "FacilityID",
         "Electricity",
-        "FlowUUID",
+#        "FlowUUID",
+        "FlowName",
         "Source",
         "Compartment_path",
     ]
@@ -48,7 +50,7 @@ def aggregate_facility_flows(df):
         "ElementaryFlowPrimeContext",
         "FRS_ID",
         "FlowAmount",
-        "FlowName",
+#        "FlowName",
         "FlowName_netl",
         "FlowUUID",
         "GeographicalCorrelation",
@@ -173,7 +175,7 @@ def add_data_collection_score(db, elec_df, subregion="BA"):
     elif subregion == "NERC":
         region_agg = ["NERC"]
     elif subregion == "BA":
-        region_agg = ["Balancing Authority Code"]
+        region_agg = ["Balancing Authority Name"]
     elif subregion == "US":
         region_agg = None
     fuel_agg = ["FuelCategory"]
@@ -239,7 +241,7 @@ def calculate_electricity_by_source(db, subregion="BA"):
     elif subregion == "NERC":
         region_agg = ["NERC"]
     elif subregion == "BA":
-        region_agg = ["Balancing Authority Code"]
+        region_agg = ["Balancing Authority Name"]
     elif subregion == "US":
         region_agg = None
     fuel_agg = ["FuelCategory"]
@@ -291,31 +293,32 @@ def calculate_electricity_by_source(db, subregion="BA"):
         how="left",
     )
     db_multiple_sources = db.loc[db["source_string"].isna(), :]
-    source_df = pd.DataFrame(
-        db_multiple_sources.groupby(groupby_cols)[["Source"]].apply(
-            combine_source_lambda
-        ),
-        columns=["source_list"],
-    )
-    source_df[["source_list", "source_string"]] = pd.DataFrame(
-        source_df["source_list"].values.tolist(), index=source_df.index
-    )
-    source_df.reset_index(inplace=True)
-    db_multiple_sources.drop(
-        columns=["source_list", "source_string"], inplace=True
-    )
-    old_index = db_multiple_sources.index
-    db_multiple_sources = db_multiple_sources.merge(
-        right=source_df,
-        left_on=groupby_cols,
-        right_on=groupby_cols,
-        how="left",
-    )
-    db_multiple_sources.index = old_index
-    # db[["source_string","source_list"]].fillna(db_multiple_sources[["source_string","source_list"]],inplace=True)
-    db.loc[
-        db["source_string"].isna(), ["source_string", "source_list"]
-    ] = db_multiple_sources[["source_string", "source_list"]]
+    if len(db_multiple_sources) >0:
+        source_df = pd.DataFrame(
+            db_multiple_sources.groupby(groupby_cols)[["Source"]].apply(
+                combine_source_lambda
+            ),
+            columns=["source_list"],
+        )
+        source_df[["source_list", "source_string"]] = pd.DataFrame(
+            source_df["source_list"].values.tolist(), index=source_df.index
+        )
+        source_df.reset_index(inplace=True)
+        db_multiple_sources.drop(
+            columns=["source_list", "source_string"], inplace=True
+        )
+        old_index = db_multiple_sources.index
+        db_multiple_sources = db_multiple_sources.merge(
+            right=source_df,
+            left_on=groupby_cols,
+            right_on=groupby_cols,
+            how="left",
+        )
+        db_multiple_sources.index = old_index
+        # db[["source_string","source_list"]].fillna(db_multiple_sources[["source_string","source_list"]],inplace=True)
+        db.loc[
+            db["source_string"].isna(), ["source_string", "source_list"]
+        ] = db_multiple_sources[["source_string", "source_list"]]
     unique_source_lists = list(db["source_string"].unique())
     # unique_source_lists = [x for x in unique_source_lists if ((str(x) != "nan")&(str(x)!="netl"))]
     unique_source_lists = [
@@ -583,9 +586,15 @@ def aggregate_data(total_db, subregion="BA"):
             return None, None
         if isinstance(df["uncertaintyLognormParams"], str):
             params = ast.literal_eval(df["uncertaintyLognormParams"])
-        if len(df["uncertaintyLognormParams"]) != 3:
+        try: 
+            length = len(df["uncertaintyLognormParams"])
+        except TypeError:
+            module_logger.info(f"Error calculating length of uncertaintyLognormParams"
+                               f"{df['uncertaintyLognormParams']}")
+            return None, None
+        if length != 3:
             module_logger.info(
-                f"Error estimate standard deviation - length: {len(params)}"
+                f"Error estimating standard deviation - length: {len(params)}"
             )
         try:
             geomean = df["Emission_factor"]
@@ -616,7 +625,7 @@ def aggregate_data(total_db, subregion="BA"):
     elif subregion == "NERC":
         region_agg = ["NERC"]
     elif subregion == "BA":
-        region_agg = ["Balancing Authority Code"]
+        region_agg = ["Balancing Authority Name"]
     elif subregion == "US":
         region_agg = None
     fuel_agg = ["FuelCategory"]
@@ -637,6 +646,8 @@ def aggregate_data(total_db, subregion="BA"):
             "FlowUUID",
         ]
         elec_df_groupby_cols = fuel_agg + ["Year", "source_string"]
+    total_db["FlowUUID"]=total_db["FlowUUID"].fillna(value="dummy-uuid")
+#    total_db=total_db.loc[(total_db["Balancing Authority Code"]=="PJM")&(total_db["Compartment"]=="waste"),:]
     total_db = aggregate_facility_flows(total_db)
     total_db, electricity_df = calculate_electricity_by_source(
         total_db, subregion
@@ -665,6 +676,7 @@ def aggregate_data(total_db, subregion="BA"):
     print(
         "Aggregating flow amounts, dqi information, and calculating uncertainty"
     )
+    
     database_f3 = total_db.groupby(
         groupby_cols + ["Year", "source_string"], as_index=False
     ).agg(
@@ -692,7 +704,7 @@ def aggregate_data(total_db, subregion="BA"):
         "uncertaintyMax",
         "uncertaintyLognormParams",
     ]
-
+    
     criteria = database_f3["Compartment"] == "input"
     database_f3.loc[criteria, "uncertaintyLognormParams"] = None
     database_f3 = database_f3.merge(
@@ -723,6 +735,7 @@ def aggregate_data(total_db, subregion="BA"):
                 how="left",
                 )
     canada_db.index = database_f3.loc[canadian_criteria, :].index
+    database_f3.loc[database_f3["FlowUUID"]=="dummy-uuid","FlowUUID"]=float("nan")
     database_f3.loc[canada_db.index, "electricity_sum"] = canada_db[
         "Electricity"
     ]
@@ -757,7 +770,7 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
     elif subregion == "NERC":
         region_agg = ["NERC"]
     elif subregion == "BA":
-        region_agg = ["Balancing Authority Code"]
+        region_agg = ["Balancing Authority Name"]
     elif subregion == "US":
         region_agg = None
     fuel_agg = ["FuelCategory"]
