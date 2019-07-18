@@ -357,7 +357,7 @@ def exchange_table_creation_output(data):
     ar["pedigreeUncertainty"] = ""
     ar["dqEntry"] = (
         "("
-        + str(round(data["Reliability_Score"].iloc[0], 1))
+        + str(round(data["ReliabilityScore"].iloc[0], 1))
         + ";"
         + str(round(data["TemporalCorrelation"].iloc[0], 1))
         + ";"
