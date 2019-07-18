@@ -58,13 +58,13 @@ def get_generation_process_df(source="egrid", regions="all"):
             egrid_facilities_to_include=egrid_facilities_to_include
         )
 
-    generation_process_df, final_db = create_generation_process_df(
+    generation_process_df = create_generation_process_df(
         # electricity_for_selected_egrid_facilities,
         generation_data,
         emissions_and_waste_for_selected_egrid_facilities,
         subregion=regions,
     )
-    return generation_process_df, final_db
+    return generation_process_df
 
 
 def get_generation_mix_process_df(source="egrid", regions="all"):
