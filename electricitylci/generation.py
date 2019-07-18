@@ -131,6 +131,8 @@ def combine_gen_emissions_data(generation_data, emissions_data, subregion='all')
     """
 
     emissions_data = emissions_data.drop(columns = ['FacilityID'])
+    generation_data["FacilityID"]=generation_data["FacilityID"].astype(int)
+    emissions_data["eGRID_ID"]=emissions_data["eGRID_ID"].astype(int)
     combined_data = generation_data.merge(
         emissions_data,
         left_on=['FacilityID', 'Year'],
@@ -288,7 +290,6 @@ def create_generation_process_df(generation_data, emissions_data, subregion='all
         'Balancing Authority Code', 'Ref_Electricity_Subregion_FuelCategory'
     ]
     df_list = []
-    regions = ['ERCO']
     for reg in regions:
 
         print("Creating generation process database for " + reg + " ...")
@@ -312,8 +313,7 @@ def create_generation_process_df(generation_data, emissions_data, subregion='all
         database['TechnologicalCorrelation'] = 5
         database['TemporalCorrelation'] = 5
         database['DataCollection'] = 5
-        fuel_name_sub=fuel_name.loc[fuel_name['FuelList']=='COAL',:]
-        for index, row in fuel_name_sub.iterrows():
+        for index, row in fuel_name.iterrows():
             # Reading complete fuel name and heat content information
             fuelname = row['FuelList']
             fuelheat = float(row['Heatcontent'])
@@ -328,13 +328,11 @@ def create_generation_process_df(generation_data, emissions_data, subregion='all
                 exchange_list = list(pd.unique(database_f1['FlowName']))
                 if use_primaryfuel_for_coal:
                     database_f1['FuelCategory'].loc[database_f1['FuelCategory'] == 'COAL'] = database_f1['PrimaryFuel']
-                exchange_list=['Hexane']
                 for exchange in exchange_list:
                     database_f2 = database_f1[database_f1['FlowName'] == exchange]
                     database_f2 = database_f2[database_f2_cols]
                     
                     compartment_list = list(pd.unique(database_f2['Compartment']))
-                    compartment_list = ['air']
                     for compartment in compartment_list:
                         database_f3 = database_f2[database_f2['Compartment'] == compartment]
 
@@ -438,7 +436,7 @@ def create_generation_process_df(generation_data, emissions_data, subregion='all
        'FuelCategory', 'FlowName', 'FlowUUID', 'Compartment', 'Year', 'Source',
        'Unit', 'Subregion', 'ElementaryFlowPrimeContext',
        'TechnologicalCorrelation', 'TemporalCorrelation', 'DataCollection',
-       'Emission_factor', 'Reliability_Score', 'GeographicalCorrelation',
+       'Emission_factor', 'ReliabilityScore', 'GeographicalCorrelation',
        'GeomMean', 'GeomSD', 'Maximum', 'Minimum'
     ]
     result_database = result_database[keep_cols]
@@ -448,7 +446,7 @@ def create_generation_process_df(generation_data, emissions_data, subregion='all
 
 
     print("Generation process database for " + subregion + " complete.")
-    return result_database, final_database
+    return result_database
 
     # return b
 
@@ -610,27 +608,27 @@ def olcaschema_genprocess(database,subregion):
    database = map_heat_inputs_to_fuel_names(database)
 
 
-   if subregion == 'all':
-        region = ['SAT','WNC','ESC','WSC','MAT','ENC']#egrid_subregions
-   elif subregion == 'NERC':
-        region = list(pd.unique(database['NERC']))
-   elif subregion == 'BA':
-        region = list(pd.unique(database['Balancing Authority Name']))
-   else:
-        region = [subregion]
-
+#   if subregion == 'all':
+#        region = egrid_subregions
+#   elif subregion == 'NERC':
+#        region = list(pd.unique(database['NERC']))
+#   elif subregion == 'BA':
+#        region = list(pd.unique(database['Balancing Authority Name']))
+#   else:
+#        region = [subregion]
+   region=database["Subregion"].unique()
    for reg in region:
 
         print("Writing generation process dictionary for " + reg + " ...")
         # This makes sure that the dictionary writer works fine because it only works with the subregion column. So we are sending the
         #correct regions in the subregion column rather than egrid subregions if rquired.
         #This makes it easy for the process_dictionary_writer to be much simpler.
-        if subregion == 'all':
-           database['Subregion'] = database['Subregion']
-        elif subregion == 'NERC':
-           database['Subregion'] = database['NERC']
-        elif subregion == 'BA':
-           database['Subregion'] = database['Balancing Authority Name']
+#        if subregion == 'all':
+#           database['Subregion'] = database['Subregion']
+#        elif subregion == 'NERC':
+#           database['Subregion'] = database['NERC']
+#        elif subregion == 'BA':
+#           database['Subregion'] = database['Balancing Authority Name']
 
         database_reg = database[database['Subregion'] == reg]
 
@@ -671,6 +669,7 @@ def olcaschema_genprocess(database,subregion):
                             #print('\n')
 
                 final = process_table_creation_gen(fuelname, exchanges_list, reg)
+                final["name"]="Electricity - "+database_f1["FuelCategory"].tolist()[0]+" - "+reg
                 generation_process_dict[reg+"_"+fuelname] = final
 
    print("Generation process dictionaries complete.")
