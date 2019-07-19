@@ -194,29 +194,6 @@ def exchange_table_creation_input_con_mix(
     # ar['location'] = location(loc)
     return ar
 
-def exchange_table_creation_input_con_mix_io(
-    generation, loc, ref_to_consumption=False
-):
-    ar = dict()
-    ar["internalId"] = ""
-    ar["@type"] = "Exchange"
-    ar["avoidedProduct"] = False
-    ar["flow"] = electricity_at_grid_flow
-    ar["flowProperty"] = ""
-    ar["input"] = True
-    ar["baseUncertainty"] = ""
-    if ref_to_consumption:
-        ar["provider"] = con_process_ref(loc, "consumption")
-    else:
-        ar["provider"] = con_process_ref(loc)
-    ar["amount"] = round(generation['fraction'], 6)
-    ar["unit"] = unit("MWh")
-    ar["pedigreeUncertainty"] = ""
-    ar["uncertainty"] = ""
-    ar["comment"] = "eGRID " + str(year)
-    # ar['location'] = location(loc)
-    return ar
-
 def process_table_creation_gen(fuelname, exchanges_list, region):
     ar = dict()
     ar["@type"] = "Process"
