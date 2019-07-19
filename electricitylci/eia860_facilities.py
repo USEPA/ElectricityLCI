@@ -373,6 +373,76 @@ def eia860_EnviroAssoc_nox(year):
     eia = _clean_columns(eia)
     return eia
 
+def eia860_generator_info(year):
+    expected_860_folder = join(data_dir, "eia860_{}".format(year))
+
+    if not os.path.exists(expected_860_folder):
+        print("Downloading EIA-860 files")
+        eia860_download(year=year, save_path=expected_860_folder)
+
+        eia860_path, eia860_name = find_file_in_folder(
+            folder_path=expected_860_folder,
+            file_pattern_match=["3_1_Generator", "xlsx"],
+            return_name=True,
+        )
+        # eia860_files = os.listdir(expected_860_folder)
+
+        # # would be more elegent with glob but this works to identify the
+        # # Schedule_2_3_4_5 file
+        # for f in eia860_files:
+        #     if '2___Plant' in f:
+        #         plant_file = f
+
+        # eia860_path = join(expected_860_folder, plant_file)
+
+        # colstokeep = group_cols + sum_cols
+        eia = load_eia860_excel(eia860_path, "Operable", 1)
+
+        # Save as csv for easier access in future
+        csv_fn = eia860_name.split(".")[0] + "_generator_operable.csv"
+        csv_path = join(expected_860_folder, csv_fn)
+        eia.to_csv(csv_path, index=False)
+
+    else:
+        all_files = os.listdir(expected_860_folder)
+
+        # Check for both csv and year<_Final> in case multiple years
+        # or other csv files exist
+        csv_file = [
+            f
+            for f in all_files
+            if "_generator_operable.csv" in f
+            and "3_1_Generator" in f
+        ]
+
+        # Read and return the existing csv file if it exists
+        if csv_file:
+            print("Loading {} EIA-860 plant data from csv file".format(year))
+            fn = csv_file[0]
+            csv_path = join(expected_860_folder, fn)
+            eia = pd.read_csv(csv_path, dtype={"Plant Id": str})
+
+        else:
+            print("Loading data from previously downloaded excel file")
+            eia860_path, eia860_name = find_file_in_folder(
+                folder_path=expected_860_folder,
+                file_pattern_match=["3_1_Generator", "xlsx"],
+                return_name=True,
+            )
+            # # would be more elegent with glob but this works to identify the
+            # # Schedule_2_3_4_5 file
+            # for f in all_files:
+            #     if '2___Plant' in f:
+            #         plant_file = f
+            # eia860_path = join(expected_860_folder, plant_file)
+            eia = load_eia860_excel(eia860_path, "Operable", 1)
+
+            csv_fn = eia860_name.split(".")[0] + "_generator_operable.csv"
+            csv_path = join(expected_860_folder, csv_fn)
+            eia.to_csv(csv_path, index=False)
+    eia = _clean_columns(eia)
+    return eia
+
 
 if __name__ == "__main__":
     eia_nox = eia860_EnviroAssoc_nox(2016)

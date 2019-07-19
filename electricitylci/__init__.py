@@ -208,6 +208,7 @@ def get_upstream_process_df():
     import electricitylci.natural_gas_upstream as ng
     import electricitylci.petroleum_upstream as petro
     import electricitylci.nuclear_upstream as nuke
+    import electricitylci.power_plant_construction as const
     from electricitylci.combinator import concat_map_upstream_databases
     from electricitylci.model_config import eia_gen_year
     print("Generating upstream inventories...")
@@ -215,8 +216,9 @@ def get_upstream_process_df():
     ng_df = ng.generate_upstream_ng(eia_gen_year)
     petro_df = petro.generate_petroleum_upstream(eia_gen_year)
     nuke_df = nuke.generate_upstream_nuc(eia_gen_year)
+    const = const.generate_power_plant_construction(eia_gen_year)
     upstream_df = concat_map_upstream_databases(
-        coal_df, ng_df, petro_df, nuke_df
+        coal_df, ng_df, petro_df, nuke_df,const
     )
     return upstream_df
 

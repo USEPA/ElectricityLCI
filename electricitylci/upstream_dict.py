@@ -29,6 +29,7 @@ def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
         "GEOTHERMAL": "22: Utilities/2211: Electric Power Generation Transmission and Distribuion",
         "WIND": "22: Utilities/2211: Electric Power Generation Transmission and Distribuion",
         "SOLAR": "22: Utilities/2211: Electric Power Generation Transmission and Distribuion",
+        "CONSTRUCTION":"23: Construction/2371: Utility System Construction",
     }
     ar = dict()
     ar["@type"] = "Process"
@@ -85,6 +86,13 @@ def _exchange_table_creation_ref(fuel_type):
         "id": "",
         "category": "21: Mining, Quarrying, and Oil and Gas Extraction",
     }
+    construction_flow ={
+            "flowType":"PRODUCT_FLOW",
+            "flowProperties":"",
+            "name":"power plant construction",
+            "id":"",
+            "category":"23: Construction"
+            }
 #    geothermal_flow = {
 #        "flowType": "PRODUCT_FLOW",
 #        "flowProperties": "",
@@ -140,6 +148,10 @@ def _exchange_table_creation_ref(fuel_type):
         ar["amount"] = 1
     elif fuel_type == "WIND":
         ar["flow"] = wind_flow
+        ar["unit"] = _unit("Item(s)")
+        ar["amount"] = 1
+    elif fuel_type == "CONSTRUCTION":
+        ar["flow"] = construction_flow
         ar["unit"] = _unit("Item(s)")
         ar["amount"] = 1
     ar["flowProperty"] = ""
@@ -366,6 +378,9 @@ def olcaschema_genupstream_processes(merged):
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
         elif fuel_type == "WIND":
             combined_name = f"geothermal upstream and operation - {stage_code}"
+            exchanges_list.append(_exchange_table_creation_ref(fuel_type))
+        elif fuel_type == "CONSTRUCTION":
+            combined_name= f"power plant construction - {stage_code}"
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
         process_name = f"{combined_name}"
         final = _process_table_creation_gen(

@@ -83,22 +83,31 @@ def concat_map_upstream_databases(*arg):
         usecols=[
             1,
             4,
-            9,
-            13,
-            19,
-            17,
+            10,
+            14,
+            20,
+            18,
         ],  # FlowName_netl, Compartment_path_netl, CAS, Compartment_path, Flowable, Flow UUID
     )
-
+    if "Unit" in upstream_df.columns.values:
+        groupby_cols = ["fuel_type",
+                "stage_code",
+                "FlowName",
+                "Compartment",
+                "plant_id",
+                "Compartment_path",
+                "Unit"]
+        upstream_df["Unit"].fillna("kg",inplace=True)
+    else:
+        groupby_cols = ["fuel_type",
+                "stage_code",
+                "FlowName",
+                "Compartment",
+                "plant_id",
+                "Compartment_path",
+                ]
     upstream_df = upstream_df.groupby(
-        [
-            "fuel_type",
-            "stage_code",
-            "FlowName",
-            "Compartment",
-            "plant_id",
-            "Compartment_path",
-        ],
+        groupby_cols,
         as_index=False,
     ).agg({"FlowAmount": "sum", "quantity": "mean", "Electricity": "mean"})
     upstream_mapped_df = pd.merge(
@@ -137,7 +146,6 @@ def concat_map_upstream_databases(*arg):
         "FuelCategory"
     ].str.upper()
     upstream_mapped_df["ElementaryFlowPrimeContext"] = "emission"
-    upstream_mapped_df["Unit"] = "kg"
     upstream_mapped_df["Source"] = "netl"
     upstream_mapped_df["Year"] = eia_gen_year
     return upstream_mapped_df
