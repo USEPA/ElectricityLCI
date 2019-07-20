@@ -106,7 +106,6 @@ def get_generation_mix_process_df(source="egrid", regions="all"):
     from electricitylci.model_config import replace_egrid
     from electricitylci.eia923_generation import build_generation_data
     from electricitylci.model_config import eia_gen_year
-
     if replace_egrid:
         # assert regions == 'BA' or regions == 'NERC', 'Regions must be BA or NERC'
         print("Actual generation data is used when replacing eGRID")
@@ -126,6 +125,52 @@ def get_generation_mix_process_df(source="egrid", regions="all"):
                 regions
             )
     return generation_mix_process_df
+
+#def get_consumption_mix_process_df(source="egrid", regions="all"):
+#    """
+#    Create a dataframe of consumption mixes by fuel type in each subregion.
+#
+#    This function imports and uses the parameter 'gen_mix_from_model_generation_data'
+#    from globals.py. If the value is False it cannot currently handle regions
+#    other than 'BA', 'NERC', 'US', or a single eGRID subregion.
+#
+#    Parameters
+#    ----------
+#    source : str, optional
+#        Not currently used (the default is 'egrid', which [default_description])
+#    regions : str, optional
+#        Which regions to include (the default is 'all', which includes all eGRID
+#        subregions)
+#
+#    Returns
+#    -------
+#    DataFrame
+#        Sample output:
+#        >>> all_gen_mix_db.head()
+#            Subregion FuelCategory   Electricity  NERC  Generation_Ratio
+#        0        AKGD         COAL  5.582922e+05  ASCC          0.116814
+#        22       AKGD          OIL  3.355753e+05  ASCC          0.070214
+#        48       AKGD          GAS  3.157474e+06  ASCC          0.660651
+#        90       AKGD        HYDRO  5.477350e+05  ASCC          0.114605
+#        114      AKGD      BIOMASS  5.616577e+04  ASCC          0.011752
+#    """
+#
+#    import pandas as pd
+#    from electricitylci.globals import data_dir, output_dir
+#    df_gen_mix = get_generation_mix_process_df(source="egrid", regions = 'NERC')
+#    
+#    regions = 'BA'
+#    
+#    if regions == 'BA':
+#        df_trade = pd.read_csv(data_dir + '/BAA_final_trade_2016.csv')
+#    elif regions == 'NERC':
+#        df_trade = pd.read_csv(data_dir + '/ferc_final_trade_2016.csv')
+#        
+#       
+#    df_cons_mix = df_gen_mix.merge(df_trade, left_on = 'Subregion', right_on = 'import subregion')
+#    df_cons_mix['subregion_fuel_fraction'] = df_cons_mix['Generation_Ratio']*df_cons_mix['fraction']
+    
+
 
 
 def write_generation_process_database_to_dict(gen_database, regions="all"):
@@ -417,3 +462,14 @@ def write_distribution_mix_to_dict(dist_mix_df,gen_mix_dict,subregion="BA"):
     import electricitylci.eia_trans_dist_grid_loss as tnd
     dist_mix_dict = tnd.olca_schema_distribution_mix(dist_mix_df,gen_mix_dict,subregion=subregion)
     return dist_mix_dict
+
+def get_consumption_mix_df(subregion="BA"):
+    import electricitylci.eia_io_trading as trade
+    from electricitylci.model_config import eia_gen_year
+    io_trade_df = trade.ba_io_trading_model(year = eia_gen_year, subregion=subregion)
+    return io_trade_df
+
+def write_consumption_mix_to_dict(cons_mix_df,dist_mix_dict,subregion="BA"):
+    import electricitylci.eia_io_trading as trade 
+    cons_mix_dict = trade.olca_schema_consumption_mix(cons_mix_df,dist_mix_dict,subregion=subregion)
+    return cons_mix_dict

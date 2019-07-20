@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-
 import electricitylci
 import pandas as pd
 import pickle as pkl
 
 
-use_cache = True
+use_cache = False
 subregion = "BA"
 if use_cache is True:
     with open("upstream_dict.pickle", "rb") as handle:
@@ -78,3 +77,11 @@ else:
     dist_mix_dict = electricitylci.write_process_dicts_to_jsonld(dist_mix_dict)
     with open("dist_mix_dict.pickle", "wb") as handle:
         pkl.dump(dist_mix_dict, handle, protocol=pkl.HIGHEST_PROTOCOL)
+     
+    cons_mix_df = electricitylci.get_consumption_mix_df(subregion=subregion)
+    cons_mix_dict = electricitylci.write_consumption_mix_to_dict(cons_mix_df,dist_mix_dict,subregion=subregion)
+    cons_mix_dict = electricitylci.write_process_dicts_to_jsonld(cons_mix_dict)
+    with open("cons_mix_dict.pickle", "wb") as handle:
+        pkl.dump(cons_mix_dict, handle, protocol=pkl.HIGHEST_PROTOCOL)
+    
+    

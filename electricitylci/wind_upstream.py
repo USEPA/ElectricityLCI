@@ -49,6 +49,7 @@ def generate_upstream_wind(year):
         var_name="plant_id",
         value_name="FlowAmount",
     )
+    wind_df_t_melt = wind_df_t_melt.astype({'plant_id' : int})
     wind_upstream = wind_df_t_melt.merge(
         right=wind_generation_data,
         left_on="plant_id",

@@ -45,6 +45,7 @@ def generate_upstream_solar(year):
             var_name='plant_id',
             value_name='FlowAmount'
     )
+    solar_df_t_melt = solar_df_t_melt.astype({'plant_id' : int})
     solar_upstream=solar_df_t_melt.merge(
             right=solar_generation_data,
             left_on='plant_id',
