@@ -8,7 +8,7 @@
 import numpy as np
 import os
 import pandas as pd
-import eia
+#import eia
 from datetime import datetime
 import pytz
 import json
@@ -20,10 +20,10 @@ import logging
 
 from electricitylci.globals import data_dir, output_dir
 from electricitylci.bulk_eia_data import download_EBA, row_to_df, ba_exchange_to_df
-from electricitylci.bulk_eia_data import (
-    REGION_NAMES,
-    REGION_ACRONYMS
-    )
+#from electricitylci.bulk_eia_data import (
+#    REGION_NAMES,
+#    REGION_ACRONYMS
+#    )
 from electricitylci.model_config import (
     use_primaryfuel_for_coal,
     fuel_name,
@@ -31,7 +31,7 @@ from electricitylci.model_config import (
     eia_gen_year,
     region_column_name,
 )
-
+from electricitylci.process_dictionary_writer import *
 """
     Merge generation and emissions data. Add region designations using either
     eGRID or EIA-860. Same for primary fuel by plant (eGRID or 923). Calculate
@@ -85,14 +85,16 @@ def ba_io_trading_model(year, subregion):
     
     #Read in the bulk data
     
-    download_EBA()
+#    download_EBA()
     path = join(data_dir, 'bulk_data', 'EBA.zip')
     
     try:
+        logging.info("Using existing bulk data download")
         z = zipfile.ZipFile(path, 'r')
         with z.open('EBA.txt') as f:
             raw_txt = f.readlines()
     except FileNotFoundError:
+        logging.info("Downloading new bulk data")
         download_EBA()
         z = zipfile.ZipFile(path, 'r')
         with z.open('EBA.txt') as f:
@@ -111,7 +113,7 @@ def ba_io_trading_model(year, subregion):
         'TVA', 'MIDA', 'CAL', 'CAR', 'CENT', 'ERCO', 'FLA',
         'MIDW', 'ISNE', 'NYIS', 'NW', 'SE', 'SW',
     ]
-    
+    logging.info("Loading json")
     TOTAL_INTERCHANGE_ROWS = [
         json.loads(row) for row in raw_txt if b'EBA.TI.H' in row
     ]
@@ -132,7 +134,7 @@ def ba_io_trading_model(year, subregion):
         row for row in EXCHANGE_ROWS
         if row['series_id'].split('-')[0][4:] not in REGION_ACRONYMS
     ]
-    
+    logging.info("Pivoting")
     #Subset for specified eia_gen_year
     start_datetime = '{}-01-01 00:00:00+00:00'.format(year)
     end_datetime = '{}-12-31 23:00:00+00:00'.format(year)
@@ -173,7 +175,7 @@ def ba_io_trading_model(year, subregion):
     
     #Sum values in each column
     df_net_gen_sum = df_net_gen.sum(axis = 0).to_frame()
-    
+    logging.info("Reading canadian import data")
     #Add Canadian import data to the net generation dataset, concatenate and put in alpha order
     df_CA_Imports_Gen = pd.read_csv(data_dir + '/CA_Imports_Gen.csv', index_col = 0)
     df_net_gen_sum = pd.concat([df_net_gen_sum,df_CA_Imports_Gen]).sum(axis=1)
@@ -334,7 +336,7 @@ def ba_io_trading_model(year, subregion):
     #determine the composition of a BA consumption mix
     
     #Create total inflow vector x and then convert to a diagonal matrix x-hat
-    
+    logging.info("Inflow vector")
     x = []
     for i in range (len(df_net_gen_sum)):
         x.append(df_net_gen_sum.iloc[i] + df_trade_pivot.sum(axis = 0).iloc[i])
@@ -353,7 +355,7 @@ def ba_io_trading_model(year, subregion):
     
     #Create consumption vector c and then convert to a digaonal matrix c-hat
     #Calculate c based on x and T 
-    
+    logging.info("consumption vector")
     c = []
     
     for i in range(len(df_net_gen_sum)):
@@ -367,6 +369,7 @@ def ba_io_trading_model(year, subregion):
     
     #Create matrix to split T into distinct interconnections - i.e., prevent trading between eastern and western interconnects
     #Connections between the western and eastern interconnects are through SWPP and WAUE
+    logging.info("Matrix operations")
     interconnect = df_trade_pivot.copy()
     interconnect[:] = 1
     interconnect.loc['SWPP',['EPE', 'PNM', 'PSCO', 'WACM']] = 0
@@ -460,6 +463,8 @@ def ba_io_trading_model(year, subregion):
     ferc_final_trade.to_csv(data_dir + '/ferc_final_trade_{}.csv'.format(year))
     
     if subregion == 'BA':
+        BAA_final_trade["export_name"]=BAA_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
+        BAA_final_trade["import_name"]=BAA_final_trade["import BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
         return BAA_final_trade
     elif subregion == 'FERC':
         return ferc_final_trade
@@ -481,7 +486,7 @@ if __name__=='__main__':
 def olca_schema_consumption_mix(database, dist_dict, subregion="BA"):
     import numpy as np
     import pandas as pd
-    from electricitylci.process_dictionary_writer import *
+    
     from electricitylci.model_config import (
         use_primaryfuel_for_coal,
         fuel_name,
@@ -515,9 +520,9 @@ def olca_schema_consumption_mix(database, dist_dict, subregion="BA"):
         export_column = 'export ferc region abbr'
     
     elif subregion == "BA":
-        aggregation_column = "import BAA"
+        aggregation_column = "import_name" #"import BAA"
         region = list(pd.unique(database[aggregation_column]))
-        export_column = 'export BAA'
+        export_column = "export_name"#'export BAA'
  
     for reg in region:
               
