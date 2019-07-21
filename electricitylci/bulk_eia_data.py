@@ -14,59 +14,61 @@ from electricitylci.globals import data_dir
 
 
 def download_EBA():
-
     url = 'http://api.eia.gov/bulk/EBA.zip'
+    print(f"Downloading eia bulk data from {url}...", end = "")
     r = requests.get(url)
     os.makedirs(join(data_dir, 'bulk_data'), exist_ok=True)
     output = open(join(data_dir, 'bulk_data', 'EBA.zip'), 'wb')
     output.write(r.content)
     output.close()
+    print(f"complete.")
 
 path = join(data_dir, 'bulk_data', 'EBA.zip')
 
-try:
-    z = zipfile.ZipFile(path, 'r')
-    with z.open('EBA.txt') as f:
-        raw_txt = f.readlines()
-except FileNotFoundError:
-    download_EBA()
-    z = zipfile.ZipFile(path, 'r')
-    with z.open('EBA.txt') as f:
-        raw_txt = f.readlines()
+if __name__=="__main__":
+    try:
+        z = zipfile.ZipFile(path, 'r')
+        with z.open('EBA.txt') as f:
+            raw_txt = f.readlines()
+    except FileNotFoundError:
+        download_EBA()
+        z = zipfile.ZipFile(path, 'r')
+        with z.open('EBA.txt') as f:
+            raw_txt = f.readlines()
 
-REGION_NAMES = [
-    'California', 'Carolinas', 'Central',
-    'Electric Reliability Council of Texas, Inc.', 'Florida',
-    'Mid-Atlantic', 'Midwest', 'New England ISO',
-    'New York Independent System Operator', 'Northwest', 'Southeast',
-    'Southwest', 'Tennessee Valley Authority'
-]
-
-REGION_ACRONYMS = [
-    'TVA', 'MIDA', 'CAL', 'CAR', 'CENT', 'ERCO', 'FLA',
-    'MIDW', 'ISNE', 'NYIS', 'NW', 'SE', 'SW',
-]
-
-TOTAL_INTERCHANGE_ROWS = [
-    json.loads(row) for row in raw_txt if b'EBA.TI.H' in row
-]
-
-NET_GEN_ROWS = [
-    json.loads(row) for row in raw_txt if b'EBA.NG.H' in row
-]
-
-DEMAND_ROWS = [
-    json.loads(row) for row in raw_txt if b'EBA.D.H' in row
-]
-
-EXCHANGE_ROWS = [
-    json.loads(row) for row in raw_txt if b'EBA.ID.H' in row
-]
-
-BA_TO_BA_ROWS = [
-    row for row in EXCHANGE_ROWS
-    if row['series_id'].split('-')[0][4:] not in REGION_ACRONYMS
-]
+#REGION_NAMES = [
+#    'California', 'Carolinas', 'Central',
+#    'Electric Reliability Council of Texas, Inc.', 'Florida',
+#    'Mid-Atlantic', 'Midwest', 'New England ISO',
+#    'New York Independent System Operator', 'Northwest', 'Southeast',
+#    'Southwest', 'Tennessee Valley Authority'
+#]
+#
+#REGION_ACRONYMS = [
+#    'TVA', 'MIDA', 'CAL', 'CAR', 'CENT', 'ERCO', 'FLA',
+#    'MIDW', 'ISNE', 'NYIS', 'NW', 'SE', 'SW',
+#]
+#
+#TOTAL_INTERCHANGE_ROWS = [
+#    json.loads(row) for row in raw_txt if b'EBA.TI.H' in row
+#]
+#
+#NET_GEN_ROWS = [
+#    json.loads(row) for row in raw_txt if b'EBA.NG.H' in row
+#]
+#
+#DEMAND_ROWS = [
+#    json.loads(row) for row in raw_txt if b'EBA.D.H' in row
+#]
+#
+#EXCHANGE_ROWS = [
+#    json.loads(row) for row in raw_txt if b'EBA.ID.H' in row
+#]
+#
+#BA_TO_BA_ROWS = [
+#    row for row in EXCHANGE_ROWS
+#    if row['series_id'].split('-')[0][4:] not in REGION_ACRONYMS
+#]
 
 
 def row_to_df(rows, data_type):
