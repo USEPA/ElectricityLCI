@@ -178,7 +178,7 @@ def exchange_table_creation_input_con_mix(
     ar["internalId"] = ""
     ar["@type"] = "Exchange"
     ar["avoidedProduct"] = False
-    ar["flow"] = electricity_at_grid_flow
+    ar["flow"] = electricity_at_user_flow
     ar["flowProperty"] = ""
     ar["input"] = True
     ar["baseUncertainty"] = ""
