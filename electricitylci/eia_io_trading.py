@@ -66,7 +66,7 @@ from electricitylci.process_dictionary_writer import *
 def ba_io_trading_model(year, subregion):
     
     year = 2016
-    subregion = 'BA'
+#    subregion = 'BA'
    
     #Read in BAA file which contains the names and abbreviations
     df_BA = pd.read_excel(data_dir + '/BA_Codes_930.xlsx', sheetname = 'US', header = 4)
@@ -114,17 +114,19 @@ def ba_io_trading_model(year, subregion):
         'MIDW', 'ISNE', 'NYIS', 'NW', 'SE', 'SW',
     ]
     logging.info("Loading json")
-    TOTAL_INTERCHANGE_ROWS = [
-        json.loads(row) for row in raw_txt if b'EBA.TI.H' in row
-    ]
+    
+             
+#    TOTAL_INTERCHANGE_ROWS = [
+#        json.loads(row) for row in raw_txt if b'EBA.TI.H' in row
+#    ]
     
     NET_GEN_ROWS = [
         json.loads(row) for row in raw_txt if b'EBA.NG.H' in row
     ]
     
-    DEMAND_ROWS = [
-        json.loads(row) for row in raw_txt if b'EBA.D.H' in row
-    ]
+#    DEMAND_ROWS = [
+#        json.loads(row) for row in raw_txt if b'EBA.D.H' in row
+#    ]
     
     EXCHANGE_ROWS = [
         json.loads(row) for row in raw_txt if b'EBA.ID.H' in row
@@ -514,10 +516,10 @@ def olca_schema_consumption_mix(database, dist_dict, subregion="BA"):
 ###DELETE ABOVE
 
     consumption_mix_dict = {}
-    if subregion == "NERC":
-        aggregation_column = "import ferc region abbr"
+    if subregion == "FERC":
+        aggregation_column = "import ferc region"
         region = list(pd.unique(database[aggregation_column]))
-        export_column = 'export ferc region abbr'
+        export_column = 'export ferc region'
     
     elif subregion == "BA":
         aggregation_column = "import_name" #"import BAA"
