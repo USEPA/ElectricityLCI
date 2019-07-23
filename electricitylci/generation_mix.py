@@ -75,6 +75,7 @@ def create_generation_mix_process_df_from_model_generation_data(
     DataFrame
         [description]
     """
+    from electricitylci.combinator import ba_codes
     # Converting to numeric for better stability and merging
     generation_data["FacilityID"] = generation_data["FacilityID"].astype(int)
 
@@ -97,7 +98,9 @@ def create_generation_mix_process_df_from_model_generation_data(
         database_for_genmix_final = pd.merge(
             generation_data, egrid_facilities_w_fuel_region, on="FacilityID"
         )
-
+    database_for_genmix_final["Balancing Authority Name"]=database_for_genmix_final["Balancing Authority Code"].map(ba_codes["BA_Name"])
+    database_for_genmix_final["FERC_Region"]=database_for_genmix_final["Balancing Authority Code"].map(ba_codes["FERC_Region"])
+    database_for_genmix_final["EIA_Region"]=database_for_genmix_final["Balancing Authority Code"].map(ba_codes["EIA_Region"])
     # Changing the loop structure of this function so that it uses pandas groupby
     if region_column_name:
         database_for_genmix_final["Subregion"] = database_for_genmix_final[
@@ -115,6 +118,8 @@ def create_generation_mix_process_df_from_model_generation_data(
         database_for_genmix_final["Subregion"] = database_for_genmix_final[
             "NERC"
         ]
+    elif subregion == "FERC":
+        database_for_genmix_final["Subregion"] = database_for_genmix_final["FERC_Region"]
 
     if use_primaryfuel_for_coal:
         database_for_genmix_final.loc[

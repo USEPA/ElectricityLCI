@@ -169,15 +169,8 @@ def add_data_collection_score(db, elec_df, subregion="BA"):
         are 'all', 'NERC', 'BA', 'US', by default 'BA'
     """
     from electricitylci.dqi import data_collection_lower_bound_to_dqi
-
-    if subregion == "all":
-        region_agg = ["eia_region"]
-    elif subregion == "NERC":
-        region_agg = ["NERC"]
-    elif subregion == "BA":
-        region_agg = ["Balancing Authority Name"]
-    elif subregion == "US":
-        region_agg = None
+    from electricitylci.aggregation_selector import subregion_col
+    region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"]
     if region_agg:
         groupby_cols = region_agg + fuel_agg + ["Year"]
@@ -236,14 +229,9 @@ def calculate_electricity_by_source(db, subregion="BA"):
         are 'all', 'NERC', 'BA', 'US', by default 'BA'
     """
 
-    if subregion == "all":
-        region_agg = ["eia_region"]
-    elif subregion == "NERC":
-        region_agg = ["NERC"]
-    elif subregion == "BA":
-        region_agg = ["Balancing Authority Name"]
-    elif subregion == "US":
-        region_agg = None
+    from electricitylci.aggregation_selector import subregion_col
+    region_agg = subregion_col(subregion)
+    
     fuel_agg = ["FuelCategory"]
     if region_agg:
         base_cols = region_agg + fuel_agg
@@ -504,7 +492,7 @@ def aggregate_data(total_db, subregion="BA"):
         The level of subregion that the data will be aggregated to. Choices
         are 'all', 'NERC', 'BA', 'US', by default 'BA'.
     """
-
+    from electricitylci.aggregation_selector import subregion_col
     def geometric_mean(p_series, df, cols):
         # I think I actually need to replace this with the function contained in
         # process_exchange_aggregator_uncertainty.py. The approach to add 1 will
@@ -620,14 +608,7 @@ def aggregate_data(total_db, subregion="BA"):
             return None, None
         return str(geomean), str(geostd)
 
-    if subregion == "all":
-        region_agg = ["eia_region"]
-    elif subregion == "NERC":
-        region_agg = ["NERC"]
-    elif subregion == "BA":
-        region_agg = ["Balancing Authority Name"]
-    elif subregion == "US":
-        region_agg = None
+    region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"]
     if region_agg:
         groupby_cols = (
@@ -724,7 +705,7 @@ def aggregate_data(total_db, subregion="BA"):
             left_on=groupby_cols,
             right_on=groupby_cols,
             how="left",
-        )
+        ).drop_duplicates(subset=groupby_cols)
     else:
         total_grouped = total_db.groupby(by=groupby_cols,as_index=False)["Electricity"].sum()
         canada_db = pd.merge(
@@ -765,14 +746,8 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
         uncertainty_table_creation,
     )
 
-    if subregion == "all":
-        region_agg = ["eia_region"]
-    elif subregion == "NERC":
-        region_agg = ["NERC"]
-    elif subregion == "BA":
-        region_agg = ["Balancing Authority Name"]
-    elif subregion == "US":
-        region_agg = None
+    from electricitylci.aggregation_selector import subregion_col
+    region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"]
     if region_agg:
         base_cols = region_agg + fuel_agg

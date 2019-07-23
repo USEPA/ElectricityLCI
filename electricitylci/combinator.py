@@ -7,9 +7,15 @@ from electricitylci.model_config import eia_gen_year
 import logging
 
 module_logger = logging.getLogger("combinator.py")
-
+ba_codes = pd.concat(
+        [pd.read_excel(f"{data_dir}/BA_Codes_930.xlsx",header=4,sheetname="US"),
+         pd.read_excel(f"{data_dir}/BA_Codes_930.xlsx",header=4,sheetname="Canada")]
+        )
+ba_codes.rename(columns={'etag ID': 'BA_Acronym', 'Entity Name': 'BA_Name','NCR_ID#': 'NRC_ID', 'Region': 'Region'}, inplace=True)
+ba_codes.set_index("BA_Acronym",inplace=True)
 
 def fill_nans(df, key_column="FacilityID", target_columns=[], dropna=True):
+    from electricitylci.eia860_facilities import eia860_balancing_authority
     if not target_columns:
         target_columns = [
             "Balancing Authority Code",
@@ -21,6 +27,9 @@ def fill_nans(df, key_column="FacilityID", target_columns=[], dropna=True):
             "PercentGenerationfromDesignatedFuelCategory",
             "eGRID_ID",
             "Subregion",
+            "FERC_Region",
+            "EIA_Region",
+            "State",
         ]
     key_df = (
         df[[key_column] + target_columns]
@@ -31,6 +40,9 @@ def fill_nans(df, key_column="FacilityID", target_columns=[], dropna=True):
         df.loc[df[col].isnull(), col] = df.loc[
             df[col].isnull(), "FacilityID"
         ].map(key_df[col])
+    plant_ba = eia860_balancing_authority(eia_gen_year).set_index("Plant Id")
+    plant_ba.index = plant_ba.index.astype(int)
+    df.loc[df["State"].isna(),"State"]=df.loc[df["State"].isna(),"eGRID_ID"].map(plant_ba["State"])
     if dropna:
         df.dropna(subset=target_columns, inplace=True)
     return df
@@ -174,6 +186,7 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
         "Balancing Authority Name",
         "Subregion",
     ]
+
     up_df = up_df.merge(
         right=pl_df[["eGRID_ID"] + region_cols].drop_duplicates(),
         left_on="plant_id",
@@ -182,6 +195,9 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
     )
     up_df.dropna(subset=region_cols + ["Electricity"], inplace=True)
     combined_df = pd.concat([pl_df, up_df], ignore_index=True)
+    combined_df["Balancing Authority Name"]=combined_df["Balancing Authority Code"].map(ba_codes["BA_Name"])
+    combined_df["FERC_Region"]=combined_df["Balancing Authority Code"].map(ba_codes["FERC_Region"])
+    combined_df["EIA_Region"]=combined_df["Balancing Authority Code"].map(ba_codes["EIA_Region"])
     categories_to_delete = [
         "plant_id",
         "FuelCategory_right",
@@ -293,6 +309,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
         fuel_cat_key["FuelCategory"]
     )
     gen_plus_up_df = pd.concat([gen_df, fuel_df], ignore_index=True)
+    gen_plus_up_df=fill_nans(gen_plus_up_df)
     return gen_plus_up_df
 
 

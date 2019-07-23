@@ -4,6 +4,7 @@ from electricitylci.globals import data_dir, output_dir
 
 
 def generate_canadian_mixes(us_inventory):
+    from electricitylci.combinator import ba_codes
     """
     Uses aggregate U.S.-level inventory to fuel category. These U.S. fuel 
     category inventories are then used as proxies for Canadian generation. The
@@ -35,6 +36,7 @@ def generate_canadian_mixes(us_inventory):
     print("Generating inventory for Canadian balancing authority areas")
     canadian_mix = pd.read_csv(f"{data_dir}/canadian_imports.csv")
     baa_codes = list(canadian_mix["Code"].unique())
+    canadian_mix["Balancing Authority Name"]=canadian_mix["Code"].map(ba_codes["BA_Name"])
     canadian_mix = canadian_mix.melt(
         id_vars=["Code", "Balancing Authority Name", "Province"],
         var_name="FuelCategory",
@@ -110,6 +112,8 @@ def generate_canadian_mixes(us_inventory):
     ca_mix_inventory["eGRID_ID"] = ca_mix_inventory[
         "Balancing Authority Code"
     ].map(canadian_egrid_ids)
+    ca_mix_inventory["FERC_Region"]=ca_mix_inventory["Balancing Authority Code"].map(ba_codes["FERC_Region"])
+    ca_mix_inventory["EIA_Region"]=ca_mix_inventory["Balancing Authority Code"].map(ba_codes["EIA_Region"])
     return ca_mix_inventory
 
 

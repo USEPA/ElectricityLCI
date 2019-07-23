@@ -150,6 +150,9 @@ def generate_regional_grid_loss(final_database, year, subregion="all"):
             aggregated emissions unit processes.
     """
     print("Generating factors for transmission and distribution losses")
+    from electricitylci.eia923_generation import build_generation_data
+    from electricitylci.combinator import ba_codes
+    from electricitylci.egrid_facilities import egrid_facilities
     td_calc_columns = [
         "State",
         "NERC",
@@ -163,7 +166,27 @@ def generate_regional_grid_loss(final_database, year, subregion="all"):
         "FRS_ID",
         "eGRID_ID",
     ]
-    plant_generation = final_database[td_calc_columns].drop_duplicates()
+#    plant_generation = final_database[td_calc_columns].drop_duplicates()
+    egrid_facilities_w_fuel_region = egrid_facilities[
+        [
+        "FacilityID",
+        "Subregion",
+        "PrimaryFuel",
+        "FuelCategory",
+        "NERC",
+        "PercentGenerationfromDesignatedFuelCategory",
+        "Balancing Authority Name",
+        "Balancing Authority Code",
+        "State"
+        ]
+    ]
+    egrid_facilities_w_fuel_region["FacilityID"]=egrid_facilities_w_fuel_region["FacilityID"].astype(int)
+    plant_generation = build_generation_data(generation_years=[year])
+    plant_generation["FacilityID"]=plant_generation["FacilityID"].astype(int)
+    plant_generation = plant_generation.merge(egrid_facilities_w_fuel_region,on=["FacilityID"],how="left")
+    plant_generation["Balancing Authority Name"]=plant_generation["Balancing Authority Code"].map(ba_codes["BA_Name"])
+    plant_generation["FERC_Region"]=plant_generation["Balancing Authority Code"].map(ba_codes["FERC_Region"])
+    plant_generation["EIA_Region"]=plant_generation["Balancing Authority Code"].map(ba_codes["EIA_Region"])
     td_rates = eia_trans_dist_download_extract(f"{year}")
     td_by_plant = pd.merge(
         left=plant_generation,
@@ -173,14 +196,8 @@ def generate_regional_grid_loss(final_database, year, subregion="all"):
         how="left",
     )
     td_by_plant.dropna(subset=["t_d_losses"], inplace=True)
-    if subregion == "all":
-        aggregation_column = "Subregion"
-    elif subregion == "NERC":
-        aggregation_column = "NERC"
-    elif subregion == "BA":
-        aggregation_column = "Balancing Authority Name"
-    elif subregion == "US":
-        aggregation_column = None
+    from electricitylci.aggregation_selector import subregion_col
+    aggregation_column=subregion_col(subregion)
     wm = lambda x: np.average(
         x, weights=td_by_plant.loc[x.index, "Electricity"]
     )
@@ -215,6 +232,9 @@ def olca_schema_distribution_mix(td_by_region, gen_mix_dict, subregion="BA"):
         region = list(pd.unique(td_by_region[aggregation_column]))
     elif subregion == "BA":
         aggregation_column = "Balancing Authority Name"
+        region = list(pd.unique(td_by_region[aggregation_column]))
+    elif subregion == "FERC":
+        aggregation_column = "FERC_Region"
         region = list(pd.unique(td_by_region[aggregation_column]))
     else:
         aggregation_column = None
@@ -263,28 +283,8 @@ def olca_schema_distribution_mix(td_by_region, gen_mix_dict, subregion="BA"):
 
 
 if __name__ == "__main__":
-    from electricitylci.egrid_filter import (
-        # electricity_for_selected_egrid_facilities,
-        egrid_facilities_to_include,
-        emissions_and_waste_for_selected_egrid_facilities,
-    )
-    from electricitylci.model_config import replace_egrid
-    from electricitylci.generation import combine_gen_emissions_data
-
     year = 2016
-    from electricitylci.eia923_generation import build_generation_data
-
-    if replace_egrid:
-        generation_data = build_generation_data()
-    else:
-        generation_data = build_generation_data(
-            egrid_facilities_to_include=egrid_facilities_to_include
-        )
-    final_database = combine_gen_emissions_data(
-        generation_data,
-        emissions_and_waste_for_selected_egrid_facilities,
-        subregion="all",
-    )
+    final_database=pd.DataFrame()
     trans_dist_grid_loss = generate_regional_grid_loss(
         final_database, year, "BA"
     )
