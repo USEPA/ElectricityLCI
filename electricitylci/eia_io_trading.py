@@ -448,7 +448,7 @@ def ba_io_trading_model(year, subregion):
     #Remove Canadian BAs in import list
     BAA_filt = BAA_final_trade['import BAA'].isin(US_BA_acronyms)
     BAA_final_trade = BAA_final_trade[BAA_filt]    
-    BAA_final_trade.to_csv(data_dir + '/BAA_final_trade_{}.csv'.format(year))
+    BAA_final_trade.to_csv(output_dir + '/BAA_final_trade_{}.csv'.format(year))
     
     #Develop final df for FERC Market Region
     ferc_final_trade = df_final_trade_out_filt_melted_merge.copy()
@@ -462,7 +462,7 @@ def ba_io_trading_model(year, subregion):
     ferc_list.remove('CAN')
     ferc_filt = ferc_final_trade['import ferc region abbr'].isin(ferc_list)
     ferc_final_trade = ferc_final_trade[ferc_filt]
-    ferc_final_trade.to_csv(data_dir + '/ferc_final_trade_{}.csv'.format(year))
+    ferc_final_trade.to_csv(output_dir + '/ferc_final_trade_{}.csv'.format(year))
     
     if subregion == 'BA':
         BAA_final_trade["export_name"]=BAA_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
