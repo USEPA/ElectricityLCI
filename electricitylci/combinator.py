@@ -6,24 +6,66 @@ import electricitylci.import_impacts as import_impacts
 from electricitylci.model_config import eia_gen_year
 import logging
 
+#I added this section to populate a ba_codes variable that could be used
+#by other modules without having to re-read the excel files. The purpose
+#is to try and provide a common source for balancing authority names, as well
+#as FERC an EIA region names.
 module_logger = logging.getLogger("combinator.py")
 ba_codes = pd.concat(
-        [pd.read_excel(f"{data_dir}/BA_Codes_930.xlsx",header=4,sheetname="US"),
-         pd.read_excel(f"{data_dir}/BA_Codes_930.xlsx",header=4,sheetname="Canada")]
-        )
-ba_codes.rename(columns={'etag ID': 'BA_Acronym', 'Entity Name': 'BA_Name','NCR_ID#': 'NRC_ID', 'Region': 'Region'}, inplace=True)
-ba_codes.set_index("BA_Acronym",inplace=True)
+    [
+        pd.read_excel(
+            f"{data_dir}/BA_Codes_930.xlsx", header=4, sheetname="US"
+        ),
+        pd.read_excel(
+            f"{data_dir}/BA_Codes_930.xlsx", header=4, sheetname="Canada"
+        ),
+    ]
+)
+ba_codes.rename(
+    columns={
+        "etag ID": "BA_Acronym",
+        "Entity Name": "BA_Name",
+        "NCR_ID#": "NRC_ID",
+        "Region": "Region",
+    },
+    inplace=True,
+)
+ba_codes.set_index("BA_Acronym", inplace=True)
+
 
 def fill_nans(df, key_column="FacilityID", target_columns=[], dropna=True):
+    """Fills nan values for the specified target columns by using the data from
+    other rows, using the key_column for matches. There is an extra step
+    to fill remaining nans for the state column because the module to calculate
+    transmission and distribution losses needs values in the state column to
+    work.
+    
+    Parameters
+    ----------
+    df : dataframe
+        Dataframe containing nans and at a minimum the columns key_column and
+        target_columns
+    key_column : str, optional
+        The column to match for the data to fill target_columns, by default "FacilityID"
+    target_columns : list, optional
+        A list of columns with nans to fill, by default []. If empty, the function
+        will use a pre-defined set of columns.
+    dropna : bool, optional
+        After nans are filled, drop rows that still contain nans in the 
+        target columns, by default True
+    
+    Returns
+    -------
+    dataframe: hopefully with all of the nans filled.
+    """
     from electricitylci.eia860_facilities import eia860_balancing_authority
+
     if not target_columns:
         target_columns = [
             "Balancing Authority Code",
             "Balancing Authority Name",
-            #                "FRS_ID",
             "FuelCategory",
             "NERC",
-            #                "PrimaryFuel",
             "PercentGenerationfromDesignatedFuelCategory",
             "eGRID_ID",
             "Subregion",
@@ -42,7 +84,9 @@ def fill_nans(df, key_column="FacilityID", target_columns=[], dropna=True):
         ].map(key_df[col])
     plant_ba = eia860_balancing_authority(eia_gen_year).set_index("Plant Id")
     plant_ba.index = plant_ba.index.astype(int)
-    df.loc[df["State"].isna(),"State"]=df.loc[df["State"].isna(),"eGRID_ID"].map(plant_ba["State"])
+    df.loc[df["State"].isna(), "State"] = df.loc[
+        df["State"].isna(), "eGRID_ID"
+    ].map(plant_ba["State"])
     if dropna:
         df.dropna(subset=target_columns, inplace=True)
     return df
@@ -102,26 +146,28 @@ def concat_map_upstream_databases(*arg):
         ],  # FlowName_netl, Compartment_path_netl, CAS, Compartment_path, Flowable, Flow UUID
     )
     if "Unit" in upstream_df.columns.values:
-        groupby_cols = ["fuel_type",
-                "stage_code",
-                "FlowName",
-                "Compartment",
-                "plant_id",
-                "Compartment_path",
-                "Unit"]
-        upstream_df["Unit"].fillna("kg",inplace=True)
+        groupby_cols = [
+            "fuel_type",
+            "stage_code",
+            "FlowName",
+            "Compartment",
+            "plant_id",
+            "Compartment_path",
+            "Unit",
+        ]
+        upstream_df["Unit"].fillna("kg", inplace=True)
     else:
-        groupby_cols = ["fuel_type",
-                "stage_code",
-                "FlowName",
-                "Compartment",
-                "plant_id",
-                "Compartment_path",
-                ]
-    upstream_df = upstream_df.groupby(
-        groupby_cols,
-        as_index=False,
-    ).agg({"FlowAmount": "sum", "quantity": "mean", "Electricity": "mean"})
+        groupby_cols = [
+            "fuel_type",
+            "stage_code",
+            "FlowName",
+            "Compartment",
+            "plant_id",
+            "Compartment_path",
+        ]
+    upstream_df = upstream_df.groupby(groupby_cols, as_index=False).agg(
+        {"FlowAmount": "sum", "quantity": "mean", "Electricity": "mean"}
+    )
     upstream_mapped_df = pd.merge(
         left=upstream_df,
         right=netl_epa_flows,
@@ -195,9 +241,15 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
     )
     up_df.dropna(subset=region_cols + ["Electricity"], inplace=True)
     combined_df = pd.concat([pl_df, up_df], ignore_index=True)
-    combined_df["Balancing Authority Name"]=combined_df["Balancing Authority Code"].map(ba_codes["BA_Name"])
-    combined_df["FERC_Region"]=combined_df["Balancing Authority Code"].map(ba_codes["FERC_Region"])
-    combined_df["EIA_Region"]=combined_df["Balancing Authority Code"].map(ba_codes["EIA_Region"])
+    combined_df["Balancing Authority Name"] = combined_df[
+        "Balancing Authority Code"
+    ].map(ba_codes["BA_Name"])
+    combined_df["FERC_Region"] = combined_df["Balancing Authority Code"].map(
+        ba_codes["FERC_Region"]
+    )
+    combined_df["EIA_Region"] = combined_df["Balancing Authority Code"].map(
+        ba_codes["EIA_Region"]
+    )
     categories_to_delete = [
         "plant_id",
         "FuelCategory_right",
@@ -309,7 +361,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
         fuel_cat_key["FuelCategory"]
     )
     gen_plus_up_df = pd.concat([gen_df, fuel_df], ignore_index=True)
-    gen_plus_up_df=fill_nans(gen_plus_up_df)
+    gen_plus_up_df = fill_nans(gen_plus_up_df)
     return gen_plus_up_df
 
 
