@@ -14,7 +14,7 @@ from electricitylci.process_dictionary_writer import (
 )
 
 if not replace_egrid:
-    wb2 = openpyxl.load_workbook(data_dir+'eGRID_Consumption_Mix_new.xlsx',data_only=True)
+    wb2 = openpyxl.load_workbook(data_dir+'/eGRID_Consumption_Mix_new.xlsx',data_only=True)
     data = wb2['ConsumptionMixContributions']
 
     if net_trading == True:
@@ -92,14 +92,14 @@ def consumption_mix_dictionary(nerc_region,surplus_pool_trade_in,trade_matrix,ge
                             break;
             #name = 'Electricity from generation mix '+eGRID_region[reg][0].value
             #fuelname =
-            if chk == 1:
-                exchange(exchange_table_creation_input_con_mix(generation_quantity[reg][0].value,region),exchanges_list)
-            else:
-                exchange(exchange_table_creation_input_con_mix(1,region),exchanges_list)
+        if chk == 1:
+            exchange(exchange_table_creation_input_con_mix(generation_quantity[reg][0].value,region),exchanges_list)
+        else:
+            exchange(exchange_table_creation_input_con_mix(1,region),exchanges_list)
 
-            final = process_table_creation_con_mix(region,exchanges_list)
-            print(region+' Consumption Mix Process Created')
-            consumption_dict['Consumption'+region] = final;
+        final = process_table_creation_con_mix(region,exchanges_list)
+        print(region+' Consumption Mix Process Created')
+        consumption_dict['Consumption'+region] = final;
     return consumption_dict
 
 

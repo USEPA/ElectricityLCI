@@ -382,13 +382,12 @@ def build_generation_data(
 
     df_list = []
     for year in generation_years:
+        gen_fuel_data = eia923_download_extract(year)
+        primary_fuel = eia923_primary_fuel(gen_fuel_data)
+        gen_efficiency = calculate_plant_efficiency(gen_fuel_data)
+
+        final_gen_df = gen_efficiency.merge(primary_fuel, on="Plant Id")
         if not egrid_facilities_to_include:
-            gen_fuel_data = eia923_download_extract(year)
-            primary_fuel = eia923_primary_fuel(gen_fuel_data)
-            gen_efficiency = calculate_plant_efficiency(gen_fuel_data)
-
-            final_gen_df = gen_efficiency.merge(primary_fuel, on="Plant Id")
-
             if include_only_egrid_facilities_with_positive_generation:
                 final_gen_df = final_gen_df.loc[
                     final_gen_df["Net Generation (Megawatthours)"] >= 0, :

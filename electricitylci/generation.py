@@ -171,17 +171,19 @@ def combine_gen_emissions_data(generation_data, emissions_data, subregion='all')
 
     #Dropping unnecessary columns
     emissions_gen_data = combined_data.drop(columns = cols_to_drop_for_final)
-
+    emissions_gen_data["eGRID_ID"]=emissions_gen_data["eGRID_ID"].astype(int)
     if replace_egrid:
         year = eia_gen_year
 
         # This will only add BA labels, not eGRID subregions
         fuel_region = eia_facility_fuel_region(year)
+        fuel_region["FacilityID"]=fuel_region["FacilityID"].astype(int)
         final_data = pd.merge(fuel_region, emissions_gen_data,
                               left_on=['FacilityID'], right_on=['eGRID_ID'],
                               how='right')
     else:
         #Merging with the egrid_facilites file to get the subregion information in the database!!!
+        egrid_facilities_w_fuel_region["FacilityID"]=egrid_facilities_w_fuel_region["FacilityID"].astype(int)
         final_data = pd.merge(egrid_facilities_w_fuel_region,
                               emissions_gen_data, left_on=['FacilityID'],
                               right_on=['eGRID_ID'], how='right')
@@ -197,7 +199,7 @@ def combine_gen_emissions_data(generation_data, emissions_data, subregion='all')
 
     if replace_egrid:
         # Subregion shows up all over the place below. If not using egrid
-        # sub in the BA name because we don't have the eGRID subergion.
+        # sub in the BA name because we don't have the eGRID subregion.
         if region_column_name:
             assert region_column_name in final_data.columns
             final_data['Subregion'] = final_data[region_column_name]
@@ -223,7 +225,18 @@ def combine_gen_emissions_data(generation_data, emissions_data, subregion='all')
     final_data.dropna(subset=['Electricity'], inplace=True)
 
     if region_column_name:
-        regions = final_data[region_column_name].unique()
+        try:
+            regions = final_data[region_column_name].unique()
+        except KeyError:
+            print(f"Configuration file specifes region column as {region_column_name}, but it does not exist")
+            if subregion == 'all':
+                regions = egrid_subregions
+            elif subregion == 'NERC':
+                regions = list(pd.unique(final_data['NERC']))
+            elif subregion == 'BA':
+                regions = list(pd.unique(final_data['Balancing Authority Name']))
+            else:
+                regions = [subregion]
     elif subregion == 'all':
         regions = egrid_subregions
     elif subregion == 'NERC':
@@ -265,7 +278,18 @@ def create_generation_process_df(generation_data, emissions_data, subregion='all
     )
 
     if region_column_name:
-        regions = final_database[region_column_name].unique()
+        try:
+            regions = final_database[region_column_name].unique()
+        except KeyError:
+            print(f"Configuration file specifes region column as {region_column_name}, but it does not exist")
+            if subregion == 'all':
+                regions = egrid_subregions
+            elif subregion == 'NERC':
+                regions = list(pd.unique(final_data['NERC']))
+            elif subregion == 'BA':
+                regions = list(pd.unique(final_data['Balancing Authority Name']))
+            else:
+                regions = [subregion]
     elif subregion == 'all':
         regions = egrid_subregions
     elif subregion == 'NERC':

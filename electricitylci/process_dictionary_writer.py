@@ -119,6 +119,8 @@ def gen_process_ref(fuel, reg):
         + str(fuel)
         + "; "
         + generation_name_parts["Location type"]
+        +" - "
+        +reg
     )
     processref["location"] = reg
     processref["processType"] = "UNIT_PROCESS"
@@ -134,11 +136,11 @@ def con_process_ref(reg, ref_type="generation"):
     # If ref is to a consunmption mix (for a distribution process), use consumption mix name
     # If not, if the region is an egrid regions, its a generation mix process; otherwise its a surplus pool process
     if ref_type == "consumption":
-        name = consumption_mix_name
+        name = consumption_mix_name +" - "+reg
     elif reg in egrid_subregions:
-        name = generation_mix_name
+        name = generation_mix_name +" - "+reg
     else:
-        name = surplus_pool_name
+        name = surplus_pool_name + " - "+reg
     processref = dict()
     processref["name"] = name
     processref["location"] = reg
@@ -178,7 +180,7 @@ def exchange_table_creation_input_con_mix(
     ar["internalId"] = ""
     ar["@type"] = "Exchange"
     ar["avoidedProduct"] = False
-    ar["flow"] = electricity_at_user_flow
+    ar["flow"] = electricity_at_grid_flow
     ar["flowProperty"] = ""
     ar["input"] = True
     ar["baseUncertainty"] = ""
@@ -477,7 +479,7 @@ def process_table_creation_con_mix(region, exchanges_list):
     ar["parameters"] = ""
     ar["processDocumentation"] = process_doc_creation()
     ar["processType"] = ""
-    ar["name"] = consumption_mix_name
+    ar["name"] = consumption_mix_name + " - " + region
     ar[
         "category"
     ] = "22: Utilities/2211: Electric Power Generation, Transmission and Distribution"
@@ -499,7 +501,7 @@ def process_table_creation_surplus(region, exchanges_list):
     ar["parameters"] = ""
     ar["processDocumentation"] = process_doc_creation()
     ar["processType"] = "UNIT_PROCESS"
-    ar["name"] = surplus_pool_name
+    ar["name"] = surplus_pool_name + " - " + region
     ar[
         "category"
     ] = "22: Utilities/2211: Electric Power Generation, Transmission and Distribution"

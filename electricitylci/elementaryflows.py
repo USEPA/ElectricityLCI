@@ -147,6 +147,10 @@ compartment_to_flowtype = pd.DataFrame(
         ["input", "PRODUCT_FLOW"],
         ["output", "PRODUCT_FLOW"],
         ["waste", "WASTE_FLOW"],
+        ["emission/air","ELEMENTARY_FLOW"],
+        ["emission/water","ELEMENTARY_FLOW"],
+        ["emission/ground","ELEMENTARY_FLOW"],
+        ["soil","ELEMENTARY_FLOW"]
     ],
 )
 
