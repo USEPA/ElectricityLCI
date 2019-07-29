@@ -9,12 +9,12 @@ def generate_petroleum_upstream(year):
     """
     Generate the annual petroleum extraction, transport, and refining emissions
     (in kg) for each plant in EIA923.
-    
+
     Parameters
     ----------
     year: int
         Year of EIA-923 fuel data to use.
-    
+
     Returns
     ----------
     dataframe
@@ -22,17 +22,17 @@ def generate_petroleum_upstream(year):
     eia_fuel_receipts_df=read_eia923_fuel_receipts(year)
     petroleum_criteria = eia_fuel_receipts_df['fuel_group']=='Petroleum'
     eia_fuel_receipts_df=eia_fuel_receipts_df.loc[petroleum_criteria,:]
-    
+
     eia_fuel_receipts_df['heat_input']=(
             eia_fuel_receipts_df['quantity']*
             eia_fuel_receipts_df['average_heat_content']*
             pq.convert(10**6,'Btu','MJ'))
-    
+
     #Sum all fuel use by plant, plant state, and DFO/RFO
     eia_fuel_receipts_df=eia_fuel_receipts_df.groupby(
             ['plant_id','plant_state','energy_source'],
             as_index=False)['heat_input'].sum()
-    
+
     #Assume that plants have fuel delivered from the PADD they are in. Note
     #that the crude represented in each PADD is the mix of crude going into
     #that PADD, domestically-produced and imported, and the refining emissions
@@ -40,11 +40,11 @@ def generate_petroleum_upstream(year):
     state_padd_df=pd.read_csv(data_dir+'/state_padd.csv')
     state_padd_dict=pd.Series(
             state_padd_df.padd.values,index=state_padd_df.state).to_dict()
-    
+
     #Assign each power plant to a PADD.
     eia_fuel_receipts_df['padd']=(
             eia_fuel_receipts_df['plant_state'].map(state_padd_dict))
-    
+
     #Creating a dictionary to store the inventories of each fuel/PADD
     #combination
     petroleum_lci={}
@@ -65,40 +65,49 @@ def generate_petroleum_upstream(year):
                     usecols="I:N",
                     skiprows=2)
             petroleum_lci[key]['fuel_code']=f'{fuels_map[fuel]}_{padd}'
-    
+
     #Merging the dataframes within the dictionary to a single datframe
     combined_lci=pd.concat(petroleum_lci,ignore_index=True)
+    combined_lci.rename(columns={
+            "Flow UUID.1":"Flow UUID",
+            "Flow.1":"Flow",
+            "Category.1":"Category",
+            "Sub-category.1":"Sub-category",
+            "Unit.1":"Unit",
+            "Result.1":"Result"
+            },
+            inplace=True)
     eia_fuel_receipts_df['fuel_padd']=(eia_fuel_receipts_df['energy_source']+
                         '_'+eia_fuel_receipts_df['padd'].astype(str))
-    
+
     #Merge the inventories for each fuel with the fuel use by each power plant
     merged_inventory = combined_lci.merge(
             right=eia_fuel_receipts_df[['plant_id','heat_input','fuel_padd']],
             left_on='fuel_code',
             right_on='fuel_padd',
-            how='left').sort_values(['plant_id','fuel_padd','Flow.1'])
-    
+            how='left').sort_values(['plant_id','fuel_padd','Flow'])
+
     #convert per MJ inventory to annual emissions using plant heat input
-    merged_inventory['Result.1']=(
-            merged_inventory['Result.1']*
+    merged_inventory['Result']=(
+            merged_inventory['Result']*
             merged_inventory['heat_input'])
-    
+
     #Cleaning up unneeded columns and renaming
     merged_inventory.drop(
-            columns=['fuel_padd','Unit.1',
-                     'Sub-category.1','Flow UUID.1'],
+            columns=['fuel_padd','Unit',
+                     'Sub-category','Flow UUID'],
             inplace=True)
     colnames={
-            'Flow.1':'FlowName',
-            'Category.1':'Compartment',
-            'Result.1':'FlowAmount',
+            'Flow':'FlowName',
+            'Category':'Compartment',
+            'Result':'FlowAmount',
             'fuel_code':'stage_code',
             'heat_input':'quantity'}
     merged_inventory.rename(columns=colnames,inplace=True)
     merged_inventory['fuel_type']='Oil'
     merged_inventory['stage']='well-to-tank'
     merged_inventory.reset_index(inplace=True,drop=True)
-    
+
     #Change compartment values to be standard'
     compartment_dict={
             'Emission to air':'air',
@@ -108,11 +117,10 @@ def generate_petroleum_upstream(year):
     merged_inventory['Compartment']=merged_inventory['Compartment'].map(
             compartment_dict)
     merged_inventory.dropna(inplace=True)
-    
+
     return merged_inventory
 
 if __name__=='__main__':
     year=2016
     df=generate_petroleum_upstream(year)
     df.to_csv(output_dir+'/petroleum_emissions_{}.csv'.format(year))
-    
