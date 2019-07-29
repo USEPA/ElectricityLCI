@@ -4,7 +4,7 @@
 
 def subregion_col(subregion="BA"):
     if subregion == "all":
-        region_agg = ["EIA_region"]
+        region_agg = ["Subregion"]
     elif subregion == "NERC":
         region_agg = ["NERC"]
     elif subregion == "BA":
