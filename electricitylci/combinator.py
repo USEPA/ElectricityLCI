@@ -75,15 +75,20 @@ def fill_nans(df, key_column="FacilityID", target_columns=[], dropna=True):
         ]
     key_df = (
         df[[key_column] + target_columns]
-        .drop_duplicates(subset="FacilityID")
-        .set_index("FacilityID")
+        .drop_duplicates(subset=key_column)
+        .set_index(key_column)
     )
     for col in target_columns:
-        df.loc[df[col].isnull(), col] = df.loc[
-            df[col].isnull(), "FacilityID"
-        ].map(key_df[col])
+        if col in df.columns:
+            df.loc[df[col].isnull(), col] = df.loc[
+                    df[col].isnull(), key_column
+            ].map(key_df[col])
+        else:
+            module_logger.warning(f"{col} is not in the dataframe")
     plant_ba = eia860_balancing_authority(eia_gen_year).set_index("Plant Id")
     plant_ba.index = plant_ba.index.astype(int)
+    if "State" not in df.columns:
+        df["State"]=float("nan")
     df.loc[df["State"].isna(), "State"] = df.loc[
         df["State"].isna(), "eGRID_ID"
     ].map(plant_ba["State"])
