@@ -213,7 +213,7 @@ def generate_regional_grid_loss(final_database, year, subregion="all"):
     return td_by_region
 
 
-def olca_schema_distribution_mix(td_by_region, gen_mix_dict, subregion="BA"):
+def olca_schema_distribution_mix(td_by_region, cons_mix_dict, subregion="BA"):
     from electricitylci.process_dictionary_writer import (
         exchange_table_creation_ref,
         exchange,
@@ -260,12 +260,12 @@ def olca_schema_distribution_mix(td_by_region, gen_mix_dict, subregion="BA"):
         exchanges_list[1]["quantitativeReference"] = False
         exchanges_list[1]["amount"] = 1 + database_reg["t_d_losses"].values[0]
         matching_dict = None
-        for gen_mix in gen_mix_dict:
+        for cons_mix in cons_mix_dict:
             if (
-                gen_mix_dict[gen_mix]["name"]
+                cons_mix_dict[cons_mix]["name"]
                 == "Electricity; at grid; consumption mix - " + reg
             ):
-                matching_dict = gen_mix_dict[gen_mix]
+                matching_dict = cons_mix_dict[cons_mix]
                 break
         if matching_dict is None:
             logging.warning(f"Trouble matching dictionary for {reg}")

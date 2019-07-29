@@ -98,7 +98,7 @@ def exchange_table_creation_ref_cons(data):
     ar["internalId"] = ""
     ar["@type"] = "Exchange"
     ar["avoidedProduct"] = False
-    ar["flow"] = electricity_at_user_flow
+    ar["flow"] = electricity_at_grid_flow
     ar["flowProperty"] = ""
     ar["input"] = False
     ar["quantitativeReference"] = True
@@ -168,7 +168,7 @@ def exchange_table_creation_input_genmix(database, fuelname):
     ar["unit"] = unit("MWh")
     ar["pedigreeUncertainty"] = ""
     # ar['category']='22: Utilities/2211: Electric Power Generation, Transmission and Distribution'+fuelname
-    ar["comment"] = "from " + fuelname
+    ar["comment"] = "from " + fuelname + region
     ar["uncertainty"] = ""
     return ar
 
@@ -192,7 +192,7 @@ def exchange_table_creation_input_con_mix(
     ar["unit"] = unit("MWh")
     ar["pedigreeUncertainty"] = ""
     ar["uncertainty"] = ""
-    ar["comment"] = "eGRID " + str(year)
+    ar["comment"] = "eGRID " + str(year) + ". From " + loc
     # ar['location'] = location(loc)
     return ar
 
