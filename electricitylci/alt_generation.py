@@ -363,7 +363,8 @@ def create_generation_process_df():
     import electricitylci.emissions_other_sources as em_other
     import electricitylci.ampd_plant_emissions as ampd
     from electricitylci.model_config import eia_gen_year
-
+    from electricitylci.combinator import ba_codes
+    
     COMPARTMENT_DICT = {
         "emission/air": "air",
         "emission/water": "water",
@@ -425,9 +426,10 @@ def create_generation_process_df():
     ].map(
         key_df["FuelCategory"]
     )
-    final_database["FuelCategory"].fillna(
-        final_database["FuelCategory_right"], inplace=True
-    )
+    if replace_egrid:
+        final_database["FuelCategory"].fillna(
+            final_database["FuelCategory_right"], inplace=True
+        )
     final_database["Final_fuel_agg"] = final_database["FuelCategory"]
     if use_primaryfuel_for_coal:
         final_database.loc[
@@ -480,6 +482,7 @@ def create_generation_process_df():
     final_database["Compartment"] = final_database["Compartment_path"].map(
         COMPARTMENT_DICT
     )
+    final_database["EIA_Region"]=final_database["Balancing Authority Code"].map(ba_codes["EIA_Region"])
     return final_database
 
 
