@@ -65,12 +65,12 @@ def integrate_replace_emissions(new_emissions, stewi_emissions):
         'Year',
         'eGRID_ID'
     ]
-    assert set(required_cols) == set(updated_emissions.columns)
-
+    assert set(required_cols).issubset(set(new_emissions.columns))
+    stewi_emissions["eGRID_ID"]=stewi_emissions["eGRID_ID"].astype(int)
     updated_emissions = pd.concat([stewi_emissions, new_emissions])
 
     subset_cols = [
-        'Compartment', 'FlowName', 'Source',
+        'Compartment', 'FlowName',
         'Unit', 'Year', 'eGRID_ID'
     ]
     updated_emissions.drop_duplicates(subset=subset_cols, keep='last',

@@ -36,7 +36,8 @@ def eia_facility_fuel_region(year):
 
     primary_fuel = eia923_primary_fuel(year=year)
     ba_match = eia860_balancing_authority(year)
-
+    primary_fuel["Plant Id"]=primary_fuel["Plant Id"].astype(int)
+    ba_match["Plant Id"]=ba_match["Plant Id"].astype(int)
     combined = primary_fuel.merge(ba_match, on='Plant Id')
     combined['primary fuel percent gen'] = (
         combined['primary fuel percent gen'] / 100
@@ -84,6 +85,8 @@ def combine_gen_emissions_data(generation_data, emissions_data, subregion='all')
     """
 
     emissions_data = emissions_data.drop(columns = ['FacilityID'])
+    generation_data["FacilityID"]=generation_data["FacilityID"].astype(int)
+    emissions_data["eGRID_ID"]=emissions_data["eGRID_ID"].astype(int)
     combined_data = generation_data.merge(
         emissions_data,
         left_on=['FacilityID', 'Year'],
@@ -122,17 +125,19 @@ def combine_gen_emissions_data(generation_data, emissions_data, subregion='all')
 
     #Dropping unnecessary columns
     emissions_gen_data = combined_data.drop(columns = cols_to_drop_for_final)
-
+    emissions_gen_data["eGRID_ID"]=emissions_gen_data["eGRID_ID"].astype(int)
     if replace_egrid:
         year = eia_gen_year
 
         # This will only add BA labels, not eGRID subregions
         fuel_region = eia_facility_fuel_region(year)
+        fuel_region["FacilityID"]=fuel_region["FacilityID"].astype(int)
         final_data = pd.merge(fuel_region, emissions_gen_data,
                               left_on=['FacilityID'], right_on=['eGRID_ID'],
                               how='right')
     else:
         #Merging with the egrid_facilites file to get the subregion information in the database!!!
+        egrid_facilities_w_fuel_region["FacilityID"]=egrid_facilities_w_fuel_region["FacilityID"].astype(int)
         final_data = pd.merge(egrid_facilities_w_fuel_region,
                               emissions_gen_data, left_on=['FacilityID'],
                               right_on=['eGRID_ID'], how='right')
@@ -148,7 +153,7 @@ def combine_gen_emissions_data(generation_data, emissions_data, subregion='all')
 
     if replace_egrid:
         # Subregion shows up all over the place below. If not using egrid
-        # sub in the BA name because we don't have the eGRID subergion.
+        # sub in the BA name because we don't have the eGRID subregion.
         if region_column_name:
             assert region_column_name in final_data.columns
             final_data['Subregion'] = final_data[region_column_name]
@@ -174,7 +179,18 @@ def combine_gen_emissions_data(generation_data, emissions_data, subregion='all')
     final_data.dropna(subset=['Electricity'], inplace=True)
 
     if region_column_name:
-        regions = final_data[region_column_name].unique()
+        try:
+            regions = final_data[region_column_name].unique()
+        except KeyError:
+            print(f"Configuration file specifes region column as {region_column_name}, but it does not exist")
+            if subregion == 'all':
+                regions = egrid_subregions
+            elif subregion == 'NERC':
+                regions = list(pd.unique(final_data['NERC']))
+            elif subregion == 'BA':
+                regions = list(pd.unique(final_data['Balancing Authority Name']))
+            else:
+                regions = [subregion]
     elif subregion == 'all':
         regions = egrid_subregions
     elif subregion == 'NERC':
@@ -216,7 +232,18 @@ def create_generation_process_df(generation_data, emissions_data, subregion='all
     )
 
     if region_column_name:
-        regions = final_database[region_column_name].unique()
+        try:
+            regions = final_database[region_column_name].unique()
+        except KeyError:
+            print(f"Configuration file specifes region column as {region_column_name}, but it does not exist")
+            if subregion == 'all':
+                regions = egrid_subregions
+            elif subregion == 'NERC':
+                regions = list(pd.unique(final_data['NERC']))
+            elif subregion == 'BA':
+                regions = list(pd.unique(final_data['Balancing Authority Name']))
+            else:
+                regions = [subregion]
     elif subregion == 'all':
         regions = egrid_subregions
     elif subregion == 'NERC':
@@ -264,7 +291,6 @@ def create_generation_process_df(generation_data, emissions_data, subregion='all
         database['TechnologicalCorrelation'] = 5
         database['TemporalCorrelation'] = 5
         database['DataCollection'] = 5
-
         for index, row in fuel_name.iterrows():
             # Reading complete fuel name and heat content information
             fuelname = row['FuelList']
@@ -280,11 +306,10 @@ def create_generation_process_df(generation_data, emissions_data, subregion='all
                 exchange_list = list(pd.unique(database_f1['FlowName']))
                 if use_primaryfuel_for_coal:
                     database_f1['FuelCategory'].loc[database_f1['FuelCategory'] == 'COAL'] = database_f1['PrimaryFuel']
-
                 for exchange in exchange_list:
                     database_f2 = database_f1[database_f1['FlowName'] == exchange]
                     database_f2 = database_f2[database_f2_cols]
-
+                    
                     compartment_list = list(pd.unique(database_f2['Compartment']))
                     for compartment in compartment_list:
                         database_f3 = database_f2[database_f2['Compartment'] == compartment]
@@ -389,7 +414,7 @@ def create_generation_process_df(generation_data, emissions_data, subregion='all
        'FuelCategory', 'FlowName', 'FlowUUID', 'Compartment', 'Year', 'Source',
        'Unit', 'Subregion', 'ElementaryFlowPrimeContext',
        'TechnologicalCorrelation', 'TemporalCorrelation', 'DataCollection',
-       'Emission_factor', 'Reliability_Score', 'GeographicalCorrelation',
+       'Emission_factor', 'ReliabilityScore', 'GeographicalCorrelation',
        'GeomMean', 'GeomSD', 'Maximum', 'Minimum'
     ]
     result_database = result_database[keep_cols]
@@ -470,8 +495,14 @@ def uncertainty_creation(data,name,fuelheat,mean,total_gen,total_facility_consid
 
                        u,s = (uncertainty(data,mean,total_gen,total_facility_considered))
 
-                       ar['geomMean'] = str(round(math.exp(u),12));
-                       ar['geomSd']=str(round(math.exp(s),12));
+                       if u:
+                           ar['geomMean'] = str(round(math.exp(u),12))
+                       else:
+                           ar['geoMean'] = float('nan')
+                       if s:
+                           ar['geomSd'] = str(round(math.exp(s),12))
+                       else:
+                           ar['geomSd']= float('nan');
                     else:
                        ar['geomMean'] = None
                        ar['geomSd']= None
@@ -555,27 +586,27 @@ def olcaschema_genprocess(database,subregion):
    database = map_heat_inputs_to_fuel_names(database)
 
 
-   if subregion == 'all':
-        region = egrid_subregions
-   elif subregion == 'NERC':
-        region = list(pd.unique(database['NERC']))
-   elif subregion == 'BA':
-        region = list(pd.unique(database['Balancing Authority Name']))
-   else:
-        region = [subregion]
-
+#   if subregion == 'all':
+#        region = egrid_subregions
+#   elif subregion == 'NERC':
+#        region = list(pd.unique(database['NERC']))
+#   elif subregion == 'BA':
+#        region = list(pd.unique(database['Balancing Authority Name']))
+#   else:
+#        region = [subregion]
+   region=database["Subregion"].unique()
    for reg in region:
 
         print("Writing generation process dictionary for " + reg + " ...")
         # This makes sure that the dictionary writer works fine because it only works with the subregion column. So we are sending the
         #correct regions in the subregion column rather than egrid subregions if rquired.
         #This makes it easy for the process_dictionary_writer to be much simpler.
-        if subregion == 'all':
-           database['Subregion'] = database['Subregion']
-        elif subregion == 'NERC':
-           database['Subregion'] = database['NERC']
-        elif subregion == 'BA':
-           database['Subregion'] = database['Balancing Authority Name']
+#        if subregion == 'all':
+#           database['Subregion'] = database['Subregion']
+#        elif subregion == 'NERC':
+#           database['Subregion'] = database['NERC']
+#        elif subregion == 'BA':
+#           database['Subregion'] = database['Balancing Authority Name']
 
         database_reg = database[database['Subregion'] == reg]
 
@@ -616,7 +647,29 @@ def olcaschema_genprocess(database,subregion):
                             #print('\n')
 
                 final = process_table_creation_gen(fuelname, exchanges_list, reg)
+                final["name"]="Electricity - "+database_f1["FuelCategory"].tolist()[0]+" - "+reg
                 generation_process_dict[reg+"_"+fuelname] = final
 
    print("Generation process dictionaries complete.")
    return generation_process_dict
+
+def olcaschema_genupstream_process(database,subregion):
+    generation_process_dict = {}
+
+    #Map heat flows for renewable fuels to energy elementary flows. This must be applied after emission mapping
+    database = map_renewable_heat_flows_to_fedelemflows(database)
+    #Add FlowType to the database
+    database = map_compartment_to_flow_type(database)
+    #Add FlowDirection, muist be applied before fuel mapping!
+    database = add_flow_direction(database)
+ 
+
+    #Map input flows to
+    database = map_heat_inputs_to_fuel_names(database)
+
+
+    upstream_list = list(database['stage_code'].values)
+    
+        
+        
+        

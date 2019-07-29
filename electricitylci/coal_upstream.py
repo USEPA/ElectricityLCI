@@ -7,7 +7,7 @@ import os
 from os.path import join
 from electricitylci.utils import find_file_in_folder
 import requests
-import PhysicalQuantities as pq
+import electricitylci.PhysicalQuantities as pq
 
 coal_type_codes={'BIT':'B',
                  'LIG':'L',
@@ -15,7 +15,8 @@ coal_type_codes={'BIT':'B',
                  'WC':'W'}
 mine_type_codes={'Surface':'S',
                  'Underground':'U',
-                 'Facility':'F'}
+                 'Facility':'F',
+                 'Processing':'P'}
 basin_codes={'Central Appalachia':'CA',
              'Central Interior':'CI',
              'Gulf Lignite':'GL',
@@ -36,7 +37,7 @@ transport_dict={'Avg Barge Ton*Miles':'Barge',
 
 def eia_7a_download(year, save_path):
     eia7a_base_url = 'http://www.eia.gov/coal/data/public/xls/'
-    name = 'coalpublic{}'.format(year)+'.xls'
+    name = 'coalpublic{}.xls'.format(year)
     url = eia7a_base_url + name
     try:
         os.makedirs(save_path)
@@ -64,12 +65,12 @@ def read_eia923_fuel_receipts(year):
         
         eia923_path, eia923_name = find_file_in_folder(
             folder_path=expected_923_folder,
-            file_pattern_match='2_3_4_5',
+            file_pattern_match=['2_3_4_5'],
             return_name=True
         )
         eia_fuel_receipts_df = pd.read_excel(
                 eia923_path, sheet_name='Page 5 Fuel Receipts and Costs',
-                skiprows=4, usecols="A:C,H:M,P:Q")
+                skiprows=4, usecols="A:E,H:M,P:Q")
         csv_fn = eia923_name.split('.')[0] + '_page_5_reduced.csv'
         csv_path = join(expected_923_folder,csv_fn)
         eia_fuel_receipts_df.to_csv(csv_path,index=False)
@@ -83,17 +84,17 @@ def read_eia923_fuel_receipts(year):
         csv_file = [f for f in all_files
                     if '.csv' in f
                     and '_page_5_reduced.csv' in f]
-        csv_path = os.path.join(expected_923_folder,csv_file[0])
-        if os.path.exists(csv_path):
-            eia_fuel_receipts_df=pd.read_csv(csv_path)
+        if csv_file:
+            csv_path = os.path.join(expected_923_folder,csv_file[0])
+            eia_fuel_receipts_df=pd.read_csv(csv_path)    
         else:
             eia923_path, eia923_name = find_file_in_folder(
                     folder_path=expected_923_folder,
-                    file_pattern_match='2_3_4_5',
+                    file_pattern_match=['2_3_4_5'],
                     return_name=True)
             eia_fuel_receipts_df = pd.read_excel(
                 eia923_path, sheet_name='Page 5 Fuel Receipts and Costs',
-                skiprows=4, usecols="A:C,H:M,P:Q")
+                skiprows=4, usecols="A:E,H:M,P:Q")
             csv_fn = eia923_name.split('.')[0] + '_page_5_reduced.csv'
             csv_path = join(expected_923_folder,csv_fn)
             eia_fuel_receipts_df.to_csv(csv_path,index=False)
@@ -102,9 +103,11 @@ def read_eia923_fuel_receipts(year):
 
 def _coal_code(row):
     #_coal_code_str = basin_codes[basin] + '-' + coal_type_codes[coal_type] + '-' + mine_type
-    coal_code_str=(basin_codes[row['netl_basin']]+'-'+
-                   coal_type_codes[row['energy_source']]+'-'+
-                   row['coalmine_type'])
+    coal_code_str=(
+            f'{basin_codes[row["netl_basin"]]}-'
+            f'{coal_type_codes[row["energy_source"]]}-'
+            f'{row["coalmine_type"]}'
+    )
     return coal_code_str
 
 def _transport_code(row):
@@ -118,12 +121,12 @@ def generate_upstream_coal_map(year):
         eia_7a_download(year,expected_7a_folder)
         eia7a_path,eia7a_name = find_file_in_folder(
             folder_path=expected_7a_folder,
-            file_pattern_match='coalpublic',
+            file_pattern_match=['coalpublic'],
             return_name=True)
     else:
         eia7a_path,eia7a_name = find_file_in_folder(
             folder_path=expected_7a_folder,
-            file_pattern_match='coalpublic',
+            file_pattern_match=['coalpublic'],
             return_name=True)
     eia7a_df = pd.read_excel(eia7a_path,sheet_name='Hist_Coal_Prod',
                              skiprows=3)
@@ -168,6 +171,7 @@ def generate_upstream_coal_map(year):
     eia_fuel_receipts_df['coal_source_code']=eia_fuel_receipts_df.apply(
             _coal_code,axis=1)
     eia_fuel_receipts_df['heat_input']=eia_fuel_receipts_df['quantity']*eia_fuel_receipts_df['average_heat_content']
+    eia_fuel_receipts_df.drop_duplicates(inplace=True)
     final_df=eia_fuel_receipts_df.groupby(
             ['plant_id','coal_source_code'],
             as_index=False)['quantity','heat_input'].sum()
@@ -180,7 +184,8 @@ def generate_upstream_coal(year):
     
     Parameters
     ----------
-    None
+    year: int
+        Year of EIA-923 fuel data to use
     
     Returns
     ----------
@@ -239,19 +244,19 @@ def generate_upstream_coal(year):
     
     #Keep the plant ID and air emissions columns
     merged_input_eia_coal_a = merged_input_eia_coal_a[
-            ['plant_id','coal_source_code'] + column_air_emission]
+            ['plant_id','coal_source_code','quantity'] + column_air_emission]
     
     #Groupby the plant ID since some plants have multiple row entries 
     #(receive coal from multiple basins)
     merged_input_eia_coal_a = (
             merged_input_eia_coal_a.groupby(
                     ['plant_id','coal_source_code'],
-                    as_index=False)[column_air_emission].sum())
+                    as_index=False)[['quantity']+column_air_emission].sum())
     merged_input_eia_coal_a = merged_input_eia_coal_a.reset_index()
     
     #Melting the database on Plant ID
     melted_database_air = merged_input_eia_coal_a.melt(
-            id_vars = ['plant_id','coal_source_code'], 
+            id_vars = ['plant_id','coal_source_code','quantity'], 
             var_name = 'FlowName', 
             value_name = 'FlowAmount')
     
@@ -279,15 +284,15 @@ def generate_upstream_coal(year):
     #(receive coal from multiple basins)
     merged_input_eia_coal_w = merged_input_eia_coal_w.groupby(
             ['plant_id','coal_source_code'], 
-            as_index=False)[column_water_emission].sum()
+            as_index=False)[['quantity']+column_water_emission].sum()
     merged_input_eia_coal_w = merged_input_eia_coal_w.reset_index()
     
     #Keep the plant ID and water emissions columns
     merged_input_eia_coal_w = merged_input_eia_coal_w[
-            ['plant_id','coal_source_code'] + column_water_emission]
+            ['plant_id','coal_source_code','quantity'] + column_water_emission]
     #Melting the database on Plant ID
     melted_database_water = merged_input_eia_coal_w.melt(
-            id_vars = ['plant_id','coal_source_code'], 
+            id_vars = ['plant_id','coal_source_code','quantity'], 
             var_name = 'FlowName', 
             value_name = 'FlowAmount')
     #Adding to new columns for the compartment (water) and 
@@ -298,6 +303,7 @@ def generate_upstream_coal(year):
     #Repeat the same methods for emissions from transportation 
     coal_transportation = coal_transportation.melt(
             'Plant Government ID',var_name = 'Transport')
+    coal_transportation["value"]=coal_transportation["value"]*pq.convert(1,"ton","kg")*pq.convert(1,"mi","km")
     merged_transport_coal = coal_transportation.merge(
             coal_inventory_transportation, 
             left_on = ['Transport'], 
@@ -307,7 +313,7 @@ def generate_upstream_coal(year):
     #multiply transportation emission factor (kg/kg-mi) by total transportation
     #(ton-miles)
     merged_transport_coal[column_air_emission] = (
-            pq.convert(1,'ton','kg')*
+            #pq.convert(1,'ton','kg')*
             merged_transport_coal[column_air_emission].multiply(
                     merged_transport_coal['value'],axis = "index"))
     
@@ -317,18 +323,19 @@ def generate_upstream_coal(year):
     #Groupby the plant ID since some plants have multiple row entries 
     #(receive coal from multiple basins)
     merged_transport_coal= merged_transport_coal.groupby(
-            ['plant_id','Transport'])[column_air_emission].sum()
+            ['plant_id','Transport'])[['value']+column_air_emission].sum()
     merged_transport_coal= merged_transport_coal.reset_index()
     
     #Keep the plant ID and emissions columns
     merged_transport_coal = (
             merged_transport_coal[
-                    ['plant_id','Transport'] + column_air_emission])
-    merged_transport_coal.rename(columns={'Transport':'coal_source_code'},
+                    ['plant_id','Transport','value'] + column_air_emission])
+    merged_transport_coal.rename(columns={'Transport':'coal_source_code',
+                                          'value':'quantity'},
                                  inplace=True)
     #Melting the database on Plant ID
     melted_database_transport = merged_transport_coal.melt(
-            id_vars = ['plant_id','coal_source_code'], 
+            id_vars = ['plant_id','coal_source_code','quantity'], 
             var_name = 'FlowName', 
             value_name = 'FlowAmount')
     melted_database_transport['coal_source_code']=melted_database_transport.apply(
@@ -346,6 +353,8 @@ def generate_upstream_coal(year):
             'coal_source_code':'stage_code',
             'Source':'stage'
             },inplace=True)
+    zero_rows = merged_coal_upstream.loc[merged_coal_upstream["quantity"]==0,:].index
+    merged_coal_upstream.drop(zero_rows,inplace=True)
     merged_coal_upstream.sort_values(
             ['plant_id','stage','stage_code','Compartment','FlowName'],
             inplace=True)
@@ -353,6 +362,6 @@ def generate_upstream_coal(year):
     return merged_coal_upstream
 
 if __name__=='__main__':
-    year=2014
+    year=2016
     df = generate_upstream_coal(year)
     df.to_csv(output_dir+'/coal_emissions_{}.csv'.format(year))
