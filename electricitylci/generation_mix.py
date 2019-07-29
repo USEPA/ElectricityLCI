@@ -6,7 +6,7 @@ The functions in this script calculate the fraction of each generating source
 import numpy as np
 import pandas as pd
 from electricitylci.process_dictionary_writer import *
-from electricitylci.egrid_facilities import egrid_facilities,egrid_subregions
+from electricitylci.egrid_facilities import egrid_facilities, egrid_subregions
 from electricitylci.model_config import (
     use_primaryfuel_for_coal,
     fuel_name,
@@ -15,23 +15,47 @@ from electricitylci.model_config import (
     region_column_name,
 )
 from electricitylci.generation import eia_facility_fuel_region
+import logging
 
-#Get a subset of the egrid_facilities dataset
-egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory','NERC','PercentGenerationfromDesignatedFuelCategory','Balancing Authority Name','Balancing Authority Code']]
+# Get a subset of the egrid_facilities dataset
+egrid_facilities_w_fuel_region = egrid_facilities[
+    [
+        "FacilityID",
+        "Subregion",
+        "PrimaryFuel",
+        "FuelCategory",
+        "NERC",
+        "PercentGenerationfromDesignatedFuelCategory",
+        "Balancing Authority Name",
+        "Balancing Authority Code",
+    ]
+]
 
-#Get reference regional generation data by fuel type, add in NERC
-from electricitylci.egrid_energy import ref_egrid_subregion_generation_by_fuelcategory
-egrid_subregions_NERC = egrid_facilities[['Subregion','FuelCategory','NERC']]
+# Get reference regional generation data by fuel type, add in NERC
+from electricitylci.egrid_energy import (
+    ref_egrid_subregion_generation_by_fuelcategory,
+)
+
+egrid_subregions_NERC = egrid_facilities[["Subregion", "FuelCategory", "NERC"]]
 egrid_subregions_NERC = egrid_subregions_NERC.drop_duplicates()
 len(egrid_subregions_NERC)
-egrid_subregions_NERC = egrid_subregions_NERC[egrid_subregions_NERC['NERC'].notnull()]
-ref_egrid_subregion_generation_by_fuelcategory_with_NERC = pd.merge(ref_egrid_subregion_generation_by_fuelcategory,egrid_subregions_NERC,on=['Subregion','FuelCategory'])
+egrid_subregions_NERC = egrid_subregions_NERC[
+    egrid_subregions_NERC["NERC"].notnull()
+]
+ref_egrid_subregion_generation_by_fuelcategory_with_NERC = pd.merge(
+    ref_egrid_subregion_generation_by_fuelcategory,
+    egrid_subregions_NERC,
+    on=["Subregion", "FuelCategory"],
+)
 
-ref_egrid_subregion_generation_by_fuelcategory_with_NERC = ref_egrid_subregion_generation_by_fuelcategory_with_NERC.rename(columns={"Ref_Electricity_Subregion_FuelCategory":"Electricity"})
+ref_egrid_subregion_generation_by_fuelcategory_with_NERC = ref_egrid_subregion_generation_by_fuelcategory_with_NERC.rename(
+    columns={"Ref_Electricity_Subregion_FuelCategory": "Electricity"}
+)
 
 
-def create_generation_mix_process_df_from_model_generation_data(generation_data,
-    subregion):
+def create_generation_mix_process_df_from_model_generation_data(
+    generation_data, subregion
+):
     """
     Creates fuel generation mix by subregion. Currently uses a dataframe
     'egrid_facilities_w_fuel_region' that is not an input. This should be changed
@@ -51,17 +75,20 @@ def create_generation_mix_process_df_from_model_generation_data(generation_data,
     DataFrame
         [description]
     """
+    from electricitylci.combinator import ba_codes
     # Converting to numeric for better stability and merging
-    generation_data['FacilityID'] = generation_data['FacilityID'].astype(str)
+    generation_data["FacilityID"] = generation_data["FacilityID"].astype(int)
 
     if replace_egrid:
         year = eia_gen_year
         # This will only add BA labels, not eGRID subregions
         fuel_region = eia_facility_fuel_region(year)
-
-        generation_data = generation_data.loc[generation_data['Year'] == year, :]
+        fuel_region["FacilityID"] = fuel_region["FacilityID"].astype(int)
+        generation_data = generation_data.loc[
+            generation_data["Year"] == year, :
+        ]
         database_for_genmix_final = pd.merge(
-            generation_data, fuel_region, on='FacilityID'
+            generation_data, fuel_region, on="FacilityID"
         )
 
         # database_for_genmix_final['Subregion'] = (
@@ -69,41 +96,55 @@ def create_generation_mix_process_df_from_model_generation_data(generation_data,
         # )
     else:
         database_for_genmix_final = pd.merge(
-            generation_data, egrid_facilities_w_fuel_region, on='FacilityID'
+            generation_data, egrid_facilities_w_fuel_region, on="FacilityID"
         )
-    
+    database_for_genmix_final["Balancing Authority Name"]=database_for_genmix_final["Balancing Authority Code"].map(ba_codes["BA_Name"])
+    database_for_genmix_final["FERC_Region"]=database_for_genmix_final["Balancing Authority Code"].map(ba_codes["FERC_Region"])
+    database_for_genmix_final["EIA_Region"]=database_for_genmix_final["Balancing Authority Code"].map(ba_codes["EIA_Region"])
     # Changing the loop structure of this function so that it uses pandas groupby
     if region_column_name:
-        database_for_genmix_final['Subregion'] = (
-            database_for_genmix_final[region_column_name]
-        )
-    elif subregion == 'NERC':
-        database_for_genmix_final['Subregion'] = database_for_genmix_final['NERC']
-    elif subregion == 'BA':
-        database_for_genmix_final['Subregion'] = (
-            database_for_genmix_final['Balancing Authority Name']
-        )
-    
+        database_for_genmix_final["Subregion"] = database_for_genmix_final[
+            region_column_name
+        ]
+    elif subregion == "NERC":
+        database_for_genmix_final["Subregion"] = database_for_genmix_final[
+            "NERC"
+        ]
+    elif subregion == "BA":
+        database_for_genmix_final["Subregion"] = database_for_genmix_final[
+            "Balancing Authority Name"
+        ]
+    elif subregion == "all":
+        database_for_genmix_final["Subregion"] = database_for_genmix_final[
+            "NERC"
+        ]
+    elif subregion == "FERC":
+        database_for_genmix_final["Subregion"] = database_for_genmix_final["FERC_Region"]
+
     if use_primaryfuel_for_coal:
         database_for_genmix_final.loc[
-            database_for_genmix_final['FuelCategory'] == 'COAL', 'FuelCategory'
+            database_for_genmix_final["FuelCategory"] == "COAL", "FuelCategory"
         ] = database_for_genmix_final.loc[
-            database_for_genmix_final['FuelCategory'] == 'COAL', 'PrimaryFuel'
+            database_for_genmix_final["FuelCategory"] == "COAL", "PrimaryFuel"
         ]
 
-    group_cols = [
-        'Subregion',
-        'FuelCategory'
-    ]
+    if subregion == "US":
+        group_cols = ["FuelCategory"]
+    else:
+        group_cols = ["Subregion", "FuelCategory"]
     subregion_fuel_gen = database_for_genmix_final.groupby(
-        group_cols, as_index=False)['Electricity'].sum()
-    
+        group_cols, as_index=False
+    )["Electricity"].sum()
+
     # Groupby .transform method returns a dataframe of the same len as the original
-    subregion_total_gen = subregion_fuel_gen.groupby(
-        'Subregion')['Electricity'].transform('sum')
-    subregion_fuel_gen['Generation_Ratio'] = (
-        subregion_fuel_gen['Electricity']
-        / subregion_total_gen
+    if subregion == "US":
+        subregion_total_gen = subregion_fuel_gen["Electricity"].sum()
+    else:
+        subregion_total_gen = subregion_fuel_gen.groupby("Subregion")[
+            "Electricity"
+        ].transform("sum")
+    subregion_fuel_gen["Generation_Ratio"] = (
+        subregion_fuel_gen["Electricity"] / subregion_total_gen
     )
 
     return subregion_fuel_gen
@@ -138,7 +179,6 @@ def create_generation_mix_process_df_from_model_generation_data(generation_data,
     #     elif subregion == 'BA':
     #         database['Subregion'] = database['Balancing Authority Name']
 
-
     # # This looks like it is pretty slow.
     #     total_gen_reg = np.sum(database['Electricity'])
     #     for index ,row in fuel_name.iterrows():
@@ -161,8 +201,9 @@ def create_generation_mix_process_df_from_model_generation_data(generation_data,
 
     # return result_database
 
-#Creates gen mix from reference data
-#Only possible for a subregion, NERC region, or total US
+
+# Creates gen mix from reference data
+# Only possible for a subregion, NERC region, or total US
 def create_generation_mix_process_df_from_egrid_ref_data(subregion):
     """
     [summary]
@@ -179,41 +220,55 @@ def create_generation_mix_process_df_from_egrid_ref_data(subregion):
     """
 
     # Converting to numeric for better stability and merging
-    if subregion == 'all':
+    if subregion == "all":
         regions = egrid_subregions
-    elif subregion == 'NERC':
-        regions = list(pd.unique(ref_egrid_subregion_generation_by_fuelcategory_with_NERC['NERC']))
+    elif subregion == "NERC":
+        regions = list(
+            pd.unique(
+                ref_egrid_subregion_generation_by_fuelcategory_with_NERC[
+                    "NERC"
+                ]
+            )
+        )
     else:
         regions = [subregion]
 
     result_database = pd.DataFrame()
 
     for reg in regions:
-        if subregion == 'NERC':
+        if subregion == "NERC":
             # This makes sure that the dictionary writer works fine because it only works with the subregion column.
-            database = ref_egrid_subregion_generation_by_fuelcategory_with_NERC[ref_egrid_subregion_generation_by_fuelcategory_with_NERC['NERC'] == reg]
-            database['Subregion'] = database['NERC']
-        elif subregion == 'US':
-            #for all US use entire database
+            database = ref_egrid_subregion_generation_by_fuelcategory_with_NERC[
+                ref_egrid_subregion_generation_by_fuelcategory_with_NERC[
+                    "NERC"
+                ]
+                == reg
+            ]
+            database["Subregion"] = database["NERC"]
+        elif subregion == "US":
+            # for all US use entire database
             database = ref_egrid_subregion_generation_by_fuelcategory_with_NERC
         else:
-            #assume the region is an egrid subregion
-            database = ref_egrid_subregion_generation_by_fuelcategory_with_NERC[ref_egrid_subregion_generation_by_fuelcategory_with_NERC['Subregion'] == reg]
+            # assume the region is an egrid subregion
+            database = ref_egrid_subregion_generation_by_fuelcategory_with_NERC[
+                ref_egrid_subregion_generation_by_fuelcategory_with_NERC[
+                    "Subregion"
+                ]
+                == reg
+            ]
 
-        #Get fuel typoes for each region
-        #region_fuel_categories = list(pd.unique(database['FuelCategory']))
-        total_gen_reg = np.sum(database['Electricity'])
-        database['Generation_Ratio'] =  database['Electricity']/total_gen_reg
+        # Get fuel typoes for each region
+        # region_fuel_categories = list(pd.unique(database['FuelCategory']))
+        total_gen_reg = np.sum(database["Electricity"])
+        database["Generation_Ratio"] = database["Electricity"] / total_gen_reg
         # for index,row in database.iterrows():
         #     # cropping the database according to the current fuel being considered
         #     row['Generation_Ratio'] = row['Electricity']/total_gen_reg
-        result_database = pd.concat([result_database,database])
+        result_database = pd.concat([result_database, database])
 
     return result_database
 
-
-
-        ##MOVE TO NEW FUNCTION
+    ##MOVE TO NEW FUNCTION
     # if database_for_genmix_reg_specific.empty != True:
     # data_transfer(database_for_genmix_reg_specific, fuelname, fuelheat)
     # Move to separate function
@@ -221,26 +276,51 @@ def create_generation_mix_process_df_from_egrid_ref_data(subregion):
     # return generation_mix_dict
 
 
-def olcaschema_genmix(database, subregion):
+def olcaschema_genmix(database, gen_dict, subregion):
     generation_mix_dict = {}
 
-    region = list(pd.unique(database['Subregion']))
-
+    if "Subregion" in database.columns:
+        region = list(pd.unique(database["Subregion"]))
+    else:
+        region = ["US"]
+        database["Subregion"] = "US"
     for reg in region:
 
-        database_reg = database[database['Subregion'] == reg]
+        database_reg = database[database["Subregion"] == reg]
         exchanges_list = []
 
         # Creating the reference output
         exchange(exchange_table_creation_ref(database_reg), exchanges_list)
-
-        for index, row in fuel_name.iterrows():
+        for fuelname in list(database["FuelCategory"].unique()):
             # Reading complete fuel name and heat content information
-            fuelname = row['Fuelname']
+            # fuelname = row['Fuelname']
             # croppping the database according to the current fuel being considered
-            database_f1 = database_reg[database_reg['FuelCategory'] == row['FuelList']]
+            database_f1 = database_reg[
+                database_reg["FuelCategory"] == fuelname
+            ]
             if database_f1.empty != True:
-                ra = exchange_table_creation_input_genmix(database_f1, fuelname)
+                ra = exchange_table_creation_input_genmix(
+                    database_f1, fuelname
+                )
+                ra["quantitativeReference"] = False
+                matching_dict = None
+                for generator in gen_dict:
+                    if (
+                        gen_dict[generator]["name"]
+                        == "Electricity - " + fuelname + " - " + reg
+                    ):
+                        matching_dict = gen_dict[generator]
+                        break
+                if matching_dict is None:
+                    logging.warning(
+                        f"Trouble matching dictionary for {fuelname} - {reg}"
+                    )
+                else:
+                    ra["provider"] = {
+                        "name": matching_dict["name"],
+                        "@id": matching_dict["uuid"],
+                        "category": matching_dict["category"].split("/"),
+                    }
                 exchange(ra, exchanges_list)
                 # Writing final file
         final = process_table_creation_genmix(reg, exchanges_list)

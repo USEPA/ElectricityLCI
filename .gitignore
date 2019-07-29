@@ -3,18 +3,25 @@
 *.pk
 electricitylci/__pycache__/
 *.zip
-
+/*.csv
 # IDE files
 .idea/
 .vscode/
-
+.spyproject/
+ElectricityLCI.sln
+ElectricityLCI.pyproj
 # egg files
 *.egg-info/
-
+.vs/
 .DS_Store
 
 # notebooks
 *.ipynb
 
 # downloaded excel files and csv transformations
-electricitylci/data/**/*.*
+electricitylci/data/*/
+
+#output files
+electricitylci/output/*
+example/*.csv
+example/*.pickle

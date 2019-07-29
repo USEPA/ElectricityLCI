@@ -1,0 +1,1875 @@
+﻿Flow,SCPC_550_MW,NGCC_630_MW
+resource/in ground/coal/mj,4179403152,1647871219
+"resource/in ground/natural gas, dry/mj",1966733363,678171870.7
+resource/in ground/natural gas liquids/mj,301539121,103977160.1
+resource/in ground/crude oil/mj,1365655121,470907193.4
+"resource/in ground/energy, nuclear fission/mj",392079039.7,159780378.2
+"resource//energy, biomass/mj",294050203.7,120529366.5
+"resource/in water/energy, hydraulic potential/mj",47510412.84,20587742.46
+"resource/in air/energy, solar/mj",31393787.6,12791803
+"resource/in air/energy, wind/mj",111214377.5,45321572.55
+air/unspecified/carbon dioxide/kg,376174373.4,136409687.9
+air/unspecified/dinitrogen monoxide/kg,12608.58576,4350.881016
+air/unspecified/methane/kg,1413916.572,533707.2674
+"air/unspecified/ethane, 1,1,1,2-tetrafluoro-, hfc-134a/kg",3001.024635,793.1660781
+"air/unspecified/ethane, pentafluoro-, hfc-125/kg",787.3584249,205.5223077
+"air/unspecified/methane, difluoro-, hfc-32/kg",458.520865,119.6866171
+"air/unspecified/ethane, 1,1,1-trifluoro-, hfc-143a/kg",336.8779071,87.93444344
+"air/unspecified/propane, 1,1,1,3,3,3-hexafluoro-, hcfc-236fa/kg",9.100846386,2.37557241
+air/unspecified/sulfur hexafluoride/kg,41.19874667,21.2800753
+"air/unspecified/methane, trifluoro-, hfc-23/kg",48.65812945,18.16943009
+"air/unspecified/methane, tetrafluoro-, r-14/kg",288.1634639,104.9119191
+"air/unspecified/ethane, hexafluoro-, hfc-116/kg",62.33106175,23.96543302
+air/unspecified/nitrogen fluoride/kg,3.452820024,1.734304903
+"air/unspecified/propane, perfluoro-/kg",1.120960823,0.563043494
+"air/unspecified/butane, perfluorocyclo-, pfc-318/kg",0.960979036,0.482686802
+"resource/land/occupation, agriculture + forest/m2*a",82921.49718,37201.02109
+"resource/land/occupation, annual crop/m2*a",12138042.96,3934394.511
+"resource/land/occupation, annual crop, flooded crop/m2*a",90076.55978,31152.89876
+"resource/land/occupation, forest/m2*a",276987651.7,85368449.74
+"resource/land/occupation, industrial area/m2*a",1074708.621,416097.5184
+"resource/land/occupation, industrial area, built up/m2*a",535821.5246,206522.2838
+"resource/land/occupation, mineral extraction site/m2*a",20555516.71,7106706.567
+"resource/land/occupation, pasture and meadow/m2*a",6210193.046,2081647.308
+"resource/land/occupation, pasture and meadow, extensive/m2*a",1789041.671,609258.4242
+"resource/land/occupation, pasture and meadow, intensive/m2*a",454033.2286,148976.4223
+"resource/land/occupation, permanent crop/m2*a",66810.00969,20417.03701
+"resource/land/occupation, permanent crop, fruit, intensive/m2*a",77087.18168,26049.62366
+"resource/land/occupation, traffic area, rail network/m2*a",1683313.742,603012.4253
+"resource/land/occupation, traffic area, road network/m2*a",3477211.776,1363735.067
+"resource/land/occupation, urban, discontinuously built/m2*a",706267.3589,255890.3666
+resource/in ground/copper/kg,660107.6766,259205.3257
+resource/in ground/lead/kg,171049.7994,67166.34351
+resource/in ground/nickel/kg,1734.589515,681.1234835
+resource/in ground/zinc/kg,400882.9102,157415.2051
+resource/in ground/limestone/kg,2341816.34,709110.0165
+resource/in ground/sand and gravel/kg,121774449.7,36873720.86
+resource/in ground/stone/kg,150413062.1,45545590.89
+resource/in ground/beryllium/kg,68.65418726,29.61104331
+resource/in ground/cobalt/kg,34.32709363,14.80552166
+resource/in ground/gold/kg,60.35847296,26.03304224
+resource/in ground/iron/kg,4866736.137,2099058.197
+resource/in ground/magnesium/kg,82385.02471,35533.25197
+resource/in ground/molybdenum/kg,1950.923155,841.4471474
+resource/in ground/palladium/kg,3.489921186,1.505228035
+resource/in ground/platinum/kg,1.044115765,0.450334617
+resource/in ground/cerium/kg,1257.53205,542.3825915
+"resource/in ground/rhenium, in crude ore/kg",2.431502465,1.048724451
+resource/in ground/silver/kg,337.549754,145.5876296
+resource/in ground/titanium/kg,17144.7498,7394.653543
+resource/in ground/zirconium/kg,12706.47473,5480.393675
+resource/in ground/barite/kg,128621.4503,34809.59357
+resource/in ground/boron/kg,757890.094,205112.3362
+"resource/in ground/clay, unspecified/kg",2878365.697,778989.3511
+"resource/in ground/clay, bentonite/kg",931196.0199,252015.157
+resource/in ground/kaolin/kg,1224134.768,331294.9252
+resource/in ground/diatomite/kg,174793.2529,47305.3451
+resource/in ground/feldspar/kg,102819.5605,27826.67359
+resource/in ground/fluorspar/kg,22115.90547,5985.35998
+resource/in ground/garnet/kg,6246.7733,1690.601679
+resource/in ground/gypsum/kg,2133990.879,577534.7349
+resource/in ground/kyanite/kg,21339.90879,5775.347349
+resource/in ground/lithium/kg,168.7792786,45.67774721
+resource/in ground/mica/kg,8923.961858,2415.145255
+resource/in ground/peat/kg,90791.61194,24571.47781
+resource/in ground/perlite/kg,87493.62604,23678.92413
+resource/in ground/phosphate ore/kg,4908179.022,1328329.89
+resource/in ground/potassium/kg,136890.7833,37047.57271
+resource/in ground/pumice/kg,53931.76949,14595.87785
+resource/in water/sodium chloride/kg,8788162.438,2378393.045
+resource/in ground/sodium carbonate/kg,2269790.299,614286.9453
+resource/in ground/talc/kg,118339.4942,32026.92621
+resource/in ground/vermiculite/kg,19399.91708,5250.315772
+resource/in ground/zeolites/kg,12435.34685,3365.45241
+water/unspecified/nitrogen/kg,74766.3788,25450.88318
+water/unspecified/phosphorus/kg,81710.08428,55073.17853
+air/unspecified/ethylenediaminetetraacetic acid/kg,0,0
+"air/unspecified/1,1,2,2-tetrachloroethane/kg",2.97554143,1.036882307
+"air/unspecified/ethane, 1,1,2-trichloro-/kg",3.95041078,1.254030535
+"air/unspecified/1,1-dimethyl hydrazine/kg",0.000745854,0.000300618
+air/unspecified/lindane/kg,0.000964841,0.000374378
+"air/unspecified/1,2,4-trichlorobenzene/kg",6.531243311,2.73740411
+"air/unspecified/1,2-dibromo-3-chloropropane/kg",0.010388246,0.002991245
+air/unspecified/dimethoxy methane/kg,0.655191633,0.209508746
+air/unspecified/hydrazobenzene/kg,0.00024665,9.57051E-05
+"air/unspecified/1,2-butylene oxide/kg",1.710548774,0.870887266
+air/unspecified/aziridine/kg,0.039909806,0.014658431
+air/unspecified/butadiene/kg,356.4274203,124.0118749
+"air/unspecified/propene, 1,3-dichloro-/kg",1.148387132,0.377860015
+air/unspecified/propane sultone/kg,0.003357586,0.001303128
+"air/unspecified/1,4-dichlorobenzene/kg",3.956508077,1.278576814
+air/unspecified/1-methylnapthalene/kg,1.869698567,0.722636821
+"air/unspecified/ethanol, 2-butoxy-/kg",4.040927445,1.765549116
+"air/unspecified/2,2,4-trimethylpentane/kg",1188.25368,415.214714
+"air/unspecified/2,3,4'-trichlorobiphenyl/kg",2.37596E-06,9.56598E-07
+"air/unspecified/2,4,5-trichlorophenol/kg",0.258969722,0.100589155
+"air/unspecified/2,4,6-trichlorophenol/kg",0.00372575,0.001398866
+"air/unspecified/2,4-d/kg",0.024444087,0.007007962
+"air/unspecified/2,4-dinitrophenol/kg",0.615023532,0.195358847
+"air/unspecified/toluene, 2,4-dinitro-/kg",0.460475304,0.140582599
+"air/unspecified/toluene-2,4-diisocyante/kg",0.934042588,0.438370561
+air/unspecified/2-acetylaminofluorene/kg,0.002293542,0.000882901
+air/unspecified/2-ethoxyethyl acetate/kg,30.79537891,7.648688413
+air/unspecified/2-chloro-1-phenylethanone/kg,0.179982316,0.07275398
+air/unspecified/pcb-1/kg,2.01047E-07,8.0945E-08
+air/unspecified/chloronaphthalene/kg,0.000298554,0.000121246
+air/unspecified/2-methylnaphthalene/kg,2.912253903,0.951048857
+air/unspecified/2-nitropropane/kg,1.59840744,0.531239264
+"air/unspecified/3,3'-dichlorobenzidine/kg",0.003090582,0.001330636
+air/unspecified/o-anisidine/kg,0.018780236,0.006222388
+"air/unspecified/3,3'-dimethylbenzidine/kg",0.001268487,0.0004269
+air/unspecified/3-methylcholanthrene/kg,0.001257597,0.00043119
+air/unspecified/pcb-15/kg,5.95162E-08,2.54278E-08
+"air/unspecified/4,4'-methylenebis(2-chloroanaline)/kg",0.202316563,0.080986209
+"air/unspecified/4,4'-methylenedianiline/kg",0.799092627,0.432497155
+air/unspecified/methylene diphenyl diisocyanate/kg,12.45908704,4.984987457
+air/unspecified/dnoc/kg,0.044089895,0.016388158
+air/unspecified/4-aminobiphenyl/kg,0.009920469,0.003962591
+air/unspecified/dimethylaminoazobenzene/kg,0.001484513,0.000567648
+air/unspecified/nitrobenzene/kg,1.701061776,0.552213213
+air/unspecified/4-nitrophenol/kg,0.148057483,0.054352389
+"air/unspecified/chrysene, 5-methyl-/kg",0.004380209,0.001486567
+air/unspecified/benzo(a)anthracene/kg,0.003933856,0.001296667
+air/unspecified/carbazole/kg,0.001846222,0.000691057
+air/unspecified/acenaphthene/kg,6.607191985,2.434899412
+air/unspecified/acenaphthylene/kg,17.71506423,6.774467392
+air/unspecified/acetaldehyde/kg,2568.551165,871.3632555
+air/unspecified/acetamide/kg,0.012827193,0.004281576
+air/unspecified/acetonitrile/kg,35.44709336,12.24843688
+air/unspecified/acetophenone/kg,33.7032168,14.39949254
+air/unspecified/acrolein/kg,502.2034517,177.456077
+air/unspecified/acrylamide/kg,2.018900457,0.597219441
+air/unspecified/acrylic acid/kg,19.52678741,5.354136077
+air/unspecified/acrylonitrile/kg,20.71323446,7.30172593
+air/unspecified/allyl chloride/kg,1.744116657,0.573040805
+air/unspecified/ammonia/kg,28994.46695,9852.944243
+air/unspecified/aniline/kg,8.5617935,5.17607129
+air/unspecified/anthracene/kg,5.953251111,2.33472854
+air/unspecified/antimony/kg,12.78152349,4.54508922
+air/unspecified/arsenic/kg,25.80605371,9.731458868
+air/unspecified/asbestos/kg,0.088674896,0.028868711
+air/unspecified/benz[a]anthracene/kg,3.772426025,1.69025881
+air/unspecified/benzene/kg,4710.610168,1679.930118
+air/unspecified/benzidine/kg,0.009397425,0.001858654
+air/unspecified/benzo(b)fluoranthene/kg,1.079163372,0.419882047
+"air/unspecified/benzo(b,j,k)fluoranthene/kg",3.17091E-05,1.06386E-05
+air/unspecified/benzo(a)pyrene/kg,3.807642805,1.536340868
+"air/unspecified/benzo(g,h,i)perylene/kg",11.78384061,5.905582692
+air/unspecified/benzo(k)fluoranthene/kg,0.600363248,0.231832465
+"air/unspecified/hydrocarbons, aromatic/kg",218.2496685,83.86060213
+air/unspecified/benzoic trichloride (benzotrichloride)/kg,0.002816567,0.000751191
+air/unspecified/benzyl chloride/kg,12.66373574,5.051824155
+air/unspecified/beryllium/kg,0.580040403,0.224089001
+air/unspecified/beta-propiolactone/kg,8.96923E-05,3.01213E-05
+air/unspecified/biphenyl/kg,16.46840477,6.568468681
+"air/unspecified/phthalate, dioctyl-/kg",30.04861213,7.345092651
+air/unspecified/bis-(chloromethyl)ether/kg,0.000116588,4.52384E-05
+air/unspecified/bromoform/kg,2.486147878,0.684889152
+air/unspecified/2-(2-butoxyethoxy) ethyl acetate/kg,1.499921629,0.507325055
+air/unspecified/cadmium/kg,5.330208448,2.054247186
+air/unspecified/cyanamide/kg,0.064893357,0.025643181
+air/unspecified/captan/kg,0.001943192,0.000722582
+air/unspecified/carbaryl/kg,0.009979426,0.007220597
+air/unspecified/2-(2-ethoxyethoxy) ethyl acetate/kg,0.109920246,0.069116518
+air/unspecified/carbon disulfide/kg,461.7190323,133.5301974
+air/unspecified/carbon monoxide/kg,1650975.136,609992.5522
+air/unspecified/carbon tetrachloride/kg,10.16392881,2.852588605
+air/unspecified/carbonyl sulfide/kg,2588.683493,888.0624048
+air/unspecified/catechol/kg,0.486109057,0.188671255
+air/unspecified/ethylene glycol monoethyl ether/kg,1072.989508,403.6422383
+air/unspecified/chloramben/kg,3.65742E-05,1.41902E-05
+air/unspecified/chlordane/kg,0.000667938,0.000260081
+air/unspecified/chlorine/kg,6551.238684,2278.31635
+air/unspecified/chloroacetic acid/kg,0.420921384,0.123202322
+"air/unspecified/benzene, chloro-/kg",15.49125247,5.45801172
+air/unspecified/chlorobenzilate/kg,5.19605E-05,2.01617E-05
+air/unspecified/chloroform/kg,33.51905023,11.00111217
+air/unspecified/chloromethyl methyl ether/kg,0.03289284,0.010832864
+air/unspecified/chloroprene/kg,7.667138365,2.926689385
+air/unspecified/chromium vi/kg,23.31754629,8.885852685
+"air/unspecified/chromium, ion/kg",119.5097367,54.80134651
+air/unspecified/chrysene/kg,2.722958822,1.224898667
+air/unspecified/cobalt/kg,6.546812603,3.446398375
+air/unspecified/cresol/kg,52.11139134,24.0438843
+air/unspecified/cumene/kg,70.86224608,25.5851709
+air/unspecified/cyanide/kg,275.8926969,104.8613942
+"air/unspecified/2,4,5,2',5'-pentachlorobiphenyl/kg",4.04795E-06,1.62848E-06
+air/unspecified/bis(n-octyl) phthalate/kg,0.026753837,0.010503149
+air/unspecified/hydrazine/kg,0.219799927,0.056318995
+air/unspecified/benz(a)acridine/kg,0.000683215,0.000232953
+"air/unspecified/dibenz(a,h)anthracene/kg",0.109770181,0.042139826
+air/unspecified/dibenzofuran/kg,3.284472156,1.22604686
+"air/unspecified/phthalate, dibutyl-/kg",11.81214378,6.909648372
+air/unspecified/bis(2-chloroethyl)ether/kg,0.190520882,0.061666673
+air/unspecified/dichlorvos/kg,0.015193411,0.005066014
+air/unspecified/diethanolamine/kg,8.241683847,3.588927502
+air/unspecified/dimethyl sulfate/kg,1.443532566,0.558688719
+air/unspecified/bis (2-ethoxy ethyl)  ether/kg,0.247800945,0.156544392
+air/unspecified/diethylene glycol butyl ether/kg,114.9317858,30.67401979
+"air/unspecified/phthalate, dimethyl-/kg",23.12915695,6.797283875
+air/unspecified/dimethylcarbamyl chloride/kg,0.000222656,8.69347E-05
+air/unspecified/epichlorohydrin/kg,3.928028172,1.197604784
+air/unspecified/ethyl acrylate/kg,4.493764898,1.329683459
+"air/unspecified/benzene, ethyl-/kg",1962.173702,710.7599743
+air/unspecified/urethane/kg,0.007675129,0.002915594
+air/unspecified/monochloroethane/kg,18.91980109,5.283037227
+"air/unspecified/ethane, 1,2-dibromo-/kg",1.537248338,0.549281443
+"air/unspecified/ethane, 1,2-dichloro-/kg",28.96632263,7.374117263
+air/unspecified/ethylene glycol/kg,2413.033245,885.1671263
+air/unspecified/2-methoxyethanol/kg,2.687243388,0.806717394
+air/unspecified/2-methoxyethyl acetate/kg,0.005495665,0.001881648
+air/unspecified/ethylene oxide/kg,12.392434,4.186733512
+air/unspecified/ethylenethiourea/kg,0.042915248,0.017349782
+air/unspecified/fluoranthene/kg,16.11179394,6.544694352
+air/unspecified/fluorene/kg,16.17318043,5.560082582
+air/unspecified/formaldehyde/kg,6148.925448,2050.654242
+air/unspecified/heptachlor/kg,0.000197235,7.71228E-05
+air/unspecified/hexachlorobenzene/kg,0.064166848,0.02023341
+"air/unspecified/hexachloro-1,3-butadiene/kg",0.210330058,0.057944522
+air/unspecified/hexachlorocyclopentadiene/kg,0.926696727,0.387274102
+air/unspecified/hexachloroethane/kg,3.598719185,1.517255531
+air/unspecified/butyl isocyanate/kg,4.895474194,5.594655697
+air/unspecified/hexamethylphosphoramide/kg,0,0
+air/unspecified/hexane/kg,26979.8192,7870.131775
+air/unspecified/hydrogen chloride/kg,11205.05217,3699.401256
+air/unspecified/hydrogen fluoride/kg,5443.067402,1324.644109
+air/unspecified/hydrogen sulfide/kg,1227.412831,422.9095623
+air/unspecified/hydroquinone/kg,1.789470218,0.578748309
+"air/unspecified/indeno(1,2,3-cd)pyrene/kg",0.787397097,0.30300236
+air/unspecified/isophorone/kg,32.94541665,11.04956252
+air/unspecified/lead/kg,164.1765978,69.7399487
+air/unspecified/maleic anhydride/kg,17.98944097,5.466432227
+air/unspecified/manganese/kg,364.9505946,152.8899713
+air/unspecified/m-cresol/kg,1.245322893,0.575207437
+air/unspecified/mercury/kg,11.32443451,4.74231219
+air/unspecified/methanol/kg,5663.491788,2247.994712
+air/unspecified/methoxychlor/kg,0.000786853,0.000305906
+air/unspecified/triethylene glycol/kg,6.944799877,1.307203884
+"air/unspecified/methane, bromo-, halon 1001/kg",22.71645043,6.885921592
+"air/unspecified/methane, monochloro-, r-40/kg",78.76157621,27.47409595
+"air/unspecified/1,1,1-trichloroethane/kg",227.6233262,86.1761453
+air/unspecified/methyl iodide/kg,3.518231753,1.017339866
+air/unspecified/methyl isobutyl ketone/kg,4269.891336,1231.288343
+air/unspecified/methyl methacrylate/kg,92.14248024,50.06603008
+air/unspecified/t-butyl methyl ether/kg,28.30867435,10.0139588
+air/unspecified/2-methylanthracene/kg,0.000489579,0.000135037
+"air/unspecified/methane, dichloro-, hcc-30/kg",418.0234777,123.7426564
+"air/unspecified/hydrazine, methyl-/kg",3.350331694,1.354658444
+air/unspecified/m-xylene/kg,1399.518137,568.655669
+"air/unspecified/n,n-dimethylaniline/kg",1.123849058,0.307431258
+air/unspecified/dimethyl formamide/kg,14.72099885,5.841429795
+air/unspecified/naphthalene/kg,413.6112258,160.3014279
+air/unspecified/nickel/kg,84.58386396,40.17107299
+"air/unspecified/nickel, ion/kg",0.39049669,0.168959691
+air/unspecified/nitrogen oxides/kg,994422.4929,347621.8325
+air/unspecified/n-nitrosodimethylamine/kg,0.00323558,0.001312018
+air/unspecified/n-nitrosomorpholine/kg,0.000364852,0.000113852
+air/unspecified/n-methyl-n-nitrosourea/kg,0.000241984,9.12624E-05
+air/unspecified/o-cresol/kg,4.505369798,2.347872544
+air/unspecified/o-toluidine/kg,0.296823987,0.095852265
+air/unspecified/o-xylene/kg,624.4212907,228.9938435
+air/unspecified/parathion/kg,4.87129E-05,1.89016E-05
+air/unspecified/p-cresol/kg,0.947067629,0.4333576
+"air/unspecified/1,4-dioxane/kg",9.857260656,3.334872816
+air/unspecified/quintozene/kg,0.0022908,0.000760769
+air/unspecified/pentachlorophenol/kg,0.134324908,0.047806939
+air/unspecified/phenanthrene/kg,34.36781768,12.75153856
+air/unspecified/phenol/kg,529.0037905,225.823599
+air/unspecified/2-phenoxyethanol/kg,0.726721213,0.22585752
+air/unspecified/phosgene/kg,9.284408308,3.39511889
+air/unspecified/phosphine/kg,0.907002525,0.213758223
+air/unspecified/phosphorus/kg,22.25656703,8.206385956
+air/unspecified/phthalic anhydride/kg,11.56974859,3.420761263
+"air/unspecified/particulates, < 10 um/kg",403122.9526,115938.2166
+"air/unspecified/particulates, < 2.5 um/kg",181190.2062,61378.26817
+air/unspecified/polychlorinated biphenyls/kg,0.510143228,0.196970599
+air/unspecified/p-phenylenediamine/kg,1.73115823,0.636792051
+air/unspecified/propanal/kg,328.2039873,101.964923
+air/unspecified/propoxur/kg,0.000260463,0.000100996
+"air/unspecified/propane, 1,2-dichloro-/kg",3.878412606,1.304910999
+air/unspecified/propylene oxide/kg,23.22634846,8.089281844
+air/unspecified/para-xylene/kg,615.5266583,250.6612933
+air/unspecified/pyrene/kg,14.46606334,5.692726245
+air/unspecified/quinoline/kg,0.527620626,0.174622156
+"air/unspecified/1,4-benzoquinone/kg",0.360677099,0.106422032
+air/unspecified/selenium/kg,34.40053288,11.98518481
+air/unspecified/styrene/kg,2668.912122,902.7775042
+air/unspecified/styrene oxide/kg,0.146684768,0.04669805
+air/unspecified/sulfur dioxide/kg,543694.7537,194530.9532
+air/unspecified/tertiary-butyl acetate/kg,2533.849625,719.8846734
+"air/unspecified/ethene, tetrachloro-/kg",176.4494748,85.38269237
+air/unspecified/titanium/kg,2.814992636,0.702326446
+air/unspecified/toluene/kg,21967.85248,6916.865625
+"air/unspecified/2,4-diaminotoluene/kg",0.142401671,0.042851569
+air/unspecified/toxaphene (example isomer shown below)/kg,0.000772093,0.000250687
+air/unspecified/trichloroethylene/kg,443.496536,254.0368297
+air/unspecified/triethyl amine/kg,78.2305561,29.59080757
+air/unspecified/trifluralin/kg,0.016433512,0.006063873
+air/unspecified/vinyl acetate/kg,72.81727628,23.54101868
+"air/unspecified/ethene, chloro-/kg",25.76161955,8.151137255
+"air/unspecified/1,1-dichloroethylene/kg",3.472429547,0.805689096
+"air/unspecified/voc, volatile organic compounds/kg",555061.8939,191664.0803
+air/unspecified/xylene/kg,7856.756061,2656.660242
+"air/unspecified/pyrene, 1-nitro-/kg",4.74801E-08,1.34865E-08
+air/low population density/glyphosate/kg,58.35840007,19.47995823
+water/unspecified/atrazine/kg,4.722792111,1.63334595
+water/unspecified/glyphosate-isopropylammonium/kg,26.33900715,8.818672152
+water/unspecified/acetochlor/kg,3.270101604,1.130169457
+water/unspecified/metam-sodium/kg,0.524793978,0.170279739
+water/unspecified/metolachlor/kg,3.372575995,1.151495657
+water/unspecified/glyphosate/kg,16.05417367,5.471113932
+water/unspecified/sulfuric acid/kg,0.03613442,0.011724524
+water/unspecified/mineral oil/kg,1.094517782,0.369864038
+water/unspecified/sulfur/kg,0.127424005,0.042749126
+water/unspecified/dichloropropene/kg,0.093812203,0.029217344
+"water/unspecified/methylcarbamodithioic acid, monopotassium salt/kg",0.013669691,0.0044354
+water/unspecified/ethephon/kg,0.390396403,0.119369816
+water/unspecified/propanil/kg,0.015766459,0.005452816
+"water/unspecified/2,4-d, 2-ethylhexyl ester/kg",4.791337289,1.627212455
+water/unspecified/chlorothalonil/kg,3.23714182,0.991956204
+water/unspecified/trifluralin/kg,0.449701049,0.141637854
+water/unspecified/mesotrione/kg,2.159852676,0.746976328
+water/unspecified/chlorpyrifos/kg,0.192150305,0.064029756
+water/unspecified/dimethenamid-p/kg,0.288321282,0.09942788
+"water/unspecified/2,4-d, dimethylamine salt/kg",4.014950152,1.358429131
+water/unspecified/mancozeb/kg,0.023246467,0.007588112
+water/unspecified/pendimethalin/kg,0.463176871,0.1485119
+water/unspecified/chloropicrin/kg,0.005124652,0.001662794
+"water/unspecified/s,s,s-tributyl phosphorotrithioate/kg",0.141531989,0.04325196
+water/unspecified/calcium polysulfide/kg,0.082387624,0.027840771
+water/unspecified/acephate/kg,0.155311428,0.048936324
+water/unspecified/simazine/kg,0.150645809,0.051967843
+water/unspecified/malathion/kg,0.129313255,0.039683503
+water/unspecified/fomesafen sodium/kg,0.934861038,0.306905535
+water/unspecified/captan/kg,0.079710943,0.026936256
+water/unspecified/glufosinate-ammonium/kg,0.978829627,0.321639711
+water/unspecified/copper hydroxide/kg,0.124538971,0.042026806
+water/unspecified/sulfentrazone/kg,0.920898533,0.306125397
+water/unspecified/diuron/kg,0.525478701,0.163142738
+water/unspecified/dicamba/kg,0.443788432,0.15138183
+water/unspecified/copper (+ii)/kg,0.043193883,0.014568305
+water/unspecified/dicrotophos/kg,0.068496214,0.020932338
+water/unspecified/paraquat/kg,0.924359354,0.295223524
+water/unspecified/propargite/kg,0.359388658,0.124291129
+"water/unspecified/mcpa, 2-ethylhexyl/kg",0.261223467,0.090343906
+water/unspecified/clopyralid/kg,0.114251635,0.03951361
+water/unspecified/phosphorous acid/kg,0.008333137,0.002708139
+water/unspecified/aldicarb/kg,0.067248737,0.020659646
+"water/unspecified/methane, bromo-, halon 1001/kg",0.003981644,0.001315907
+water/unspecified/metribuzin/kg,0.229257058,0.07607033
+water/unspecified/oxamyl/kg,0.005785823,0.001828548
+water/unspecified/bromoxynil octanoate/kg,0.38324289,0.132527627
+water/unspecified/flumioxazin/kg,0.14274252,0.046324624
+water/unspecified/kaolin/kg,0.038943282,0.013122335
+water/unspecified/eptc/kg,0.009223252,0.003143271
+water/unspecified/thiobencarb/kg,0.084823336,0.029336076
+water/unspecified/clethodim/kg,0.097438088,0.032086166
+water/unspecified/clomazone/kg,0.001120943,0.000386781
+water/unspecified/copper sulfate/kg,0.07895439,0.027286555
+water/unspecified/isoxaflutole/kg,0.075697722,0.02617999
+water/unspecified/pyraclostrobin/kg,0.390902612,0.132362037
+water/unspecified/sodium chlorate/kg,0.08017385,0.024536948
+water/unspecified/dicamba sodium salt/kg,0.10240923,0.035168014
+water/unspecified/propiconazole/kg,0.435463702,0.147324524
+water/unspecified/starane/kg,0.106367007,0.036786936
+water/unspecified/alachlor/kg,0.106258128,0.036745978
+water/unspecified/monocarbamide dihyd./kg,0.155667049,0.047571613
+water/unspecified/tebuconazole/kg,0.986692878,0.309137719
+water/unspecified/azoxystrobin/kg,0.553540548,0.18413754
+water/unspecified/potassium bicarbon./kg,0.013490158,0.004558651
+water/unspecified/bensulide/kg,0.00819663,0.002659558
+water/unspecified/bromoxynil heptanoate/kg,0.094220499,0.032584652
+water/unspecified/prometryn/kg,0.132660321,0.040552255
+water/unspecified/tembotrione/kg,0.050479263,0.017453642
+water/unspecified/flumetsulam/kg,0.049364657,0.017041244
+water/unspecified/fluometuron/kg,0.110302999,0.033708428
+water/unspecified/dimethoate/kg,0.069266927,0.023068339
+water/unspecified/ziram/kg,0.020304097,0.006861245
+water/unspecified/norflurazon/kg,0.010555161,0.003566844
+water/unspecified/quinclorac/kg,0.041447008,0.014334411
+water/unspecified/carbaryl/kg,0.019876785,0.00669756
+water/unspecified/fosetyl al/kg,0.008614334,0.002825732
+water/unspecified/msma/kg,0.085445985,0.026112163
+water/unspecified/ethalfluralin/kg,0.085160748,0.026045118
+water/unspecified/acifluorfen-sodium/kg,0.044854359,0.014684351
+water/unspecified/imazethapyr/kg,0.037306309,0.012441199
+water/unspecified/phorate/kg,0.087125487,0.026625416
+water/unspecified/bromacil/kg,0.008051136,0.002720673
+water/unspecified/thidiazuron/kg,0.077678168,0.02373833
+water/unspecified/flutolanil/kg,0.076576149,0.023411538
+water/unspecified/fluazifop-p-butyl/kg,0.031521653,0.010458739
+water/unspecified/lactofen/kg,0.031532697,0.010441449
+water/unspecified/chlorimuron-ethyl/kg,0.029927758,0.009930016
+"water/unspecified/2,4-db/kg",0.072425802,0.022133215
+water/unspecified/bifenthrin/kg,0.084131287,0.027602029
+water/unspecified/petroleum distillate/kg,0.055693061,0.017444003
+"water/unspecified/neem oil, clar. hyd./kg",0.005580888,0.001885917
+water/unspecified/saflufenacil/kg,0.042899983,0.014656843
+water/unspecified/phosmet/kg,0.014029774,0.004740736
+water/unspecified/diflufenzopyr-sodium/kg,0.026479243,0.009157823
+water/unspecified/dimethyl tetrachloroterephthalate/kg,0.004254003,0.001380295
+water/unspecified/diquat dibromide/kg,0.003331094,0.001080839
+water/unspecified/tefluthrin/kg,0.02513284,0.008692171
+water/unspecified/maleic hydrazide/kg,0.00422853,0.00137203
+water/unspecified/thiencarbazone-methy/kg,0.02498324,0.008640432
+water/unspecified/diflubenzuron/kg,0.012645727,0.004072315
+water/unspecified/mepiquat chloride/kg,0.059967546,0.01832599
+water/unspecified/metiram/kg,0.0061769,0.00206676
+water/unspecified/maneb/kg,0.004351199,0.001411832
+water/unspecified/lambda-cyhalothrin/kg,0.045054556,0.01492629
+water/unspecified/quintozene/kg,0.002743254,0.000890103
+water/unspecified/oryzalin/kg,0.007184267,0.002427737
+water/unspecified/methoxyfenozide/kg,0.025712281,0.008451507
+water/unspecified/pyrimethanil/kg,0.004041431,0.001326498
+water/unspecified/quizalofop-p-ethyl/kg,0.018884896,0.006265999
+water/unspecified/methomyl/kg,0.009115941,0.002977871
+"water/unspecified/imazethapyr, ammon./kg",0.020442527,0.007033635
+water/unspecified/trifloxystrobin/kg,0.039887759,0.013604871
+water/unspecified/cyanamide/kg,0.004588131,0.001550441
+water/unspecified/(4-chloro-2-methylphenoxy)acetic acid compd. with n-methylmethanamine (1:1)/kg,0.032045962,0.011082104
+water/unspecified/propamocarb hcl/kg,0.007643798,0.002480181
+water/unspecified/oxyfluorfen/kg,0.005529079,0.00185242
+water/unspecified/imidacloprid/kg,0.028972924,0.009194126
+water/unspecified/thiram/kg,0.004515816,0.001613785
+water/unspecified/fenoxaprop-p-ethyl/kg,0.021301494,0.007351363
+water/unspecified/cyclanilide/kg,0.036353383,0.011109538
+water/unspecified/azinphos-methyl/kg,0.004028091,0.001361189
+water/unspecified/copper chloride hyd./kg,0.007284905,0.002473004
+water/unspecified/mono-potassium salt/kg,0.008592983,0.00286315
+water/unspecified/metalaxyl-m/kg,0.00511348,0.001688984
+water/unspecified/boscalid/kg,0.007576567,0.002524508
+water/unspecified/sulfosate/kg,0.033556969,0.010254958
+water/unspecified/cloransulam-methyl/kg,0.013283443,0.00440744
+"water/unspecified/2,4,5-t triethylammonium salt/kg",0.01256642,0.004346085
+water/unspecified/fluazinam/kg,0.001606763,0.000521346
+water/unspecified/dimethenamid/kg,0.011297852,0.003907352
+water/unspecified/pinoxaden/kg,0.025294282,0.008748005
+water/unspecified/thiophanat-methyl/kg,0.020324339,0.00698408
+water/unspecified/prothioconazole/kg,0.042777809,0.013952503
+water/unspecified/linuron/kg,0.005980372,0.001875951
+"water/unspecified/2,4-d, butoxyethyl ester/kg",0.010882821,0.003610915
+water/unspecified/bentazone/kg,0.032111365,0.010031491
+water/unspecified/cyhalofop-butyl/kg,0.010322417,0.003569999
+"water/unspecified/mcpa, isooctyl ester/kg",0.020949122,0.007245236
+water/unspecified/permethrin/kg,0.012584922,0.004297769
+water/unspecified/pyroxasulfone/kg,0.009873616,0.003414781
+water/unspecified/sethoxydim/kg,0.014510074,0.004766898
+water/unspecified/thiodicarb/kg,0.001278428,0.000414907
+water/unspecified/fenpropathrin/kg,0.002953314,0.000995698
+water/unspecified/rimsulfuron/kg,0.009871411,0.003401236
+"water/unspecified/2,4-d, isopropylamine salt/kg",0.008624402,0.002967146
+water/unspecified/methanone/kg,0.015872996,0.005489662
+water/unspecified/pronamide/kg,0.001134531,0.000368121
+water/unspecified/endosulfan/kg,0.018621749,0.005771041
+water/unspecified/flucarbazone-sodium/kg,0.017439897,0.006031573
+water/unspecified/cyprodinil/kg,0.003822834,0.001288902
+water/unspecified/tri-allate/kg,0.007630616,0.002639042
+water/unspecified/zoxamide/kg,0.000979734,0.000317894
+water/unspecified/thifensulfuron/kg,0.020541516,0.007022055
+water/unspecified/cyfluthrin/kg,0.015615764,0.005073784
+water/unspecified/spirodiclofen/kg,0.002062667,0.000697025
+water/unspecified/triphenyltin hydrox./kg,0.000842571,0.000273389
+water/unspecified/imazamox/kg,0.007623481,0.002622706
+water/unspecified/iprodion/kg,0.003451256,0.001157545
+water/unspecified/potassium phosphate/kg,0.001303907,0.000440622
+water/unspecified/triflumizole/kg,0.003183562,0.001074918
+water/unspecified/difenoconazole/kg,0.002113693,0.000697489
+water/unspecified/picoxystrobin/kg,0.005834409,0.002017825
+water/unspecified/mandipropamide techn/kg,0.001384147,0.000449808
+water/unspecified/dicloran/kg,0.001056153,0.00034269
+water/unspecified/benefin/kg,0.001222707,0.000396732
+water/unspecified/flumiclorac-pentyl/kg,0.005912165,0.001953512
+water/unspecified/spirotetramat/kg,0.002765826,0.000921983
+water/unspecified/copper oxide/kg,0.003330753,0.001125252
+water/unspecified/flufenacet/kg,0.005206375,0.00180062
+water/unspecified/pyrithiobac sodium salt/kg,0.01273922,0.003893086
+water/unspecified/fenhexamid/kg,0.002411339,0.00081485
+water/unspecified/propoxycarbazone-sod/kg,0.005809874,0.00200934
+water/unspecified/penthiopyrad/kg,0.013050464,0.004002508
+water/unspecified/chlorsulfuron/kg,0.004859284,0.001680579
+water/unspecified/cymoxanil/kg,0.001408487,0.000457096
+water/unspecified/fluopyram/kg,0.000670138,0.000217439
+water/unspecified/streptomycin sulfate/kg,0.001185059,0.00040046
+water/unspecified/imazapic-ammonium/kg,0.011668602,0.003565907
+water/unspecified/topramezone/kg,0.004689827,0.001620856
+water/unspecified/cryolite/kg,0.000963309,0.000325525
+water/unspecified/diazinon/kg,0.002504271,0.00084024
+water/unspecified/triasulfuron/kg,0.004338646,0.001500517
+water/unspecified/pyroxsulam/kg,0.005621313,0.001944126
+water/unspecified/prohexadione calcium/kg,0.000842497,0.0002847
+"water/unspecified/2,4-d/kg",0.005151265,0.001720863
+water/unspecified/thiamethoxam/kg,0.014631064,0.004601133
+water/unspecified/zeta-cypermethrin/kg,0.006943593,0.002276279
+water/unspecified/myclobutanil/kg,0.002079556,0.000699777
+water/unspecified/fenamidone/kg,0.000979734,0.000317894
+water/unspecified/formetanate hydrochloride/kg,0.001435083,0.000484949
+water/unspecified/dimethomorph/kg,0.001101324,0.000357346
+water/unspecified/famoxadone/kg,0.001130138,0.00036678
+water/unspecified/imazaquin/kg,0.003680954,0.001221339
+water/unspecified/tribenuron-methyl/kg,0.008735686,0.002998744
+water/unspecified/oxytetracycline calc/kg,0.001519797,0.000513576
+water/unspecified/hydrogen peroxide/kg,0.001017568,0.000333325
+water/unspecified/halosulfuron/kg,0.0034717,0.001199748
+water/unspecified/flubendiamide/kg,0.004544529,0.001494154
+water/unspecified/metaldehyde (tetramer)/kg,0.000956246,0.000322904
+water/unspecified/bifenazate/kg,0.001333877,0.000450264
+water/unspecified/cypermethrin/kg,0.009678944,0.002999803
+water/unspecified/carfentrazone ethyl ester/kg,0.009172142,0.002856321
+water/unspecified/kresoxim-methyl/kg,0.001001374,0.000338389
+water/unspecified/metconazole/kg,0.007637047,0.002641239
+water/unspecified/mepiquat pentaborate/kg,0.007457104,0.00227888
+water/unspecified/parathion-methyl/kg,0.002952769,0.001021213
+water/unspecified/dodine/kg,0.001106658,0.000373967
+water/unspecified/tetraconazole/kg,0.002805553,0.000931401
+water/unspecified/quinoline/kg,0.002487155,0.000828874
+water/unspecified/metsulfuron-methyl/kg,0.002603188,0.00090031
+water/unspecified/thiacloprid/kg,0.000548654,0.000185404
+water/unspecified/cyazofamid/kg,0.000543057,0.000176205
+water/unspecified/fludioxonil/kg,0.001112225,0.000371708
+water/unspecified/novaluron/kg,0.006610219,0.002031291
+water/unspecified/prosulfuron/kg,0.002629617,0.000909451
+water/unspecified/clodinafop-propargil/kg,0.004779962,0.001653146
+water/unspecified/chlorantraniliprole/kg,0.001304044,0.000432113
+water/unspecified/fluxapyroxad/kg,0.002513131,0.000866609
+water/unspecified/naled/kg,0.000307636,9.98187E-05
+water/unspecified/acetamiprid/kg,0.004169941,0.001306083
+water/unspecified/cycloate/kg,0.000297839,9.66397E-05
+water/unspecified/ethofumesate/kg,0.00029588,9.60039E-05
+water/unspecified/sulfosulfuron/kg,0.002256096,0.000780269
+water/unspecified/fluroxypyr/kg,0.002204459,0.00076241
+water/unspecified/buprofezin/kg,0.001613605,0.000543627
+water/unspecified/fenbutatin-oxide/kg,0.000534237,0.000180532
+water/unspecified/imazapic/kg,0.004828387,0.001475548
+water/unspecified/nicosulfuron/kg,0.001797162,0.000621505
+water/unspecified/spinosad/kg,0.001150378,0.000382131
+water/unspecified/metrafenone/kg,0.000368122,0.000124397
+"water/unspecified/imazaquin, mon. salt/kg",0.001760456,0.000584119
+water/unspecified/esfenvalerate/kg,0.004871089,0.001621329
+water/unspecified/cuprammonium acetate/kg,0.000429875,0.000145265
+water/unspecified/fluthiacet-methyl/kg,0.001899615,0.000634495
+water/unspecified/fipronil/kg,0.000195947,6.35788E-05
+water/unspecified/fenbuconazole/kg,0.001171322,0.000395818
+water/unspecified/flonicamid/kg,0.002479774,0.000765058
+water/unspecified/flutriafol/kg,0.001453562,0.000501864
+water/unspecified/pymetrozine/kg,0.000302009,9.79929E-05
+water/unspecified/tebupirimphos/kg,0.001346402,0.000465652
+water/unspecified/bensulfuron methyl ester/kg,0.001196802,0.000413913
+water/unspecified/fluoxastrobin/kg,0.002238077,0.000774037
+water/unspecified/spiromesifen/kg,0.001729635,0.000580938
+water/unspecified/methidathion/kg,0.000237112,8.0126E-05
+water/unspecified/avermectin b1/kg,0.000903383,0.000293011
+water/unspecified/ethoprop/kg,0.001094604,0.000375635
+water/unspecified/quinclorac dimethylamine salt/kg,0.001047202,0.000362174
+water/unspecified/mesosulfuron-methyl/kg,0.001352093,0.00046762
+water/unspecified/spinetoram-j/kg,0.000454294,0.000148037
+water/unspecified/spinetoram-l/kg,0.000999241,0.000332188
+water/unspecified/spinetoram/kg,0.000544947,0.000184151
+water/unspecified/gamma-cyhalothrin/kg,0.00140905,0.000473827
+water/unspecified/terbacil/kg,0.000432668,0.00014584
+water/unspecified/bispyribac-sodium/kg,0.000897601,0.000310435
+water/unspecified/penoxsulam/kg,0.000897601,0.000310435
+"water/unspecified/2,4-d, isopropyl ester/kg",0.000205247,6.93579E-05
+water/unspecified/reynoutria sachaline/kg,0.000262328,8.84361E-05
+water/unspecified/potassium salts/kg,0.00025832,8.72924E-05
+water/unspecified/pyridaben/kg,0.000565366,0.000191051
+water/unspecified/imazosulfuron/kg,0.000748001,0.000258696
+water/unspecified/primisulfuron-methyl/kg,0.000748001,0.000258696
+water/unspecified/cyromazine/kg,0.000234003,7.59268E-05
+water/unspecified/napropamide/kg,0.000265143,8.78015E-05
+water/unspecified/ametoctradin/kg,0.000178312,5.78567E-05
+water/unspecified/diclosulam/kg,0.001609462,0.000491849
+water/unspecified/hexazinone/kg,0.000147152,4.96527E-05
+water/unspecified/piperonyl butoxide/kg,0.000271472,9.17369E-05
+water/unspecified/gibberellins a4a7/kg,0.000129331,4.3704E-05
+water/unspecified/etoxazole/kg,0.000513826,0.00016359
+water/unspecified/dinotefuran/kg,0.000526051,0.000177184
+water/unspecified/dodecadien-1-ol/kg,0.000158583,5.3589E-05
+water/unspecified/crotonic acid/kg,0.000121299,4.09898E-05
+water/unspecified/xylene/kg,0.180190426,0.06502748
+"water/unspecified/1h-purin-6-amine, n-(phenylmethyl)-/kg",0.000110213,3.72437E-05
+water/unspecified/copper oxychloride/kg,6.49741E-05,2.10821E-05
+water/unspecified/polyoxin d zinc salt/kg,0.000103408,3.4944E-05
+water/unspecified/terbufos/kg,6.46624E-05,2.0981E-05
+water/unspecified/indoxacarb/kg,0.000218462,7.143E-05
+water/unspecified/clothianidin/kg,0.000225483,7.38499E-05
+water/unspecified/metalaxil/kg,5.8784E-05,1.90736E-05
+water/unspecified/tralkoxydim/kg,0.000436035,0.000150802
+water/unspecified/fenarimol/kg,0.000179572,6.06817E-05
+water/unspecified/methamidophos/kg,5.29419E-05,1.7178E-05
+water/unspecified/forchlorfenuron/kg,8.25693E-05,2.79022E-05
+water/unspecified/oxytetracycline hydrochloride/kg,0.00010666,3.6043E-05
+water/unspecified/dichlobenil/kg,7.98832E-05,2.69945E-05
+water/unspecified/trifloxysulfuron-sod/kg,0.000932138,0.00028486
+water/unspecified/mcpb/kg,4.70272E-05,1.52589E-05
+water/unspecified/fluopicolide/kg,0.000140347,4.55384E-05
+water/unspecified/gibberellic acid/kg,0.00014451,4.88334E-05
+water/unspecified/kantor/kg,0.000484364,0.000167517
+water/unspecified/fenpyroximate/kg,0.000197461,6.66298E-05
+water/unspecified/orthosulfamuron/kg,0.0002992,0.000103478
+water/unspecified/dodecanol/kg,6.45881E-05,2.18259E-05
+water/unspecified/zinc phosphide/kg,6.18826E-05,2.09116E-05
+water/unspecified/z-8-dodecen acetate/kg,0.000106494,3.59869E-05
+water/unspecified/tolfenpyrad/kg,5.8784E-05,1.90736E-05
+water/unspecified/pyraflufen-ethyl/kg,0.000621425,0.000189907
+water/unspecified/pyriproxyfen/kg,0.000176362,5.95972E-05
+"water/unspecified/naa, potassium salt/kg",6.7E-05,2.26409E-05
+water/unspecified/pyrethrin i/kg,9.30207E-05,3.10061E-05
+water/unspecified/hexythiazox/kg,0.000107109,3.61947E-05
+water/unspecified/aluminum-phosphide/kg,5.92509E-05,2.00223E-05
+water/unspecified/emamectin benzoate/kg,5.74414E-05,1.89363E-05
+water/unspecified/clofentezine/kg,4.42523E-05,1.49539E-05
+water/unspecified/pseudo. fluores a506/kg,4.78825E-05,1.61807E-05
+water/unspecified/methyl anthranilate/kg,3.12417E-05,1.03201E-05
+"water/unspecified/(2,4-dichlorophenoxy)acetic acid compd. with 2,2-iminobis[ethanol] (1:1)/kg",5.2383E-05,1.77015E-05
+"water/unspecified/naa, sodium/kg",2.58661E-05,8.7408E-06
+water/unspecified/s-abscisic acid/kg,2.40827E-05,8.13813E-06
+"water/unspecified/naa, ammonium salt/kg",4.04922E-05,1.36833E-05
+water/unspecified/indaziflam/kg,2.14821E-05,7.25933E-06
+water/unspecified/1-naphthaleneacetamide/kg,1.84758E-05,6.24343E-06
+water/unspecified/azadirachtin/kg,2.97073E-05,9.92736E-06
+water/unspecified/cga 245704/kg,7.21934E-06,2.34246E-06
+water/unspecified/tetradecanol/kg,1.4139E-05,4.77792E-06
+water/unspecified/copper resinate/kg,8.46321E-06,2.79517E-06
+water/unspecified/hydrolyzate/kg,6.13775E-06,2.0741E-06
+water/unspecified/e-8-dodecenyl acetat/kg,6.57498E-06,2.22185E-06
+water/unspecified/copper octanoate/kg,1.95947E-06,6.35788E-07
+water/unspecified/cyflufenamid/kg,3.91893E-06,1.27158E-06
+water/unspecified/sulfoxaflor/kg,1.95947E-06,6.35788E-07
+air/low population density/atrazine/kg,59.00640014,20.40674046
+air/low population density/glyphosate-isopropylammonium/kg,26.9508212,8.926108462
+air/low population density/acetochlor/kg,34.67045155,11.9770406
+air/low population density/metam-sodium/kg,1.040111365,0.337484612
+air/low population density/metolachlor/kg,69.56174058,23.67577961
+air/low population density/sulfuric acid/kg,1.853840942,0.601515196
+air/low population density/mineral oil/kg,6.44919667,2.17933958
+air/low population density/sulfur/kg,1.014728224,0.338846648
+air/low population density/dichloropropene/kg,12.12111286,3.787337025
+"air/low population density/methylcarbamodithioic acid, monopotassium salt/kg",0.744727717,0.241641571
+air/low population density/ethephon/kg,16.40810925,5.016319263
+air/low population density/propanil/kg,5.969415974,2.06451725
+"air/low population density/2,4-d, 2-ethylhexyl ester/kg",11.2323633,3.82240437
+air/low population density/chlorothalonil/kg,4.158728367,1.280745454
+air/low population density/trifluralin/kg,9.946104959,3.091751245
+air/low population density/mesotrione/kg,0.9805635,0.339120369
+air/low population density/chlorpyrifos/kg,3.307710398,1.10165488
+air/low population density/dimethenamid-p/kg,3.971152716,1.368946058
+"air/low population density/2,4-d, dimethylamine salt/kg",2.966568252,0.999867932
+air/low population density/mancozeb/kg,0.307707073,0.101812947
+air/low population density/pendimethalin/kg,8.339391669,2.655163873
+air/low population density/chloropicrin/kg,0.521168909,0.169103514
+"air/low population density/s,s,s-tributyl phosphorotrithioate/kg",5.448046812,1.664914792
+air/low population density/calcium polysulfide/kg,0.485450302,0.164045401
+air/low population density/acephate/kg,4.879609403,1.520170143
+air/low population density/simazine/kg,1.759691887,0.607122066
+air/low population density/malathion/kg,4.987959648,1.52797279
+air/low population density/fomesafen sodium/kg,1.713011707,0.556095556
+air/low population density/captan/kg,0.167567642,0.05662516
+air/low population density/glufosinate-ammonium/kg,0.792402407,0.25686674
+air/low population density/copper hydroxide/kg,0.130297674,0.043847581
+air/low population density/sulfentrazone/kg,0.463382436,0.153997654
+air/low population density/diuron/kg,2.142333953,0.65923196
+air/low population density/dicamba/kg,2.517095164,0.858680516
+air/low population density/copper (+ii)/kg,0.254510114,0.085840419
+air/low population density/dicrotophos/kg,2.438016455,0.745054108
+air/low population density/paraquat/kg,2.744302421,0.862088368
+air/low population density/propargite/kg,0.545867552,0.188777356
+"air/low population density/mcpa, 2-ethylhexyl/kg",1.539199766,0.532330882
+air/low population density/clopyralid/kg,1.172244541,0.405418461
+air/low population density/phosphorous acid/kg,0.022910443,0.007458847
+air/low population density/aldicarb/kg,2.381771957,0.72893592
+"air/low population density/methane, bromo-, halon 1001/kg",0.345127274,0.113258087
+air/low population density/metribuzin/kg,0.50641112,0.168049391
+air/low population density/oxamyl/kg,0.265726822,0.082906409
+air/low population density/bromoxynil octanoate/kg,1.643288673,0.568268691
+air/low population density/flumioxazin/kg,0.841077779,0.272957294
+air/low population density/kaolin/kg,0.229464418,0.077320372
+air/low population density/eptc/kg,0.384129127,0.130533174
+air/low population density/thiobencarb/kg,0.499802184,0.172856145
+air/low population density/clethodim/kg,0.574131734,0.189060426
+air/low population density/clomazone/kg,0.542547254,0.187205448
+air/low population density/copper sulfate/kg,0.465220754,0.160779808
+air/low population density/isoxaflutole/kg,0.446031579,0.154259628
+air/low population density/pyraclostrobin/kg,0.391349973,0.13208038
+air/low population density/sodium chlorate/kg,0.346348776,0.109299455
+air/low population density/dicamba sodium salt/kg,0.603423057,0.207219511
+air/low population density/propiconazole/kg,1.220437942,0.412786217
+air/low population density/starane/kg,0.626743356,0.216758637
+air/low population density/alachlor/kg,0.62608695,0.216512366
+air/low population density/monocarbamide dihyd./kg,0.917232621,0.280304889
+air/low population density/tebuconazole/kg,0.501986752,0.161657273
+air/low population density/azoxystrobin/kg,0.378088885,0.12505364
+air/low population density/potassium bicarbon./kg,0.079487683,0.026860811
+air/low population density/bensulide/kg,0.048296773,0.015670839
+air/low population density/bromoxynil heptanoate/kg,0.555172825,0.191997639
+air/low population density/prometryn/kg,0.781670716,0.238944921
+air/low population density/tembotrione/kg,0.297437555,0.10284161
+air/low population density/flumetsulam/kg,0.290869992,0.100411646
+air/low population density/fluometuron/kg,0.649935291,0.198619233
+air/low population density/dimethoate/kg,0.408065273,0.135900254
+air/low population density/ziram/kg,0.119637263,0.040428326
+air/low population density/norflurazon/kg,0.06219388,0.021016817
+air/low population density/quinclorac/kg,0.244217053,0.084462252
+air/low population density/carbaryl/kg,0.116911353,0.039394743
+air/low population density/fosetyl al/kg,0.050758002,0.016649981
+air/low population density/msma/kg,0.503471,0.153859969
+air/low population density/ethalfluralin/kg,0.501790308,0.153464924
+air/low population density/acifluorfen-sodium/kg,0.26429409,0.086524194
+air/low population density/imazethapyr/kg,0.219818929,0.073306928
+air/low population density/phorate/kg,0.513367082,0.156884197
+air/low population density/bromacil/kg,0.047439482,0.016030949
+air/low population density/thidiazuron/kg,0.457700909,0.139872699
+air/low population density/flutolanil/kg,0.45120751,0.137947155
+air/low population density/fluazifop-p-butyl/kg,0.185734158,0.061625735
+air/low population density/lactofen/kg,0.185799231,0.061523859
+air/low population density/chlorimuron-ethyl/kg,0.176342497,0.058510356
+"air/low population density/2,4-db/kg",0.426752541,0.130414925
+air/low population density/bifenthrin/kg,0.495724443,0.162638666
+air/low population density/petroleum distillate/kg,0.328158674,0.102784815
+"air/low population density/neem oil, clar. hyd./kg",0.032884111,0.011112337
+air/low population density/saflufenacil/kg,0.252778379,0.086362109
+air/low population density/phosmet/kg,0.082667248,0.02793371
+air/low population density/diflufenzopyr-sodium/kg,0.156022904,0.053960384
+air/low population density/dimethyl tetrachloroterephthalate/kg,0.025065743,0.008133074
+air/low population density/diquat dibromide/kg,0.019627712,0.006368598
+air/low population density/tefluthrin/kg,0.148089536,0.051216635
+air/low population density/maleic hydrazide/kg,0.024915649,0.008084373
+air/low population density/thiencarbazone-methy/kg,0.147208051,0.050911775
+air/low population density/diflubenzuron/kg,0.074512065,0.023995186
+air/low population density/mepiquat chloride/kg,0.353345102,0.107981724
+air/low population density/metiram/kg,0.036395975,0.012177914
+air/low population density/maneb/kg,0.025638451,0.0083189
+air/low population density/lambda-cyhalothrin/kg,0.265473709,0.087949761
+air/low population density/quintozene/kg,0.016163998,0.005244728
+air/low population density/oryzalin/kg,0.042331654,0.01430489
+air/low population density/methoxyfenozide/kg,0.151503757,0.049798577
+air/low population density/pyrimethanil/kg,0.023813214,0.007816086
+air/low population density/quizalofop-p-ethyl/kg,0.111274944,0.036920974
+air/low population density/methomyl/kg,0.053713607,0.017546429
+"air/low population density/imazethapyr, ammon./kg",0.120452934,0.041444091
+air/low population density/trifloxystrobin/kg,0.235029533,0.080163602
+air/low population density/cyanamide/kg,0.027034518,0.009135618
+air/low population density/(4-chloro-2-methylphenoxy)acetic acid compd. with n-methylmethanamine (1:1)/kg,0.18882353,0.065298774
+air/low population density/propamocarb hcl/kg,0.045039336,0.014613899
+air/low population density/oxyfluorfen/kg,0.032544523,0.010905937
+air/low population density/imidacloprid/kg,0.170716354,0.05417429
+air/low population density/thiram/kg,0.018260744,0.006170747
+air/low population density/fenoxaprop-p-ethyl/kg,0.125514201,0.043316233
+air/low population density/cyclanilide/kg,0.214204025,0.065460423
+air/low population density/azinphos-methyl/kg,0.023734607,0.008020498
+air/low population density/copper chloride hyd./kg,0.042924645,0.014571612
+air/low population density/mono-potassium salt/kg,0.050632193,0.016870461
+air/low population density/metalaxyl-m/kg,0.030130014,0.009951952
+air/low population density/boscalid/kg,0.044643193,0.014875086
+air/low population density/sulfosate/kg,0.197726793,0.060425006
+air/low population density/cloransulam-methyl/kg,0.078269664,0.025969837
+"air/low population density/2,4,5-t triethylammonium salt/kg",0.074044768,0.025608318
+air/low population density/fluazinam/kg,0.009467485,0.003071912
+air/low population density/dimethenamid/kg,0.066570019,0.023023182
+air/low population density/pinoxaden/kg,0.149040794,0.051545627
+air/low population density/thiophanat-methyl/kg,0.11975654,0.041152098
+air/low population density/prothioconazole/kg,0.252058496,0.082211946
+air/low population density/linuron/kg,0.03523798,0.011053612
+"air/low population density/2,4-d, butoxyethyl ester/kg",0.064124544,0.021276493
+air/low population density/bentazone/kg,0.189208902,0.059108274
+air/low population density/cyhalofop-butyl/kg,0.060822488,0.021035404
+"air/low population density/mcpa, isooctyl ester/kg",0.123437931,0.0426909
+air/low population density/permethrin/kg,0.074153784,0.025323626
+air/low population density/pyroxasulfone/kg,0.058178032,0.020120821
+air/low population density/sethoxydim/kg,0.085497307,0.028087861
+air/low population density/thiodicarb/kg,0.007458531,0.002420067
+air/low population density/fenpropathrin/kg,0.017401733,0.005866924
+air/low population density/rimsulfuron/kg,0.058165039,0.020041006
+"air/low population density/2,4-d, isopropylamine salt/kg",0.050817323,0.017483231
+air/low population density/methanone/kg,0.093528016,0.032346582
+air/low population density/pronamide/kg,0.006684968,0.002169069
+air/low population density/endosulfan/kg,0.109724415,0.034004547
+air/low population density/flucarbazone-sodium/kg,0.102760622,0.03553967
+air/low population density/cyprodinil/kg,0.022525177,0.007594559
+air/low population density/tri-allate/kg,0.044961668,0.015549953
+air/low population density/zoxamide/kg,0.005772857,0.001873117
+air/low population density/thifensulfuron/kg,0.121036205,0.041375858
+air/low population density/cyfluthrin/kg,0.092012333,0.029896116
+air/low population density/spirodiclofen/kg,0.012153794,0.004107061
+air/low population density/triphenyltin hydrox./kg,0.004964657,0.001610881
+air/low population density/imazamox/kg,0.044919624,0.015453697
+air/low population density/iprodion/kg,0.02033574,0.006820569
+air/low population density/potassium phosphate/kg,0.007682977,0.002596264
+air/low population density/triflumizole/kg,0.018758415,0.00633371
+air/low population density/difenoconazole/kg,0.012454452,0.004109792
+air/low population density/picoxystrobin/kg,0.034377928,0.011889576
+air/low population density/mandipropamide techn/kg,0.008155773,0.002650392
+air/low population density/dicloran/kg,0.006223139,0.00201922
+air/low population density/benefin/kg,0.007204525,0.00233765
+air/low population density/flumiclorac-pentyl/kg,0.034836084,0.011510627
+air/low population density/spirotetramat/kg,0.016296998,0.005432576
+air/low population density/copper oxide/kg,0.0196257,0.00663029
+air/low population density/flufenacet/kg,0.030677381,0.010609745
+air/low population density/pyrithiobac sodium salt/kg,0.075062949,0.022939123
+air/low population density/fenhexamid/kg,0.014208268,0.004801317
+air/low population density/propoxycarbazone-sod/kg,0.034233359,0.011839577
+air/low population density/penthiopyrad/kg,0.076896885,0.023583867
+air/low population density/chlorsulfuron/kg,0.028632222,0.009902429
+air/low population density/cymoxanil/kg,0.008299186,0.002693331
+air/low population density/fluopyram/kg,0.003948634,0.001281212
+air/low population density/streptomycin sulfate/kg,0.00698269,0.00235962
+air/low population density/imazapic-ammonium/kg,0.068754576,0.021011293
+air/low population density/topramezone/kg,0.027633736,0.009550525
+air/low population density/cryolite/kg,0.005676078,0.001918084
+air/low population density/diazinon/kg,0.014681533,0.004926242
+air/low population density/triasulfuron/kg,0.025564484,0.008841454
+air/low population density/pyroxsulam/kg,0.033122307,0.011455321
+air/low population density/prohexadione calcium/kg,0.004964223,0.001677531
+"air/low population density/2,4-d/kg",0.028952914,0.009680222
+air/low population density/thiamethoxam/kg,0.08621021,0.027111129
+air/low population density/zeta-cypermethrin/kg,0.04091354,0.013412455
+air/low population density/myclobutanil/kg,0.012253309,0.004123275
+air/low population density/fenamidone/kg,0.005772857,0.001873117
+air/low population density/formetanate hydrochloride/kg,0.008455899,0.002857453
+air/low population density/dimethomorph/kg,0.006489303,0.002105582
+air/low population density/famoxadone/kg,0.006659083,0.002161167
+air/low population density/imazaquin/kg,0.021689184,0.007196461
+air/low population density/tribenuron-methyl/kg,0.051473042,0.017669417
+air/low population density/oxytetracycline calc/kg,0.008955057,0.00302613
+air/low population density/hydrogen peroxide/kg,0.00599579,0.001964039
+air/low population density/halosulfuron/kg,0.020456199,0.007069244
+air/low population density/flubendiamide/kg,0.026777603,0.008803964
+air/low population density/metaldehyde (tetramer)/kg,0.005480761,0.001852082
+air/low population density/bifenazate/kg,0.007859568,0.002653077
+air/low population density/cypermethrin/kg,0.057030975,0.017675657
+air/low population density/carfentrazone ethyl ester/kg,0.054044757,0.016830224
+air/low population density/kresoxim-methyl/kg,0.005900369,0.001993878
+air/low population density/metconazole/kg,0.044999558,0.015562899
+air/low population density/mepiquat pentaborate/kg,0.043939287,0.013427779
+air/low population density/parathion-methyl/kg,0.017398519,0.006017262
+air/low population density/dodine/kg,0.006520731,0.002203513
+air/low population density/tetraconazole/kg,0.016531083,0.005488067
+air/low population density/quinoline/kg,0.004862116,0.001634801
+air/low population density/metsulfuron-methyl/kg,0.01533869,0.005304873
+air/low population density/thiacloprid/kg,0.003232821,0.001092449
+air/low population density/cyazofamid/kg,0.003199839,0.001038251
+air/low population density/fludioxonil/kg,0.00655353,0.002190208
+air/low population density/novaluron/kg,0.038949212,0.01196892
+air/low population density/prosulfuron/kg,0.015494416,0.00535873
+air/low population density/clodinafop-propargil/kg,0.028164837,0.009740784
+air/low population density/chlorantraniliprole/kg,0.007683785,0.002546129
+air/low population density/fluxapyroxad/kg,0.014808054,0.005106295
+air/low population density/naled/kg,0.001812677,0.000588159
+air/low population density/acetamiprid/kg,0.02457043,0.007695795
+air/low population density/cycloate/kg,0.001754948,0.000569428
+air/low population density/ethofumesate/kg,0.001743403,0.000565681
+air/low population density/sulfosulfuron/kg,0.013293532,0.004597556
+air/low population density/fluroxypyr/kg,0.012989272,0.004492328
+air/low population density/buprofezin/kg,0.009507801,0.003203199
+air/low population density/fenbutatin-oxide/kg,0.003147869,0.001063741
+air/low population density/imazapic/kg,0.028450169,0.008694328
+air/low population density/nicosulfuron/kg,0.01058937,0.003662077
+air/low population density/spinosad/kg,0.00677834,0.002251622
+air/low population density/metrafenone/kg,0.002169073,0.000732982
+"air/low population density/imazaquin, mon. salt/kg",0.010373088,0.003441786
+air/low population density/esfenvalerate/kg,0.028701781,0.009553309
+air/low population density/cuprammonium acetate/kg,0.002532939,0.000855941
+air/low population density/fluthiacet-methyl/kg,0.011193051,0.003738618
+air/low population density/fipronil/kg,0.001154571,0.000374623
+air/low population density/fenbuconazole/kg,0.00690175,0.002332268
+air/low population density/flonicamid/kg,0.014611504,0.004507927
+air/low population density/flutriafol/kg,0.008564782,0.002957119
+air/low population density/pymetrozine/kg,0.001779521,0.000577401
+air/low population density/tebupirimphos/kg,0.007933368,0.002743748
+air/low population density/bensulfuron methyl ester/kg,0.007051883,0.002438887
+air/low population density/fluoxastrobin/kg,0.013187359,0.004560836
+air/low population density/spiromesifen/kg,0.01019148,0.003423042
+air/low population density/methidathion/kg,0.001397131,0.000472124
+air/low population density/avermectin b1/kg,0.00532298,0.001726502
+air/low population density/ethoprop/kg,0.006449706,0.002213346
+air/low population density/quinclorac dimethylamine salt/kg,0.006170397,0.002134026
+air/low population density/mesosulfuron-methyl/kg,0.007966899,0.002755345
+air/low population density/spinetoram-j/kg,0.002676824,0.000872275
+air/low population density/spinetoram-l/kg,0.005887802,0.001957342
+air/low population density/spinetoram/kg,0.003210978,0.001085067
+air/low population density/gamma-cyhalothrin/kg,0.008302504,0.00279192
+air/low population density/terbacil/kg,0.002549398,0.000859329
+air/low population density/bispyribac-sodium/kg,0.005288912,0.001829166
+air/low population density/penoxsulam/kg,0.005288912,0.001829166
+"air/low population density/2,4-d, isopropyl ester/kg",0.001209371,0.000408676
+air/low population density/reynoutria sachaline/kg,0.001545709,0.00052109
+air/low population density/potassium salts/kg,0.001522089,0.000514351
+air/low population density/pyridaben/kg,0.003331288,0.001125723
+air/low population density/imazosulfuron/kg,0.004407427,0.001524305
+air/low population density/primisulfuron-methyl/kg,0.004407427,0.001524305
+air/low population density/cyromazine/kg,0.001378809,0.000447382
+air/low population density/napropamide/kg,0.001562292,0.00051735
+air/low population density/ametoctradin/kg,0.00105066,0.000340907
+air/low population density/diclosulam/kg,0.00948339,0.002898109
+air/low population density/hexazinone/kg,0.000792747,0.000267888
+air/low population density/piperonyl butoxide/kg,0.001599585,0.000540539
+air/low population density/gibberellins a4a7/kg,0.000762052,0.000257516
+air/low population density/etoxazole/kg,0.003027603,0.000963918
+air/low population density/dinotefuran/kg,0.003099636,0.001044015
+air/low population density/dodecadien-1-ol/kg,0.000934413,0.000315761
+air/low population density/crotonic acid/kg,0.000714725,0.000241523
+air/low population density/xylene/kg,0.000957959,0.000322009
+"air/low population density/1h-purin-6-amine, n-(phenylmethyl)-/kg",0.000649407,0.00021945
+air/low population density/copper oxychloride/kg,0.000382845,0.000124222
+air/low population density/polyoxin d zinc salt/kg,0.000609307,0.0002059
+air/low population density/terbufos/kg,0.000381009,0.000123626
+air/low population density/indoxacarb/kg,0.001287237,0.000420885
+air/low population density/clothianidin/kg,0.001328609,0.000435144
+air/low population density/metalaxil/kg,0.000346371,0.000112387
+air/low population density/tralkoxydim/kg,0.002569238,0.000888569
+air/low population density/fenarimol/kg,0.001058087,0.000357553
+air/low population density/methamidophos/kg,0.000311948,0.000101218
+air/low population density/forchlorfenuron/kg,0.000486521,0.000164407
+air/low population density/oxytetracycline hydrochloride/kg,0.000628471,0.000212375
+air/low population density/dichlobenil/kg,0.000470694,0.000159059
+air/low population density/trifloxysulfuron-sod/kg,0.005492411,0.001678472
+air/low population density/mcpb/kg,0.000277097,8.99096E-05
+air/low population density/fluopicolide/kg,0.000826963,0.000268325
+air/low population density/gibberellic acid/kg,0.000851492,0.00028774
+air/low population density/kantor/kg,0.002854002,0.000987054
+air/low population density/fenpyroximate/kg,0.001163495,0.000392601
+air/low population density/orthosulfamuron/kg,0.001762971,0.000609722
+air/low population density/dodecanol/kg,0.00038057,0.000128604
+air/low population density/zinc phosphide/kg,0.000364629,0.000123217
+air/low population density/z-8-dodecen acetate/kg,0.000627491,0.000212044
+air/low population density/tolfenpyrad/kg,0.000346371,0.000112387
+air/low population density/pyraflufen-ethyl/kg,0.003661607,0.001118982
+air/low population density/pyriproxyfen/kg,0.001039176,0.000351163
+"air/low population density/naa, potassium salt/kg",0.000394782,0.000133406
+air/low population density/pyrethrin i/kg,0.000548103,0.000182697
+air/low population density/hexythiazox/kg,0.000631116,0.000213269
+air/low population density/aluminum-phosphide/kg,0.000349123,0.000117977
+air/low population density/emamectin benzoate/kg,0.00033846,0.000111578
+air/low population density/clofentezine/kg,0.000260746,8.81125E-05
+air/low population density/pseudo. fluores a506/kg,0.000282137,9.53409E-05
+air/low population density/methyl anthranilate/kg,0.000184085,6.08085E-05
+"air/low population density/(2,4-dichlorophenoxy)acetic acid compd. with 2,2-iminobis[ethanol] (1:1)/kg",0.000308655,0.000104302
+"air/low population density/naa, sodium/kg",0.00015241,5.15031E-05
+air/low population density/s-abscisic acid/kg,0.000141902,4.79521E-05
+"air/low population density/naa, ammonium salt/kg",0.000238591,8.06257E-05
+air/low population density/indaziflam/kg,0.000126579,4.2774E-05
+air/low population density/1-naphthaleneacetamide/kg,0.000108865,3.6788E-05
+air/low population density/azadirachtin/kg,0.000175044,5.84947E-05
+air/low population density/cga 245704/kg,4.25383E-05,1.38024E-05
+air/low population density/tetradecanol/kg,8.3311E-05,2.81528E-05
+air/low population density/copper resinate/kg,4.98675E-05,1.64699E-05
+air/low population density/hydrolyzate/kg,3.61653E-05,1.22211E-05
+air/low population density/e-8-dodecenyl acetat/kg,3.87416E-05,1.30917E-05
+air/low population density/copper octanoate/kg,1.15457E-05,3.74623E-06
+air/low population density/cyflufenamid/kg,2.30914E-05,7.49247E-06
+air/low population density/sulfoxaflor/kg,1.15457E-05,3.74623E-06
+soil/groundwater/glyphosate/kg,5.2230529,1.766525165
+soil/groundwater/atrazine/kg,0.820261532,0.283595357
+soil/groundwater/glyphosate-isopropylammonium/kg,1.39274452,0.480528788
+soil/groundwater/acetochlor/kg,13.49923785,4.665545972
+soil/groundwater/metam-sodium/kg,2.96400098,0.96172848
+soil/groundwater/metolachlor/kg,3.694733869,1.242487639
+soil/groundwater/sulfuric acid/kg,2.034605039,0.660167667
+soil/groundwater/mineral oil/kg,2.295882456,0.775834226
+soil/groundwater/sulfur/kg,0.144250974,0.048450061
+soil/groundwater/dichloropropene/kg,0.24121328,0.076418485
+"soil/groundwater/methylcarbamodithioic acid, monopotassium salt/kg",0.619568322,0.201031141
+soil/groundwater/ethephon/kg,7.470625245,2.284181069
+soil/groundwater/propanil/kg,3.951317868,1.3665598
+"soil/groundwater/2,4-d, 2-ethylhexyl ester/kg",4.911294351,1.683340721
+soil/groundwater/chlorothalonil/kg,3.170910159,0.977367574
+soil/groundwater/trifluralin/kg,2.731533931,0.842269293
+soil/groundwater/mesotrione/kg,0.439537888,0.152008731
+soil/groundwater/chlorpyrifos/kg,0.739338138,0.247803243
+soil/groundwater/dimethenamid-p/kg,0.75019782,0.258565153
+"soil/groundwater/2,4-d, dimethylamine salt/kg",0.747598651,0.254148294
+soil/groundwater/mancozeb/kg,0.510275602,0.168825208
+soil/groundwater/pendimethalin/kg,0.238338588,0.074242792
+soil/groundwater/chloropicrin/kg,0.002111414,0.00068509
+"soil/groundwater/s,s,s-tributyl phosphorotrithioate/kg",1.166215557,0.356393695
+soil/groundwater/calcium polysulfide/kg,0.172817932,0.05839936
+soil/groundwater/acephate/kg,0.008922113,0.002824692
+soil/groundwater/simazine/kg,0.049056425,0.016777519
+soil/groundwater/malathion/kg,1.272323686,0.390093903
+soil/groundwater/fomesafen sodium/kg,0.569800691,0.183922113
+soil/groundwater/captan/kg,0.147039931,0.04968835
+soil/groundwater/glufosinate-ammonium/kg,0.661331977,0.21303339
+soil/groundwater/copper hydroxide/kg,0.351846242,0.118306249
+soil/groundwater/sulfentrazone/kg,0.000308095,0.000106216
+soil/groundwater/diuron/kg,0.22712226,0.070121259
+soil/groundwater/dicamba/kg,0.894713598,0.305239542
+soil/groundwater/copper (+ii)/kg,0.090604355,0.030558769
+soil/groundwater/dicrotophos/kg,0.001009496,0.0003085
+soil/groundwater/paraquat/kg,1.176344327,0.366175507
+soil/groundwater/propargite/kg,0.225497614,0.077981703
+"soil/groundwater/mcpa, 2-ethylhexyl/kg",0.547947585,0.189507189
+soil/groundwater/clopyralid/kg,0.152748435,0.052827456
+soil/groundwater/phosphorous acid/kg,0.083550596,0.027170673
+soil/groundwater/aldicarb/kg,0.730302541,0.223747835
+"soil/groundwater/methane, bromo-, halon 1001/kg",0.006433489,0.002112286
+soil/groundwater/metribuzin/kg,0.161227714,0.053559356
+soil/groundwater/oxamyl/kg,0.138681132,0.043670658
+soil/groundwater/bromoxynil octanoate/kg,1.072768656,0.370989065
+soil/groundwater/flumioxazin/kg,0.299419573,0.097171461
+soil/groundwater/kaolin/kg,0.08168821,0.027525674
+soil/groundwater/eptc/kg,0.002015104,0.000696247
+soil/groundwater/thiobencarb/kg,0.177927132,0.061535942
+soil/groundwater/clethodim/kg,0.204388088,0.067304587
+soil/groundwater/clomazone/kg,0.27969146,0.09650729
+soil/groundwater/copper sulfate/kg,0.165616312,0.057236825
+soil/groundwater/isoxaflutole/kg,0.158785059,0.054915673
+soil/groundwater/pyraclostrobin/kg,0.295453463,0.100251885
+soil/groundwater/sodium chlorate/kg,0.274890288,0.088943715
+soil/groundwater/dicamba sodium salt/kg,0.214815655,0.073769132
+soil/groundwater/propiconazole/kg,0.370225789,0.126428452
+soil/groundwater/starane/kg,0.223117568,0.077165014
+soil/groundwater/alachlor/kg,0.22288389,0.077077343
+soil/groundwater/monocarbamide dihyd./kg,0.326530325,0.099787169
+soil/groundwater/tebuconazole/kg,0.37790907,0.126447257
+soil/groundwater/azoxystrobin/kg,0.322075716,0.106726852
+soil/groundwater/potassium bicarbon./kg,0.028297226,0.009562317
+soil/groundwater/bensulide/kg,0.017193415,0.005578742
+soil/groundwater/bromoxynil heptanoate/kg,0.197638809,0.06835022
+soil/groundwater/prometryn/kg,0.27827095,0.085063223
+soil/groundwater/tembotrione/kg,0.105886314,0.03661111
+soil/groundwater/flumetsulam/kg,0.103548294,0.035746055
+soil/groundwater/fluometuron/kg,0.231373783,0.070707475
+soil/groundwater/dimethoate/kg,0.14526924,0.048379825
+soil/groundwater/ziram/kg,0.04259028,0.014392286
+soil/groundwater/norflurazon/kg,0.022140717,0.007481884
+soil/groundwater/quinclorac/kg,0.086940076,0.030068149
+soil/groundwater/carbaryl/kg,0.041619869,0.014024336
+soil/groundwater/fosetyl al/kg,0.0180696,0.005927312
+soil/groundwater/msma/kg,0.179233212,0.054773396
+soil/groundwater/ethalfluralin/kg,0.178634894,0.054632762
+soil/groundwater/acifluorfen-sodium/kg,0.094087403,0.03080219
+soil/groundwater/imazethapyr/kg,0.078254463,0.026096908
+soil/groundwater/phorate/kg,0.182756169,0.055850006
+soil/groundwater/bromacil/kg,0.016888223,0.005706939
+soil/groundwater/thidiazuron/kg,0.162939284,0.049793996
+soil/groundwater/flutolanil/kg,0.160627666,0.049108512
+soil/groundwater/fluazifop-p-butyl/kg,0.066120451,0.02193846
+soil/groundwater/lactofen/kg,0.066143617,0.021902193
+soil/groundwater/chlorimuron-ethyl/kg,0.062777066,0.020829401
+"soil/groundwater/2,4-db/kg",0.151921816,0.046427075
+soil/groundwater/bifenthrin/kg,0.176475476,0.057898569
+soil/groundwater/petroleum distillate/kg,0.116822882,0.036590891
+"soil/groundwater/neem oil, clar. hyd./kg",0.011706583,0.003955937
+soil/groundwater/saflufenacil/kg,0.089987866,0.030744488
+soil/groundwater/phosmet/kg,0.029429136,0.009944264
+soil/groundwater/diflufenzopyr-sodium/kg,0.05554339,0.019209633
+soil/groundwater/dimethyl tetrachloroterephthalate/kg,0.008923282,0.002895335
+soil/groundwater/diquat dibromide/kg,0.00698737,0.00226719
+soil/groundwater/tefluthrin/kg,0.05271915,0.018232872
+soil/groundwater/maleic hydrazide/kg,0.008869849,0.002877997
+soil/groundwater/thiencarbazone-methy/kg,0.052405346,0.018124343
+soil/groundwater/diflubenzuron/kg,0.02652593,0.008542169
+soil/groundwater/mepiquat chloride/kg,0.125789127,0.038440965
+soil/groundwater/metiram/kg,0.012956789,0.004335278
+soil/groundwater/maneb/kg,0.009127163,0.002961488
+soil/groundwater/lambda-cyhalothrin/kg,0.094507341,0.031309685
+soil/groundwater/quintozene/kg,0.005754304,0.001867097
+soil/groundwater/oryzalin/kg,0.015069862,0.005092471
+soil/groundwater/methoxyfenozide/kg,0.053934596,0.01772805
+soil/groundwater/pyrimethanil/kg,0.008477388,0.002782489
+soil/groundwater/quizalofop-p-ethyl/kg,0.039613336,0.013143686
+soil/groundwater/methomyl/kg,0.019121781,0.006246443
+"soil/groundwater/imazethapyr, ammon./kg",0.042880655,0.014753893
+soil/groundwater/trifloxystrobin/kg,0.083669364,0.02853785
+soil/groundwater/cyanamide/kg,0.009624156,0.003252235
+soil/groundwater/(4-chloro-2-methylphenoxy)acetic acid compd. with n-methylmethanamine (1:1)/kg,0.067220253,0.023246044
+soil/groundwater/propamocarb hcl/kg,0.016033783,0.005202477
+soil/groundwater/oxyfluorfen/kg,0.011585691,0.00388246
+soil/groundwater/imidacloprid/kg,0.060774187,0.019285782
+soil/groundwater/thiram/kg,0.006500736,0.002196756
+soil/groundwater/fenoxaprop-p-ethyl/kg,0.044682441,0.015420367
+soil/groundwater/cyclanilide/kg,0.076255585,0.02330359
+soil/groundwater/azinphos-methyl/kg,0.008449404,0.002855258
+soil/groundwater/copper chloride hyd./kg,0.015280964,0.005187423
+soil/groundwater/mono-potassium salt/kg,0.018024813,0.006005802
+soil/groundwater/metalaxyl-m/kg,0.010726138,0.003542846
+soil/groundwater/boscalid/kg,0.015892758,0.005295458
+soil/groundwater/sulfosate/kg,0.070389771,0.021511006
+soil/groundwater/cloransulam-methyl/kg,0.027863617,0.009245135
+"soil/groundwater/2,4,5-t triethylammonium salt/kg",0.026359575,0.009116436
+soil/groundwater/fluazinam/kg,0.003370378,0.001093586
+soil/groundwater/dimethenamid/kg,0.023698601,0.00819614
+soil/groundwater/pinoxaden/kg,0.053057793,0.018349991
+soil/groundwater/thiophanat-methyl/kg,0.042632742,0.014649946
+soil/groundwater/prothioconazole/kg,0.089731591,0.02926705
+soil/groundwater/linuron/kg,0.012544549,0.003935032
+"soil/groundwater/2,4-d, butoxyethyl ester/kg",0.022828024,0.007574327
+soil/groundwater/bentazone/kg,0.067357443,0.021042256
+soil/groundwater/cyhalofop-butyl/kg,0.021652508,0.007488501
+"soil/groundwater/mcpa, isooctyl ester/kg",0.0439433,0.015197751
+soil/groundwater/permethrin/kg,0.026398384,0.009015087
+soil/groundwater/pyroxasulfone/kg,0.020711095,0.007162914
+soil/groundwater/sethoxydim/kg,0.030436623,0.009999141
+soil/groundwater/thiodicarb/kg,0.0026552,0.000861532
+soil/groundwater/fenpropathrin/kg,0.006194932,0.002088596
+soil/groundwater/rimsulfuron/kg,0.020706469,0.0071345
+"soil/groundwater/2,4-d, isopropylamine salt/kg",0.018090718,0.006223945
+soil/groundwater/methanone/kg,0.033295516,0.011515225
+soil/groundwater/pronamide/kg,0.002379816,0.000772178
+soil/groundwater/endosulfan/kg,0.039061355,0.012105452
+soil/groundwater/flucarbazone-sodium/kg,0.036582279,0.012651949
+soil/groundwater/cyprodinil/kg,0.008018853,0.002703626
+soil/groundwater/tri-allate/kg,0.016006134,0.005535707
+soil/groundwater/zoxamide/kg,0.002055109,0.00066682
+soil/groundwater/thifensulfuron/kg,0.043088297,0.014729603
+soil/groundwater/cyfluthrin/kg,0.03275594,0.010642871
+soil/groundwater/spirodiclofen/kg,0.004326691,0.001462094
+soil/groundwater/triphenyltin hydrox./kg,0.001767393,0.000573466
+soil/groundwater/imazamox/kg,0.015991166,0.005501441
+soil/groundwater/iprodion/kg,0.007239424,0.002428089
+soil/groundwater/potassium phosphate/kg,0.002735102,0.000924257
+soil/groundwater/triflumizole/kg,0.006677904,0.00225477
+soil/groundwater/difenoconazole/kg,0.004433724,0.001463066
+soil/groundwater/picoxystrobin/kg,0.012238374,0.004232631
+soil/groundwater/mandipropamide techn/kg,0.002903415,0.000943527
+soil/groundwater/dicloran/kg,0.002215407,0.000718832
+soil/groundwater/benefin/kg,0.002564776,0.000832192
+soil/groundwater/flumiclorac-pentyl/kg,0.012401475,0.004097727
+soil/groundwater/spirotetramat/kg,0.005801652,0.001933971
+soil/groundwater/copper oxide/kg,0.006986653,0.002360351
+soil/groundwater/flufenacet/kg,0.010920997,0.003777017
+soil/groundwater/pyrithiobac sodium salt/kg,0.026722043,0.008166215
+soil/groundwater/fenhexamid/kg,0.005058074,0.001709246
+soil/groundwater/propoxycarbazone-sod/kg,0.012186908,0.004214831
+soil/groundwater/penthiopyrad/kg,0.027374915,0.008395741
+soil/groundwater/chlorsulfuron/kg,0.010192931,0.003525216
+soil/groundwater/cymoxanil/kg,0.00295447,0.000958813
+soil/groundwater/fluopyram/kg,0.001405694,0.000456105
+soil/groundwater/streptomycin sulfate/kg,0.002485804,0.000840013
+soil/groundwater/imazapic-ammonium/kg,0.024476293,0.007479918
+soil/groundwater/topramezone/kg,0.009837475,0.00339994
+soil/groundwater/cryolite/kg,0.002020656,0.000682829
+soil/groundwater/diazinon/kg,0.005226554,0.001753718
+soil/groundwater/triasulfuron/kg,0.009100831,0.003147514
+soil/groundwater/pyroxsulam/kg,0.011791379,0.004078038
+soil/groundwater/prohexadione calcium/kg,0.001767239,0.000597193
+"soil/groundwater/2,4-d/kg",0.010307096,0.003446112
+soil/groundwater/thiamethoxam/kg,0.030690413,0.009651429
+soil/groundwater/zeta-cypermethrin/kg,0.01456502,0.004774768
+soil/groundwater/myclobutanil/kg,0.004362118,0.001467866
+soil/groundwater/fenamidone/kg,0.002055109,0.00066682
+soil/groundwater/formetanate hydrochloride/kg,0.003010259,0.001017239
+soil/groundwater/dimethomorph/kg,0.00231016,0.000749577
+soil/groundwater/famoxadone/kg,0.002370601,0.000769365
+soil/groundwater/imazaquin/kg,0.007721243,0.002561905
+soil/groundwater/tribenuron-methyl/kg,0.018324151,0.006290226
+soil/groundwater/oxytetracycline calc/kg,0.003187957,0.001077288
+soil/groundwater/hydrogen peroxide/kg,0.002134472,0.000699188
+soil/groundwater/halosulfuron/kg,0.007282307,0.002516616
+soil/groundwater/flubendiamide/kg,0.009532696,0.003134168
+soil/groundwater/metaldehyde (tetramer)/kg,0.001951124,0.000659332
+soil/groundwater/bifenazate/kg,0.002797968,0.000944482
+soil/groundwater/cypermethrin/kg,0.020302748,0.006292447
+soil/groundwater/carfentrazone ethyl ester/kg,0.019239669,0.005991477
+soil/groundwater/kresoxim-methyl/kg,0.002100503,0.000709811
+soil/groundwater/metconazole/kg,0.016019622,0.005540316
+soil/groundwater/mepiquat pentaborate/kg,0.015642171,0.004780224
+soil/groundwater/parathion-methyl/kg,0.006193787,0.002142116
+soil/groundwater/dodine/kg,0.002321348,0.00078444
+soil/groundwater/tetraconazole/kg,0.005884984,0.001953725
+soil/groundwater/quinoline/kg,0.001730889,0.000581981
+soil/groundwater/metsulfuron-methyl/kg,0.005460499,0.001888509
+soil/groundwater/thiacloprid/kg,0.001150869,0.000388906
+soil/groundwater/cyazofamid/kg,0.001139127,0.000369612
+soil/groundwater/fludioxonil/kg,0.002333024,0.000779703
+soil/groundwater/novaluron/kg,0.013865729,0.004260877
+soil/groundwater/prosulfuron/kg,0.005515936,0.001907682
+soil/groundwater/clodinafop-propargil/kg,0.010026544,0.003467671
+soil/groundwater/chlorantraniliprole/kg,0.00273539,0.00090641
+soil/groundwater/fluxapyroxad/kg,0.005271595,0.001817816
+soil/groundwater/naled/kg,0.000645304,0.000209382
+soil/groundwater/acetamiprid/kg,0.008746953,0.002739665
+soil/groundwater/cycloate/kg,0.000624753,0.000202713
+soil/groundwater/ethofumesate/kg,0.000620643,0.00020138
+soil/groundwater/sulfosulfuron/kg,0.004732432,0.001636708
+soil/groundwater/fluroxypyr/kg,0.004624117,0.001599247
+soil/groundwater/buprofezin/kg,0.00338473,0.001140323
+soil/groundwater/fenbutatin-oxide/kg,0.001120626,0.000378687
+soil/groundwater/imazapic/kg,0.010128121,0.003095138
+soil/groundwater/nicosulfuron/kg,0.003769764,0.001303682
+soil/groundwater/spinosad/kg,0.002413056,0.000801566
+soil/groundwater/metrafenone/kg,0.000772179,0.000260938
+"soil/groundwater/imazaquin, mon. salt/kg",0.003692769,0.001225259
+soil/groundwater/esfenvalerate/kg,0.010217694,0.003400931
+soil/groundwater/cuprammonium acetate/kg,0.000901714,0.000304711
+soil/groundwater/fluthiacet-methyl/kg,0.003984671,0.00133093
+soil/groundwater/fipronil/kg,0.000411022,0.000133364
+soil/groundwater/fenbuconazole/kg,0.002456989,0.000830276
+soil/groundwater/flonicamid/kg,0.005201624,0.0016048
+soil/groundwater/flutriafol/kg,0.003049021,0.00105272
+soil/groundwater/pymetrozine/kg,0.000633501,0.000205552
+soil/groundwater/tebupirimphos/kg,0.00282424,0.000976761
+soil/groundwater/bensulfuron methyl ester/kg,0.002510436,0.000868232
+soil/groundwater/fluoxastrobin/kg,0.004694635,0.001623635
+soil/groundwater/spiromesifen/kg,0.003628117,0.001218586
+soil/groundwater/methidathion/kg,0.000497372,0.000168074
+soil/groundwater/avermectin b1/kg,0.001894955,0.000614626
+soil/groundwater/ethoprop/kg,0.002296064,0.00078794
+soil/groundwater/quinclorac dimethylamine salt/kg,0.002196631,0.000759703
+soil/groundwater/mesosulfuron-methyl/kg,0.002836177,0.000980889
+soil/groundwater/spinetoram-j/kg,0.000952936,0.000310525
+soil/groundwater/spinetoram-l/kg,0.002096029,0.000696804
+soil/groundwater/spinetoram/kg,0.001143092,0.000386279
+soil/groundwater/gamma-cyhalothrin/kg,0.002955651,0.00099391
+soil/groundwater/terbacil/kg,0.000907573,0.000305917
+soil/groundwater/bispyribac-sodium/kg,0.001882827,0.000651174
+soil/groundwater/penoxsulam/kg,0.001882827,0.000651174
+"soil/groundwater/2,4-d, isopropyl ester/kg",0.00043053,0.000145487
+soil/groundwater/reynoutria sachaline/kg,0.000550265,0.000185505
+soil/groundwater/potassium salts/kg,0.000541856,0.000183106
+soil/groundwater/pyridaben/kg,0.001185922,0.000400752
+soil/groundwater/imazosulfuron/kg,0.001569022,0.000542645
+soil/groundwater/primisulfuron-methyl/kg,0.001569022,0.000542645
+soil/groundwater/cyromazine/kg,0.000490849,0.000159266
+soil/groundwater/napropamide/kg,0.000556168,0.000184174
+soil/groundwater/ametoctradin/kg,0.00037403,0.000121361
+soil/groundwater/diclosulam/kg,0.00337604,0.001031713
+soil/groundwater/hexazinone/kg,0.000282214,9.5367E-05
+soil/groundwater/piperonyl butoxide/kg,0.000569445,0.000192429
+soil/groundwater/gibberellins a4a7/kg,0.000271287,9.16743E-05
+soil/groundwater/etoxazole/kg,0.001077812,0.00034315
+soil/groundwater/dinotefuran/kg,0.001103455,0.000371664
+soil/groundwater/dodecadien-1-ol/kg,0.000332647,0.000112409
+soil/groundwater/crotonic acid/kg,0.000254439,8.5981E-05
+soil/groundwater/xylene/kg,0.000341029,0.000114634
+"soil/groundwater/1h-purin-6-amine, n-(phenylmethyl)-/kg",0.000231186,7.81232E-05
+soil/groundwater/copper oxychloride/kg,0.000136291,4.42223E-05
+soil/groundwater/polyoxin d zinc salt/kg,0.00021691,7.32992E-05
+soil/groundwater/terbufos/kg,0.000135637,4.40102E-05
+soil/groundwater/indoxacarb/kg,0.00045825,0.000149833
+soil/groundwater/clothianidin/kg,0.000472978,0.000154909
+soil/groundwater/metalaxil/kg,0.000123307,4.00092E-05
+soil/groundwater/tralkoxydim/kg,0.000914636,0.000316326
+soil/groundwater/fenarimol/kg,0.000376674,0.000127287
+soil/groundwater/methamidophos/kg,0.000111052,3.6033E-05
+soil/groundwater/forchlorfenuron/kg,0.000173199,5.85282E-05
+soil/groundwater/oxytetracycline hydrochloride/kg,0.000223732,7.56046E-05
+soil/groundwater/dichlobenil/kg,0.000167565,5.66241E-05
+soil/groundwater/trifloxysulfuron-sod/kg,0.001955271,0.000597528
+soil/groundwater/mcpb/kg,9.86452E-05,3.20074E-05
+soil/groundwater/fluopicolide/kg,0.000294395,9.55222E-05
+soil/groundwater/gibberellic acid/kg,0.000303127,0.000102434
+soil/groundwater/kantor/kg,0.001016011,0.000351386
+soil/groundwater/fenpyroximate/kg,0.000414199,0.000139764
+soil/groundwater/orthosulfamuron/kg,0.000627609,0.000217058
+soil/groundwater/dodecanol/kg,0.000135481,4.57824E-05
+soil/groundwater/zinc phosphide/kg,0.000129806,4.38647E-05
+soil/groundwater/z-8-dodecen acetate/kg,0.000223384,7.54868E-05
+soil/groundwater/tolfenpyrad/kg,0.000123307,4.00092E-05
+soil/groundwater/pyraflufen-ethyl/kg,0.001303514,0.000398352
+soil/groundwater/pyriproxyfen/kg,0.000369942,0.000125012
+"soil/groundwater/naa, potassium salt/kg",0.00014054,4.7492E-05
+soil/groundwater/pyrethrin i/kg,0.000195122,6.50391E-05
+soil/groundwater/hexythiazox/kg,0.000224674,7.59228E-05
+soil/groundwater/aluminum-phosphide/kg,0.000124286,4.19992E-05
+soil/groundwater/emamectin benzoate/kg,0.00012049,3.97211E-05
+soil/groundwater/clofentezine/kg,9.28244E-05,3.13676E-05
+soil/groundwater/pseudo. fluores a506/kg,0.000100439,3.39409E-05
+soil/groundwater/methyl anthranilate/kg,6.55332E-05,2.16475E-05
+"soil/groundwater/(2,4-dichlorophenoxy)acetic acid compd. with 2,2-iminobis[ethanol] (1:1)/kg",0.00010988,3.7131E-05
+"soil/groundwater/naa, sodium/kg",5.42573E-05,1.83349E-05
+soil/groundwater/s-abscisic acid/kg,5.05164E-05,1.70707E-05
+"soil/groundwater/naa, ammonium salt/kg",8.49373E-05,2.87024E-05
+soil/groundwater/indaziflam/kg,4.50614E-05,1.52273E-05
+soil/groundwater/1-naphthaleneacetamide/kg,3.87552E-05,1.30963E-05
+soil/groundwater/azadirachtin/kg,6.23147E-05,2.08238E-05
+soil/groundwater/cga 245704/kg,1.51434E-05,4.91359E-06
+soil/groundwater/tetradecanol/kg,2.96583E-05,1.00223E-05
+soil/groundwater/copper resinate/kg,1.77526E-05,5.8632E-06
+soil/groundwater/hydrolyzate/kg,1.28747E-05,4.35066E-06
+soil/groundwater/e-8-dodecenyl acetat/kg,1.37918E-05,4.66059E-06
+soil/groundwater/copper octanoate/kg,4.11022E-06,1.33364E-06
+soil/groundwater/cyflufenamid/kg,8.22043E-06,2.66728E-06
+soil/groundwater/sulfoxaflor/kg,4.11022E-06,1.33364E-06
+air/unspecified/chromium/kg,117.1272705,34.5625594
+air/unspecified/ethylbenzene/kg,121.6834229,85.08823641
+air/unspecified/cyclohexane/kg,117.1335352,37.49787214
+air/unspecified/ethene/kg,652.1634937,232.0474765
+air/unspecified/propene/kg,264.3660452,92.67364835
+"air/unspecified/1,2,4-trimethylbenzene/kg",373.8171282,56.19675266
+air/unspecified/zinc/kg,339.3788215,110.9954105
+air/unspecified/molybdenum(vi)/kg,37.0854828,13.93105162
+air/unspecified/sulfuric acid/kg,3403.445063,1284.005769
+air/unspecified/formic acid/kg,13.04701792,3.401752531
+air/unspecified/bromine/kg,20.17570738,5.432673635
+air/unspecified/vanadium/kg,3.972714108,1.260241978
+air/unspecified/fluorine/kg,8.00059291,1.478347475
+air/unspecified/copper/kg,93.30600253,48.74810309
+air/unspecified/barium/kg,0.705250002,0.273649227
+air/unspecified/phenothrin/kg,2.79059E-05,9.58359E-06
+air/unspecified/nitric acid/kg,217.9989865,99.51710637
+"air/unspecified/methane, dibromo-/kg",0.355490335,0.064273429
+air/unspecified/sulfuryl fluoride/kg,3.481704454,1.035389542
+air/unspecified/tert-butyl alcohol/kg,17.45981755,6.422925882
+"air/unspecified/methane, chlorodifluoro-, hcfc-22/kg",147.198437,95.74251881
+air/unspecified/isobutyraldehyde/kg,2.97514168,0.983541357
+air/unspecified/peracetic acid/kg,0.140392285,0.030191181
+air/unspecified/ozone/kg,33.56217106,13.19537413
+air/unspecified/potassium bromate/kg,0.000197699,7.29308E-05
+air/unspecified/cumene hydroperoxide/kg,1.005825358,0.317200573
+air/unspecified/nicotine/kg,0.028311487,0.00862532
+air/unspecified/1-methyl-2-pyrrolidinone/kg,75.55709071,36.82223565
+"air/unspecified/2,4/2,6-toluenediisocyanate (mixture)/kg",0.318685362,0.100318816
+air/unspecified/diisocyanates/kg,11.07996242,7.652647414
+air/unspecified/nitrous acid/kg,8.075248594,3.304924455
+"air/unspecified/2,2-bis(4-hydroxy-3,5-dibromophenyl)propane/kg",0.529030611,0.084731494
+air/unspecified/aluminum/kg,347.8486386,130.0059462
+air/unspecified/creosol/kg,18.26397347,5.108424
+air/unspecified/butanol/kg,956.681523,227.7040356
+air/unspecified/dmtt (dazomet)/kg,0.005646057,0.001802294
+"air/unspecified/2-phenylphenol, sodium salt/kg",0.000282689,0.000124618
+"air/unspecified/carbamodithioic acid, dimethyl-, potassium salt/kg",0.161189114,0.071057425
+"air/unspecified/4,4'-isopropylidenediphenol/kg",5.75739274,3.7073479
+air/unspecified/butyl acrylate/kg,5.696059736,1.842376036
+"air/unspecified/2,4-dimethylphenol/kg",2.59315488,0.853104269
+air/unspecified/sec-butyl alcohol/kg,67.04084592,46.00811366
+air/unspecified/isoprene/kg,4.483943709,1.623619898
+air/unspecified/dicyclopentadiene/kg,5.377756839,1.798148972
+air/unspecified/methyl acrylate/kg,3.162543757,1.009425902
+air/unspecified/pyridine/kg,1.519711716,0.530616362
+air/unspecified/diuron/kg,0.006270849,0.001912474
+air/unspecified/methyl isothiocyanate/kg,3.86509E-05,1.28238E-05
+air/unspecified/diphenylamine/kg,0.550861919,0.181060465
+air/unspecified/dinoseb/kg,0.001203198,0.00039769
+air/unspecified/n-nitrosodiphenylamine/kg,0.000386509,0.000128238
+"air/unspecified/1,3-phenylenediamine/kg",0.104081632,0.034384237
+air/unspecified/dimethylamine/kg,4.154224364,1.32527639
+air/unspecified/nitrogen trifluoride/kg,0.765555432,0.140632682
+"air/unspecified/1,2-dichlorobenzene/kg",2.36535282,0.760710785
+air/unspecified/diaminotoluenes/kg,0.100559723,0.033154138
+"air/unspecified/1,2-phenylenediamine/kg",0.06236155,0.020556805
+air/unspecified/cyclohexanol/kg,1.439228714,0.469870804
+"air/unspecified/1,4-dichloro-2-butene/kg",0.040762785,0.013538482
+air/unspecified/allyl alcohol/kg,2.506474828,0.769484079
+air/unspecified/butyraldehyde/kg,12.509586,4.143884455
+air/unspecified/oxiranemethanol/kg,2.20603035,0.73046413
+air/unspecified/cfc-13/kg,0.012474598,0.004612696
+air/unspecified/hcfc-253/kg,0.013094454,0.004841898
+air/unspecified/hcfc-21/kg,0.020292725,0.007506272
+air/unspecified/halon 1211/kg,0.098586228,0.038802711
+air/unspecified/tetrafluoroethylene (tfe)/kg,7.711225019,2.564255857
+air/unspecified/halon 1301/kg,0.286924298,0.116884987
+air/unspecified/pentachloroethane/kg,3.391540838,1.138950506
+air/unspecified/vinylfluoride/kg,3.834256581,1.300187068
+air/unspecified/hcfc-142b/kg,13.06430354,2.178968778
+"air/unspecified/methane, trichlorofluoro-, cfc-11/kg",5.904539377,2.213401781
+"air/unspecified/2-chloro-1,1,1-trifluoroethane/kg",3.38163964,0.775498579
+"air/unspecified/methane, dichlorodifluoro-, cfc-12/kg",2.149819482,0.762124267
+"air/unspecified/ethane, 1,1,2-trichloro-1,2,2-trifluoro-, cfc-113/kg",16.05032533,5.869303012
+air/unspecified/cfc-114/kg,8.77033367,1.966373164
+air/unspecified/cfc-115/kg,1.881698167,0.693836826
+"air/unspecified/ethane, 2,2-dichloro-1,1,1-trifluoro-, hcfc-123/kg",8.742573356,2.706076839
+"air/unspecified/ethane, 2-chloro-1,1,1,2-tetrafluoro-, hcfc-124/kg",11.7432956,4.317887619
+air/unspecified/octachloronaphthalene/kg,2.66893E-08,8.15716E-09
+"air/unspecified/3,3'-dichlorobenzidine dihydrochloride/kg",6.79363E-05,2.07637E-05
+"air/unspecified/benzene, pentachloro-/kg",0.003077839,0.00112882
+air/unspecified/p-cresidine/kg,0.000727889,0.000222468
+"air/unspecified/[1,1'-biphenyl]-4,4'-diamine, 3,3'-dimethoxy-, dihydrochloride/kg",0.000821059,0.000250944
+air/unspecified/benzoyl chloride/kg,0.069215186,0.022749012
+air/unspecified/c.i. direct blue 218/kg,0.001575152,0.000481421
+air/unspecified/4-chloroaniline/kg,0.012645076,0.003867107
+air/unspecified/2-mercaptobenzothiazole/kg,0.129557535,0.044497908
+air/unspecified/metaldehyde (tetramer)/kg,0.001481407,0.000498498
+"air/unspecified/1,3-dichlorobenzene/kg",0.00030977,0.000113971
+air/unspecified/benzal chloride/kg,0.004370161,0.001439773
+air/unspecified/m-dinitrobenzene/kg,0.012952826,0.004253526
+"air/unspecified/1,2-dinitrobenzene/kg",0.001608127,0.000511414
+"air/unspecified/1,4-dinitrobenzene/kg",0.000486457,0.000142478
+air/unspecified/mcpa - sodium salt/kg,0.000475886,6.88957E-05
+"air/unspecified/2,4-d, isooctyl ester/kg",0.000951771,0.000137791
+air/unspecified/dichlorobenzene/kg,0.007132892,0.001356001
+air/unspecified/nitromethane/kg,3.182952771,3.221299839
+air/unspecified/chloropicrin/kg,0.085977536,0.0146124
+"air/unspecified/1,1,1,2-tetrachloroethane/kg",0.11069362,0.020120777
+"air/unspecified/1,2-dichloroethylene/kg",323.2008618,65.10494377
+air/unspecified/sodium formate/kg,0.703370075,0.179969693
+air/unspecified/silver/kg,1.382717091,0.688647729
+"air/unspecified/ethane, 1,1-dichloro-1-fluoro-, hcfc-141b/kg",0.954487263,0.146895855
+air/unspecified/hcfc-132b/kg,2.338502292,0.338553497
+air/unspecified/iron pentacarbonyl/kg,2.685898847,0.388847362
+"air/unspecified/2,4-d, 2-ethylhexyl ester/kg",0.002974697,0.000978109
+air/unspecified/thallium/kg,0.000222633,8.48444E-05
+air/unspecified/saccharin/kg,0.00020577,7.21343E-05
+"air/unspecified/2,4-d, sodium salt/kg",0.000234768,7.72192E-05
+"air/unspecified/pyridine-2,6-dicarboxylic acid/kg",0.000260853,8.57991E-05
+air/unspecified/n-methylolacrylamide/kg,0.321064764,0.106633701
+air/unspecified/bis(2-chloro-1-methylethyl) ether/kg,0.002108121,0.000694655
+air/unspecified/propargyl alcohol/kg,0.092035763,0.02517537
+air/unspecified/3-chloro-2-methylpropene/kg,0.005373582,0.001767462
+air/unspecified/picloram/kg,0.005921374,0.00194764
+air/unspecified/methyl chloroacetate/kg,0.006896302,0.002282764
+air/unspecified/2-chlorophenol/kg,0.008406056,0.002830035
+"air/unspecified/2,3-dichloropropene/kg",0.018100144,0.005982387
+air/unspecified/ethyl chloroacetate/kg,0.00970375,0.003191728
+air/unspecified/allylamine/kg,0.017085904,0.005619843
+air/unspecified/3-iodo-2-propynyl butylcarbamate/kg,0.029615131,0.009334451
+"air/unspecified/trans-1,3-dichloropropene/kg",0.04371735,0.014484407
+"air/unspecified/1,2,3-trichloropropane/kg",0.071008289,0.023360687
+air/unspecified/bromodichloromethane/kg,0.072334675,0.023792099
+air/unspecified/furan/kg,0.083481594,0.027460551
+air/unspecified/2-methylpyridine/kg,0.104185031,0.034288181
+"air/unspecified/phenol, 2,4-dichloro/kg",0.112754781,0.037120989
+air/unspecified/acetone cyanohydrin/kg,0.627646591,0.189166051
+air/unspecified/crotonaldehyde/kg,0.214328217,0.070505625
+"air/unspecified/dinitrotoluene, technical grade (2,4 (77%)- and 2,6 (19%)-)/kg",2.445290516,0.864147246
+air/unspecified/decabromodiphenyl oxide/kg,0.331556654,0.126910927
+"air/unspecified/diglycidyl resorcinol ether, technical grade/kg",7.00261E-05,2.32573E-05
+air/unspecified/trichloroacetic acid/kg,0.000252094,8.37263E-05
+air/unspecified/carboxin/kg,0.000901587,0.000299438
+air/unspecified/picric acid/kg,0.001142534,0.000384612
+air/unspecified/thiram/kg,0.160001945,0.060822906
+"air/unspecified/1,3-propanediol, 2,2-bis(brme)-/kg",0.004971856,0.001651268
+"air/unspecified/4,4'-diaminodiphenyl ether/kg",0.110056594,0.03655234
+air/unspecified/oxyfluorfen/kg,0.000177999,5.66559E-05
+air/unspecified/atrazine/kg,0.073921856,0.0246517
+air/unspecified/metam-sodium/kg,0.036137542,0.015184822
+"air/unspecified/methylcarbamodithioic acid, monopotassium salt/kg",0.000278765,7.76586E-05
+air/unspecified/pendimethalin/kg,0.012851853,0.009525324
+air/unspecified/mecoprop/kg,0.005394274,0.001418555
+air/unspecified/oxadiazon/kg,0.014287482,0.008244744
+air/unspecified/cyfluthrin/kg,2.52237E-08,8.37671E-09
+air/unspecified/tebuthiuron/kg,2.52237E-06,8.37671E-07
+air/unspecified/acephate/kg,0.000138599,5.3356E-05
+air/unspecified/tribenuron-methyl/kg,0.000155482,5.98789E-05
+air/unspecified/trichlorfon/kg,0.000160023,6.13867E-05
+air/unspecified/chlorsulfuron/kg,0.000162545,6.22244E-05
+air/unspecified/acifluorfen-sodium/kg,0.001563845,0.000488874
+air/unspecified/naled/kg,2.52237E-05,8.37671E-06
+air/unspecified/alachlor/kg,0.000232745,8.8194E-05
+air/unspecified/bromoxynil/kg,0.000181479,6.75964E-05
+air/unspecified/tri-allate/kg,0.000124677,4.44275E-05
+air/unspecified/ethoprop/kg,0.000100338,3.48424E-05
+air/unspecified/chlorimuron ethyl/kg,0.000225604,8.31662E-05
+air/unspecified/fenpropathrin/kg,8.07157E-05,2.68055E-05
+air/unspecified/dicamba/kg,0.001414703,0.000497306
+air/unspecified/simazine/kg,0.000102533,3.41424E-05
+air/unspecified/nabam/kg,0.000362991,0.000132667
+air/unspecified/fomesafen/kg,0.000153864,5.10979E-05
+air/unspecified/bromoxynil octanoate/kg,0.000158909,5.27733E-05
+air/unspecified/thiobencarb/kg,0.000196745,6.53383E-05
+air/unspecified/eptc/kg,0.000206834,6.8689E-05
+air/unspecified/diazinon/kg,0.002001457,0.000764047
+air/unspecified/mcpa/kg,0.000267371,8.87931E-05
+air/unspecified/propargite/kg,0.000310251,0.000103034
+air/unspecified/n-(3-chlorallyl) hexaminium chloride/kg,0.020313942,0.005426994
+air/unspecified/nitrapyrin/kg,0.000425035,0.000145879
+air/unspecified/piperonyl butoxide/kg,0.000589749,0.000206039
+air/unspecified/thiophanat-methyl/kg,0.004149764,0.00303213
+air/unspecified/dimethoate/kg,0.000739774,0.000261798
+"air/unspecified/2,4,5-t triethylammonium salt/kg",0.000454026,0.000150781
+air/unspecified/thiabendazole/kg,0.000517085,0.000171723
+air/unspecified/prometryn/kg,0.000643203,0.000213606
+air/unspecified/stirofos/kg,0.000643203,0.000213606
+air/unspecified/metribuzin/kg,0.001082101,0.000370356
+air/unspecified/avermectin b1/kg,0.000965735,0.000319829
+air/unspecified/propiconazole/kg,0.000931182,0.000309243
+air/unspecified/malathion/kg,0.002016677,0.000720185
+"air/unspecified/7-oxabicyclo[2,2,1]heptane-2,3-dicarboxylic acid, dipotassium salt/kg",0.001305905,0.000433687
+air/unspecified/paraquat dichloride/kg,0.001462133,0.000485662
+"air/unspecified/s,s,s-tributyl phosphorotrithioate/kg",0.001816104,0.000603123
+air/unspecified/propanil/kg,0.001920274,0.000637901
+air/unspecified/bifenthrin/kg,0.005404825,0.001803921
+air/unspecified/hexazinone/kg,0.006204886,0.002092134
+air/unspecified/thiodicarb/kg,0.006729084,0.0022351
+air/unspecified/benefin/kg,0.015359563,0.008986486
+air/unspecified/ametryn/kg,0.009888256,0.003283863
+air/unspecified/chlorothalonil/kg,0.015854433,0.005327186
+air/unspecified/carbofuran/kg,0.014673063,0.004892375
+"air/unspecified/2,4-d, butoxyethyl ester/kg",0.015071139,0.005005084
+air/unspecified/permethrin/kg,0.032747412,0.010334778
+air/unspecified/dicamba sodium salt/kg,0.035809279,0.011892163
+air/unspecified/pentobarbital sodium/kg,1.09819E-05,4.2521E-06
+air/unspecified/nitroglycerin/kg,1.88697712,0.548747257
+air/unspecified/tetracycline hydrochloride/kg,0.000330806,0.000131834
+air/unspecified/phenytoin/kg,0.002333485,0.000929952
+air/unspecified/aluminum oxide/kg,108.8799037,4.398234533
+air/unspecified/folpet/kg,0.000708243,0.000199442
+air/unspecified/2-propanol/kg,0.072107042,0.020545645
+air/unspecified/hcfc-225ca/kg,0.208294716,0.068842626
+air/unspecified/dimethipin/kg,0.001411647,0.00042503
+"air/unspecified/2,6-dinitrotoluene/kg",0.128432544,0.037399728
+air/unspecified/n-nitrosodipropylamine/kg,0.000411864,0.000131005
+air/unspecified/4-nitroaniline/kg,0.003733848,0.001098224
+air/unspecified/alpha-naphthylamine/kg,0.001799781,0.000583125
+air/unspecified/aluminum phosphide/kg,0.024711842,0.007860308
+"air/unspecified/2,6-xylidine/kg",0.038715218,0.012314482
+air/unspecified/sodium dimethyldithiocarbamate/kg,0.00643085,0.002406401
+air/unspecified/nitrilotriacetic acid/kg,0.001640237,0.000477495
+air/unspecified/bis(2-chloroethoxy)methane/kg,4.9137E-07,1.90661E-07
+air/unspecified/5-nitro-o-toluidine/kg,6.60073E-07,2.56122E-07
+air/unspecified/n-nitrosopiperidine/kg,7.20675E-07,2.79636E-07
+air/unspecified/resmethrin/kg,1.6379E-06,6.35537E-07
+"air/unspecified/tris (2,3-dibromopropyl) phosphate/kg",1.6379E-06,6.35537E-07
+air/unspecified/abate/kg,1.14653E-05,4.44876E-06
+air/unspecified/methiocarb/kg,1.6379E-05,6.35537E-06
+air/unspecified/dihydrosafrole/kg,1.70407E-05,6.61213E-06
+air/unspecified/chloroacetonitrile/kg,3.2758E-05,1.27107E-05
+air/unspecified/safrole/kg,0.000103188,4.00389E-05
+air/unspecified/isodrin/kg,3.75177E-05,1.45576E-05
+air/unspecified/5-fluorouracil/kg,4.81901E-05,1.86987E-05
+air/unspecified/strychnine/kg,5.4542E-05,2.11634E-05
+air/unspecified/bendiocarb/kg,5.89643E-05,2.28793E-05
+air/unspecified/myclobutanil/kg,6.71506E-05,2.60558E-05
+air/unspecified/pronamide/kg,7.07572E-05,2.74552E-05
+air/unspecified/sodium azide/kg,7.35891E-05,2.85541E-05
+air/unspecified/osmium tetroxide/kg,8.18949E-05,3.17769E-05
+air/unspecified/thiosemicarbazide/kg,9.82739E-05,3.81322E-05
+air/unspecified/n-nitroso-n-ethylurea/kg,0.00011498,4.46147E-05
+air/unspecified/linuron/kg,0.000115472,4.48054E-05
+air/unspecified/c.i. solvent yellow 34/kg,0.000131032,5.0843E-05
+air/unspecified/monuron/kg,0.000131032,5.0843E-05
+air/unspecified/dicofol/kg,0.000135946,5.27496E-05
+air/unspecified/zineb/kg,0.000135946,5.27496E-05
+air/unspecified/amitrole/kg,0.00015511,6.01859E-05
+air/unspecified/aldicarb/kg,0.000161661,6.27275E-05
+air/unspecified/cyanazine/kg,0.00016379,6.35537E-05
+air/unspecified/triforine/kg,0.00016379,6.35537E-05
+air/unspecified/benomyl/kg,0.000170341,6.60959E-05
+air/unspecified/propachlor/kg,0.000172634,6.69856E-05
+air/unspecified/malononitrile/kg,0.00017591,6.82567E-05
+air/unspecified/parathion-methyl/kg,0.000181807,7.05446E-05
+air/unspecified/ferbam/kg,0.000212927,8.26199E-05
+air/unspecified/thioacetamide/kg,0.000214565,8.32554E-05
+air/unspecified/o-toluidine.hcl/kg,0.000215875,8.37638E-05
+air/unspecified/diallate/kg,0.000217022,8.42087E-05
+air/unspecified/trypan blue/kg,0.000251254,9.74914E-05
+air/unspecified/hydramethylnon/kg,0.000253874,9.85083E-05
+air/unspecified/anilazine/kg,0.000262064,0.000101686
+air/unspecified/aldrin/kg,0.000288499,0.000111944
+"air/unspecified/c,i, direct black 38/kg",0.000376717,0.000146174
+air/unspecified/thiourea/kg,0.000404325,0.000154941
+air/unspecified/hexachloroprene/kg,0.000468439,0.000181764
+air/unspecified/warfarin/kg,0.000486128,0.000188627
+"air/unspecified/phenol,2,2'-methylenebis 4-chloro-/kg",0.00063878,0.00024786
+air/unspecified/2-phenylphenol/kg,0.012043897,0.003665297
+air/unspecified/methacrylonitrile/kg,8.00083E-05,2.32912E-05
+air/unspecified/hcfc-225cb/kg,0.006280655,0.001828357
+"air/unspecified/methane, tetrachloro-, r-10/kg",0.079700723,0.024784529
+soil/unspecified/naphthalene/kg,1.470624136,0.763971789
+soil/unspecified/pendimethalin/kg,0.317755941,0.097105798
+soil/unspecified/ametryn/kg,0.506329,0.15473337
+soil/unspecified/atrazine/kg,2.03187897,0.620939113
+soil/unspecified/formaldehyde/kg,0.098995362,0.032235758
+soil/industrial/methanol/kg,248.2165738,103.9051434
+soil/unspecified/ammonia/kg,80.43097713,29.11429055
+soil/unspecified/hydrochloric acid/kg,20.71670125,6.702934328
+soil/unspecified/mercury/kg,0.22864664,0.081084399
+soil/industrial/lead/kg,16.9846382,7.542220396
+soil/industrial/manganese/kg,96.85938087,74.88170933
+soil/industrial/nickel/kg,67.59376576,65.4144124
+soil/industrial/cadmium/kg,0.612184666,0.23931278
+soil/industrial/copper/kg,30.77049038,11.26748679
+soil/industrial/chromium/kg,40.08547919,18.11558088
+"soil/unspecified/benzene, ethyl-/kg",0.481700078,0.177664633
+soil/unspecified/sulfuric acid/kg,0.004144321,0.002597976
+soil/unspecified/anthracene/kg,0.00055675,0.00020211
+soil/unspecified/phenanthrene/kg,0.003223883,0.001114298
+"soil/unspecified/benzo(g,h,i)perylene/kg",0.006797741,0.002186034
+soil/unspecified/ethylene glycol/kg,3.792664111,1.367945027
+soil/unspecified/cobalt/kg,0.249696091,0.137111185
+soil/industrial/vanadium/kg,0.989099921,0.403078827
+soil/unspecified/hydrogen sulfide/kg,0.585659219,0.236638989
+soil/unspecified/ethylene glycol monoethyl ether/kg,2.426101628,0.599998997
+soil/unspecified/propylene oxide/kg,1.25629E-05,4.4236E-06
+soil/unspecified/acetaldehyde/kg,0.042171679,0.01468376
+soil/industrial/benzene/kg,0.326842042,0.122535343
+soil/unspecified/selenium(iv)/kg,0.671335708,0.245529243
+soil/unspecified/nitric acid/kg,0.785550309,0.254859939
+soil/unspecified/peracetic acid/kg,0.056680487,0.018960117
+soil/unspecified/nitrate/kg,0.522551127,0.21418531
+soil/unspecified/nicotine/kg,0.014879504,0.004507287
+soil/unspecified/creosol/kg,1.622130282,0.399698834
+soil/unspecified/phenol/kg,0.404825145,0.128054882
+soil/unspecified/catechol/kg,0.000863305,0.000374979
+soil/unspecified/chloroform/kg,0.021737313,0.00639549
+soil/unspecified/cresol/kg,0.002212455,0.00087778
+soil/unspecified/formic acid/kg,0.075773433,0.022607158
+"soil/unspecified/methane, monochloro-, r-40/kg",0.005522794,0.001845185
+soil/unspecified/chlorine/kg,0.000718001,0.000348762
+soil/unspecified/polychlorinated biphenyls/kg,0.006606009,0.002606555
+soil/unspecified/aluminum/kg,1383.591965,482.4729066
+"soil/unspecified/ethane, 1,2-dichloro-/kg",0.001174233,0.000177722
+soil/unspecified/hydrofluoric acid/kg,1.37316723,0.363694561
+soil/unspecified/tert-butyl alcohol/kg,0.008857871,0.006963012
+"soil/unspecified/phthalate, dimethyl-/kg",0.0427907,0.012457536
+"soil/unspecified/ethene, tetrachloro-/kg",0.020022063,0.005829496
+soil/unspecified/biphenyl/kg,0.000243946,8.12528E-05
+soil/unspecified/butadiene/kg,0.003482949,0.001321091
+soil/unspecified/molybdenum(vi)/kg,0.690844779,0.284442792
+soil/industrial/styrene/kg,0.797081446,0.247189593
+soil/industrial/cumene/kg,0.031200786,0.010375132
+soil/industrial/ethene/kg,0.012300979,0.004126412
+"soil/industrial/1,2,4-trimethylbenzene/kg",0.88975603,0.393361945
+soil/unspecified/propene/kg,0.022320243,0.007488487
+soil/industrial/cyclohexane/kg,0.03683402,0.01841955
+soil/unspecified/hexane/kg,0.833509478,0.341206381
+soil/unspecified/xylene/kg,1.734727103,0.64620888
+soil/industrial/toluene/kg,5.837997132,4.073342504
+soil/unspecified/aluminum oxide/kg,8.673864402,4.026833028
+soil/unspecified/dibenzofuran/kg,3.88477E-05,1.53705E-05
+soil/unspecified/3-iodo-2-propynyl butylcarbamate/kg,0.000542617,0.000260259
+soil/unspecified/aniline/kg,0.000282151,9.36141E-05
+soil/unspecified/silver/kg,0.536641891,0.208129822
+soil/unspecified/acrylonitrile/kg,0.001365853,0.000458582
+soil/unspecified/dimethylamine/kg,0.378873484,0.124621671
+soil/unspecified/nitrobenzene/kg,0.001430082,0.000474482
+soil/unspecified/acetophenone/kg,0.035017682,0.011618407
+soil/unspecified/asbestos/kg,0.074055053,0.024570494
+soil/unspecified/acrylamide/kg,0.078886411,0.026173475
+soil/unspecified/acrylic acid/kg,0.301479974,0.095865597
+"soil/unspecified/dinitrotoluene, technical grade (2,4 (77%)- and 2,6 (19%)-)/kg",0.320142442,0.091186601
+soil/unspecified/arsenic/kg,1.188747288,0.53719242
+soil/unspecified/phthalic anhydride/kg,0.428517277,0.110903674
+soil/unspecified/diethanolamine/kg,39.15696716,5.674405371
+"soil/unspecified/propene, 1,3-dichloro-/kg",2.60853E-06,8.57991E-07
+"soil/unspecified/2,3-dichloropropene/kg",2.08683E-05,6.86393E-06
+"soil/unspecified/benzene, pentachloro-/kg",2.73635E-05,9.00033E-06
+soil/unspecified/bisphenol a/kg,0.836088215,0.561094888
+soil/unspecified/diaminotoluenes/kg,0.000130427,4.28996E-05
+soil/unspecified/vinyl acetate/kg,0.199854213,0.060478741
+"soil/unspecified/benzene, hexachloro-/kg",0.000595268,0.000195794
+soil/unspecified/dicyclopentadiene/kg,0.000965158,0.000317457
+"soil/unspecified/methane, dichloro-, hcc-30/kg",0.014591803,0.005166307
+soil/unspecified/isobutyraldehyde/kg,0.003279222,0.001079153
+"soil/unspecified/2,4/2,6-toluenediisocyanate (mixture)/kg",2.002479687,0.69845693
+soil/unspecified/1-methyl-2-pyrrolidinone/kg,0.035053814,0.009958472
+soil/unspecified/sec-butyl alcohol/kg,0.00414476,0.005441143
+soil/unspecified/epichlorohydrin/kg,0.165664978,0.048229491
+soil/unspecified/acrolein/kg,0.000175065,5.81433E-05
+soil/unspecified/maleic anhydride/kg,0.125309397,0.036536174
+soil/unspecified/cumene hydroperoxide/kg,0.001575588,0.000523289
+soil/unspecified/acetonitrile/kg,0.000965223,0.000383828
+soil/unspecified/bromine/kg,0.077799269,0.038818158
+soil/unspecified/dimethyl sulfate/kg,1.26118E-05,4.18835E-06
+soil/unspecified/4-methyl-2-pentanone/kg,0.033210801,0.01156476
+soil/unspecified/dimethyl formamide/kg,0.007572419,0.002234468
+soil/industrial/o-xylene/kg,1.26118E-05,4.18835E-06
+soil/unspecified/triethyl amine/kg,0.004748056,0.001813203
+soil/unspecified/diuron/kg,0.000128641,4.27212E-05
+soil/unspecified/thiabendazole/kg,0.001008947,0.000335068
+"soil/unspecified/phenol, 2,4-dichloro/kg",0.001765656,0.00058637
+soil/unspecified/dicamba sodium salt/kg,0.002522366,0.000837671
+soil/unspecified/2-chlorophenol/kg,0.348496361,0.134659341
+soil/unspecified/paraquat dichloride/kg,0.018438498,0.006123374
+soil/unspecified/hydroquinone/kg,0.058169938,0.018501151
+soil/unspecified/propanil/kg,0.174194622,0.057849553
+soil/unspecified/5-fluorouracil/kg,0.003956622,0.00153197
+soil/unspecified/n-(3-chlorallyl) hexaminium chloride/kg,0.100290462,0.025819141
+soil/unspecified/butyl acrylate/kg,0.434070998,0.12645811
+soil/unspecified/methyl methacrylate/kg,0.002816029,0.000915769
+"soil/unspecified/1,4-dioxane/kg",1.67114E-05,6.27516E-06
+soil/unspecified/butanol/kg,0.021895947,0.009101796
+soil/unspecified/benzyl chloride/kg,0.756503037,0.220305968
+"soil/unspecified/4,4'-methylenebis(2-chloroanaline)/kg",0.002160684,0.000650557
+soil/unspecified/2-mercaptobenzothiazole/kg,0.000465185,0.000222635
+soil/unspecified/thiram/kg,0.024878113,0.011906518
+"soil/unspecified/phthalate, dioctyl-/kg",1.228004215,0.622569859
+soil/industrial/zinc/kg,2.718421095,1.13665446
+soil/industrial/antimony/kg,1.266453648,0.533523947
+soil/unspecified/sodium dimethyldithiocarbamate/kg,3.477327588,1.746614722
+soil/unspecified/decabromodiphenyl oxide/kg,0.000781775,0.00039009
+"soil/unspecified/2,2-bis(4-hydroxy-3,5-dibromophenyl)propane/kg",0.00039161,0.000517369
+soil/unspecified/methoxychlor/kg,3.2758E-05,1.27107E-05
+soil/unspecified/toxaphene (example isomer shown below)/kg,3.2758E-05,1.27107E-05
+soil/unspecified/pyridine/kg,0.003472344,0.001347339
+"soil/unspecified/methane, tetrachloro-, r-10/kg",0.259593981,0.100708283
+soil/industrial/barium/kg,0.295607621,0.114701681
+"soil/unspecified/ethane, 1,1,1-trichloro-, hcfc-140/kg",0.359485928,0.139487744
+"soil/unspecified/ethene, trichloro-/kg",1.756547698,0.681575708
+soil/unspecified/cyanide/kg,0.04699558,0.020269531
+soil/unspecified/methyl acrylate/kg,0.000240025,6.98735E-05
+soil/unspecified/2-phenylphenol/kg,0.011761227,0.003423803
+soil/unspecified/quinoline/kg,0.016430242,0.004782997
+soil/unspecified/propargyl alcohol/kg,0.024859274,0.007236766
+water/unspecified/ammonia/kg,184.9160601,68.0870447
+water/unspecified/benzene/kg,0.088544933,0.031785948
+water/unspecified/toluene/kg,0.173268351,0.060076882
+"water/unspecified/methane, tetrachloro-, r-10/kg",0.033911908,0.010091167
+water/unspecified/chlorine/kg,10.43611813,2.85648835
+water/unspecified/mercury/kg,0.014860997,0.004822822
+water/unspecified/lead/kg,0.912044169,0.465371634
+water/unspecified/cresol/kg,0.323461515,0.116986809
+"water/unspecified/benzene, ethyl-/kg",0.055532884,0.019702977
+water/unspecified/hydrofluoric acid/kg,2.24660339,0.330518768
+"water/unspecified/benzo(g,h,i)perylene/kg",0.014101121,0.006133255
+water/unspecified/hexane/kg,0.036245494,0.012946048
+water/unspecified/formic acid/kg,15.69962611,5.910385959
+water/unspecified/copper/kg,3.949434465,1.741816926
+water/unspecified/naphthalene/kg,0.164002206,0.083258335
+water/unspecified/methanol/kg,107.4135016,45.04214744
+water/unspecified/molybdenum(vi)/kg,6.127065691,2.492230399
+water/unspecified/ethylene glycol monoethyl ether/kg,2.124692243,0.69027217
+water/unspecified/hydrogen sulfide/kg,18.63823387,8.026684174
+water/unspecified/propylene oxide/kg,0.037485802,0.012358071
+water/unspecified/ethylene glycol/kg,14.10273103,4.690082781
+water/unspecified/formaldehyde/kg,5.221938971,2.111745193
+water/unspecified/nickel/kg,2.690634295,1.612596205
+water/unspecified/acetaldehyde/kg,10.14908778,4.35873845
+water/unspecified/peracetic acid/kg,4.75463E-05,1.59081E-05
+water/unspecified/nitrous acid/kg,412.8416783,166.7849163
+water/unspecified/nicotine/kg,2.96004E-05,8.96654E-06
+water/unspecified/vinyl acetate/kg,0.070206578,0.02275828
+"water/unspecified/benzene, hexachloro-/kg",0.001348168,0.000441013
+water/unspecified/chromium/kg,1.647220966,0.811885741
+water/unspecified/arsenic/kg,0.407417215,0.158919537
+"water/unspecified/phenol, pentachloro-/kg",0.030275705,0.008426718
+water/unspecified/creosol/kg,0.068986866,0.019165577
+water/unspecified/phenol/kg,2.554424998,1.043915832
+water/unspecified/propanal/kg,0.111988621,0.038606281
+"water/unspecified/methane, monochloro-, r-40/kg",0.018502893,0.005914505
+water/unspecified/styrene/kg,0.054988406,0.017128922
+water/unspecified/chloroform/kg,0.060355719,0.018906683
+water/unspecified/catechol/kg,0.303190852,0.132268821
+water/unspecified/polychlorinated biphenyls/kg,1.41745E-05,5.21463E-06
+water/unspecified/barium/kg,0.094877877,0.040435454
+water/unspecified/dmtt (dazomet)/kg,0.006881463,0.002940045
+water/unspecified/butanol/kg,0.576178069,0.195927359
+"water/unspecified/cresol, o-/kg",0.005076492,0.001715144
+water/unspecified/1-methyl-2-pyrrolidinone/kg,0.408861014,0.143354873
+water/unspecified/tert-butyl alcohol/kg,0.142713549,0.047076934
+water/unspecified/t-butyl methyl ether/kg,0.163131916,0.049776628
+water/unspecified/p-xylene/kg,0.000585485,0.000196431
+water/unspecified/m-xylene/kg,0.000691051,0.000231299
+water/unspecified/butadiene/kg,0.00272505,0.000981718
+water/unspecified/biphenyl/kg,0.009194813,0.00305432
+water/unspecified/o-xylene/kg,0.001261838,0.000422791
+water/unspecified/4-methyl-2-pentanone/kg,0.078850478,0.026505251
+water/unspecified/anthracene/kg,0.003680664,0.001422003
+water/unspecified/phenanthrene/kg,0.00527919,0.002070129
+water/unspecified/vanadium/kg,0.199617597,0.075889124
+"water/unspecified/ethene, tetrachloro-/kg",0.013718308,0.003559077
+water/unspecified/cumene/kg,0.005470879,0.001845763
+"water/unspecified/phenol, 2,4-dimethyl-/kg",0.010433073,0.003480011
+water/unspecified/carbon disulfide/kg,0.359618733,0.133237185
+water/unspecified/ethene/kg,0.010235301,0.003430805
+water/unspecified/propene/kg,0.026096599,0.008673802
+water/unspecified/cyclohexane/kg,0.486604559,0.16024658
+water/unspecified/acetonitrile/kg,0.115880763,0.035193363
+water/unspecified/cyanide/kg,0.077359989,0.026323119
+water/unspecified/isoprene/kg,0.021782129,0.007270548
+"water/unspecified/benzene, 1,2,4-trimethyl-/kg",0.076671978,0.051164785
+water/unspecified/selenium/kg,0.027376157,0.009405922
+water/unspecified/manganese/kg,15.13749094,8.134994557
+water/unspecified/diethanolamine/kg,18.78154208,7.509305511
+water/unspecified/pyridine/kg,0.019675194,0.005985462
+water/unspecified/dibenzofuran/kg,0.001410805,0.000676674
+"water/unspecified/benzene, chloro-/kg",0.0025367,0.000793008
+water/unspecified/diaminotoluenes/kg,0.000388417,0.000128423
+water/unspecified/dimethyl formamide/kg,0.109848004,0.035493425
+"water/unspecified/1,4-dichloro-2-butene/kg",0.000811668,0.000269301
+water/unspecified/aniline/kg,0.059142598,0.018822007
+water/unspecified/silver/kg,0.007103193,0.002634771
+water/unspecified/dicyclopentadiene/kg,0.005858173,0.001934291
+water/unspecified/chloroprene/kg,0.003246672,0.001077203
+water/unspecified/sec-butyl alcohol/kg,0.049558292,0.016319832
+"water/unspecified/cresol, p-/kg",0.010049574,0.003334317
+"water/unspecified/1,4-dioxane/kg",0.770117877,0.255376305
+water/unspecified/m-cresol/kg,0.023395143,0.007628114
+water/unspecified/octachloronaphthalene/kg,1.70811E-05,5.22058E-06
+"water/unspecified/benzene, pentachloro-/kg",8.40491E-05,2.71526E-05
+water/unspecified/acrylamide/kg,0.004635057,0.001450318
+water/unspecified/epichlorohydrin/kg,4.629870321,1.522788452
+water/unspecified/dimethylamine/kg,0.668594444,0.252293133
+water/unspecified/4-chloroaniline/kg,0.012131481,0.003707801
+water/unspecified/p-cresidine/kg,0.013732837,0.00419723
+water/unspecified/bis(2-chloroethyl)ether/kg,9.42849E-05,2.5358E-05
+water/unspecified/hexachlorocyclopentadiene/kg,4.75886E-05,6.88957E-06
+"water/unspecified/1,2-dichloroethylene/kg",0.000632398,0.000120375
+water/unspecified/nitric acid/kg,27.66939912,20.28096373
+"water/unspecified/1,1-dichloroethylene/kg",0.001917566,0.000488251
+water/unspecified/hcfc-132b/kg,0.001522834,0.000220466
+"water/unspecified/ethane, 1,1,2-trichloro-/kg",0.003682186,0.000648366
+"water/unspecified/2-chloro-1,1,1-trifluoroethane/kg",0.004187794,0.000606282
+"water/unspecified/methane, dichloro-, hcc-30/kg",0.029047022,0.008409049
+"water/unspecified/ethene, trichloro-/kg",0.008109708,0.001573252
+"water/unspecified/1,1-dichloroethane/kg",0.007666342,0.001119491
+"water/unspecified/ethane, 1,1-dichloro-1-fluoro-, hcfc-141b/kg",0.017131885,0.002480245
+"water/unspecified/ethane, 1,2-dichloro-/kg",0.265627089,0.082817344
+water/unspecified/hcfc-142b/kg,0.051470947,0.011210334
+"water/unspecified/ethane, 1,1,1-trichloro-, hcfc-140/kg",0.129886216,0.018869698
+water/unspecified/acrolein/kg,0.000131125,4.34659E-05
+"water/unspecified/hexachloro-1,3-butadiene/kg",2.60853E-05,8.57991E-06
+water/unspecified/allyl chloride/kg,5.21707E-05,1.71598E-05
+water/unspecified/nitromethane/kg,0.000826537,0.000274325
+"water/unspecified/1,4-dinitrobenzene/kg",0.000130427,4.28996E-05
+"water/unspecified/phthalate, dimethyl-/kg",0.000182597,6.00594E-05
+water/unspecified/ethyl acrylate/kg,0.000553553,0.000182071
+"water/unspecified/methane, dichlorodifluoro-, cfc-12/kg",0.004716442,0.001565687
+water/unspecified/methyl acrylate/kg,0.00091756,0.000303717
+water/unspecified/benzyl chloride/kg,0.000321656,0.0001062
+water/unspecified/dinoseb/kg,0.000469536,0.000154438
+water/unspecified/picloram/kg,0.000469536,0.000154438
+water/unspecified/bromoform/kg,0.000626048,0.000205918
+water/unspecified/acrylonitrile/kg,0.002901487,0.00098802
+water/unspecified/bromodichloromethane/kg,0.000965158,0.000317457
+"water/unspecified/2,4/2,6-toluenediisocyanate (mixture)/kg",0.004725977,0.001456056
+water/unspecified/acetophenone/kg,0.021834932,0.00725431
+"water/unspecified/ethene, chloro-/kg",0.002057008,0.000679021
+water/unspecified/methyl methacrylate/kg,0.003430257,0.001133476
+water/unspecified/nitrobenzene/kg,0.001565121,0.000514795
+water/unspecified/maleic anhydride/kg,0.001743317,0.000573968
+water/unspecified/4-nitrophenol/kg,0.001617292,0.000531955
+water/unspecified/diphenylamine/kg,0.001743284,0.000573396
+water/unspecified/isobutyraldehyde/kg,0.001930316,0.000634914
+"water/unspecified/propene, 1,3-dichloro-/kg",0.002295511,0.000755032
+"water/unspecified/2,4-dinitrophenol/kg",0.003234583,0.001063909
+water/unspecified/monochloroethane/kg,0.003270758,0.00107584
+water/unspecified/o-toluidine/kg,0.005086643,0.001673083
+"water/unspecified/phenol, 2,4-dichloro/kg",0.006782191,0.002230777
+"water/unspecified/1,2,3-trichloropropane/kg",0.007903861,0.002599714
+water/unspecified/2-chlorophenol/kg,0.010173286,0.003346166
+water/unspecified/butyraldehyde/kg,1.729620519,0.573095207
+water/unspecified/triethyl amine/kg,0.081247778,0.024902301
+"water/unspecified/propane, 1,2-dichloro-/kg",0.020372149,0.006689915
+water/unspecified/bromine/kg,0.022106903,0.007271375
+water/unspecified/m-dinitrobenzene/kg,0.023033364,0.007576063
+water/unspecified/crotonaldehyde/kg,0.030050323,0.00988406
+water/unspecified/hydroquinone/kg,0.129680351,0.04295267
+water/unspecified/2-methoxyethanol/kg,0.036858599,0.012123417
+"water/unspecified/ethane, 1,1,2-trichloro-1,2,2-trifluoro-, cfc-113/kg",0.039780159,0.013084367
+water/unspecified/ethylene oxide/kg,0.04099794,0.013485141
+"water/unspecified/4,4'-methylenedianiline/kg",0.055744393,0.018335274
+water/unspecified/bisphenol a/kg,0.093193237,0.030734242
+water/unspecified/cumene hydroperoxide/kg,0.1043414,0.034319652
+water/unspecified/acrylic acid/kg,0.113391067,0.037297217
+water/unspecified/2-mercaptobenzothiazole/kg,0.143279,0.047168664
+water/unspecified/oxiranemethanol/kg,0.405444594,0.133357587
+water/unspecified/allyl alcohol/kg,0.693436355,0.228844118
+water/unspecified/cyclohexanol/kg,10.44300899,3.434882344
+water/unspecified/decabromodiphenyl oxide/kg,0.000935532,0.000280482
+water/unspecified/methyl iodide/kg,0.000140052,4.65146E-05
+"water/unspecified/1,4-dichlorobenzene/kg",0.000175065,5.81433E-05
+"water/unspecified/2,2-bis(4-hydroxy-3,5-dibromophenyl)propane/kg",0.000245092,8.14006E-05
+water/unspecified/butyl acrylate/kg,0.000593464,0.000195995
+water/unspecified/n-methylolacrylamide/kg,0.000490183,0.000162801
+water/unspecified/phthalic anhydride/kg,0.000960251,0.000302514
+"water/unspecified/1,2-dichlorobenzene/kg",0.008753268,0.002907163
+water/unspecified/p-phenylenediamine/kg,0.008753268,0.002907163
+"water/unspecified/phthalate, dioctyl-/kg",0.069006846,0.020919835
+water/unspecified/hydrazine/kg,2.52237E-06,8.37671E-07
+water/unspecified/ametryn/kg,1.26118E-05,4.18835E-06
+water/unspecified/2-nitrophenol/kg,0.000133685,4.43966E-05
+water/unspecified/cobalt/kg,0.341110818,0.318580884
+water/unspecified/sodium formate/kg,0.671515329,0.275558401
+water/unspecified/2-phenylphenol/kg,4.17784E-05,1.56879E-05
+"water/unspecified/toluene-2,4-diisocyante/kg",0.000374519,0.000112763
+water/unspecified/ethylenethiourea/kg,4.65185E-05,2.22635E-05
+water/unspecified/antimony/kg,0.122770948,0.060588904
+water/unspecified/beryllium/kg,0.010649165,0.00341548
+water/unspecified/cadmium/kg,0.01461218,0.007388794
+water/unspecified/aluminum oxide/kg,0.011880446,0.003883723
+"water/unspecified/phthalate, dibutyl-/kg",9.82739E-07,3.81322E-07
+"water/unspecified/methane, trichlorofluoro-, cfc-11/kg",0.000506505,0.000192817
+water/unspecified/acetamide/kg,0.007034793,0.00267801
+soil/industrial/nitroglycerin/kg,0.476662759,0.135392694
+"soil/industrial/phthalate, dibutyl-/kg",0.116321676,0.033040352
+soil/unspecified/phosphorus/kg,0.003353869,0.000952643
+water/unspecified/nitroglycerin/kg,0.196001482,0.055672839
+"water/unspecified/7-oxabicyclo[2,2,1]heptane-2,3-dicarboxylic acid, dipotassium salt/kg",0.054254766,0.015410684
+water/unspecified/2-nitropropane/kg,1.69387E-05,4.81133E-06
+"water/unspecified/toluene, 2,4-dinitro-/kg",6.77549E-06,1.92453E-06
+//value added/usd,945721291.6,361277658.8
+"resource/groundwater/water, fresh/m3",2226690.791,875227.5889
+"resource/surface water/water, fresh/m3",12008104.35,4971731.795
+"water/surface water/water, fresh/m3",12271133.03,5160753.194
+"resource/surface water/water, saline/m3",3542094.242,1400229.748
+"water/surface water/water, saline/m3",3274061.526,1289804.746

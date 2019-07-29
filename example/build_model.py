@@ -3,6 +3,7 @@ import electricitylci
 
 from electricitylci.globals import output_dir
 from electricitylci.model_config import model_name
+from electricitylci.utils import fill_default_provider_uuids
 
 #Optionally create a US avg generation database
 #US_generation_db = electricitylci.get_generation_process_df(regions='US')
@@ -31,7 +32,8 @@ all_gen_mix_db = electricitylci.get_generation_mix_process_df(source='egrid',reg
 #Write it to csv for further analysis or review
 all_gen_mix_db.to_csv(output_dir+model_name+'_all_gen_mix_db.csv')
 #Write it to a dictionary
-all_gen_mix_dict = electricitylci.write_generation_mix_database_to_dict(all_gen_mix_db,regions='all')
+all_gen_dict=electricitylci.write_process_dicts_to_jsonld(all_gen_dict)
+all_gen_mix_dict = electricitylci.write_generation_mix_database_to_dict(all_gen_mix_db,all_gen_dict,regions='all')
 
 #Get surplus and consumption mix dictionary
 sur_con_mix_dict = electricitylci.write_surplus_pool_and_consumption_mix_dict()
@@ -39,4 +41,10 @@ sur_con_mix_dict = electricitylci.write_surplus_pool_and_consumption_mix_dict()
 dist_dict = electricitylci.write_distribution_dict()
 
 #Write them all to json-ld
-electricitylci.write_process_dicts_to_jsonld(all_gen_dict,all_gen_mix_dict,sur_con_mix_dict,dist_dict)
+all_gen_mix_dict = electricitylci.write_process_dicts_to_jsonld(all_gen_mix_dict)
+sur_con_mix_dict = fill_default_provider_uuids(sur_con_mix_dict,all_gen_mix_dict)
+sur_con_mix_dict = electricitylci.write_process_dicts_to_jsonld(sur_con_mix_dict)
+sur_con_mix_dict = fill_default_provider_uuids(sur_con_mix_dict,sur_con_mix_dict,all_gen_mix_dict)
+sur_con_mix_dict = electricitylci.write_process_dicts_to_jsonld(sur_con_mix_dict)
+dist_dict = fill_default_provider_uuids(dist_dict,sur_con_mix_dict)
+dist_dict = electricitylci.write_process_dicts_to_jsonld(dist_dict)
