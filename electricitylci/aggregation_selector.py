@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
+import logging
 
+module_logger = logging.getLogger("aggregation_selector.py")
 
 
 def subregion_col(subregion="BA"):
+    available_options=["all","NERC","BA","US","FERC","EIA"]
+    if subregion not in  available_options:
+        module_logger.warning("Invalid subregion specified - US selected")
+        region_agg = "US"
     if subregion == "all":
-        region_agg = ["EIA_region"]
+        region_agg = ["Subregion"]
     elif subregion == "NERC":
         region_agg = ["NERC"]
     elif subregion == "BA":
