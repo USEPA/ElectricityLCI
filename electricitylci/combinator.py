@@ -74,7 +74,7 @@ def fill_nans(df, key_column="FacilityID", target_columns=[], dropna=True):
             "State",
         ]
     key_df = (
-        df[[key_column] + target_columns]
+        df.reindex([key_column] + target_columns)
         .drop_duplicates(subset=key_column)
         .set_index(key_column)
     )
@@ -391,6 +391,8 @@ if __name__ == "__main__":
     )
     plant_df = altg.create_generation_process_df()
     plant_df["stage_code"] = "Power plant"
+    print(plant_df.columns)
+    print(upstream_df.columns)
     combined_df = concat_clean_upstream_and_plant(plant_df, upstream_df)
     canadian_inventory = import_impacts.generate_canadian_mixes(combined_df)
     combined_df = pd.concat([combined_df, canadian_inventory])
