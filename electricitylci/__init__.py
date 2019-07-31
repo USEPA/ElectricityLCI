@@ -8,7 +8,10 @@ namestr=(
         f"{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
 )
 
-logging.basicConfig(level=logging.INFO)
+formatter = logging.Formatter('%(levelname)s:%(filename)s:%(funcName)s:%(message)s')
+logging.basicConfig(format='%(levelname)s:%(filename)s:%(funcName)s:%(message)s',level=logging.INFO)
+logger = logging.getLogger("electricitylci")
+
 
 def get_generation_process_df(source="egrid", regions="all"):
     """
@@ -55,13 +58,13 @@ def get_generation_process_df(source="egrid", regions="all"):
             egrid_facilities_to_include=egrid_facilities_to_include
         )
 
-    generation_process_df, final_db = create_generation_process_df(
+    generation_process_df = create_generation_process_df(
         # electricity_for_selected_egrid_facilities,
         generation_data,
         emissions_and_waste_for_selected_egrid_facilities,
         subregion=regions,
     )
-    return generation_process_df, final_db
+    return generation_process_df
 
 
 def get_generation_mix_process_df(source="egrid", regions="all"):
@@ -250,6 +253,7 @@ def get_upstream_process_df():
     import electricitylci.natural_gas_upstream as ng
     import electricitylci.petroleum_upstream as petro
     import electricitylci.nuclear_upstream as nuke
+    import electricitylci.power_plant_construction as const
     from electricitylci.combinator import concat_map_upstream_databases
     from electricitylci.model_config import eia_gen_year
     print("Generating upstream inventories...")
@@ -257,8 +261,9 @@ def get_upstream_process_df():
     ng_df = ng.generate_upstream_ng(eia_gen_year)
     petro_df = petro.generate_petroleum_upstream(eia_gen_year)
     nuke_df = nuke.generate_upstream_nuc(eia_gen_year)
+    const = const.generate_power_plant_construction(eia_gen_year)
     upstream_df = concat_map_upstream_databases(
-        coal_df, ng_df, petro_df, nuke_df
+        coal_df, ng_df, petro_df, nuke_df,const
     )
     return upstream_df
 
@@ -361,7 +366,7 @@ def get_alternate_gen_plus_netl():
     print("Getting reported emissions for generators...")
     gen_df = alt_gen.create_generation_process_df()
     water_df = water.generate_plant_water_use(eia_gen_year)
-    gen_df = pd.concat([gen_df,water_df,hydro_df])
+    gen_df = pd.concat([gen_df,water_df,hydro_df],ignore_index=True)
     combined_gen = concat_clean_upstream_and_plant(gen_df, netl_gen)
     return combined_gen
 

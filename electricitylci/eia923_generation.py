@@ -19,6 +19,45 @@ from electricitylci.model_config import (
 from electricitylci.eia860_facilities import eia860_balancing_authority
 from functools import lru_cache
 
+EIA923_PAGES = {
+    "1": "Page 1 Generation and Fuel Data",
+    "2": "Page 2 Stocks Data",
+    "2a": "Page 2 Oil Stocks Data",
+    "2b": "Page 2 Coal Stocks Data",
+    "2c": "Page 2 Petcoke Stocks Data",
+    "3": "Page 3 Boiler Fuel Data",
+    "4": "Page 4 Generator Data",
+    "5": "Page 5 Fuel Receipts and Costs",
+    "6": "Page 6 Plant Frame",
+    "7": "Page 7 File Layout",
+    "8c": "8C Air Emissions Control Info",
+}
+
+EIA923_HEADER_ROWS = {
+    "1": 5,
+    "2": 5,
+    "2a": 5,
+    "2b": 5,
+    "2c": 5,
+    "3": 5,
+    "4": 5,
+    "5": 4,
+    "6": 5,
+    "8c": 4,
+}
+
+
+def _clean_columns(df):
+    "Remove special characters and convert column names to snake case"
+    df.columns = (
+        df.columns.str.lower()
+        .str.replace("[^0-9a-zA-Z\-]+", " ")
+        .str.replace("-", "")
+        .str.strip()
+        .str.replace(" ", "_")
+    )
+    return df
+
 
 def eia923_download(year, save_path):
     """
@@ -43,12 +82,13 @@ def eia923_download(year, save_path):
         download_unzip(archive_url, save_path)
 
 
-def load_eia923_excel(eia923_path):
-
+def load_eia923_excel(eia923_path, page="1"):
+    page_to_load = EIA923_PAGES[page]
+    header_row = EIA923_HEADER_ROWS[page]
     eia = pd.read_excel(
         eia923_path,
-        sheet_name="Page 1 Generation and Fuel Data",
-        header=5,
+        sheet_name=page_to_load,
+        header=header_row,
         na_values=["."],
         dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
     )
@@ -342,13 +382,12 @@ def build_generation_data(
 
     df_list = []
     for year in generation_years:
+        gen_fuel_data = eia923_download_extract(year)
+        primary_fuel = eia923_primary_fuel(gen_fuel_data)
+        gen_efficiency = calculate_plant_efficiency(gen_fuel_data)
+
+        final_gen_df = gen_efficiency.merge(primary_fuel, on="Plant Id")
         if not egrid_facilities_to_include:
-            gen_fuel_data = eia923_download_extract(year)
-            primary_fuel = eia923_primary_fuel(gen_fuel_data)
-            gen_efficiency = calculate_plant_efficiency(gen_fuel_data)
-
-            final_gen_df = gen_efficiency.merge(primary_fuel, on="Plant Id")
-
             if include_only_egrid_facilities_with_positive_generation:
                 final_gen_df = final_gen_df.loc[
                     final_gen_df["Net Generation (Megawatthours)"] >= 0, :
@@ -391,3 +430,191 @@ def build_generation_data(
     all_years_gen.reset_index(drop=True, inplace=True)
     all_years_gen["Year"] = all_years_gen["Year"].astype("int32")
     return all_years_gen
+
+
+def eia923_generation_and_fuel(year):
+    expected_923_folder = join(data_dir, "f923_{}".format(year))
+
+    if not os.path.exists(expected_923_folder):
+        print("Downloading EIA-923 files")
+        eia923_download(year=year, save_path=expected_923_folder)
+
+        eia923_path, eia923_name = find_file_in_folder(
+            folder_path=expected_923_folder,
+            file_pattern_match=["2_3_4_5", "xlsx"],
+            return_name=True,
+        )
+        # Save as csv for easier access in future
+        csv_fn = eia923_name.split(".")[0] + "page_1.csv"
+        csv_path = join(expected_923_folder, csv_fn)
+        eia = load_eia923_excel(expected_923_folder, page="1")
+        eia.to_csv(csv_path, index=False)
+    else:
+        all_files = os.listdir(expected_923_folder)
+        # Check for both csv and year<_Final> in case multiple years
+        # or other csv files exist
+        csv_file = [
+            f
+            for f in all_files
+            if ".csv" in f and "{}_Final".format(year) in f and "page_1" in f
+        ]
+
+        # Read and return the existing csv file if it exists
+        if csv_file:
+            print("Loading {} EIA-923 data from csv file".format(year))
+            fn = csv_file[0]
+            csv_path = join(expected_923_folder, fn)
+            eia = pd.read_csv(
+                csv_path,
+                dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
+            )
+        else:
+            print(
+                "Loading data from previously downloaded excel file,",
+                " how did the csv file get deleted?",
+            )
+            eia923_path, eia923_name = find_file_in_folder(
+                folder_path=expected_923_folder,
+                file_pattern_match=["2_3_4_5", "xlsx"],
+                return_name=True,
+            )
+
+            # # would be more elegent with glob but this works to identify the
+            # # Schedule_2_3_4_5 file
+            # for f in all_files:
+            #     if '2_3_4_5' in f:
+            #         gen_file = f
+            # eia923_path = join(expected_923_folder, gen_file)
+            eia = load_eia923_excel(eia923_path, page="1")
+            csv_fn = eia923_name.split(".")[0] + "_page_1.csv"
+            csv_path = join(expected_923_folder, csv_fn)
+            eia.to_csv(csv_path, index=False)
+    eia = _clean_columns(eia)
+    return eia
+
+
+def eia923_boiler_fuel(year):
+    expected_923_folder = join(data_dir, "f923_{}".format(year))
+
+    if not os.path.exists(expected_923_folder):
+        print("Downloading EIA-923 files")
+        eia923_download(year=year, save_path=expected_923_folder)
+
+        eia923_path, eia923_name = find_file_in_folder(
+            folder_path=expected_923_folder,
+            file_pattern_match=["2_3_4_5", "xlsx"],
+            return_name=True,
+        )
+        # Save as csv for easier access in future
+        csv_fn = eia923_name.split(".")[0] + "page_3.csv"
+        csv_path = join(expected_923_folder, csv_fn)
+        eia = load_eia923_excel(expected_923_folder, page="3")
+        eia.to_csv(csv_path, index=False)
+    else:
+        all_files = os.listdir(expected_923_folder)
+        # Check for both csv and year<_Final> in case multiple years
+        # or other csv files exist
+        csv_file = [
+            f
+            for f in all_files
+            if ".csv" in f and "{}_Final".format(year) in f and "page_3" in f
+        ]
+
+        # Read and return the existing csv file if it exists
+        if csv_file:
+            print("Loading {} EIA-923 data from csv file".format(year))
+            fn = csv_file[0]
+            csv_path = join(expected_923_folder, fn)
+            eia = pd.read_csv(
+                csv_path,
+                dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
+            )
+        else:
+            print(
+                "Loading data from previously downloaded excel file,",
+                " how did the csv file get deleted?",
+            )
+            eia923_path, eia923_name = find_file_in_folder(
+                folder_path=expected_923_folder,
+                file_pattern_match=["2_3_4_5", "xlsx"],
+                return_name=True,
+            )
+
+            # # would be more elegent with glob but this works to identify the
+            # # Schedule_2_3_4_5 file
+            # for f in all_files:
+            #     if '2_3_4_5' in f:
+            #         gen_file = f
+            # eia923_path = join(expected_923_folder, gen_file)
+            eia = load_eia923_excel(eia923_path, page="3")
+            csv_fn = eia923_name.split(".")[0] + "_page_3.csv"
+            csv_path = join(expected_923_folder, csv_fn)
+            eia.to_csv(csv_path, index=False)
+    eia = _clean_columns(eia)
+    return eia
+
+
+def eia923_sched8_aec(year):
+    expected_923_folder = join(data_dir, "f923_{}".format(year))
+
+    if not os.path.exists(expected_923_folder):
+        print("Downloading EIA-923 files")
+        eia923_download(year=year, save_path=expected_923_folder)
+
+        eia923_path, eia923_name = find_file_in_folder(
+            folder_path=expected_923_folder,
+            file_pattern_match=["Schedule_8", "xlsx"],
+            return_name=True,
+        )
+        # Save as csv for easier access in future
+        csv_fn = eia923_name.split(".")[0] + "page_8c.csv"
+        csv_path = join(expected_923_folder, csv_fn)
+        eia = load_eia923_excel(expected_923_folder, page="8c")
+        eia.to_csv(csv_path, index=False)
+    else:
+        all_files = os.listdir(expected_923_folder)
+        # Check for both csv and year<_Final> in case multiple years
+        # or other csv files exist
+        csv_file = [
+            f
+            for f in all_files
+            if ".csv" in f and "{}_Final".format(year) in f and "page_8c" in f
+        ]
+
+        # Read and return the existing csv file if it exists
+        if csv_file:
+            print("Loading {} EIA-923 data from csv file".format(year))
+            fn = csv_file[0]
+            csv_path = join(expected_923_folder, fn)
+            eia = pd.read_csv(
+                csv_path,
+                dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
+            )
+        else:
+            print(
+                "Loading data from previously downloaded excel file,",
+                " how did the csv file get deleted?",
+            )
+            eia923_path, eia923_name = find_file_in_folder(
+                folder_path=expected_923_folder,
+                file_pattern_match=["Schedule_8", "xlsx"],
+                return_name=True,
+            )
+
+            # # would be more elegent with glob but this works to identify the
+            # # Schedule_2_3_4_5 file
+            # for f in all_files:
+            #     if '2_3_4_5' in f:
+            #         gen_file = f
+            # eia923_path = join(expected_923_folder, gen_file)
+            eia = load_eia923_excel(eia923_path, page="8c")
+            csv_fn = eia923_name.split(".")[0] + "_page_8c.csv"
+            csv_path = join(expected_923_folder, csv_fn)
+            eia.to_csv(csv_path, index=False)
+    eia = _clean_columns(eia)
+    return eia
+
+
+if __name__ == "__main__":
+    rawr = eia923_sched8_aec(2016)
+

@@ -3,20 +3,23 @@
 *.pk
 electricitylci/__pycache__/
 *.zip
-
+/*.csv
 # IDE files
 .idea/
 .vscode/
-
+.spyproject/
+ElectricityLCI.sln
+ElectricityLCI.pyproj
 # egg files
 *.egg-info/
-
+.vs/
 .DS_Store
 
 # notebooks
 *.ipynb
 
 # downloaded excel files and csv transformations
+<<<<<<< HEAD
 electricitylci/data/**/*.*
 .spyproject/codestyle.ini
 .spyproject/encoding.ini
@@ -40,3 +43,11 @@ example/gen_mix_dict.pickle
 combined_df.csv
 electricitylci/modelconfig/ELCI_1_config.json
 electricitylci/modelconfig/ELCI_1_config.json
+=======
+electricitylci/data/*/
+
+#output files
+electricitylci/output/*
+example/*.csv
+example/*.pickle
+>>>>>>> 4b926eafb43088ec911d3a99ded4d16f37ec44a4

@@ -4,27 +4,111 @@ from electricitylci.globals import output_dir, data_dir
 import electricitylci.alt_generation as altg
 import electricitylci.import_impacts as import_impacts
 from electricitylci.model_config import eia_gen_year
+import logging
+
+#I added this section to populate a ba_codes variable that could be used
+#by other modules without having to re-read the excel files. The purpose
+#is to try and provide a common source for balancing authority names, as well
+#as FERC an EIA region names.
+module_logger = logging.getLogger("combinator.py")
+ba_codes = pd.concat(
+    [
+        pd.read_excel(
+            f"{data_dir}/BA_Codes_930.xlsx", header=4, sheetname="US"
+        ),
+        pd.read_excel(
+            f"{data_dir}/BA_Codes_930.xlsx", header=4, sheetname="Canada"
+        ),
+    ]
+)
+ba_codes.rename(
+    columns={
+        "etag ID": "BA_Acronym",
+        "Entity Name": "BA_Name",
+        "NCR_ID#": "NRC_ID",
+        "Region": "Region",
+    },
+    inplace=True,
+)
+ba_codes.set_index("BA_Acronym", inplace=True)
 
 
-def fill_nans(df, key_column = "FacilityID", target_columns=[],dropna=True):
+def fill_nans(df, key_column="FacilityID", target_columns=[], dropna=True):
+    """Fills nan values for the specified target columns by using the data from
+    other rows, using the key_column for matches. There is an extra step
+    to fill remaining nans for the state column because the module to calculate
+    transmission and distribution losses needs values in the state column to
+    work.
+    
+    Parameters
+    ----------
+    df : dataframe
+        Dataframe containing nans and at a minimum the columns key_column and
+        target_columns
+    key_column : str, optional
+        The column to match for the data to fill target_columns, by default "FacilityID"
+    target_columns : list, optional
+        A list of columns with nans to fill, by default []. If empty, the function
+        will use a pre-defined set of columns.
+    dropna : bool, optional
+        After nans are filled, drop rows that still contain nans in the 
+        target columns, by default True
+    
+    Returns
+    -------
+    dataframe: hopefully with all of the nans filled.
+    """
+    from electricitylci.eia860_facilities import eia860_balancing_authority
+
     if not target_columns:
-        target_columns=[
-                "Balancing Authority Code",
-                "Balancing Authority Name",
-                "FRS_ID",
-                "FuelCategory",
-                "NERC",
-                "PrimaryFuel",
-                "PercentGenerationfromDesignatedFuelCategory",
-                "eGRID_ID",
-                "Subregion"
-                ]
-    key_df = df[[key_column]+target_columns].drop_duplicates(subset="FacilityID").set_index("FacilityID")
-    for col in target_columns:
-        df.loc[df[col].isnull(),col]=df.loc[df[col].isnull(),"FacilityID"].map(key_df[col])
+        target_columns = [
+            "Balancing Authority Code",
+            "Balancing Authority Name",
+            "FuelCategory",
+            "NERC",
+            "PercentGenerationfromDesignatedFuelCategory",
+            "eGRID_ID",
+            "Subregion",
+            "FERC_Region",
+            "EIA_Region",
+            "State",
+        ]
+    confirmed_target = []
+    for x in target_columns:
+        if x in df.columns:
+            confirmed_target.append(x)
+        else:
+            module_logger.warning(f"Column {x} is not in the dataframe")
+    if key_column not in df.columns:
+        module_logger.warning(f"Key column '{key_column}' is not in the dataframe")
+        raise KeyError
+#    key_df = (
+#        df[[key_column] + target_columns]
+#        .drop_duplicates(subset=key_column)
+#        .set_index(key_column)
+#    )
+    for col in confirmed_target:
+        key_df = (
+                df[[key_column,col]]
+                .dropna()
+                .drop_duplicates(subset=key_column)
+                .set_index(key_column)
+        )
+        df.loc[df[col].isnull(), col] = df.loc[
+                df[col].isnull(), key_column
+        ].map(key_df[col])
+    plant_ba = eia860_balancing_authority(eia_gen_year).set_index("Plant Id")
+    plant_ba.index = plant_ba.index.astype(int)
+    if "State" not in df.columns:
+        df["State"]=float("nan")
+        confirmed_target.append("State")
+    df.loc[df["State"].isna(), "State"] = df.loc[
+        df["State"].isna(), "eGRID_ID"
+    ].map(plant_ba["State"])
     if dropna:
-        df.dropna(subset=target_columns,inplace=True)
+        df.dropna(subset=confirmed_target, inplace=True)
     return df
+
 
 def concat_map_upstream_databases(*arg):
     """
@@ -73,24 +157,35 @@ def concat_map_upstream_databases(*arg):
         usecols=[
             1,
             4,
-            9,
-            13,
-            19,
-            17,
+            10,
+            14,
+            20,
+            18,
         ],  # FlowName_netl, Compartment_path_netl, CAS, Compartment_path, Flowable, Flow UUID
     )
-
-    upstream_df = upstream_df.groupby(
-        [
+    if "Unit" in upstream_df.columns.values:
+        groupby_cols = [
             "fuel_type",
             "stage_code",
             "FlowName",
             "Compartment",
             "plant_id",
             "Compartment_path",
-        ],
-        as_index=False,
-    ).agg({"FlowAmount": "sum", "quantity": "mean", "Electricity": "mean"})
+            "Unit",
+        ]
+        upstream_df["Unit"].fillna("kg", inplace=True)
+    else:
+        groupby_cols = [
+            "fuel_type",
+            "stage_code",
+            "FlowName",
+            "Compartment",
+            "plant_id",
+            "Compartment_path",
+        ]
+    upstream_df = upstream_df.groupby(groupby_cols, as_index=False).agg(
+        {"FlowAmount": "sum", "quantity": "mean", "Electricity": "mean"}
+    )
     upstream_mapped_df = pd.merge(
         left=upstream_df,
         right=netl_epa_flows,
@@ -112,7 +207,8 @@ def concat_map_upstream_databases(*arg):
         columns=mapped_column_dict, copy=False
     )
     upstream_mapped_df.drop_duplicates(
-        subset=["plant_id","FlowName", "Compartment_path", "FlowAmount"], inplace=True
+        subset=["plant_id", "FlowName", "Compartment_path", "FlowAmount"],
+        inplace=True,
     )
     upstream_mapped_df.dropna(subset=["FlowName"], inplace=True)
     garbage = upstream_mapped_df.loc[
@@ -126,7 +222,6 @@ def concat_map_upstream_databases(*arg):
         "FuelCategory"
     ].str.upper()
     upstream_mapped_df["ElementaryFlowPrimeContext"] = "emission"
-    upstream_mapped_df["Unit"] = "kg"
     upstream_mapped_df["Source"] = "netl"
     upstream_mapped_df["Year"] = eia_gen_year
     return upstream_mapped_df
@@ -155,6 +250,7 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
         "Balancing Authority Name",
         "Subregion",
     ]
+
     up_df = up_df.merge(
         right=pl_df[["eGRID_ID"] + region_cols].drop_duplicates(),
         left_on="plant_id",
@@ -163,9 +259,36 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
     )
     up_df.dropna(subset=region_cols + ["Electricity"], inplace=True)
     combined_df = pd.concat([pl_df, up_df], ignore_index=True)
-    combined_df.drop(columns=["plant_id"], inplace=True)
+    combined_df["Balancing Authority Name"] = combined_df[
+        "Balancing Authority Code"
+    ].map(ba_codes["BA_Name"])
+    combined_df["FERC_Region"] = combined_df["Balancing Authority Code"].map(
+        ba_codes["FERC_Region"]
+    )
+    combined_df["EIA_Region"] = combined_df["Balancing Authority Code"].map(
+        ba_codes["EIA_Region"]
+    )
+    categories_to_delete = [
+        "plant_id",
+        "FuelCategory_right",
+        "Net Generation (MWh)",
+        "PrimaryFuel_right",
+    ]
+    for x in categories_to_delete:
+        try:
+            combined_df.drop(columns=[x], inplace=True)
+        except KeyError:
+            module_logger.warning(f"Error deleting column {x}")
     combined_df["FacilityID"] = combined_df["eGRID_ID"]
     combined_df = fill_nans(combined_df)
+    # The hard-coded cutoff is a workaround for now. Changing the parameter
+    # to 0 in the config file allowed the inventory to be kept for generators
+    # that are now being tagged as mixed.
+    generation_filter = (
+        combined_df["PercentGenerationfromDesignatedFuelCategory"] < 0.9
+    )
+    combined_df.loc[generation_filter, "FuelCategory"] = "MIXED"
+    combined_df.loc[generation_filter, "PrimaryFuel"] = "Mixed Fuel Type"
     return combined_df
 
 
@@ -224,7 +347,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
         "Balancing Authority Code",
         "Balancing Authority Name",
         "Electricity",
-        "FRS_ID",
+        #        "FRS_ID",
         "NERC",
         "Subregion",
     ]
@@ -239,7 +362,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
         right_on="eGRID_ID",
         how="left",
     )
-    fuel_df.dropna(subset=["FRS_ID"], inplace=True)
+    fuel_df.dropna(subset=["Electricity"], inplace=True)
     fuel_df["Source"] = "eia"
     fuel_df = add_temporal_correlation_score(fuel_df)
     fuel_df["DataCollection"] = 5
@@ -247,7 +370,16 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     fuel_df["TechnologicalCorrelation"] = 1
     fuel_df["ReliabilityScore"] = 1
     fuel_df["ElementaryFlowPrimeContext"] = "input"
+    fuel_cat_key = (
+        gen_df[["FacilityID", "FuelCategory"]]
+        .drop_duplicates(subset="FacilityID")
+        .set_index("FacilityID")
+    )
+    fuel_df["FuelCategory"] = fuel_df["FacilityID"].map(
+        fuel_cat_key["FuelCategory"]
+    )
     gen_plus_up_df = pd.concat([gen_df, fuel_df], ignore_index=True)
+    gen_plus_up_df = fill_nans(gen_plus_up_df)
     return gen_plus_up_df
 
 

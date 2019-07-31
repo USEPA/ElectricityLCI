@@ -12,12 +12,31 @@ import numpy as np
 from electricitylci.globals import output_dir
 from datetime import datetime
 from electricitylci.dqi import lookup_score_with_bound_key
-from scipy.stats import gmean, lognorm, t, norm
+from scipy.stats import t, norm
 import ast
 import logging
 
+module_logger = logging.getLogger("alt_generation.py")
+
 
 def aggregate_facility_flows(df):
+    """Thus function aggregates flows from the same source (NEI, netl, etc.) within
+    a facility. The main problem this solves is that if several emissions
+    are mapped to a single federal elementary flow (CO2 biotic, CO2 land use change, 
+    etc.) then those were showing up as separate emissions in the inventory
+    and artificially inflating the number of emissions for uncertainty 
+    calculations.
+    
+    Parameters
+    ----------
+    df : dataframe
+        dataframe with facility-level emissions that might contain duplicate
+        emission species within the facility.
+    
+    Returns
+    -------
+    dataframe
+    """
     emission_compartments = [
         "emission/air",
         "emission/water",
@@ -27,43 +46,15 @@ def aggregate_facility_flows(df):
         "water",
         "soil",
         "ground",
+        "waste",
     ]
     groupby_cols = [
         "FuelCategory",
         "FacilityID",
         "Electricity",
-        "FlowUUID",
+        "FlowName",
         "Source",
         "Compartment_path",
-    ]
-    non_group_cols = [
-        "Age",
-        "Balancing Authority Code",
-        "Balancing Authority Name",
-        "CAS",
-        "Compartment",
-        "DataCollection",
-        "ElementaryFlowPrimeContext",
-        "FRS_ID",
-        "FlowAmount",
-        "FlowName",
-        "FlowName_netl",
-        "FlowUUID",
-        "GeographicalCorrelation",
-        "NERC",
-        "PercentGenerationfromDesignatedFuelCategory",
-        "PrimaryFuel",
-        "ReliabilityScore",
-        "Source",
-        "SourceListName",
-        "Subregion",
-        "TechnologicalCorrelation",
-        "TemporalCorrelation",
-        "Unit",
-        "Year",
-        "eGRID_ID",
-        "quantity",
-        "stage_code",
     ]
     emissions = df["Compartment"].isin(emission_compartments)
     df_emissions = df[emissions]
@@ -87,7 +78,9 @@ def aggregate_facility_flows(df):
         group_db_merge.drop(columns=delete_cols, inplace=True)
     except KeyError:
         pass
-    df = pd.concat([df_nonemissions,df_red, group_db_merge], ignore_index=True)
+    df = pd.concat(
+        [df_nonemissions, df_red, group_db_merge], ignore_index=True
+    )
     return df
 
 
@@ -109,7 +102,7 @@ def _combine_sources(p_series, df, cols, source_limit=None):
     ----------
     dataframe
     """
-    logging.info(
+    module_logger.debug(
         f"Combining sources for {str(df.loc[p_series.index[0],cols].values)}"
     )
     source_list = list(np.unique(p_series))
@@ -165,15 +158,9 @@ def add_data_collection_score(db, elec_df, subregion="BA"):
         are 'all', 'NERC', 'BA', 'US', by default 'BA'
     """
     from electricitylci.dqi import data_collection_lower_bound_to_dqi
+    from electricitylci.aggregation_selector import subregion_col
 
-    if subregion == "all":
-        region_agg = ["eia_region"]
-    elif subregion == "NERC":
-        region_agg = ["NERC"]
-    elif subregion == "BA":
-        region_agg = ["Balancing Authority Code"]
-    elif subregion == "US":
-        region_agg = None
+    region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"]
     if region_agg:
         groupby_cols = region_agg + fuel_agg + ["Year"]
@@ -232,17 +219,12 @@ def calculate_electricity_by_source(db, subregion="BA"):
         are 'all', 'NERC', 'BA', 'US', by default 'BA'
     """
 
-    if subregion == "all":
-        region_agg = ["eia_region"]
-    elif subregion == "NERC":
-        region_agg = ["NERC"]
-    elif subregion == "BA":
-        region_agg = ["Balancing Authority Code"]
-    elif subregion == "US":
-        region_agg = None
+    from electricitylci.aggregation_selector import subregion_col
+
+    region_agg = subregion_col(subregion)
+
     fuel_agg = ["FuelCategory"]
     if region_agg:
-        base_cols = region_agg + fuel_agg
         groupby_cols = (
             region_agg
             + fuel_agg
@@ -250,7 +232,6 @@ def calculate_electricity_by_source(db, subregion="BA"):
         )
         elec_groupby_cols = region_agg + fuel_agg + ["Year"]
     else:
-        base_cols = fuel_agg
         groupby_cols = fuel_agg + [
             "Year",
             "stage_code",
@@ -289,31 +270,32 @@ def calculate_electricity_by_source(db, subregion="BA"):
         how="left",
     )
     db_multiple_sources = db.loc[db["source_string"].isna(), :]
-    source_df = pd.DataFrame(
-        db_multiple_sources.groupby(groupby_cols)[["Source"]].apply(
-            combine_source_lambda
-        ),
-        columns=["source_list"],
-    )
-    source_df[["source_list", "source_string"]] = pd.DataFrame(
-        source_df["source_list"].values.tolist(), index=source_df.index
-    )
-    source_df.reset_index(inplace=True)
-    db_multiple_sources.drop(
-        columns=["source_list", "source_string"], inplace=True
-    )
-    old_index = db_multiple_sources.index
-    db_multiple_sources = db_multiple_sources.merge(
-        right=source_df,
-        left_on=groupby_cols,
-        right_on=groupby_cols,
-        how="left",
-    )
-    db_multiple_sources.index = old_index
-    # db[["source_string","source_list"]].fillna(db_multiple_sources[["source_string","source_list"]],inplace=True)
-    db.loc[
-        db["source_string"].isna(), ["source_string", "source_list"]
-    ] = db_multiple_sources[["source_string", "source_list"]]
+    if len(db_multiple_sources) > 0:
+        source_df = pd.DataFrame(
+            db_multiple_sources.groupby(groupby_cols)[["Source"]].apply(
+                combine_source_lambda
+            ),
+            columns=["source_list"],
+        )
+        source_df[["source_list", "source_string"]] = pd.DataFrame(
+            source_df["source_list"].values.tolist(), index=source_df.index
+        )
+        source_df.reset_index(inplace=True)
+        db_multiple_sources.drop(
+            columns=["source_list", "source_string"], inplace=True
+        )
+        old_index = db_multiple_sources.index
+        db_multiple_sources = db_multiple_sources.merge(
+            right=source_df,
+            left_on=groupby_cols,
+            right_on=groupby_cols,
+            how="left",
+        )
+        db_multiple_sources.index = old_index
+        # db[["source_string","source_list"]].fillna(db_multiple_sources[["source_string","source_list"]],inplace=True)
+        db.loc[
+            db["source_string"].isna(), ["source_string", "source_list"]
+        ] = db_multiple_sources[["source_string", "source_list"]]
     unique_source_lists = list(db["source_string"].unique())
     # unique_source_lists = [x for x in unique_source_lists if ((str(x) != "nan")&(str(x)!="netl"))]
     unique_source_lists = [
@@ -325,7 +307,7 @@ def calculate_electricity_by_source(db, subregion="BA"):
 
     elec_sum_lists = list()
     for src in unique_source_lists:
-        logging.info(f"Calculating electricity for {src}")
+        module_logger.info(f"Calculating electricity for {src}")
         # src_filter = db.apply(lambda x: x["Source"] in src, axis=1)
         db["temp_src"] = src
         src_filter = [
@@ -378,17 +360,29 @@ def create_generation_process_df():
         add_technological_correlation_score,
         add_temporal_correlation_score,
     )
-    COMPARTMENT_DICT={
-            'emission/air':"air",
-            'emission/water':"water",
-            'emission/ground':"ground",
-            "input":"input",
-            "output":"output",
-            "waste":"waste"
-            
+    import electricitylci.emissions_other_sources as em_other
+    import electricitylci.ampd_plant_emissions as ampd
+    from electricitylci.model_config import eia_gen_year
+    from electricitylci.combinator import ba_codes
+    
+    COMPARTMENT_DICT = {
+        "emission/air": "air",
+        "emission/water": "water",
+        "emission/ground": "ground",
+        "input": "input",
+        "output": "output",
+        "waste": "waste",
+        "air": "air",
+        "water": "water",
+        "ground": "ground",
     }
     if replace_egrid:
-        generation_data = build_generation_data()
+        generation_data = build_generation_data().drop_duplicates()
+        cems_df = ampd.generate_plant_emissions(eia_gen_year)
+        cems_df.drop(columns=["FlowUUID"], inplace=True)
+        emissions_and_waste_for_selected_egrid_facilities = em_other.integrate_replace_emissions(
+            cems_df, emissions_and_waste_for_selected_egrid_facilities
+        )
     else:
         generation_data = build_generation_data(
             egrid_facilities_to_include=egrid_facilities_to_include
@@ -404,8 +398,8 @@ def create_generation_process_df():
     final_database = pd.merge(
         left=emissions_and_waste_for_selected_egrid_facilities,
         right=generation_data,
-        right_on="FacilityID",
-        left_on="eGRID_ID",
+        right_on=["FacilityID", "Year"],
+        left_on=["eGRID_ID", "Year"],
         how="left",
     )
     egrid_facilities_w_fuel_region[
@@ -417,19 +411,39 @@ def create_generation_process_df():
         left_on="eGRID_ID",
         right_on="FacilityID",
         how="left",
+        suffixes=["", "_right"],
     )
+    key_df = (
+        final_database[["eGRID_ID", "FuelCategory"]]
+        .dropna()
+        .drop_duplicates(subset="eGRID_ID")
+        .set_index("eGRID_ID")
+    )
+    final_database.loc[
+        final_database["FuelCategory"].isnull(), "FuelCategory"
+    ] = final_database.loc[
+        final_database["FuelCategory"].isnull(), "eGRID_ID"
+    ].map(
+        key_df["FuelCategory"]
+    )
+    if replace_egrid:
+        final_database["FuelCategory"].fillna(
+            final_database["FuelCategory_right"], inplace=True
+        )
     final_database["Final_fuel_agg"] = final_database["FuelCategory"]
     if use_primaryfuel_for_coal:
         final_database.loc[
             final_database["FuelCategory"] == "COAL", ["Final_fuel_agg"]
         ] = final_database.loc[
-            final_database["FuelCategory"] == "COAL", "PrimaryFuel"
+            final_database["FuelCategory"] == "COAL", "Primary_Fuel"
         ]
 
-    year_filter = final_database["Year_x"] == final_database["Year_y"]
-    final_database = final_database.loc[year_filter, :]
-
-    final_database.drop(columns="Year_y", inplace=True)
+    try:
+        year_filter = final_database["Year_x"] == final_database["Year_y"]
+        final_database = final_database.loc[year_filter, :]
+        final_database.drop(columns="Year_y", inplace=True)
+    except KeyError:
+        pass
     final_database.rename(columns={"Year_x": "Year"}, inplace=True)
     final_database = map_emissions_to_fedelemflows(final_database)
     dup_cols_check = [
@@ -464,8 +478,11 @@ def create_generation_process_df():
         by=["eGRID_ID", "Compartment", "FlowName"], inplace=True
     )
     final_database["stage_code"] = "Power plant"
-    final_database["Compartment_path"]=final_database["Compartment"]
-    final_database["Compartment"]=final_database["Compartment_path"].map(COMPARTMENT_DICT)
+    final_database["Compartment_path"] = final_database["Compartment"]
+    final_database["Compartment"] = final_database["Compartment_path"].map(
+        COMPARTMENT_DICT
+    )
+    final_database["EIA_Region"]=final_database["Balancing Authority Code"].map(ba_codes["EIA_Region"])
     return final_database
 
 
@@ -484,6 +501,7 @@ def aggregate_data(total_db, subregion="BA"):
         The level of subregion that the data will be aggregated to. Choices
         are 'all', 'NERC', 'BA', 'US', by default 'BA'.
     """
+    from electricitylci.aggregation_selector import subregion_col
 
     def geometric_mean(p_series, df, cols):
         # I think I actually need to replace this with the function contained in
@@ -493,37 +511,37 @@ def aggregate_data(total_db, subregion="BA"):
         # and provide the parameters
         if (len(p_series) > 3) & (p_series.quantile(0.5) > 0):
             # result = gmean(p_series.to_numpy()+1)-1
-            logging.info(
+            module_logger.debug(
                 f"Calculating confidence interval for"
                 f"{df.loc[p_series.index[0],groupby_cols].values}"
             )
-            logging.debug(f"{p_series.values}")
+            module_logger.debug(f"{p_series.values}")
             try:
                 data = p_series.to_numpy()
             except ArithmeticError:
-                logging.warning("Problem with input data")
+                module_logger.warning("Problem with input data")
                 return None
             try:
                 log_data = np.log(data)
             except ArithmeticError:
-                logging.warning("Problem with log function")
+                module_logger.warning("Problem with log function")
                 return None
             try:
                 mean = np.mean(log_data)
             except ArithmeticError:
-                logging.warning("Problem with mean function")
+                module_logger.warning("Problem with mean function")
                 return None
             l = len(data)
             try:
                 sd = np.std(log_data)
                 sd2 = sd ** 2
             except ArithmeticError:
-                logging.warning("Problem with std function")
+                module_logger.warning("Problem with std function")
                 return None
             try:
                 pi1, pi2 = t.interval(alpha=0.90, df=l - 2, loc=mean, scale=sd)
             except ArithmeticError:
-                logging.warning("Problem with t function")
+                module_logger.warning("Problem with t function")
                 return None
             try:
                 upper_interval = np.max(
@@ -537,7 +555,7 @@ def aggregate_data(total_db, subregion="BA"):
                     ]
                 )
             except:
-                logging.warning("Problem with interval function")
+                module_logger.warning("Problem with interval function")
                 return None
             try:
                 result = (np.exp(mean), 0, np.exp(upper_interval))
@@ -547,7 +565,7 @@ def aggregate_data(total_db, subregion="BA"):
             if result is not None:
                 return result
             else:
-                logging.info(
+                module_logger.debug(
                     f"Problem generating uncertainty parameters \n"
                     f"{df.loc[p_series.index[0],groupby_cols].values}\n"
                     f"{p_series.values}"
@@ -558,17 +576,22 @@ def aggregate_data(total_db, subregion="BA"):
             return None
 
     def calc_geom_std(df):
-        ####There are some pretty crazy uncertainties created in here
-        # need o put a cap on how high it can go. By default, I don't think
-        # it's a crazy idea to see if the calculated standard deviation
-        # results in distributions with some percentage above max.
+
         if df["uncertaintyLognormParams"] is None:
             return None, None
         if isinstance(df["uncertaintyLognormParams"], str):
             params = ast.literal_eval(df["uncertaintyLognormParams"])
-        if len(df["uncertaintyLognormParams"]) != 3:
-            logging.info(
-                f"Error estimate standard deviation - length: {len(params)}"
+        try:
+            length = len(df["uncertaintyLognormParams"])
+        except TypeError:
+            module_logger.info(
+                f"Error calculating length of uncertaintyLognormParams"
+                f"{df['uncertaintyLognormParams']}"
+            )
+            return None, None
+        if length != 3:
+            module_logger.info(
+                f"Error estimating standard deviation - length: {len(params)}"
             )
         try:
             geomean = df["Emission_factor"]
@@ -580,7 +603,7 @@ def aggregate_data(total_db, subregion="BA"):
                 / norm.ppf(0.95)
             )
         except ArithmeticError:
-            logging.info("Error estimating standard deviation")
+            module_logger.info("Error estimating standard deviation")
             return None, None
         if (
             (geostd is np.inf)
@@ -594,14 +617,7 @@ def aggregate_data(total_db, subregion="BA"):
             return None, None
         return str(geomean), str(geostd)
 
-    if subregion == "all":
-        region_agg = ["eia_region"]
-    elif subregion == "NERC":
-        region_agg = ["NERC"]
-    elif subregion == "BA":
-        region_agg = ["Balancing Authority Code"]
-    elif subregion == "US":
-        region_agg = None
+    region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"]
     if region_agg:
         groupby_cols = (
@@ -620,6 +636,7 @@ def aggregate_data(total_db, subregion="BA"):
             "FlowUUID",
         ]
         elec_df_groupby_cols = fuel_agg + ["Year", "source_string"]
+    total_db["FlowUUID"] = total_db["FlowUUID"].fillna(value="dummy-uuid")
     total_db = aggregate_facility_flows(total_db)
     total_db, electricity_df = calculate_electricity_by_source(
         total_db, subregion
@@ -635,7 +652,7 @@ def aggregate_data(total_db, subregion="BA"):
             wts = total_db.loc[pdser.index, "Electricity"]
             result = np.average(pdser, weights=wts)
         except:
-            logging.info(
+            module_logger.info(
                 f"Error calculating weighted mean for {pdser.name}-"
                 f"{total_db.loc[pdser.index[0],cols]}"
             )
@@ -648,6 +665,7 @@ def aggregate_data(total_db, subregion="BA"):
     print(
         "Aggregating flow amounts, dqi information, and calculating uncertainty"
     )
+
     database_f3 = total_db.groupby(
         groupby_cols + ["Year", "source_string"], as_index=False
     ).agg(
@@ -684,9 +702,7 @@ def aggregate_data(total_db, subregion="BA"):
         right_on=elec_df_groupby_cols,
         how="left",
     )
-    #############
-    # Need to put a  check somewhere in here for the Canadian "rollups"
-    # Each emission should be divided by the electricity in the same row
+
     canadian_criteria = database_f3["FuelCategory"] == "ALL"
     if region_agg:
         canada_db = pd.merge(
@@ -695,17 +711,22 @@ def aggregate_data(total_db, subregion="BA"):
             left_on=groupby_cols,
             right_on=groupby_cols,
             how="left",
-        )
+        ).drop_duplicates(subset=groupby_cols)
     else:
-        total_grouped = total_db.groupby(by=groupby_cols,as_index=False)["Electricity"].sum()
+        total_grouped = total_db.groupby(by=groupby_cols, as_index=False)[
+            "Electricity"
+        ].sum()
         canada_db = pd.merge(
-                left=database_f3.loc[canadian_criteria, :],
-                right=total_grouped,
-                left_on=groupby_cols,
-                right_on=groupby_cols,
-                how="left",
-                )
+            left=database_f3.loc[canadian_criteria, :],
+            right=total_grouped,
+            left_on=groupby_cols,
+            right_on=groupby_cols,
+            how="left",
+        )
     canada_db.index = database_f3.loc[canadian_criteria, :].index
+    database_f3.loc[
+        database_f3["FlowUUID"] == "dummy-uuid", "FlowUUID"
+    ] = float("nan")
     database_f3.loc[canada_db.index, "electricity_sum"] = canada_db[
         "Electricity"
     ]
@@ -726,8 +747,30 @@ def aggregate_data(total_db, subregion="BA"):
     return database_f3
 
 
-def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
-    import electricitylci.process_dictionary_writer as pdw
+def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
+    """Turns the give database containing generator facility emissions
+    into dictionaries that contain the required data for insertion into
+    an openLCA-compatible json-ld. Additionally, default providers
+    for fuel inputs are mapped, using the information contained in the dictionary
+    containing openLCA-formatted data for the fuels.
+    
+    Parameters
+    ----------
+    database : dataframe
+        Dataframe containing aggregated emissions to be turned into openLCA
+        unit processes
+    upstream_dict : dictionary, optional
+        Dictionary as created by upstream_dict.py, containing the openLCA
+        formatted data for all of the fuel inputs. This function will use the
+        names and UUIDs from the entries to assign them as default providers.
+    subregion : str, optional
+        The subregion level of the aggregated data, by default "BA". See 
+        aggregation_selector.py for available subregions.
+    
+    Returns
+    -------
+    dictionary: dictionary contaning openLCA-formatted data
+    """
     from electricitylci.process_dictionary_writer import (
         unit,
         flow_table_creation,
@@ -735,27 +778,14 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
         uncertainty_table_creation,
     )
 
-    if subregion == "all":
-        region_agg = ["eia_region"]
-    elif subregion == "NERC":
-        region_agg = ["NERC"]
-    elif subregion == "BA":
-        region_agg = ["Balancing Authority Code"]
-    elif subregion == "US":
-        region_agg = None
+    from electricitylci.aggregation_selector import subregion_col
+
+    region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"]
     if region_agg:
         base_cols = region_agg + fuel_agg
-        groupby_cols = (
-            region_agg + fuel_agg + ["stage_code", "FlowName", "Compartment"]
-        )
-        elec_df_groupby_cols = (
-            region_agg + fuel_agg + ["Year", "source_string"]
-        )
     else:
         base_cols = fuel_agg
-        groupby_cols = fuel_agg + ["stage_code", "FlowName", "Compartment"]
-        elec_df_groupby_cols = fuel_agg + ["Year", "source_string"]
     non_agg_cols = [
         "stage_code",
         "FlowName",
@@ -777,30 +807,10 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
     ]
 
     def turn_data_to_dict(data, upstream_dict):
-        # do stuff to add default providers for upstream flows here.
-        # I think the more we can make the columns here look like the
-        # keys for the exchanges dictionary the better. Also easier to do some
-        # operations here like use map to assign default provider name,
-        # category, and uuid columns.
-        logging.info(f"Turning flows from {data.name} into dictionaries")
-        incoming_cols = [
-            "stage_code",
-            "FlowName",
-            "Compartment",
-            "Year",
-            "source_string",
-            "TemporalCorrelation",
-            "TechnologicalCorrelation",
-            "GeographicalCorrelation",
-            "DataCollection",
-            "ReliabilityScore",
-            "uncertaintyMin",
-            "uncertaintyMax",
-            "uncertaintyLognormParams",
-            "Emission_factor",
-            "GeomMean",
-            "GeomSD",
-        ]
+
+        module_logger.debug(
+            f"Turning flows from {data.name} into dictionaries"
+        )
         cols_for_exchange_dict = [
             "internalId",
             "@type",
@@ -829,15 +839,15 @@ def olcaschema_genprocess(database, upstream_dict, subregion="BA"):
         data["avoidedProduct"] = False
         data["flowProperty"] = ""
         data["input"] = False
-        input_filter = ((data["Compartment"] == "input") | (data["Compartment"].str.find("resource")!=-1))
+        input_filter = (data["Compartment"] == "input") | (
+            data["Compartment"].str.find("resource") != -1
+        )
         data.loc[input_filter, "input"] = True
         data["baseUncertainty"] = ""
         data["provider"] = ""
         data["unit"] = ""
         data["ElementaryFlowPrimeContext"] = data["Compartment"]
         default_unit = unit("kg")
-        #        for index, row in data.iterrows():
-        #            data.at[index, "unit"] = default_unit
         data["unit"] = [default_unit] * len(data)
         data["FlowType"] = "ELEMENTARY_FLOW"
         data["flow"] = ""

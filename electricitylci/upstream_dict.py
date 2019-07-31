@@ -8,7 +8,9 @@ from electricitylci.coal_upstream import (
     basin_codes,
 )
 from electricitylci import write_process_dicts_to_jsonld
+import logging
 
+module_logger=logging.getLogger("upstream_dict.py")
 
 def _unit(unt):
     ar = dict()
@@ -27,6 +29,7 @@ def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
         "GEOTHERMAL": "22: Utilities/2211: Electric Power Generation Transmission and Distribuion",
         "WIND": "22: Utilities/2211: Electric Power Generation Transmission and Distribuion",
         "SOLAR": "22: Utilities/2211: Electric Power Generation Transmission and Distribuion",
+        "CONSTRUCTION":"23: Construction/2371: Utility System Construction",
     }
     ar = dict()
     ar["@type"] = "Process"
@@ -83,6 +86,13 @@ def _exchange_table_creation_ref(fuel_type):
         "id": "",
         "category": "21: Mining, Quarrying, and Oil and Gas Extraction",
     }
+    construction_flow ={
+            "flowType":"PRODUCT_FLOW",
+            "flowProperties":"",
+            "name":"power plant construction",
+            "id":"",
+            "category":"23: Construction"
+            }
 #    geothermal_flow = {
 #        "flowType": "PRODUCT_FLOW",
 #        "flowProperties": "",
@@ -138,6 +148,10 @@ def _exchange_table_creation_ref(fuel_type):
         ar["amount"] = 1
     elif fuel_type == "WIND":
         ar["flow"] = wind_flow
+        ar["unit"] = _unit("Item(s)")
+        ar["amount"] = 1
+    elif fuel_type == "CONSTRUCTION":
+        ar["flow"] = construction_flow
         ar["unit"] = _unit("Item(s)")
         ar["amount"] = 1
     ar["flowProperty"] = ""
@@ -289,11 +303,11 @@ def olcaschema_genupstream_processes(merged):
     upstream_process_dict = dict()
     # upstream_list=['Appalachian']
     for upstream in upstream_list:
-        print(f"Building diciontary for {upstream}", end="...")
+        module_logger.info(f"Building dictionary for {upstream}")
         exchanges_list = list()
         # upstream = upstream_list[0]
         upstream_filter = merged_summary["stage_code"] == upstream
-        merged_summary_filter = merged_summary.loc[upstream_filter, :]
+        merged_summary_filter = merged_summary.loc[upstream_filter, :].copy()
         # merged_summary_filter_mapped = pd.merge(
         #         left=merged_summary_filter,
         #         right=netl_epa_flows,
@@ -365,6 +379,9 @@ def olcaschema_genupstream_processes(merged):
         elif fuel_type == "WIND":
             combined_name = f"geothermal upstream and operation - {stage_code}"
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
+        elif fuel_type == "CONSTRUCTION":
+            combined_name= f"power plant construction - {stage_code}"
+            exchanges_list.append(_exchange_table_creation_ref(fuel_type))
         process_name = f"{combined_name}"
         final = _process_table_creation_gen(
             process_name, exchanges_list, fuel_type
@@ -372,7 +389,7 @@ def olcaschema_genupstream_processes(merged):
         upstream_process_dict[
             merged_summary_filter.loc[first_row, "stage_code"]
         ] = final
-        print("complete")
+#        print("complete")
     return upstream_process_dict
 
 
