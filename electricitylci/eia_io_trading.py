@@ -1,10 +1,3 @@
-
-#required files:
-#   1. 'BA_Codes_930.xlsx'
-#   2. 'CA_Imports_Rows.csv'
-#   3.'CA_Imports_Cols.csv'
-#   4. 'CA_Imports_Gen.csv'
-
 import numpy as np
 import os
 import pandas as pd
@@ -66,7 +59,7 @@ from electricitylci.process_dictionary_writer import *
 def ba_io_trading_model(year, subregion):
     
     year = 2016
-#    subregion = 'BA'
+    subregion = 'BA'
    
     #Read in BAA file which contains the names and abbreviations
     df_BA = pd.read_excel(data_dir + '/BA_Codes_930.xlsx', sheetname = 'US', header = 4)
@@ -179,7 +172,11 @@ def ba_io_trading_model(year, subregion):
     df_net_gen_sum = df_net_gen.sum(axis = 0).to_frame()
     logging.info("Reading canadian import data")
     #Add Canadian import data to the net generation dataset, concatenate and put in alpha order
-    df_CA_Imports_Gen = pd.read_csv(data_dir + '/CA_Imports_Gen.csv', index_col = 0)
+    df_CA_Imports_Gen = pd.read_csv(data_dir + '/CA_Imports_Gen.csv', index_col = 0)   
+    df_CA_Imports_Gen = df_CA_Imports_Gen[str(year)]
+    
+    
+    
     df_net_gen_sum = pd.concat([df_net_gen_sum,df_CA_Imports_Gen]).sum(axis=1)
     df_net_gen_sum = df_net_gen_sum.to_frame()
     df_net_gen_sum = df_net_gen_sum.sort_index(axis=0)
@@ -324,9 +321,12 @@ def ba_io_trading_model(year, subregion):
     
     # Add Canadian Imports to the trading matrix
     # CA imports are specified in an external file
-    df_CA_Imports_Rows = pd.read_csv(data_dir + '/CA_Imports_Rows.csv', index_col = 0)
     df_CA_Imports_Cols = pd.read_csv(data_dir + '/CA_Imports_Cols.csv', index_col = 0)
     
+    df_CA_Imports_Rows = pd.read_csv(data_dir + '/CA_Imports_Rows.csv', index_col = 0)
+    df_CA_Imports_Rows = df_CA_Imports_Rows[['us_ba', str(year)]]
+    df_CA_Imports_Rows = df_CA_Imports_Rows.pivot(columns = 'us_ba', values = str(year))
+            
     df_concat_trade_CA = pd.concat([df_trade_pivot, df_CA_Imports_Rows])
     df_concat_trade_CA = pd.concat([df_concat_trade_CA, df_CA_Imports_Cols], axis = 1)
     df_concat_trade_CA.fillna(0, inplace = True)
@@ -575,3 +575,10 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
         consumption_mix_dict[reg] = final
 
     return consumption_mix_dict       
+
+
+
+
+
+
+
