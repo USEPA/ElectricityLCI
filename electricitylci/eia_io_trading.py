@@ -485,7 +485,7 @@ if __name__=='__main__':
 
 
 
-def olca_schema_consumption_mix(database, dist_dict, subregion="BA"):
+def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
     import numpy as np
     import pandas as pd
     
@@ -551,12 +551,12 @@ def olca_schema_consumption_mix(database, dist_dict, subregion="BA"):
                 ra["quantitativeReference"] = False
                 ra['amount'] = database_reg.loc[database_reg[export_column] == export_region,'fraction'].values[0]
                 matching_dict = None
-                for dist in dist_dict:
+                for gen in gen_dict:
                     if (
-                        dist_dict[dist]["name"]
-                        == 'Electricity; at user; generation mix - ' + export_region
+                        gen_dict[gen]["name"]
+                        == 'Electricity; at grid; generation mix - ' + export_region
                     ):
-                        matching_dict = dist_dict[export_region]
+                        matching_dict = gen_dict[export_region]
                         break
                 if matching_dict is None:
                     logging.warning(
@@ -571,7 +571,7 @@ def olca_schema_consumption_mix(database, dist_dict, subregion="BA"):
                 exchange(ra, exchanges_list)
                    # Writing final file
         final = process_table_creation_con_mix(reg, exchanges_list)
-        final["name"] = "Electricity; at user; consumption mix - " + reg
+        final["name"] = "Electricity; at grid; consumption mix - " + reg
         consumption_mix_dict[reg] = final
 
     return consumption_mix_dict       

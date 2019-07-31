@@ -73,27 +73,40 @@ def fill_nans(df, key_column="FacilityID", target_columns=[], dropna=True):
             "EIA_Region",
             "State",
         ]
-    key_df = (
-        df.reindex([key_column] + target_columns)
-        .drop_duplicates(subset=key_column)
-        .set_index(key_column)
-    )
-    for col in target_columns:
-        if col in df.columns:
-            df.loc[df[col].isnull(), col] = df.loc[
-                    df[col].isnull(), key_column
-            ].map(key_df[col])
+    confirmed_target = []
+    for x in target_columns:
+        if x in df.columns:
+            confirmed_target.append(x)
         else:
-            module_logger.warning(f"{col} is not in the dataframe")
+            module_logger.warning(f"Column {x} is not in the dataframe")
+    if key_column not in df.columns:
+        module_logger.warning(f"Key column '{key_column}' is not in the dataframe")
+        raise KeyError
+#    key_df = (
+#        df[[key_column] + target_columns]
+#        .drop_duplicates(subset=key_column)
+#        .set_index(key_column)
+#    )
+    for col in confirmed_target:
+        key_df = (
+                df[[key_column,col]]
+                .dropna()
+                .drop_duplicates(subset=key_column)
+                .set_index(key_column)
+        )
+        df.loc[df[col].isnull(), col] = df.loc[
+                df[col].isnull(), key_column
+        ].map(key_df[col])
     plant_ba = eia860_balancing_authority(eia_gen_year).set_index("Plant Id")
     plant_ba.index = plant_ba.index.astype(int)
     if "State" not in df.columns:
         df["State"]=float("nan")
+        confirmed_target.append("State")
     df.loc[df["State"].isna(), "State"] = df.loc[
         df["State"].isna(), "eGRID_ID"
     ].map(plant_ba["State"])
     if dropna:
-        df.dropna(subset=target_columns, inplace=True)
+        df.dropna(subset=confirmed_target, inplace=True)
     return df
 
 
