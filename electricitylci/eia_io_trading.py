@@ -59,7 +59,7 @@ from electricitylci.process_dictionary_writer import *
 def ba_io_trading_model(year, subregion):
     
     year = 2016
-    subregion = 'BA'
+    #subregion = 'BA'
    
     #Read in BAA file which contains the names and abbreviations
     df_BA = pd.read_excel(data_dir + '/BA_Codes_930.xlsx', sheetname = 'US', header = 4)
