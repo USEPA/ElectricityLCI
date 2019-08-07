@@ -55,6 +55,7 @@ def aggregate_facility_flows(df):
         "FlowName",
         "Source",
         "Compartment_path",
+        "stage_code"
     ]
     emissions = df["Compartment"].isin(emission_compartments)
     df_emissions = df[emissions]
@@ -87,7 +88,7 @@ def aggregate_facility_flows(df):
 def _combine_sources(p_series, df, cols, source_limit=None):
     """
     Take the list of sources from a groupby.apply and return a dataframe
-    that contains one column continaing a list of the sources and another
+    that contains one column containing a list of the sources and another
     that concatenates them into a string. This is all in an effort to find
     another approach for summing electricity for all plants in an aggregation
     that match the same data sources.
