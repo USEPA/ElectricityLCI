@@ -280,6 +280,7 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
         except KeyError:
             module_logger.warning(f"Error deleting column {x}")
     combined_df["FacilityID"] = combined_df["eGRID_ID"]
+    combined_df.loc[combined_df["FuelCategory"]=="CONSTRUCTION","FuelCategory"]=float("nan")
     combined_df = fill_nans(combined_df)
     # The hard-coded cutoff is a workaround for now. Changing the parameter
     # to 0 in the config file allowed the inventory to be kept for generators
