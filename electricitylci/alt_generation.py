@@ -221,7 +221,10 @@ def calculate_electricity_by_source(db, subregion="BA"):
     """
 
     from electricitylci.aggregation_selector import subregion_col
-
+    all_sources='_'.join(sorted(list(db["Source"].unique())))
+    power_plant_criteria=db["stage_code"]=="Power plant"
+    db_powerplant=db.loc[power_plant_criteria,:]
+    db_nonpower=db.loc[~power_plant_criteria,:]
     region_agg = subregion_col(subregion)
 
     fuel_agg = ["FuelCategory"]
@@ -255,7 +258,7 @@ def calculate_electricity_by_source(db, subregion="BA"):
     # and try to eliminate flows where all sources are single entities.
     source_df = pd.DataFrame()
     source_df = pd.DataFrame(
-        db.groupby(["FlowName", "Compartment"])[["Source"]].apply(
+        db_powerplant.groupby(["FlowName", "Compartment"])[["Source"]].apply(
             combine_source_by_flow
         ),
         columns=["source_list"],
@@ -264,13 +267,15 @@ def calculate_electricity_by_source(db, subregion="BA"):
         source_df["source_list"].values.tolist(), index=source_df.index
     )
     source_df.reset_index(inplace=True)
-    db = db.merge(
+    old_index = db_powerplant.index
+    db_powerplant = db_powerplant.merge(
         right=source_df,
         left_on=["FlowName", "Compartment"],
         right_on=["FlowName", "Compartment"],
         how="left",
     )
-    db_multiple_sources = db.loc[db["source_string"].isna(), :]
+    db_powerplant.index=old_index
+    db_multiple_sources = db_powerplant.loc[db_powerplant["source_string"].isna(), :]
     if len(db_multiple_sources) > 0:
         source_df = pd.DataFrame(
             db_multiple_sources.groupby(groupby_cols)[["Source"]].apply(
@@ -294,10 +299,10 @@ def calculate_electricity_by_source(db, subregion="BA"):
         )
         db_multiple_sources.index = old_index
         # db[["source_string","source_list"]].fillna(db_multiple_sources[["source_string","source_list"]],inplace=True)
-        db.loc[
-            db["source_string"].isna(), ["source_string", "source_list"]
+        db_powerplant.loc[
+            db_powerplant["source_string"].isna(), ["source_string", "source_list"]
         ] = db_multiple_sources[["source_string", "source_list"]]
-    unique_source_lists = list(db["source_string"].unique())
+    unique_source_lists = list(db_powerplant["source_string"].unique())
     # unique_source_lists = [x for x in unique_source_lists if ((str(x) != "nan")&(str(x)!="netl"))]
     unique_source_lists = [
         x for x in unique_source_lists if ((str(x) != "nan"))
@@ -305,8 +310,10 @@ def calculate_electricity_by_source(db, subregion="BA"):
     # One set of emissions passed into this routine may be life cycle emissions
     # used as proxies for Canadian generation. In those cases the electricity
     # generation will be equal to the Electricity already in the dataframe.
-
+    
     elec_sum_lists = list()
+    
+    unique_source_lists  = unique_source_lists+[all_sources]
     for src in unique_source_lists:
         module_logger.info(f"Calculating electricity for {src}")
         # src_filter = db.apply(lambda x: x["Source"] in src, axis=1)
@@ -331,8 +338,11 @@ def calculate_electricity_by_source(db, subregion="BA"):
         #        zero_elec_filter = sub_db_group["electricity_sum"]==0
         sub_db_group["source_string"] = src
         elec_sum_lists.append(sub_db_group)
+    db_nonpower["source_string"]=all_sources
+    db_nonpower["source_list"]=[all_sources]*len(db_nonpower)
     elec_sums = pd.concat(elec_sum_lists, ignore_index=True)
     elec_sums.sort_values(by=elec_groupby_cols, inplace=True)
+    db=pd.concat([db_powerplant,db_nonpower])
     return db, elec_sums
 
 
