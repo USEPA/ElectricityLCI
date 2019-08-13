@@ -374,10 +374,10 @@ def olcaschema_genupstream_processes(merged):
             combined_name = f"geothermal upstream and operation - {stage_code}"
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
         elif fuel_type == "SOLAR":
-            combined_name = f"geothermal upstream and operation - {stage_code}"
+            combined_name = f"solar photovoltaic upstream and operation - {stage_code}"
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
         elif fuel_type == "WIND":
-            combined_name = f"geothermal upstream and operation - {stage_code}"
+            combined_name = f"wind upstream and operation - {stage_code}"
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
         elif fuel_type == "CONSTRUCTION":
             combined_name= f"power plant construction - {stage_code}"

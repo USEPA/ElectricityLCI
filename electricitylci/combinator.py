@@ -280,6 +280,14 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
         except KeyError:
             module_logger.warning(f"Error deleting column {x}")
     combined_df["FacilityID"] = combined_df["eGRID_ID"]
+    #I think without the following, given the way the data is created for fuels,
+    #there are too many instances where fuel demand can be created when no emissions
+    #are reported for the power plant. This should force the presence of a power plant
+    #in the dataset for a fuel input to be counted.
+    combined_df.loc[~(combined_df["stage_code"]=="Power plant"),"FuelCategory"]=float("nan")
+    #This allows construction impacts to be aligned to a power plant type - 
+    #not as import in openLCA but for analyzing results outside of openLCA.
+    combined_df.loc[combined_df["FuelCategory"]=="CONSTRUCTION","FuelCategory"]=float("nan")
     combined_df = fill_nans(combined_df)
     # The hard-coded cutoff is a workaround for now. Changing the parameter
     # to 0 in the config file allowed the inventory to be kept for generators
