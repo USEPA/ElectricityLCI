@@ -4,6 +4,7 @@ from electricitylci.coal_upstream import read_eia923_fuel_receipts
 from os.path import join
 from electricitylci.globals import data_dir, output_dir
 import electricitylci.PhysicalQuantities as pq
+import electricitylci.eia923_generation as eia923
 
 def generate_petroleum_upstream(year):
     """
@@ -28,11 +29,16 @@ def generate_petroleum_upstream(year):
             eia_fuel_receipts_df['average_heat_content']*
             pq.convert(10**6,'Btu','MJ'))
 
+    eia_gen_fuel=eia923.eia923_generation_and_fuel(year)
+    petroleum_criteria=eia_gen_fuel["reported_fuel_type_code"].isin(["DFO","RFO"])
+    petroleum_fuel=eia_gen_fuel.loc[petroleum_criteria,:]
     #Sum all fuel use by plant, plant state, and DFO/RFO
     eia_fuel_receipts_df=eia_fuel_receipts_df.groupby(
             ['plant_id','plant_state','energy_source'],
             as_index=False)['heat_input'].sum()
-
+    petroleum_fuel=petroleum_fuel[["plant_id","state","total_fuel_consumption_mmbtu","reported_fuel_type_code"]]
+    petroleum_fuel["heat_input"]=petroleum_fuel["total_fuel_consumption_mmbtu"]*pq.convert(10**6,'Btu','MJ')
+    petroleum_fuel["plant_id"]=petroleum_fuel["plant_id"].astype(int)
     #Assume that plants have fuel delivered from the PADD they are in. Note
     #that the crude represented in each PADD is the mix of crude going into
     #that PADD, domestically-produced and imported, and the refining emissions
@@ -42,8 +48,8 @@ def generate_petroleum_upstream(year):
             state_padd_df.padd.values,index=state_padd_df.state).to_dict()
 
     #Assign each power plant to a PADD.
-    eia_fuel_receipts_df['padd']=(
-            eia_fuel_receipts_df['plant_state'].map(state_padd_dict))
+    petroleum_fuel['padd']=(
+            petroleum_fuel['state'].map(state_padd_dict))
 
     #Creating a dictionary to store the inventories of each fuel/PADD
     #combination
@@ -77,12 +83,12 @@ def generate_petroleum_upstream(year):
             "Result.1":"Result"
             },
             inplace=True)
-    eia_fuel_receipts_df['fuel_padd']=(eia_fuel_receipts_df['energy_source']+
-                        '_'+eia_fuel_receipts_df['padd'].astype(str))
+    petroleum_fuel['fuel_padd']=(petroleum_fuel['reported_fuel_type_code']+
+                        '_'+petroleum_fuel['padd'].astype(str))
 
     #Merge the inventories for each fuel with the fuel use by each power plant
     merged_inventory = combined_lci.merge(
-            right=eia_fuel_receipts_df[['plant_id','heat_input','fuel_padd']],
+            right=petroleum_fuel[['plant_id','heat_input','fuel_padd']],
             left_on='fuel_code',
             right_on='fuel_padd',
             how='left').sort_values(['plant_id','fuel_padd','Flow'])

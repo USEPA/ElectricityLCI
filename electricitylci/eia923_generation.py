@@ -307,10 +307,19 @@ def eia923_primary_fuel(
     )
 
     primary_fuel["FuelCategory"] = group_fuel_categories(primary_fuel)
+
     primary_fuel.rename(
         columns={"Reported Fuel Type Code": "PrimaryFuel"}, inplace=True
     )
-
+    criteria = (eia923_gen_fuel["Reported Fuel Type Code"] == "SUN") & (
+        eia923_gen_fuel["Reported Prime Mover"] != "PV"
+    )
+    nonsolar_pv_plants = eia923_gen_fuel.loc[criteria, "Plant Id"].unique()
+    primary_fuel.loc[
+        (primary_fuel["Plant Id"].isin(nonsolar_pv_plants))
+        & (primary_fuel["FuelCategory"] == "SOLAR"),
+        "FuelCategory",
+    ] = "SOLARTHERMAL"
     primary_fuel.reset_index(inplace=True, drop=True)
 
     keep_cols = [
