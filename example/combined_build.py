@@ -4,8 +4,8 @@ import pandas as pd
 import pickle as pkl
 
 
-use_cache = True
-subregion = "BA"
+use_cache = False
+subregion = "FERC"
 
 if use_cache is True:
     with open("upstream_dict.pickle", "rb") as handle:
@@ -79,11 +79,11 @@ else:
     with open("gen_mix_dict.pickle", "wb") as handle:
         pkl.dump(gen_mix_dict, handle, protocol=pkl.HIGHEST_PROTOCOL)     
     cons_mix_df = electricitylci.get_consumption_mix_df(subregion=subregion)
-    cons_mix_dict = electricitylci.write_consumption_mix_to_dict(cons_mix_df,dist_mix_dict,subregion=subregion)
+    cons_mix_dict = electricitylci.write_consumption_mix_to_dict(cons_mix_df,gen_mix_dict,subregion=subregion)
     cons_mix_dict = electricitylci.write_process_dicts_to_jsonld(cons_mix_dict)
     with open("cons_mix_dict.pickle", "wb") as handle:
         pkl.dump(cons_mix_dict, handle, protocol=pkl.HIGHEST_PROTOCOL)
-        dist_mix_df = electricitylci.get_distribution_mix_df(gen_df,subregion=subregion)
+    dist_mix_df = electricitylci.get_distribution_mix_df(gen_df,subregion=subregion)
     dist_mix_dict = electricitylci.write_distribution_mix_to_dict(dist_mix_df,cons_mix_dict,subregion=subregion)
     dist_mix_dict = electricitylci.write_process_dicts_to_jsonld(dist_mix_dict)
     with open("dist_mix_dict.pickle", "wb") as handle:
