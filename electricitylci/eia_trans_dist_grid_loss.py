@@ -196,6 +196,8 @@ def generate_regional_grid_loss(final_database, year, subregion="all"):
         how="left",
     )
     td_by_plant.dropna(subset=["t_d_losses"], inplace=True)
+    td_by_plant["t_d_losses"] = td_by_plant["t_d_losses"].astype(float)
+
     from electricitylci.aggregation_selector import subregion_col
     aggregation_column=subregion_col(subregion)
     wm = lambda x: np.average(
