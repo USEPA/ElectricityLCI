@@ -1,4 +1,5 @@
 import os
+import glob
 
 set_model_name_with_stdin = True
 def set_dir(directory):
@@ -28,21 +29,24 @@ electricity_flow_name_consumption = 'Electricity, AC, 120 V'
 
 def list_model_names_in_config():
     configdir = modulepath + 'modelconfig/'
-    configfiles = os.listdir(configdir)
+    configfiles = glob.glob(configdir + '*_config.yml')
     modelnames_dict = {}
     selection_num = 1
     for f in configfiles:
-        f = f.strip('_config.json')
-        modelnames_dict[selection_num]=f
-        selection_num+=1
+        f = f.split('/')[-1]
+        f = f.strip('_config.yml')
+        modelnames_dict[selection_num] = f
+        selection_num += 1
     return modelnames_dict
+
+
 # EIA923 download url - this is just the base, need to add
 # extension and file name
 EIA923_BASE_URL = 'https://www.eia.gov/electricity/data/eia923/'
 EIA860_BASE_URL = 'https://www.eia.gov/electricity/data/eia860/'
 
 
-# 
+#
 
 
 ##############################
