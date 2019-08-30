@@ -1,12 +1,13 @@
 import electricitylci
+import logging
 
 from electricitylci.globals import output_dir
 from electricitylci.model_config import model_name, model_specs
 from electricitylci.utils import fill_default_provider_uuids
 
-
 def main():
 
+    logger = logging.getLogger("main")
     # Create dataframe with all generation process data. If the alternate NETL method
     # is being used this will also include upstream and Canadian data.
     print("get generation process")
@@ -88,6 +89,10 @@ def main():
         dist_dict = fill_default_provider_uuids(dist_dict, sur_con_mix_dict)
         dist_dict = electricitylci.write_process_dicts_to_jsonld(dist_dict)
 
+    logger.info(
+        f'JSON-LD files have been saved in the "output" folder with the full path '
+        f'{electricitylci.namestr}'
+    )
 
 
 if __name__ == "__main__":
