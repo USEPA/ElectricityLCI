@@ -12,7 +12,7 @@ setup(
     description='Create life cycle inventory data for regionalized electricity generation, mix of generation, mix of consumption, and distribution to the end-user in the United States.',
     install_requires=[
         'numpy>=1.14',
-        'pandas>=0.22',
+        'pandas>=0.24',
         'olca-ipc>=0.0.6',
         'openpyxl>=2.5',
         'matplotlib>=2.2',
