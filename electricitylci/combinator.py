@@ -72,6 +72,7 @@ def fill_nans(df, key_column="FacilityID", target_columns=[], dropna=True):
             "FERC_Region",
             "EIA_Region",
             "State",
+            "Electricity"
         ]
     confirmed_target = []
     for x in target_columns:
@@ -257,7 +258,7 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
         right_on="eGRID_ID",
         how="left",
     )
-    up_df.dropna(subset=region_cols + ["Electricity"], inplace=True)
+#    up_df.dropna(subset=region_cols + ["Electricity"], inplace=True)
     combined_df = pd.concat([pl_df, up_df], ignore_index=True)
     combined_df["Balancing Authority Name"] = combined_df[
         "Balancing Authority Code"

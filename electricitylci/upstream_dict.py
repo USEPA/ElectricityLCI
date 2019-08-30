@@ -293,6 +293,7 @@ def olcaschema_genupstream_processes(merged):
     merged_summary["emission_factor"] = (
         merged_summary["FlowAmount"] / merged_summary["quantity"]
     )
+    merged_summary.dropna(subset=["emission_factor"],inplace=True)
     upstream_list = list(
         x
         for x in merged_summary["stage_code"].unique()
