@@ -182,8 +182,7 @@ def combine_gen_emissions_data(generation_data, emissions_data, subregion='all')
         try:
             regions = final_data[region_column_name].unique()
         except KeyError:
-            print(f"Configuration file specifes region column as {region_column_name}, but it does not exist")
-            if subregion == 'all':
+            if subregion == 'eGRID':
                 regions = egrid_subregions
             elif subregion == 'NERC':
                 regions = list(pd.unique(final_data['NERC']))
@@ -191,7 +190,7 @@ def combine_gen_emissions_data(generation_data, emissions_data, subregion='all')
                 regions = list(pd.unique(final_data['Balancing Authority Name']))
             else:
                 regions = [subregion]
-    elif subregion == 'all':
+    elif subregion == 'eGRID':
         regions = egrid_subregions
     elif subregion == 'NERC':
         regions = list(pd.unique(final_data['NERC']))
@@ -235,8 +234,7 @@ def create_generation_process_df(generation_data, emissions_data, subregion='all
         try:
             regions = final_database[region_column_name].unique()
         except KeyError:
-            print(f"Configuration file specifes region column as {region_column_name}, but it does not exist")
-            if subregion == 'all':
+            if subregion == 'eGRID':
                 regions = egrid_subregions
             elif subregion == 'NERC':
                 regions = list(pd.unique(final_data['NERC']))
@@ -244,7 +242,7 @@ def create_generation_process_df(generation_data, emissions_data, subregion='all
                 regions = list(pd.unique(final_data['Balancing Authority Name']))
             else:
                 regions = [subregion]
-    elif subregion == 'all':
+    elif subregion == 'eGRID':
         regions = egrid_subregions
     elif subregion == 'NERC':
         regions = list(pd.unique(final_database['NERC']))
@@ -272,9 +270,7 @@ def create_generation_process_df(generation_data, emissions_data, subregion='all
 
         print("Creating generation process database for " + reg + " ...")
         # Cropping out based on regions
-        if region_column_name:
-            database = final_database[final_database['Subregion'] == reg]
-        elif subregion == 'all':
+        if subregion == 'eGRID':
             database = final_database[final_database['Subregion'] == reg]
         elif subregion == 'NERC':
             database = final_database[final_database['NERC'] == reg]

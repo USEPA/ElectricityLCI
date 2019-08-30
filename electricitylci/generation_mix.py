@@ -114,9 +114,9 @@ def create_generation_mix_process_df_from_model_generation_data(
         database_for_genmix_final["Subregion"] = database_for_genmix_final[
             "Balancing Authority Name"
         ]
-    elif subregion == "all":
+    elif subregion == "eGRID":
         database_for_genmix_final["Subregion"] = database_for_genmix_final[
-            "NERC"
+            "eGRID" # Value was "NERC", which I think is wrong
         ]
     elif subregion == "FERC":
         database_for_genmix_final["Subregion"] = database_for_genmix_final["FERC_Region"]
@@ -220,7 +220,7 @@ def create_generation_mix_process_df_from_egrid_ref_data(subregion):
     """
 
     # Converting to numeric for better stability and merging
-    if subregion == "all":
+    if subregion == "eGRID":
         regions = egrid_subregions
     elif subregion == "NERC":
         regions = list(
