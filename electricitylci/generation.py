@@ -154,7 +154,7 @@ def combine_gen_emissions_data(generation_data, emissions_data, subregion=None):
             how='left'
         )
 
-    if replace_egrid:
+    if replace_egrid is True:
         # Subregion shows up all over the place below. If not using egrid
         # sub in the BA name because we don't have the eGRID subregion.
         if subregion:

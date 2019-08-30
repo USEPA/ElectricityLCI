@@ -18,14 +18,14 @@ module_logger = logging.getLogger("utils.py")
 def download_unzip(url, unzip_path):
     """
     Download a zip file from url and extract contents to a given path
-    
+
     Parameters
     ----------
     url : str
         Valid url to download the zip file
     unzip_path : str or path object
         Destination to unzip the data
-    
+
     """
     r = requests.get(url)
     content_type = r.headers["Content-Type"]
@@ -64,8 +64,21 @@ def create_ba_region_map(
     match_path = join(data_dir, match_fn)
     region_match = pd.read_csv(match_path, index_col=0)
     region_match["Balancing Authority Code"] = region_match.index
-    map_series = region_match[region_col]
+    try:
+        map_series = region_match[region_col]
+    except KeyError:
+        if 'ferc' in region_col.lower():
+            region_col = 'ferc_region'
+        elif 'eia' in region_col.lower():
+            region_col = 'eia_region'
+        else:
+            raise (
+                ValueError,
+                f'regional_col value is {region_col}, but should match "ferc_region" '
+                'or "eia_region"'
+            )
 
+        map_series = region_match[region_col]
     return map_series
 
 def fill_default_provider_uuids(dict_to_fill, *args):
@@ -73,7 +86,7 @@ def fill_default_provider_uuids(dict_to_fill, *args):
     (dict_to_fill) using any number of other dictionaries given in args
     to find the matching process and provide the UUID. This is to
     ensure all the required data for providers is available for openLCA
-        
+
     Parameters
     ----------
     dict_to_fill : dictionary
