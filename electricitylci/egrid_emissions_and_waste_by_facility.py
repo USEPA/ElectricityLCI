@@ -7,7 +7,7 @@ from electricitylci.model_config import inventories_of_interest
 #Check to see if the stewicombo output of interest is stored as a csv
 stewicombooutputfile = ''
 for k,v in inventories_of_interest.items():
-    stewicombooutputfile = stewicombooutputfile+k+'_'+v+'_'
+    stewicombooutputfile = stewicombooutputfile+"{}_{}_".format(k, v)
 stewicombooutputfile = stewicombooutputfile + 'fromstewicombo.csv'
 
 if os.path.exists(data_dir+"/"+stewicombooutputfile):

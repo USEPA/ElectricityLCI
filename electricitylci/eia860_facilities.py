@@ -18,7 +18,7 @@ from electricitylci.utils import (
     find_file_in_folder,
     create_ba_region_map,
 )
-from electricitylci.model_config import region_column_name
+from electricitylci.model_config import regional_aggregation
 
 
 def _clean_columns(df):
@@ -37,14 +37,14 @@ def eia860_download(year, save_path):
     """
     Download and unzip one year of EIA 860 annual data to a subfolder
     of the data directory
-    
+
     Parameters
     ----------
     year : int or str
         The year of data to download and save
     save_path : path or str
         A folder where the zip file contents should be extracted
-    
+
     """
     current_url = EIA860_BASE_URL + "xls/eia860{}.zip".format(year)
     archive_url = EIA860_BASE_URL + "archive/xls/eia860{}.zip".format(year)
@@ -153,9 +153,9 @@ def eia860_balancing_authority(year):
     eia_plant_ba_match = eia.loc[:, ba_cols].drop_duplicates()
 
     # Map the balancing authority to a larger region (e.g. FERC or EIA)
-    if region_column_name:
-        region_map = create_ba_region_map(region_col=region_column_name)
-        eia_plant_ba_match[region_column_name] = eia_plant_ba_match[
+    if regional_aggregation:
+        region_map = create_ba_region_map(region_col=regional_aggregation)
+        eia_plant_ba_match[regional_aggregation] = eia_plant_ba_match[
             "Balancing Authority Code"
         ].map(region_map)
 

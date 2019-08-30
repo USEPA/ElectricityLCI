@@ -7,28 +7,29 @@ import os
 import urllib.request
 from electricitylci.globals import output_dir, data_dir
 import logging
+from xlrd import XLRDError
 
 #%%
 # Set working directory, files downloaded from EIA will be saved to this location
 # os.chdir = 'N:/eLCI/Transmission and Distribution'
 
 #%%
-# Define function to extract EIA state-wide electricity profiles and calculate 
+# Define function to extract EIA state-wide electricity profiles and calculate
 # state-wide transmission and distribution losses for the user-specified year
 
 
 def eia_trans_dist_download_extract(year):
 
-    """[This function (1) downloads EIA state-level electricity profiles for all 
-    50 states in the U.S. for a specified year to the working directory, and (2) 
-    calculates the transmission and distribution gross grid loss for each state 
-    based on statewide 'estimated losses', 'total disposition', and 'direct use'. 
-    The final output from this function is a [50x1] dimensional dataframe that 
-    contains transmission and distribution gross grid losses for each U.S. state 
-    for the specified year. Additional information on the calculation for gross 
-    grid loss is provided on the EIA website and can be accessed via 
+    """[This function (1) downloads EIA state-level electricity profiles for all
+    50 states in the U.S. for a specified year to the working directory, and (2)
+    calculates the transmission and distribution gross grid loss for each state
+    based on statewide 'estimated losses', 'total disposition', and 'direct use'.
+    The final output from this function is a [50x1] dimensional dataframe that
+    contains transmission and distribution gross grid losses for each U.S. state
+    for the specified year. Additional information on the calculation for gross
+    grid loss is provided on the EIA website and can be accessed via
     URL: https://www.eia.gov/tools/faqs/faq.php?id=105&t=3]
-    
+
     Arguments:
         year {[str]} -- [Analysis year]
     """
@@ -106,17 +107,41 @@ def eia_trans_dist_download_extract(year):
                 + filename
             )
             print(f"Downloading data for {state_abbrev[key]}")
-            urllib.request.urlretrieve(url, filename)
+
+            try:
+                urllib.request.urlretrieve(url, filename)
+                df = pd.read_excel(
+                    filename,
+                    sheet_name="10. Source-Disposition",
+                    header=3,
+                    index_col=0,
+                )
+            except XLRDError:
+                # The most current year has a different url - no "archive/year"
+                url = (
+                    "https://www.eia.gov/electricity/state/"
+                    + key
+                    + "/xls/"
+                    + filename
+                )
+                urllib.request.urlretrieve(url, filename)
+                df = pd.read_excel(
+                    filename,
+                    sheet_name="10. Source-Disposition",
+                    header=3,
+                    index_col=0,
+                )
         else:
             logging.info(
                 f"Using previously downloaded data for {state_abbrev[key]}"
             )
-        df = pd.read_excel(
-            filename,
-            sheet_name="10. Source-Disposition",
-            header=3,
-            index_col=0,
-        )
+            df = pd.read_excel(
+                filename,
+                sheet_name="10. Source-Disposition",
+                header=3,
+                index_col=0,
+            )
+
         df.columns = df.columns.str.replace("Year\n", "")
         df = df.loc["Estimated losses"] / (
             df.loc["Total disposition"] - df.loc["Direct use"]
@@ -124,6 +149,11 @@ def eia_trans_dist_download_extract(year):
         df = df.to_frame(name=state_abbrev[key])
         state_df_list.append(df)
     eia_trans_dist_loss = pd.concat(state_df_list, axis=1, sort=True)
+    max_year = max(eia_trans_dist_loss.index.astype(int))
+    if max_year < int(year):
+        print(f'The most recent T&D loss data is from {max_year}')
+        year = str(max_year)
+
     eia_trans_dist_loss.columns = eia_trans_dist_loss.columns.str.upper()
     eia_trans_dist_loss = eia_trans_dist_loss.transpose()
     eia_trans_dist_loss = eia_trans_dist_loss[[year]]
@@ -133,14 +163,14 @@ def eia_trans_dist_download_extract(year):
 
 
 def generate_regional_grid_loss(final_database, year, subregion="all"):
-    """This function generates transmission and distribution losses for the 
+    """This function generates transmission and distribution losses for the
     provided generation data and given year, aggregated by subregion.
-    
+
     Arguments:
         final_database: dataframe
             The database containing plant-level emissions.
-        year: int 
-            Analysis year for the transmission and distribution loss data. 
+        year: int
+            Analysis year for the transmission and distribution loss data.
             Ideally this should match the year of your final_database.
     Returns:
         td_by_region: dataframe
@@ -291,4 +321,3 @@ if __name__ == "__main__":
         final_database, year, "BA"
     )
     trans_dist_grid_loss.to_csv(f"{output_dir}/trans_dist_loss_{year}.csv")
-

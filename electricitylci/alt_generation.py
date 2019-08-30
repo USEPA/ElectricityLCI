@@ -310,9 +310,9 @@ def calculate_electricity_by_source(db, subregion="BA"):
     # One set of emissions passed into this routine may be life cycle emissions
     # used as proxies for Canadian generation. In those cases the electricity
     # generation will be equal to the Electricity already in the dataframe.
-    
+
     elec_sum_lists = list()
-    
+
     unique_source_lists  = unique_source_lists+[all_sources]
     for src in unique_source_lists:
         module_logger.info(f"Calculating electricity for {src}")
@@ -493,7 +493,12 @@ def create_generation_process_df():
     final_database["Compartment"] = final_database["Compartment_path"].map(
         COMPARTMENT_DICT
     )
-    final_database["EIA_Region"]=final_database["Balancing Authority Code"].map(ba_codes["EIA_Region"])
+    final_database["EIA_Region"] = final_database["Balancing Authority Code"].map(
+        ba_codes["EIA_Region"]
+    )
+    final_database["FERC_Region"] = final_database["Balancing Authority Code"].map(
+        ba_codes["FERC_Region"]
+    )
     return final_database
 
 
