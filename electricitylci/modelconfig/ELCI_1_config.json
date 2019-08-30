@@ -1,0 +1,17 @@
+{
+"electricity_lci_target_year": 2018,
+"egrid_year": 2016,
+"inventories_of_interest": {"eGRID":"2016","TRI":"2016","NEI":"2016","RCRAInfo":"2015"},
+"include_only_egrid_facilities_with_positive_generation": true,
+"filter_on_efficiency" : true,
+"egrid_facility_efficiency_filters" : {"lower_efficiency":10,"upper_efficiency":100},
+"filter_on_min_plant_percent_generation_from_primary_fuel" : true,
+"min_plant_percent_generation_from_primary_fuel_category" : 90,
+"filter_non_egrid_emission_on_NAICS" : true,
+"efficiency_of_distribution_grid" : 0.95,
+"net_trading" : false,
+"fedelemflowlist_version" : "0.1",
+"post_process_generation_emission_factors" : false,
+"use_primaryfuel_for_coal" : false,
+"fuel_name_file" : "fuelname_1.csv"
+}

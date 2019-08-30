@@ -1,14 +1,19 @@
 import numpy as np
 import pandas as pd
 from electricitylci.egrid_flowbyfacilty import egrid_flowbyfacility
-from electricitylci.globals import data_dir,egrid_year
+from electricitylci.globals import data_dir
+from electricitylci.model_config import egrid_year
+
+#Filter warnings to remove warning about setting value on a slide of a df
+import warnings
+warnings.filterwarnings("ignore")
 
 #Get flow by facility data for egrid
 egrid_net_generation = egrid_flowbyfacility[egrid_flowbyfacility['FlowName']=='Electricity']
 #Convert flow amount to MWh
-egrid_net_generation['Electricity'] = egrid_net_generation['FlowAmount']*0.00027778
+egrid_net_generation.loc[:,'Electricity'] = egrid_net_generation['FlowAmount']*0.00027778
 #drop unneeded columns
-egrid_net_generation.drop(columns=['ReliabilityScore','FlowName','FlowAmount','Compartment','Unit'],inplace=True)
+egrid_net_generation = egrid_net_generation.drop(columns=['ReliabilityScore','FlowName','FlowAmount','Compartment','Unit'])
 #Now just has 'FacilityID' and 'Electricity' in MWh
 
 #Get length

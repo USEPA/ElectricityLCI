@@ -7,7 +7,8 @@ warnings.filterwarnings("ignore")
 from electricitylci.process_dictionary_writer import *
 from electricitylci.egrid_facilities import egrid_facilities,egrid_subregions
 from electricitylci.egrid_emissions_and_waste_by_facility import years_in_emissions_and_wastes_by_facility
-from electricitylci.globals import egrid_year,output_dir, fuel_name, join_with_underscore,use_primaryfuel_for_coal
+from electricitylci.globals import output_dir, join_with_underscore
+from electricitylci.model_config import egrid_year, use_primaryfuel_for_coal, fuel_name
 from electricitylci.eia923_generation import eia_download_extract
 from electricitylci.process_exchange_aggregator_uncertainty import compilation,uncertainty,max_min
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows,map_renewable_heat_flows_to_fedelemflows,map_compartment_to_flow_type,add_flow_direction
@@ -24,30 +25,32 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
     combined_data = generation_data.merge(emissions_data, left_on = ['FacilityID'], right_on = ['eGRID_ID'], how = 'right')   
 
     #Checking the odd year
+    odd_year = None
     for year in years_in_emissions_and_wastes_by_facility:
 
         if year != egrid_year:
-           odd_year = year;
+            odd_year = year;
+            #Code below not being used
+            #checking if any of the years are odd. If yes, we need EIA data.
+            #non_egrid_emissions_odd_year = combined_data[combined_data['Year'] == odd_year]
+            #odd_database = pd.unique(non_egrid_emissions_odd_year['Source'])
 
-    #checking if any of the years are odd. If yes, we need EIA data.
-    non_egrid_emissions_odd_year = combined_data[combined_data['Year'] == odd_year]
-    odd_database = pd.unique(non_egrid_emissions_odd_year['Source'])
-      
+    cols_to_drop_for_final = ['FacilityID']
     
     #Downloading the required EIA923 data
     if odd_year != None:
         EIA_923_gen_data = eia_download_extract(odd_year)
     
-    #Merging database with EIA 923 data
-    database_with_new_generation = combined_data.merge(EIA_923_gen_data, left_on = ['eGRID_ID'],right_on = ['Plant Id'],how = 'left')
-    database_with_new_generation['Year'] = database_with_new_generation['Year'].astype(str)
-    database_with_new_generation = database_with_new_generation.sort_values(by = ['Year'])
+        #Merging database with EIA 923 data
+        combined_data = combined_data.merge(EIA_923_gen_data, left_on = ['eGRID_ID'],right_on = ['Plant Id'],how = 'left')
+        combined_data['Year'] = combined_data['Year'].astype(str)
+        combined_data = combined_data.sort_values(by = ['Year'])
+        #Replacing the odd year Net generations with the EIA net generations.
+        combined_data['Electricity']= np.where(combined_data['Year'] == int(odd_year), combined_data['Net Generation (Megawatthours)'],combined_data['Electricity'])
+        cols_to_drop_for_final = cols_to_drop_for_final+['Plant Id','Plant Name','State','YEAR','Net Generation (Megawatthours)','Total Fuel Consumption MMBtu']
 
-    #Replacing the odd year Net generations with the EIA net generations. 
-    database_with_new_generation['Electricity']= np.where(database_with_new_generation['Year'] == int(odd_year), database_with_new_generation['Net Generation (Megawatthours)'],database_with_new_generation['Electricity'])
-   
     #Dropping unnecessary columns
-    emissions_gen_data = database_with_new_generation.drop(columns = ['FacilityID','Plant Id','Plant Name','State','YEAR','Net Generation (Megawatthours)','Total Fuel Consumption MMBtu'])
+    emissions_gen_data = combined_data.drop(columns = cols_to_drop_for_final)
 
     #Merging with the egrid_facilites file to get the subregion information in the database!!!
     final_data = pd.merge(egrid_facilities_w_fuel_region,emissions_gen_data, left_on = ['FacilityID'],right_on = ['eGRID_ID'], how = 'right')
@@ -167,16 +170,19 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
                                                                          total_gen)
 
                         # Data Quality Scores
-                        database_f3['Reliability_Score'] = np.average(database_f3['ReliabilityScore'],
-                                                                      weights=database_f3['FlowAmount'])
-                        database_f3['TemporalCorrelation'] = np.average(database_f3['TemporalCorrelation'],
-                                                                        weights=database_f3['FlowAmount'])
-                        # Set GeographicalCorrelation 1 for now only
                         database_f3['GeographicalCorrelation'] = 1
-                        database_f3['TechnologicalCorrelation'] = np.average(database_f3['TechnologicalCorrelation'],
-                                                                             weights=database_f3['FlowAmount'])
-                        database_f3['DataCollection'] = np.average(database_f3['DataCollection'],
-                                                                   weights=database_f3['FlowAmount'])
+                        #If flow amount sum = 0, then do not average
+                        if sum(database_f3['FlowAmount'])!=0:
+
+                            database_f3['Reliability_Score'] = np.average(database_f3['ReliabilityScore'],
+                                                                          weights=database_f3['FlowAmount'])
+                            database_f3['TemporalCorrelation'] = np.average(database_f3['TemporalCorrelation'],
+                                                                            weights=database_f3['FlowAmount'])
+
+                            database_f3['TechnologicalCorrelation'] = np.average(database_f3['TechnologicalCorrelation'],
+                                                                                 weights=database_f3['FlowAmount'])
+                            database_f3['DataCollection'] = np.average(database_f3['DataCollection'],
+                                                                       weights=database_f3['FlowAmount'])
 
                         # Uncertainty Calcs
                         uncertainty_info = uncertainty_creation(database_f3[['Electricity', 'FlowAmount']], exchange,
@@ -214,9 +220,9 @@ def create_generation_process_df(generation_data,emissions_data,subregion):
 
     result_database = result_database.drop_duplicates()
     # Drop duplicated in total gen database
-    total_gen_database = total_gen_database.drop_duplicates()
-    total_gen_database.to_csv(output_dir + 'total_gen_database_' + subregion + '.csv', index=False)
-    # result_database.to_csv('chk.csv')
+    #total_gen_database = total_gen_database.drop_duplicates()
+
+
     print("Generation process database for " + subregion + " complete.")
     return result_database
 
@@ -277,11 +283,14 @@ def uncertainty_creation(data,name,fuelheat,mean,total_gen,total_facility_consid
                     #uncertianty calculations
                     l,b = data.shape
                     if l > 3:
-                       
                        u,s = (uncertainty(data,mean,total_gen,total_facility_considered))
                        
-                       ar['geomMean'] = str(round(math.exp(u),12)); 
-                       ar['geomSd']=str(round(math.exp(s),12)); 
+                       if u != None:
+                           ar['geomMean'] = str(round(math.exp(u),12))
+                           ar['geomSd']=str(round(math.exp(s),12))
+                       else:
+                           ar['geomMean'] = None
+                           ar['geomSd'] = None
                     else:
                        ar['geomMean'] = None
                        ar['geomSd']= None 
@@ -328,7 +337,7 @@ def add_technological_correlation_score(db):
 def add_temporal_correlation_score(db):
     db['TemporalCorrelation'] = 5
     from electricitylci.dqi import temporal_correlation_lower_bound_to_dqi
-    from electricitylci.globals import electricity_lci_target_year
+    from electricitylci.model_config import electricity_lci_target_year
 
     #Could be more precise here with year
     db['Age'] =  electricity_lci_target_year - pd.to_numeric(db['Year'])

@@ -1,6 +1,6 @@
 import os
-import pandas as pd
-import json
+
+set_model_name_with_stdin = True
 
 def set_dir(directory):
     if not os.path.exists(directory): os.makedirs(directory)
@@ -12,51 +12,6 @@ except NameError: modulepath = 'electricitylci/'
 output_dir = modulepath + 'output/'
 data_dir = modulepath + 'data/'
 
-
-#Set model_name here
-model_name = 'ELCI_1'
-
-#pull in model config vars
-try:
-    with open("electricitylci/modelbuilds/"+model_name+"_config.json") as cfg:
-        model_specs = json.load(cfg)
-except FileNotFoundError:
-    print("Model specs not found. Create a model specs file for the model of interest.")
-
-#Declare target year for LCI (recommend current year by default) and year of eGRID data to use
-electricity_lci_target_year = model_specs["electricity_lci_target_year"]
-#Year for egrid data
-egrid_year = model_specs["egrid_year"]
-#use fuel category for fuel
-
-#emissions data to include in LCI
-inventories_of_interest = model_specs["inventories_of_interest"]
-inventories = inventories_of_interest.keys()
-#Criteria for filtering eGRID data to include
-egrid_facility_efficiency_filters = model_specs["egrid_facility_efficiency_filters"]
-include_only_egrid_facilities_with_positive_generation = model_specs["include_only_egrid_facilities_with_positive_generation"]
-min_plant_percent_generation_from_primary_fuel_category = model_specs["min_plant_percent_generation_from_primary_fuel_category"]
-#Global for efficiency
-efficiency_of_distribution_grid = model_specs["efficiency_of_distribution_grid"]
-#Trading methodology
-net_trading = model_specs["net_trading"]
-#Flow list
-fedelemflowlist_version = model_specs["fedelemflowlist_version"]
-
-#Break down COAL into the primary fuel types
-use_primaryfuel_for_coal = model_specs["use_primaryfuel_for_coal"]
-#get the fuelname file
-fuel_name_file = model_specs["fuel_name_file"]
-#Reading the fuel name file
-fuel_name = pd.read_csv(data_dir+fuel_name_file)
-
-#Determine whether or not to post-process the generation data
-post_process_generation_emission_factors = model_specs["post_process_generation_emission_factors"]
-
-gen_mix_from_model_generation_data=False
-
-
-#
 def join_with_underscore(items):
     type_cast_to_str = False
     for x in items:
@@ -68,6 +23,17 @@ def join_with_underscore(items):
 
     return "_".join(items)
 
-
 electricity_flow_name_generation_and_distribution = 'Electricity, AC, 2300-7650 V'  #ref Table 1.1 NERC report
 electricity_flow_name_consumption = 'Electricity, AC, 120 V'
+
+def list_model_names_in_config():
+    configdir = modulepath + 'modelconfig/'
+    configfiles = os.listdir(configdir)
+    modelnames_dict = {}
+    selection_num = 1
+    for f in configfiles:
+        f = f.strip('_config.json')
+        modelnames_dict[selection_num]=f
+        selection_num+=1
+    return modelnames_dict
+

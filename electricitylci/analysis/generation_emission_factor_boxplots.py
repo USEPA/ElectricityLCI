@@ -9,7 +9,7 @@ import os
 import re
 import seaborn as sns
 
-from electricitylci.globals import output_dir,model_name
+from electricitylci.globals import output_dir#,model_name
 
 def get_valid_filename(s):
     """From Django framework"""

@@ -1,6 +1,6 @@
 import pandas as pd
 import facilitymatcher
-from electricitylci.globals import inventories
+from electricitylci.model_config import inventories
 from electricitylci.egrid_facilities import egrid_facilities
 
 #get egrid program matches from FRS from facility matcher

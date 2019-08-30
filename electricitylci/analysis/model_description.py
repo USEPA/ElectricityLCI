@@ -1,7 +1,8 @@
 import pandas as pd
 
 import stewicombo
-from electricitylci.globals import inventories_of_interest
+from electricitylci.model_config import inventories_of_interest
+
 
 #Send one on more process dictionary from a model
 def count_processes(process_dict):
@@ -18,19 +19,20 @@ def count_facility_matches():
 #Get emissions df's in filtering steps
 def count_emissions_wastes_by_step():
     steps = []
-    s0 = stewicombo.combineInventoriesforFacilitiesinOneInventory("eGRID", inventories_of_interest,filter_for_LCI=False,remove_overlap=False)
-    s1 = stewicombo.combineInventoriesforFacilitiesinOneInventory("eGRID", inventories_of_interest,filter_for_LCI=True,remove_overlap=False)
+    #The two additional steps are possible to understand the filtering that occurs within stewi; removed by default
+    #s0 = stewicombo.combineInventoriesforFacilitiesinOneInventory("eGRID", inventories_of_interest,filter_for_LCI=False,remove_overlap=False)
+    #s1 = stewicombo.combineInventoriesforFacilitiesinOneInventory("eGRID", inventories_of_interest,filter_for_LCI=True,remove_overlap=False)
     from electricitylci.egrid_emissions_and_waste_by_facility import emissions_and_wastes_by_facility
-    s2 = emissions_and_wastes_by_facility
+    s0 = emissions_and_wastes_by_facility
     #get filtered list to filter emissions by step
     from electricitylci.egrid_filter import egrid_facilities_selected_on_generation,egrid_facilities_in_desired_efficiency_range,\
         egrid_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min,emissions_and_waste_for_selected_egrid_facilities
 
-    s3 = s2[s2['eGRID_ID'].isin(egrid_facilities_selected_on_generation)]
-    s4 = s3[s3['eGRID_ID'].isin(egrid_facilities_in_desired_efficiency_range)]
-    s5 = s4[s4['eGRID_ID'].isin(egrid_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min)]
-    s6 = emissions_and_waste_for_selected_egrid_facilities
-    steps = [s0,s1,s2,s3,s4,s5,s6]
+    s1 = s0[s0['eGRID_ID'].isin(egrid_facilities_selected_on_generation)]
+    s2 = s1[s1['eGRID_ID'].isin(egrid_facilities_in_desired_efficiency_range)]
+    s3 = s1[s1['eGRID_ID'].isin(egrid_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min)]
+    s4 = emissions_and_waste_for_selected_egrid_facilities
+    steps = [s0,s1,s2,s3,s4]
     all_counts = pd.DataFrame()
     stepcount = 0
     for df in steps:

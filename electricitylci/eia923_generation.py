@@ -42,7 +42,7 @@ def eia_download_extract(odd_year):
         eia = eia.loc[:, colstokeep]
         eia.to_csv(stored_file_name)
     else:
-        eia = pd.read_csv(stored_file_name)
+        eia = pd.read_csv(stored_file_name,dtype={"Plant Id":"str"})
 
     EIA_923 = eia
     # Grouping similar facilities together.
