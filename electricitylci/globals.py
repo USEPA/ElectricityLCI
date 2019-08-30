@@ -33,7 +33,7 @@ def list_model_names_in_config():
     modelnames_dict = {}
     selection_num = 1
     for f in configfiles:
-        f = f.split('/')[-1]
+        f = os.path.basename(f)
         f = f.strip('_config.yml')
         modelnames_dict[selection_num] = f
         selection_num += 1
