@@ -28,6 +28,8 @@ use_alt_gen_process: True
 
 # Upstream data from NETL can be included in the outputs. This must be set to True if
 # the NETL alternative method for generation process calculations is used.
+# NOT CURRENTLY IMPLEMENTED - UPSTREAM DATA WILL BE INCLUDED IF use_alt_gen_process IS
+# TRUE.
 include_upstream_processes: True
 
 inventories_of_interest:
