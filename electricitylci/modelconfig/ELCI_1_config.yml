@@ -47,9 +47,16 @@ egrid_facility_efficiency_filters:
 
 # ELCI creates life cycle processes for each fuel type. If you only want to include
 # power plants with a minumum amount of generation from a single fuel make sure this
-# parameter is set to True
+# parameter is set to True. 
 filter_on_min_plant_percent_generation_from_primary_fuel: True
 min_plant_percent_generation_from_primary_fuel_category: 90
+
+#If the parameter above is set to True, one may still want to keep the plants
+#do not meet the threshhold. This setting will mark those power plants as 
+#MIXED and generate life cycle processes for them. Note that the definition
+#of mixed is purposefully ambiguous and will mean different things depending 
+#on the region of aggregation.
+keep_mixed_plant_category: True
 
 # NEEDS A GOOD DESCRIPTION OF THIS PARAMETER
 filter_non_egrid_emission_on_NAICS: True

@@ -11,6 +11,7 @@ from electricitylci.model_config import (
     filter_on_efficiency,
     filter_on_min_plant_percent_generation_from_primary_fuel,
     min_plant_percent_generation_from_primary_fuel_category,
+    keep_mixed_plant_category,
     filter_non_egrid_emission_on_NAICS,
     egrid_facility_efficiency_filters,
     inventories_of_interest,
@@ -403,7 +404,7 @@ def build_generation_data(
                 ]
             if filter_on_efficiency:
                 final_gen_df = efficiency_filter(final_gen_df)
-            if filter_on_min_plant_percent_generation_from_primary_fuel:
+            if filter_on_min_plant_percent_generation_from_primary_fuel and not keep_mixed_plant_category:
                 final_gen_df = final_gen_df.loc[
                     final_gen_df["primary fuel percent gen"]
                     >= min_plant_percent_generation_from_primary_fuel_category,

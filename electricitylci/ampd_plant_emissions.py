@@ -7,6 +7,9 @@ import electricitylci.eia923_generation as eia923
 import electricitylci.eia860_facilities as eia860
 import fedelemflowlist
 from electricitylci.model_config import use_primaryfuel_for_coal
+from model_config import (min_plant_percent_generation_from_primary_fuel_category,
+                          filter_on_min_plant_percent_generation_from_primary_fuel,
+                          keep_mixed_plant_category)
 import logging
 
 
@@ -775,7 +778,7 @@ def generate_plant_emissions(year):
         return sulfur_content_agg
 
     def eia_primary_fuel(row):
-        if row["Primary Fuel %"] < primary_fuel_threshold:
+        if row["Primary Fuel %"] < min_plant_percent_generation_from_primary_fuel_category:
             return "Mixed Fuel Type"
         else:
             return row["Primary Fuel"]
@@ -1196,13 +1199,16 @@ def generate_plant_emissions(year):
         / eia_gen_fuel_net_gen_output["Annual Net Generation (MWh)"]
     )
 
-    primary_fuel_threshold = 0.9
-
+    
     eia_gen_fuel_net_gen_output = eia_gen_fuel_net_gen_output.assign(
         Primary_Fuel=eia_gen_fuel_net_gen_output.apply(
             eia_primary_fuel, axis=1
         )
     )
+    if not keep_mixed_plant_category:
+        eia_gen_fuel_net_gen_output = eia_gen_fuel_net_gen_output.loc[
+                eia_gen_fuel_net_gen_output["Primary_Fuel"]!="Mixed Fuel Type",:
+                ]
     plant_fuel_class = eia_gen_fuel_net_gen_output[
         ["plant_id", "Primary_Fuel", "Primary Fuel %"]
     ].copy()

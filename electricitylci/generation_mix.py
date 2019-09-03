@@ -12,6 +12,8 @@ from electricitylci.model_config import (
     fuel_name,
     replace_egrid,
     eia_gen_year,
+    keep_mixed_plant_category,
+    min_plant_percent_generation_from_primary_fuel_category,
     # region_column_name,
     regional_aggregation
 )
@@ -105,6 +107,7 @@ def create_generation_mix_process_df_from_model_generation_data(
     database_for_genmix_final["Balancing Authority Name"]=database_for_genmix_final["Balancing Authority Code"].map(ba_codes["BA_Name"])
     database_for_genmix_final["FERC_Region"]=database_for_genmix_final["Balancing Authority Code"].map(ba_codes["FERC_Region"])
     database_for_genmix_final["EIA_Region"]=database_for_genmix_final["Balancing Authority Code"].map(ba_codes["EIA_Region"])
+
     # Changing the loop structure of this function so that it uses pandas groupby
     # if region_column_name:
     #     database_for_genmix_final["Subregion"] = database_for_genmix_final[
@@ -131,11 +134,17 @@ def create_generation_mix_process_df_from_model_generation_data(
         ] = database_for_genmix_final.loc[
             database_for_genmix_final["FuelCategory"] == "COAL", "PrimaryFuel"
         ]
-
+    if keep_mixed_plant_category:
+        mixed_criteria = (
+                database_for_genmix_final["PercentGenerationfromDesignatedFuelCategory"]
+                < min_plant_percent_generation_from_primary_fuel_category/100)
+        database_for_genmix_final.loc[mixed_criteria,"FuelCategory"]="MIXED"
     if subregion == "US":
         group_cols = ["FuelCategory"]
     else:
         group_cols = ["Subregion", "FuelCategory"]
+    if keep_mixed_plant_category:
+        pass
     subregion_fuel_gen = database_for_genmix_final.groupby(
         group_cols, as_index=False
     )["Electricity"].sum()
