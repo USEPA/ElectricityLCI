@@ -778,7 +778,7 @@ def generate_plant_emissions(year):
         return sulfur_content_agg
 
     def eia_primary_fuel(row):
-        if row["Primary Fuel %"] < min_plant_percent_generation_from_primary_fuel_category:
+        if row["Primary Fuel %"] < min_plant_percent_generation_from_primary_fuel_category/100:
             return "Mixed Fuel Type"
         else:
             return row["Primary Fuel"]
