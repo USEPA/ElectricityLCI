@@ -18,7 +18,7 @@ regional_aggregation: 'FERC'
 # will trigger the use of EPA CEMS and EIA data as substitutes for eGRID. Replacing
 # eGRID will also use EIA generation data to determine the generation mix.
 egrid_year: 2014
-eia_gen_year: 2017
+eia_gen_year: 2016
 replace_egrid: True
 
 # NETL has developed an alternate method for generation process calculations. While
@@ -31,10 +31,10 @@ use_alt_gen_process: True
 include_upstream_processes: True
 
 inventories_of_interest:
-  eGRID: 2014
-  TRI: 2014
-  NEI: 2014
-  RCRAInfo: 2013
+  eGRID: 2016
+  TRI: 2016
+  NEI: 2016
+  RCRAInfo: 2015
 
 
 # GENERATOR FILTERS
@@ -84,7 +84,7 @@ NETL_IO_trading_year: 2016
 
 # OTHER PARAMETERS
 
-fedelemflowlist_version: 0.1
+fedelemflowlist_version: 0.2
 post_process_generation_emission_factors: False
 use_primaryfuel_for_coal: False
 fuel_name_file: fuelname_1.csv
