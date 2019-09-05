@@ -70,7 +70,7 @@ def ba_io_trading_model(year=None, subregion=None):
         )
 
     #Read in BAA file which contains the names and abbreviations
-    df_BA = pd.read_excel(data_dir + '/BA_Codes_930.xlsx', sheetname = 'US', header = 4)
+    df_BA = pd.read_excel(data_dir + '/BA_Codes_930.xlsx', sheet_name = 'US', header = 4)
     df_BA.rename(columns={'etag ID': 'BA_Acronym', 'Entity Name': 'BA_Name','NCR_ID#': 'NRC_ID', 'Region': 'Region'}, inplace=True)
     BA = pd.np.array(df_BA['BA_Acronym'])
     US_BA_acronyms = df_BA['BA_Acronym'].tolist()
@@ -79,7 +79,7 @@ def ba_io_trading_model(year=None, subregion=None):
     #Original df_BAA does not include the Canadian balancing authorities
     #Import them here, then concatenate to make a single df_BAA_NA (North America)
 
-    df_BA_CA = pd.read_excel(data_dir + '/BA_Codes_930.xlsx', sheetname = 'Canada', header = 4)
+    df_BA_CA = pd.read_excel(data_dir + '/BA_Codes_930.xlsx', sheet_name = 'Canada', header = 4)
     df_BA_CA.rename(columns={'etag ID': 'BA_Acronym', 'Entity Name': 'BA_Name','NCR_ID#': 'NRC_ID', 'Region': 'Region'}, inplace=True)
     df_BA_NA = pd.concat([df_BA, df_BA_CA])
     ferc_list = df_BA_NA['FERC_Region_Abbr'].unique().tolist()

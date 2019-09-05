@@ -18,10 +18,10 @@ module_logger = logging.getLogger("combinator.py")
 ba_codes = pd.concat(
     [
         pd.read_excel(
-            f"{data_dir}/BA_Codes_930.xlsx", header=4, sheetname="US"
+            f"{data_dir}/BA_Codes_930.xlsx", header=4, sheet_name="US"
         ),
         pd.read_excel(
-            f"{data_dir}/BA_Codes_930.xlsx", header=4, sheetname="Canada"
+            f"{data_dir}/BA_Codes_930.xlsx", header=4, sheet_name="Canada"
         ),
     ]
 )
