@@ -407,7 +407,8 @@ def aggregate_gen(gen_df, subregion="BA"):
         are 'eGRID', 'NERC', 'FERC', 'BA', 'US', by default 'BA', by default "BA"
     """
     import electricitylci.alt_generation as alt_gen
-
+    if subregion is None:
+        subregion = model_specs['regional_aggregation']
     print(f"Aggregating to subregion - {subregion}")
     aggregate_df = alt_gen.aggregate_data(gen_df, subregion=subregion)
     return aggregate_df
