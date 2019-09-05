@@ -7,7 +7,7 @@ import electricitylci.eia923_generation as eia923
 import electricitylci.eia860_facilities as eia860
 import fedelemflowlist
 from electricitylci.model_config import use_primaryfuel_for_coal
-from model_config import (min_plant_percent_generation_from_primary_fuel_category,
+from electricitylci.model_config import (min_plant_percent_generation_from_primary_fuel_category,
                           filter_on_min_plant_percent_generation_from_primary_fuel,
                           keep_mixed_plant_category)
 import logging
