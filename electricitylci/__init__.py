@@ -62,17 +62,24 @@ def get_generation_process_df(use_alt_gen_process=None, regions=None, **kwargs):
                 "is True"
             )
         # upstream_df = get_upstream_process_df()
-        upstream_dict = write_upstream_process_database_to_dict(
-            upstream_df
-        )
-        upstream_dict = write_upstream_dicts_to_jsonld(upstream_dict)
-        gen_df = get_alternate_gen_plus_netl()
-        combined_df, canadian_gen = combine_upstream_and_gen_df(
-            gen_df, upstream_df
-        )
-        gen_plus_fuels = add_fuels_to_gen(
-            gen_df, upstream_df, canadian_gen, upstream_dict
-        )
+        if model_specs['include_upstream_processes'] is True:
+            upstream_dict = write_upstream_process_database_to_dict(
+                upstream_df
+            )
+            upstream_dict = write_upstream_dicts_to_jsonld(upstream_dict)
+            gen_df = get_alternate_gen_plus_netl()
+            combined_df, canadian_gen = combine_upstream_and_gen_df(
+                    gen_df, upstream_df
+            )
+            gen_plus_fuels = add_fuels_to_gen(
+                    gen_df, upstream_df, canadian_gen, upstream_dict
+            )
+        else:
+            gen_df = get_alternate_gen_plus_netl()
+            upstream_df=pd.DataFrame(columns=gen_df.columns)
+            upstream_dict={}
+            gen_plus_fuels=gen_df
+
         generation_process_df = aggregate_gen(
             gen_plus_fuels, subregion=regions
         )
