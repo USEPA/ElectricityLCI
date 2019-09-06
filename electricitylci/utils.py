@@ -71,6 +71,8 @@ def create_ba_region_map(
             region_col = 'ferc_region'
         elif 'eia' in region_col.lower():
             region_col = 'eia_region'
+        elif 'ba' in region_col.lower():
+            region_col = "Balancing Authority Code"
         else:
             raise (
                 ValueError,
