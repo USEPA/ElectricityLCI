@@ -8,6 +8,7 @@ from os.path import join
 from electricitylci.utils import find_file_in_folder
 import requests
 import electricitylci.PhysicalQuantities as pq
+import numpy as np
 
 coal_type_codes={'BIT':'B',
                  'LIG':'L',
@@ -191,35 +192,37 @@ def generate_upstream_coal(year):
     ----------
     dataframe
     """
+    coal_cleaning_percent = 1
     
     #Reading the coal input from eia
-#    coal_input_eia = pd.read_csv(data_dir+
-#                                 '/2016_Coal_Input_By_Plant_EIA923.csv')
     coal_input_eia = generate_upstream_coal_map(year)
     #Reading coal transportation data
     coal_transportation = pd.read_csv(data_dir+
                                       '/2016_Coal_Trans_By_Plant_ABB_Data.csv')
-    
-    #Creating a list with the different transportation modes
-    #trans_modes = coal_transportation.columns[1:]
-    
-    #Reading the coal emissions to air from mining (units = kg/kg coal)
-    coal_inventory_air_mining = pd.read_excel(
-            data_dir+'/Coal_model_Basin_and_transportation_inventory.xlsx',
-            sheet_name = 'air_mining')
-    
-    #Reading coal inventory for emissions to water from mining 
-    #(units = kg/kg coal)
-    coal_inventory_water_mining = pd.read_excel(
-            data_dir+'/Coal_model_Basin_and_transportation_inventory.xlsx',
-            sheet_name = 'water_mining')   
-    
-    #Creating a list with the emission names
-    column_air_emission = list(coal_inventory_air_mining.columns[2:])
-        
-    #Creating a column with water emission names.
-    column_water_emission = list(coal_inventory_water_mining.columns[2:])
-        
+      
+    coal_mining_inventory = pd.read_csv(data_dir+'/all_coal_scens_coal_cleaned.csv',index_col=0)
+    coal_mining_inventory.drop(columns=["@type","flow.@type"], inplace=True)
+    coal_mining_inventory.rename(columns={
+            "flow.categoryPath":"FlowPath",
+            "flow.name":"FlowName",
+            "flow.refUnit":"Unit",
+            "flow.flowType":"FlowType",
+            "Basin_Type":"Coal Code",
+            "flow.@id":"netl_FlowUUID",
+            },inplace=True)
+    coal_mining_inventory=coal_mining_inventory.loc[coal_mining_inventory["Per_Cleaned"]==coal_cleaning_percent,:]
+    coal_mining_inventory.drop(columns=["Per_Cleaned"],inplace=True)
+    coal_mining_inventory.reset_index(drop=True,inplace=True)
+    air_list=[x for x in coal_mining_inventory.index if "air" in coal_mining_inventory.loc[x,"FlowPath"]]
+    water_list=[x for x in coal_mining_inventory.index if "water" in coal_mining_inventory.loc[x,"FlowPath"]]
+    input_list=[x for x in coal_mining_inventory.index if "Resource" in coal_mining_inventory.loc[x,"FlowPath"]]
+    waste_list=[x for x in coal_mining_inventory.index if "Deposited" in coal_mining_inventory.loc[x,"FlowPath"]]
+    coal_mining_inventory["Compartment"]=float("nan")
+    coal_mining_inventory.loc[air_list,"Compartment"]="air"
+    coal_mining_inventory.loc[water_list,"Compartment"]="water"
+    coal_mining_inventory.loc[input_list,"Compartment"]="input"
+    coal_mining_inventory.loc[waste_list,"Compartment"]="waste"
+    coal_mining_inventory=coal_mining_inventory.dropna(subset=["Compartment"]).reset_index(drop=True)
     #Reading coal inventory for transportation emissions due transportation 
     #(units = kg/ton-mile) 
     coal_inventory_transportation = pd.read_excel(
@@ -228,77 +231,99 @@ def generate_upstream_coal(year):
     
     #Merge the coal input with the coal mining air emissions dataframe using 
     #the coal code (basin-coal_type-mine_type) as the common entity
-    merged_input_eia_coal_a = coal_input_eia.merge(
-            coal_inventory_air_mining, 
-            left_on = ['coal_source_code'], 
-            right_on =['Coal Code'],
-            how = 'left')
+    coal_input_eia_scens=list(coal_input_eia["coal_source_code"].unique())
+    coal_inventory_scens=list(coal_mining_inventory["Coal Code"].unique())
+    missing_scens=[x for x in coal_input_eia_scens if x not in coal_inventory_scens]
+    #We're going to fill in each missing sccenario with the existing data using
+    #weighted averages of current production. Most of these are from processing plants
+    #so the average will be between the underground and surface plants in the same region
+    #mining the same type of coal. For imports, this will be the weighted average
+    #of all of the same type of coal production in the US.
+#    missing_scens=list(merged_input_eia_coal_a.loc[merged_input_eia_coal_a["FlowName"].isna(),"coal_source_code"].unique())
+    existing_scens_merge=coal_input_eia.loc[~coal_input_eia["coal_source_code"].isin(missing_scens),:].merge(
+            coal_mining_inventory,
+            left_on=["coal_source_code"],
+            right_on=["Coal Code"],
+            how="left"
+            )
+    groupby_cols=["netl_FlowUUID","FlowPath","FlowType","FlowName","Unit","input","Compartment"]
+    def wtd_mean(pdser, total_db):
+        try:
+            wts = total_db.loc[pdser.index, "quantity"]
+            result = np.average(pdser, weights=wts)
+        except:
+#            module_logger.info(
+#                f"Error calculating weighted mean for {pdser.name}-"
+#                f"{total_db.loc[pdser.index[0],cols]}"
+#            )
+            result = float("nan")
+        return result
+    wm = lambda x: wtd_mean(x, existing_scens_merge)
+    missing_scens_df_list=[]
+    for scen in missing_scens:
+        coals_to_include=None
+        if scen.split("-")[0]=="IMP":
+            scen_key="-".join(scen.split("-")[1:])
+            coals_to_include = [x for x in coal_inventory_scens if scen_key in x]
+        elif scen.split("-")[2]=="P":
+            scen_key="-".join(scen.split("-")[0:2])
+            coals_to_include = [x for x in coal_inventory_scens if scen_key in x]
+        if coals_to_include is not None:
+            total_scens=len(coals_to_include)
+        if total_scens==0 or coals_to_include is None:
+            scen_key=scen.split("-")[0]
+            coals_to_include = [x for x in coal_inventory_scens if scen_key in x]
+        if coals_to_include is not None:
+            total_scens=len(coals_to_include)
+        if total_scens==0 or coals_to_include is None:
+            coals_to_include=["MISSING"]
+        target_inventory_df=existing_scens_merge.loc[existing_scens_merge["coal_source_code"].isin(coals_to_include)]
+        scen_inventory_df=target_inventory_df.groupby(by=groupby_cols, as_index=False).agg(
+                {
+                        "value":wm
+                        }
+                )
+        scen_inventory_df["Coal Code"]=scen
+        missing_scens_df_list.append(scen_inventory_df)
+    missing_scens_df=pd.concat(missing_scens_df_list).reset_index(drop=True)
+    missing_scens_merge=coal_input_eia.loc[coal_input_eia["coal_source_code"].isin(missing_scens),:].merge(
+            missing_scens_df,
+            left_on=["coal_source_code"],
+            right_on=["Coal Code"],
+            how="left"
+            )
+    
+    coal_mining_inventory_df = pd.concat([existing_scens_merge,missing_scens_merge],sort=False).reset_index(drop=True)
+    
     
     #Multiply coal mining emission factor by coal quantity; 
     #convert to kg - coal input in tons (US)
-    merged_input_eia_coal_a[column_air_emission] = (
+    coal_mining_inventory_df["FlowAmount"] = (
             pq.convert(1,'ton','kg')*
-            merged_input_eia_coal_a[column_air_emission].multiply(
-                    merged_input_eia_coal_a['quantity'],axis = "index")
+            coal_mining_inventory_df["value"].multiply(
+                    coal_mining_inventory_df['quantity'],axis = "index")
             )
     
+    coal_mining_inventory_df["Source"]="Mining"
+    coal_mining_inventory_df=coal_mining_inventory_df[["plant_id","coal_source_code","quantity","FlowName","FlowAmount","Compartment","Source"]]
     #Keep the plant ID and air emissions columns
-    merged_input_eia_coal_a = merged_input_eia_coal_a[
-            ['plant_id','coal_source_code','quantity'] + column_air_emission]
+#    merged_input_eia_coal_a = merged_input_eia_coal_a[
+#            ['plant_id','coal_source_code','quantity'] + column_air_emission]
     
     #Groupby the plant ID since some plants have multiple row entries 
     #(receive coal from multiple basins)
-    merged_input_eia_coal_a = (
-            merged_input_eia_coal_a.groupby(
-                    ['plant_id','coal_source_code'],
-                    as_index=False)[['quantity']+column_air_emission].sum())
-    merged_input_eia_coal_a = merged_input_eia_coal_a.reset_index()
+#    merged_input_eia_coal_grouped = (
+#            merged_input_eia_coal_a.groupby(
+#                    by=['plant_id','coal_source_code'],
+#                    as_index=False)[['quantity',"FlowAmount"]].sum())
+#    merged_input_eia_coal_grouped = merged_input_eia_coal_a.reset_index(drop=True)
     
     #Melting the database on Plant ID
-    melted_database_air = merged_input_eia_coal_a.melt(
-            id_vars = ['plant_id','coal_source_code','quantity'], 
-            var_name = 'FlowName', 
-            value_name = 'FlowAmount')
+#    melted_database_air = merged_input_eia_coal_a.melt(
+#            id_vars = ['plant_id','coal_source_code','quantity'], 
+#            var_name = 'FlowName', 
+#            value_name = 'FlowAmount')
     
-    #Adding to new columns for the compartment (air) and 
-    #The source of the emissisons (mining). 
-    melted_database_air['Compartment'] = 'air'
-    melted_database_air['Source'] = 'Mining'
-    
-    #Repeat the same methods for emissions from mining to water 
-    #Merge the coal input with the coal mining water emissions dataframe using 
-    #the coal code (basin-coal_type-mine_type) as the common entity
-    merged_input_eia_coal_w = coal_input_eia.merge(
-            coal_inventory_water_mining, 
-            left_on = ['coal_source_code'], 
-            right_on =['Coal Code'],
-            how = 'left')
-    #multiply coal mining emission factor by coal quantity; 
-    #convert to kg - coal input in tons (US)
-    merged_input_eia_coal_w[column_water_emission] = (
-            pq.convert(1,'ton','kg')*
-            merged_input_eia_coal_w[column_water_emission].multiply(
-                    merged_input_eia_coal_w['quantity'],axis = "index"))
-    
-    #Groupby the plant ID since some plants have multiple row entries 
-    #(receive coal from multiple basins)
-    merged_input_eia_coal_w = merged_input_eia_coal_w.groupby(
-            ['plant_id','coal_source_code'], 
-            as_index=False)[['quantity']+column_water_emission].sum()
-    merged_input_eia_coal_w = merged_input_eia_coal_w.reset_index()
-    
-    #Keep the plant ID and water emissions columns
-    merged_input_eia_coal_w = merged_input_eia_coal_w[
-            ['plant_id','coal_source_code','quantity'] + column_water_emission]
-    #Melting the database on Plant ID
-    melted_database_water = merged_input_eia_coal_w.melt(
-            id_vars = ['plant_id','coal_source_code','quantity'], 
-            var_name = 'FlowName', 
-            value_name = 'FlowAmount')
-    #Adding to new columns for the compartment (water) and 
-    #The source of the emissisons (mining). 
-    melted_database_water['Compartment'] = 'water'
-    melted_database_water['Source'] = 'Mining'
     
     #Repeat the same methods for emissions from transportation 
     coal_transportation = coal_transportation.melt(
@@ -312,6 +337,7 @@ def generate_upstream_coal(year):
     
     #multiply transportation emission factor (kg/kg-mi) by total transportation
     #(ton-miles)
+    column_air_emission=[x for x in coal_inventory_transportation.columns[1:] if "Unnamed" not in x]
     merged_transport_coal[column_air_emission] = (
             #pq.convert(1,'ton','kg')*
             merged_transport_coal[column_air_emission].multiply(
@@ -345,9 +371,8 @@ def generate_upstream_coal(year):
     melted_database_transport['Compartment'] = 'air'
     melted_database_transport['Source'] = 'Transportation'
     
-    merged_coal_upstream = pd.concat([melted_database_air, 
-                                      melted_database_water, 
-                                      melted_database_transport]).reset_index(drop=True)
+    merged_coal_upstream = pd.concat([coal_mining_inventory_df, 
+                                      melted_database_transport],sort=False).reset_index(drop=True)
     merged_coal_upstream['fuel_type']='Coal'
     merged_coal_upstream.rename(columns={
             'coal_source_code':'stage_code',
