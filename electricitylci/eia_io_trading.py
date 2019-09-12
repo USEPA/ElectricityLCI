@@ -460,7 +460,8 @@ def ba_io_trading_model(year=None, subregion=None):
 
     #Develop final df for FERC Market Region
     ferc_final_trade = df_final_trade_out_filt_melted_merge.copy()
-    ferc_final_trade = ferc_final_trade.groupby(['import ferc region abbr', 'import ferc region', 'export ferc region','export ferc region abbr'])['value'].sum().reset_index()
+#    ferc_final_trade = ferc_final_trade.groupby(['import ferc region abbr', 'import ferc region', 'export ferc region','export ferc region abbr'])['value'].sum().reset_index()
+    ferc_final_trade = ferc_final_trade.groupby(['import ferc region abbr', 'import ferc region', 'export BAA'])['value'].sum().reset_index()
     ferc_final_trade = ferc_final_trade.merge(ferc_import_grouped_tot, left_on = 'import ferc region', right_on = 'import ferc region')
     ferc_final_trade = ferc_final_trade.rename(columns = {'value_x':'value','value_y':'total'})
     ferc_final_trade['fraction'] = ferc_final_trade['value']/ferc_final_trade['total']
@@ -477,6 +478,7 @@ def ba_io_trading_model(year=None, subregion=None):
         BAA_final_trade["import_name"]=BAA_final_trade["import BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
         return BAA_final_trade
     elif subregion == 'FERC':
+        ferc_final_trade["export_name"]=ferc_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
         return ferc_final_trade
 
 
@@ -527,7 +529,7 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
     if subregion == "FERC":
         aggregation_column = "import ferc region"
         region = list(pd.unique(database[aggregation_column]))
-        export_column = 'export ferc region'
+        export_column = 'export_name'
 
     elif subregion == "BA":
         aggregation_column = "import_name" #"import BAA"

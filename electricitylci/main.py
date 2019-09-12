@@ -45,7 +45,10 @@ def main():
         generation_process_dict
     )
     print("get gen mix process")
-    generation_mix_df = electricitylci.get_generation_mix_process_df()
+    if model_specs["regional_aggregation"]=="FERC":
+        generation_mix_df = electricitylci.get_generation_mix_process_df("BA")
+    else:
+        generation_mix_df = electricitylci.get_generation_mix_process_df()
     print("write gen mix to dict")
     generation_mix_dict = electricitylci.write_generation_mix_database_to_dict(
         generation_mix_df, generation_process_dict)
