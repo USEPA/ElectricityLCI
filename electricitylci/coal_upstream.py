@@ -347,7 +347,7 @@ def generate_upstream_coal(year):
     
     merged_coal_upstream = pd.concat([melted_database_air, 
                                       melted_database_water, 
-                                      melted_database_transport])
+                                      melted_database_transport]).reset_index(drop=True)
     merged_coal_upstream['fuel_type']='Coal'
     merged_coal_upstream.rename(columns={
             'coal_source_code':'stage_code',
