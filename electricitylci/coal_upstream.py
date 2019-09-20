@@ -192,7 +192,7 @@ def generate_upstream_coal(year):
     ----------
     dataframe
     """
-    coal_cleaning_percent = 1
+#    coal_cleaning_percent = 1
     
     #Reading the coal input from eia
     coal_input_eia = generate_upstream_coal_map(year)
@@ -200,7 +200,7 @@ def generate_upstream_coal(year):
     coal_transportation = pd.read_csv(data_dir+
                                       '/2016_Coal_Trans_By_Plant_ABB_Data.csv')
       
-    coal_mining_inventory = pd.read_csv(data_dir+'/all_coal_scens_coal_cleaned.csv',index_col=0)
+    coal_mining_inventory = pd.read_csv(data_dir+'/all_coal_scens_coal_cleaned.csv')
     coal_mining_inventory.drop(columns=["@type","flow.@type"], inplace=True)
     coal_mining_inventory.rename(columns={
             "flow.categoryPath":"FlowPath",
@@ -210,8 +210,8 @@ def generate_upstream_coal(year):
             "Basin_Type":"Coal Code",
             "flow.@id":"netl_FlowUUID",
             },inplace=True)
-    coal_mining_inventory=coal_mining_inventory.loc[coal_mining_inventory["Per_Cleaned"]==coal_cleaning_percent,:]
-    coal_mining_inventory.drop(columns=["Per_Cleaned"],inplace=True)
+#    coal_mining_inventory=coal_mining_inventory.loc[coal_mining_inventory["Per_Cleaned"]==coal_cleaning_percent,:]
+#    coal_mining_inventory.drop(columns=["Per_Cleaned"],inplace=True)
     coal_mining_inventory.reset_index(drop=True,inplace=True)
     air_list=[x for x in coal_mining_inventory.index if "air" in coal_mining_inventory.loc[x,"FlowPath"]]
     water_list=[x for x in coal_mining_inventory.index if "water" in coal_mining_inventory.loc[x,"FlowPath"]]
