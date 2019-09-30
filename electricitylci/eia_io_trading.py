@@ -17,6 +17,9 @@ from electricitylci.bulk_eia_data import download_EBA, row_to_df, ba_exchange_to
 #    REGION_NAMES,
 #    REGION_ACRONYMS
 #    )
+import electricitylci.eia923_generation as eia923
+import electricitylci.eia860_facilities as eia860
+
 from electricitylci.model_config import (
     use_primaryfuel_for_coal,
     fuel_name,
@@ -70,7 +73,7 @@ def ba_io_trading_model(year=None, subregion=None):
         )
 
     #Read in BAA file which contains the names and abbreviations
-    df_BA = pd.read_excel(data_dir + '/BA_Codes_930.xlsx', sheetname = 'US', header = 4)
+    df_BA = pd.read_excel(data_dir + '/BA_Codes_930.xlsx', sheet_name = 'US', header = 4)
     df_BA.rename(columns={'etag ID': 'BA_Acronym', 'Entity Name': 'BA_Name','NCR_ID#': 'NRC_ID', 'Region': 'Region'}, inplace=True)
     BA = pd.np.array(df_BA['BA_Acronym'])
     US_BA_acronyms = df_BA['BA_Acronym'].tolist()
@@ -79,7 +82,7 @@ def ba_io_trading_model(year=None, subregion=None):
     #Original df_BAA does not include the Canadian balancing authorities
     #Import them here, then concatenate to make a single df_BAA_NA (North America)
 
-    df_BA_CA = pd.read_excel(data_dir + '/BA_Codes_930.xlsx', sheetname = 'Canada', header = 4)
+    df_BA_CA = pd.read_excel(data_dir + '/BA_Codes_930.xlsx', sheet_name = 'Canada', header = 4)
     df_BA_CA.rename(columns={'etag ID': 'BA_Acronym', 'Entity Name': 'BA_Name','NCR_ID#': 'NRC_ID', 'Region': 'Region'}, inplace=True)
     df_BA_NA = pd.concat([df_BA, df_BA_CA])
     ferc_list = df_BA_NA['FERC_Region_Abbr'].unique().tolist()
@@ -101,7 +104,16 @@ def ba_io_trading_model(year=None, subregion=None):
         with z.open('EBA.txt') as f:
             raw_txt = f.readlines()
 
-
+    eia923_gen=eia923.build_generation_data(generation_years=[year])
+    eia860_df=eia860.eia860_balancing_authority(year)
+    eia860_df["Plant Id"]=eia860_df["Plant Id"].astype(int)
+    
+    eia_combined_df=eia923_gen.merge(eia860_df,
+                                     left_on=["FacilityID"],
+                                     right_on=["Plant Id"],
+                                     how="left")
+    eia_gen_ba=eia_combined_df.groupby(by=["Balancing Authority Code"],as_index=False)["Electricity"].sum()
+    
     REGION_NAMES = [
         'California', 'Carolinas', 'Central',
         'Electric Reliability Council of Texas, Inc.', 'Florida',
@@ -188,8 +200,23 @@ def ba_io_trading_model(year=None, subregion=None):
     df_net_gen_sum = pd.concat([df_net_gen_sum,df_CA_Imports_Gen]).sum(axis=1)
     df_net_gen_sum = df_net_gen_sum.to_frame()
     df_net_gen_sum = df_net_gen_sum.sort_index(axis=0)
-
-
+    
+    #Check the net generation of each Balancing Authority against EIA 923 data.
+    #If the percent change of a given area is greater than the mean absolute difference
+    #of all of the areas, it will be treated as an error and replaced with the 
+    #value in EIA923.
+    net_gen_check=df_net_gen_sum.merge(
+            right=eia_gen_ba,
+            left_index=True,
+            right_on=["Balancing Authority Code"],
+            how="left"
+            ).reset_index()
+    net_gen_check["diff"]=abs(net_gen_check["Electricity"]-net_gen_check[0])/net_gen_check[0]
+    diff_mad=net_gen_check["diff"].mad()
+    net_gen_swap=net_gen_check.loc[net_gen_check["diff"]>diff_mad,["Balancing Authority Code","Electricity"]].set_index("Balancing Authority Code")
+    df_net_gen_sum.loc[net_gen_swap.index,[0]]=np.nan
+    net_gen_swap.rename(columns={"Electricity":0},inplace=True)
+    df_net_gen_sum=df_net_gen_sum.combine_first(net_gen_swap)
     #First work on the trading data from the 'df_trade_all_stack_2016' frame
     #This cell does the following:
     # 1. reformats the data to an annual basis
@@ -460,7 +487,8 @@ def ba_io_trading_model(year=None, subregion=None):
 
     #Develop final df for FERC Market Region
     ferc_final_trade = df_final_trade_out_filt_melted_merge.copy()
-    ferc_final_trade = ferc_final_trade.groupby(['import ferc region abbr', 'import ferc region', 'export ferc region','export ferc region abbr'])['value'].sum().reset_index()
+#    ferc_final_trade = ferc_final_trade.groupby(['import ferc region abbr', 'import ferc region', 'export ferc region','export ferc region abbr'])['value'].sum().reset_index()
+    ferc_final_trade = ferc_final_trade.groupby(['import ferc region abbr', 'import ferc region', 'export BAA'])['value'].sum().reset_index()
     ferc_final_trade = ferc_final_trade.merge(ferc_import_grouped_tot, left_on = 'import ferc region', right_on = 'import ferc region')
     ferc_final_trade = ferc_final_trade.rename(columns = {'value_x':'value','value_y':'total'})
     ferc_final_trade['fraction'] = ferc_final_trade['value']/ferc_final_trade['total']
@@ -477,6 +505,7 @@ def ba_io_trading_model(year=None, subregion=None):
         BAA_final_trade["import_name"]=BAA_final_trade["import BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
         return BAA_final_trade
     elif subregion == 'FERC':
+        ferc_final_trade["export_name"]=ferc_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
         return ferc_final_trade
 
 
@@ -527,7 +556,7 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
     if subregion == "FERC":
         aggregation_column = "import ferc region"
         region = list(pd.unique(database[aggregation_column]))
-        export_column = 'export ferc region'
+        export_column = 'export_name'
 
     elif subregion == "BA":
         aggregation_column = "import_name" #"import BAA"

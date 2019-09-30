@@ -18,7 +18,6 @@ import logging
 
 module_logger = logging.getLogger("alt_generation.py")
 
-
 def aggregate_facility_flows(df):
     """Thus function aggregates flows from the same source (NEI, netl, etc.) within
     a facility. The main problem this solves is that if several emissions
@@ -532,62 +531,63 @@ def aggregate_data(total_db, subregion="BA"):
                 f"{df.loc[p_series.index[0],groupby_cols].values}"
             )
             module_logger.debug(f"{p_series.values}")
-            try:
-                data = p_series.to_numpy()
-            except ArithmeticError:
-                module_logger.warning("Problem with input data")
-                return None
-            try:
-                log_data = np.log(data)
-            except ArithmeticError:
-                module_logger.warning("Problem with log function")
-                return None
-            try:
-                mean = np.mean(log_data)
-            except ArithmeticError:
-                module_logger.warning("Problem with mean function")
-                return None
-            l = len(data)
-            try:
-                sd = np.std(log_data)
-                sd2 = sd ** 2
-            except ArithmeticError:
-                module_logger.warning("Problem with std function")
-                return None
-            try:
-                pi1, pi2 = t.interval(alpha=0.90, df=l - 2, loc=mean, scale=sd)
-            except ArithmeticError:
-                module_logger.warning("Problem with t function")
-                return None
-            try:
-                upper_interval = np.max(
-                    [
-                        mean
-                        + sd2 / 2
-                        + pi2 * np.sqrt(sd2 / l + sd2 ** 2 / (2 * (l - 1))),
-                        mean
-                        + sd2 / 2
-                        - pi2 * np.sqrt(sd2 / l + sd2 ** 2 / (2 * (l - 1))),
-                    ]
-                )
-            except:
-                module_logger.warning("Problem with interval function")
-                return None
-            try:
-                result = (np.exp(mean), 0, np.exp(upper_interval))
-            except ArithmeticError:
-                print("Prolem with result")
-                return None
-            if result is not None:
-                return result
-            else:
-                module_logger.debug(
-                    f"Problem generating uncertainty parameters \n"
-                    f"{df.loc[p_series.index[0],groupby_cols].values}\n"
-                    f"{p_series.values}"
-                    f"{p_series.values+1}"
-                )
-                return None
+            with np.errstate(all='raise'):
+                try:
+                    data = p_series.to_numpy()
+                except ArithmeticError or ValueError or FloatingPointError:
+                    module_logger.debug("Problem with input data")
+                    return None
+                try:
+                    log_data = np.log(data)
+                except ArithmeticError or ValueError or FloatingPointError:
+                    module_logger.debug("Problem with log function")
+                    return None
+                try:
+                    mean = np.mean(log_data)
+                except ArithmeticError or ValueError or FloatingPointError:
+                    module_logger.debug("Problem with mean function")
+                    return None
+                l = len(data)
+                try:
+                    sd = np.std(log_data)
+                    sd2 = sd ** 2
+                except ArithmeticError or ValueError or FloatingPointError:
+                    module_logger.debug("Problem with std function")
+                    return None
+                try:
+                    pi1, pi2 = t.interval(alpha=0.90, df=l - 2, loc=mean, scale=sd)
+                except ArithmeticError or ValueError or FloatingPointError:
+                    module_logger.debug("Problem with t function")
+                    return None
+                try:
+                    upper_interval = np.max(
+                        [
+                            mean
+                            + sd2 / 2
+                            + pi2 * np.sqrt(sd2 / l + sd2 ** 2 / (2 * (l - 1))),
+                            mean
+                            + sd2 / 2
+                            - pi2 * np.sqrt(sd2 / l + sd2 ** 2 / (2 * (l - 1))),
+                        ]
+                    )
+                except:
+                    module_logger.debug("Problem with interval function")
+                    return None
+                try:
+                    result = (np.exp(mean), 0, np.exp(upper_interval))
+                except ArithmeticError or ValueError or FloatingPointError:
+                    print("Prolem with result")
+                    return None
+                if result is not None:
+                    return result
+                else:
+                    module_logger.debug(
+                        f"Problem generating uncertainty parameters \n"
+                        f"{df.loc[p_series.index[0],groupby_cols].values}\n"
+                        f"{p_series.values}"
+                        f"{p_series.values+1}"
+                    )
+                    return None
         else:
             return None
 

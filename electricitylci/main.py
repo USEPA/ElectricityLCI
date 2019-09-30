@@ -17,11 +17,15 @@ def main():
         # UUID's for upstream processes are created when converting to JSON-LD. This
         # has to be done here if the information is going to be included in final
         # outputs.
-        upstream_df = electricitylci.get_upstream_process_df()
-        upstream_dict = electricitylci.write_upstream_process_database_to_dict(
-            upstream_df
-        )
-        upstream_dict = electricitylci.write_upstream_dicts_to_jsonld(upstream_dict)
+        if model_specs['include_upstream_processes'] is True:
+            upstream_df = electricitylci.get_upstream_process_df()
+            upstream_dict = electricitylci.write_upstream_process_database_to_dict(
+                upstream_df
+            )
+            upstream_dict = electricitylci.write_upstream_dicts_to_jsonld(upstream_dict)
+        else:
+            upstream_dict={}
+            upstream_df=None
         generation_process_df = electricitylci.get_generation_process_df(
             upstream_df=upstream_df
         )
@@ -41,7 +45,10 @@ def main():
         generation_process_dict
     )
     print("get gen mix process")
-    generation_mix_df = electricitylci.get_generation_mix_process_df()
+    if model_specs["regional_aggregation"]=="FERC":
+        generation_mix_df = electricitylci.get_generation_mix_process_df("BA")
+    else:
+        generation_mix_df = electricitylci.get_generation_mix_process_df()
     print("write gen mix to dict")
     generation_mix_dict = electricitylci.write_generation_mix_database_to_dict(
         generation_mix_df, generation_process_dict)

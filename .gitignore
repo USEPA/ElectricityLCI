@@ -42,7 +42,7 @@ example/gen_mix_dict.pickle
 combined_df.csv
 electricitylci/modelconfig/ELCI_1_config.json
 electricitylci/modelconfig/ELCI_1_config.json
-
+electricitylci/modelconfig/testing*.yml
 
 
 #output files

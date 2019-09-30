@@ -3,7 +3,11 @@ import pandas as pd
 from electricitylci.globals import output_dir, data_dir
 import electricitylci.alt_generation as altg
 import electricitylci.import_impacts as import_impacts
-from electricitylci.model_config import eia_gen_year
+from electricitylci.model_config import (
+        eia_gen_year, 
+        keep_mixed_plant_category,
+        min_plant_percent_generation_from_primary_fuel_category
+        )
 import logging
 
 #I added this section to populate a ba_codes variable that could be used
@@ -14,10 +18,10 @@ module_logger = logging.getLogger("combinator.py")
 ba_codes = pd.concat(
     [
         pd.read_excel(
-            f"{data_dir}/BA_Codes_930.xlsx", header=4, sheetname="US"
+            f"{data_dir}/BA_Codes_930.xlsx", header=4, sheet_name="US"
         ),
         pd.read_excel(
-            f"{data_dir}/BA_Codes_930.xlsx", header=4, sheetname="Canada"
+            f"{data_dir}/BA_Codes_930.xlsx", header=4, sheet_name="Canada"
         ),
     ]
 )
@@ -294,10 +298,13 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
     # to 0 in the config file allowed the inventory to be kept for generators
     # that are now being tagged as mixed.
     generation_filter = (
-        combined_df["PercentGenerationfromDesignatedFuelCategory"] < 0.9
-    )
-    combined_df.loc[generation_filter, "FuelCategory"] = "MIXED"
-    combined_df.loc[generation_filter, "PrimaryFuel"] = "Mixed Fuel Type"
+            combined_df["PercentGenerationfromDesignatedFuelCategory"] < min_plant_percent_generation_from_primary_fuel_category/100
+        )
+    if keep_mixed_plant_category:
+        combined_df.loc[generation_filter, "FuelCategory"] = "MIXED"
+        combined_df.loc[generation_filter, "PrimaryFuel"] = "Mixed Fuel Type"
+    else:
+        combined_df=combined_df.loc[~generation_filter]
     return combined_df
 
 
