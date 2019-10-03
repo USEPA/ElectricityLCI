@@ -1,0 +1,7 @@
+Code,Balancing Authority Name,Province,OIL,GAS,COAL,NUCLEAR,SOLAR,BIOMASS,WIND,HYDRO
+BCHA,B.C. Hydro & Power Authority,British Columbia,0.00,0.02,0.00,0.00,0.00,0.09,0.01,0.88
+HQT,Hydro-Quebec TransEnergie,Quebec,0.00,0.00,0.00,0.00,0.00,0.01,0.04,0.95
+IESO,Ontario IESO,Ontario,0.00,0.08,0.00,0.58,0.02,0.01,0.08,0.23
+MHEB,Manitoba Hydro,Manitoba,0.00,0.00,0.00,0.00,0.00,0.00,0.02,0.97
+NBSO,New Brunswick System Operator,New Brunswick,0.04,0.16,0.21,0.30,0.00,0.04,0.06,0.21
+NEWL,Newfoundland and Labrador,Newfoundland and Labrador,0.04,0.01,0.00,0.00,0.00,0.00,0.01,0.94
