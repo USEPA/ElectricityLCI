@@ -86,7 +86,7 @@ def row_to_df(rows, data_type):
     dataframe
         Data for all regions in a single df with datatimes converted and UTC
     """
-    df_list = []
+    tuple_list = []
     for row in rows:
 
         # "data" is of form:
@@ -94,21 +94,26 @@ def row_to_df(rows, data_type):
         # ['20190214T03Z', -107],
         # ['20190214T02Z', -108],
         # ['20190214T01Z', -103]]
-        datetime = pd.to_datetime([x[0] for x in row['data']],
-                                  utc=True, format='%Y%m%dT%HZ')
+        try:
+            datetime = pd.to_datetime([x[0] for x in row['data']],
+                                      utc=True, format='%Y%m%dT%HZ')
+        except ValueError:
+            continue
         data = [x[1] for x in row['data']]
         region = row['series_id'].split('-')[0][4:]
 
-        df_data = {
-            'region': region,
-            'datetime': datetime,
-            data_type: data,
-        }
-
-        _df = pd.DataFrame(df_data)
-        df_list.append(_df)
-
-    df = pd.concat(df_list).reset_index(drop=True)
+#        df_data = {
+#            'region': region,
+#            'datetime': datetime,
+#            data_type: data,
+#        }
+#        region_list=[region for x in datetime]
+#        _df = pd.DataFrame(df_data)
+#        tuple_list.append(_df)
+        tuple_data=[x for x in zip([region]*len(datetime),list(datetime),data)]
+        tuple_list.extend(tuple_data)
+    df=pd.DataFrame(tuple_list,columns=["region","datetime",data_type])    
+#    df = pd.concat(df_list).reset_index(drop=True)
 
     return df
 
@@ -128,7 +133,7 @@ def ba_exchange_to_df(rows, data_type='ba_to_ba'):
     dataframe
         Data for all regions in a single df with datatimes converted and UTC
     """
-    df_list = []
+    tuple_list = []
     for row in rows:
 
         # "data" is of form:
@@ -136,22 +141,27 @@ def ba_exchange_to_df(rows, data_type='ba_to_ba'):
         # ['20190214T03Z', -107],
         # ['20190214T02Z', -108],
         # ['20190214T01Z', -103]]
-        datetime = pd.to_datetime([x[0] for x in row['data']],
-                                  utc=True, format='%Y%m%dT%HZ')
+        try:
+            datetime = pd.to_datetime([x[0] for x in row['data']],
+                                      utc=True, format='%Y%m%dT%HZ')
+        except ValueError:
+            continue
         data = [x[1] for x in row['data']]
         from_region = row['series_id'].split('-')[0][4:]
         to_region = row['series_id'].split('-')[1][:-5]
 
-        df_data = {
-            'from_region': from_region,
-            'to_region': to_region,
-            'datetime': datetime,
-            data_type: data,
-        }
+#        df_data = {
+#            'from_region': from_region,
+#            'to_region': to_region,
+#            'datetime': datetime,
+#            data_type: data,
+#        }
+        tuple_data = [x for x in zip([from_region]*len(datetime),[to_region]*len(datetime),datetime,data)]
+        tuple_list.extend(tuple_data)
+#        _df = pd.DataFrame(df_data)
+#        df_list.append(_df)
 
-        _df = pd.DataFrame(df_data)
-        df_list.append(_df)
-
-    df = pd.concat(df_list).reset_index(drop=True)
+#    df = pd.concat(df_list).reset_index(drop=True)
+    df=pd.DataFrame(tuple_list,columns=["from_region","to_region","datetime",data_type])
 
     return df
