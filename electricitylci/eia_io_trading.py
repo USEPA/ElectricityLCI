@@ -149,6 +149,7 @@ def ba_io_trading_model(year=None, subregion=None):
         row for row in EXCHANGE_ROWS
         if row['series_id'].split('-')[0][4:] not in REGION_ACRONYMS
     ]
+    del(EXCHANGE_ROWS)
     logging.info("Pivoting")
     #Subset for specified eia_gen_year
     start_datetime = '{}-01-01 00:00:00+00:00'.format(year)
@@ -160,6 +161,7 @@ def ba_io_trading_model(year=None, subregion=None):
     #Net Generation Data Import
 
     df_net_gen = row_to_df(NET_GEN_ROWS, 'net_gen')
+    del(NET_GEN_ROWS)
     df_net_gen = df_net_gen.pivot(index = 'datetime', columns = 'region', values = 'net_gen')
     ba_cols = US_BA_acronyms
 
@@ -239,6 +241,7 @@ def ba_io_trading_model(year=None, subregion=None):
 
 
     df_ba_trade = ba_exchange_to_df(BA_TO_BA_ROWS, data_type='ba_to_ba')
+    del(BA_TO_BA_ROWS)
     df_ba_trade = df_ba_trade.set_index('datetime')
     df_ba_trade['transacting regions'] = df_ba_trade['from_region'] + '-' + df_ba_trade['to_region']
 
