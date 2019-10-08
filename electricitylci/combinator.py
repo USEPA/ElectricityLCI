@@ -396,6 +396,10 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     )
     gen_plus_up_df = pd.concat([gen_df, fuel_df], ignore_index=True)
     gen_plus_up_df = fill_nans(gen_plus_up_df)
+    #Taking out anything with New Brunswick System Operator so that 
+    #these fuel inputs (for a very small US portion of NBSO) don't get mapped
+    #to the Canadian import rollup (i.e., double-counted)
+    gen_plus_up_df = gen_plus_up_df.loc[gen_plus_up_df["Balancing Authority Name"]!="New Brunswick System Operator",:].reset_index(drop=True)
     return gen_plus_up_df
 
 
