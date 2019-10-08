@@ -66,7 +66,7 @@ def ba_io_trading_model(year=None, subregion=None):
         year = model_specs['NETL_IO_trading_year']
     if subregion is None:
         subregion = model_specs['regional_aggregation']
-    if subregion not in ['BA', 'FERC']:
+    if subregion not in ['BA', 'FERC','US']:
         raise ValueError(
             f'subregion or regional_aggregation must have a value of "BA" or "FERC" '
             f'when calculating trading with input-output, not {subregion}'
@@ -469,49 +469,56 @@ def ba_io_trading_model(year=None, subregion=None):
     df_final_trade_out_filt_melted_merge.rename(columns={'FERC_Region': 'export ferc region', 'FERC_Region_Abbr':'export ferc region abbr'}, inplace=True)
     df_final_trade_out_filt_melted_merge.drop(columns = ['BA_Acronym', 'BA_Name', 'NCR ID#', 'EIA_Region', 'EIA_Region_Abbr'], inplace = True)
 
-    BAA_import_grouped_tot = df_final_trade_out_filt_melted_merge.groupby(['import BAA'])['value'].sum().reset_index()
-    ferc_import_grouped_tot = df_final_trade_out_filt_melted_merge.groupby(['import ferc region'])['value'].sum().reset_index()
-
-    #Develop final df for BAA
-    BAA_final_trade = df_final_trade_out_filt_melted_merge.copy()
-    BAA_final_trade = BAA_final_trade.drop(columns = ['import ferc region', 'export ferc region', 'import ferc region abbr', 'export ferc region abbr'])
-    BAA_final_trade = BAA_final_trade.merge(BAA_import_grouped_tot, left_on = 'import BAA', right_on = 'import BAA')
-    BAA_final_trade = BAA_final_trade.rename(columns = {'value_x':'value','value_y':'total'})
-    BAA_final_trade['fraction'] = BAA_final_trade['value']/BAA_final_trade['total']
-    BAA_final_trade = BAA_final_trade.fillna(value = 0)
-    BAA_final_trade = BAA_final_trade.drop(columns = ['value', 'total'])
-    #Remove Canadian BAs in import list
-    BAA_filt = BAA_final_trade['import BAA'].isin(US_BA_acronyms)
-    BAA_final_trade = BAA_final_trade[BAA_filt]
-    BAA_final_trade.to_csv(output_dir + '/BAA_final_trade_{}.csv'.format(year))
-
-    #Develop final df for FERC Market Region
-    ferc_final_trade = df_final_trade_out_filt_melted_merge.copy()
-#    ferc_final_trade = ferc_final_trade.groupby(['import ferc region abbr', 'import ferc region', 'export ferc region','export ferc region abbr'])['value'].sum().reset_index()
-    ferc_final_trade = ferc_final_trade.groupby(['import ferc region abbr', 'import ferc region', 'export BAA'])['value'].sum().reset_index()
-    ferc_final_trade = ferc_final_trade.merge(ferc_import_grouped_tot, left_on = 'import ferc region', right_on = 'import ferc region')
-    ferc_final_trade = ferc_final_trade.rename(columns = {'value_x':'value','value_y':'total'})
-    ferc_final_trade['fraction'] = ferc_final_trade['value']/ferc_final_trade['total']
-    ferc_final_trade = ferc_final_trade.fillna(value = 0)
-    ferc_final_trade = ferc_final_trade.drop(columns = ['value', 'total'])
-    #Remove Canadian entry in import list
-    ferc_list.remove('CAN')
-    ferc_filt = ferc_final_trade['import ferc region abbr'].isin(ferc_list)
-    ferc_final_trade = ferc_final_trade[ferc_filt]
-    ferc_final_trade.to_csv(output_dir + '/ferc_final_trade_{}.csv'.format(year))
-
     if subregion == 'BA':
+        #Develop final df for BAA
+        BAA_import_grouped_tot = df_final_trade_out_filt_melted_merge.groupby(['import BAA'])['value'].sum().reset_index()
+        BAA_final_trade = df_final_trade_out_filt_melted_merge.copy()
+        BAA_final_trade = BAA_final_trade.drop(columns = ['import ferc region', 'export ferc region', 'import ferc region abbr', 'export ferc region abbr'])
+        BAA_final_trade = BAA_final_trade.merge(BAA_import_grouped_tot, left_on = 'import BAA', right_on = 'import BAA')
+        BAA_final_trade = BAA_final_trade.rename(columns = {'value_x':'value','value_y':'total'})
+        BAA_final_trade['fraction'] = BAA_final_trade['value']/BAA_final_trade['total']
+        BAA_final_trade = BAA_final_trade.fillna(value = 0)
+        BAA_final_trade = BAA_final_trade.drop(columns = ['value', 'total'])
+        #Remove Canadian BAs in import list
+        BAA_filt = BAA_final_trade['import BAA'].isin(US_BA_acronyms)
+        BAA_final_trade = BAA_final_trade[BAA_filt]
+        BAA_final_trade.to_csv(output_dir + '/BAA_final_trade_{}.csv'.format(year))
         BAA_final_trade["export_name"]=BAA_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
         BAA_final_trade["import_name"]=BAA_final_trade["import BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
         return BAA_final_trade
     elif subregion == 'FERC':
+        ferc_import_grouped_tot = df_final_trade_out_filt_melted_merge.groupby(['import ferc region'])['value'].sum().reset_index()
+        #Develop final df for FERC Market Region
+        ferc_final_trade = df_final_trade_out_filt_melted_merge.copy()
+    #    ferc_final_trade = ferc_final_trade.groupby(['import ferc region abbr', 'import ferc region', 'export ferc region','export ferc region abbr'])['value'].sum().reset_index()
+        ferc_final_trade = ferc_final_trade.groupby(['import ferc region abbr', 'import ferc region', 'export BAA'])['value'].sum().reset_index()
+        ferc_final_trade = ferc_final_trade.merge(ferc_import_grouped_tot, left_on = 'import ferc region', right_on = 'import ferc region')
+        ferc_final_trade = ferc_final_trade.rename(columns = {'value_x':'value','value_y':'total'})
+        ferc_final_trade['fraction'] = ferc_final_trade['value']/ferc_final_trade['total']
+        ferc_final_trade = ferc_final_trade.fillna(value = 0)
+        ferc_final_trade = ferc_final_trade.drop(columns = ['value', 'total'])
+        #Remove Canadian entry in import list
+        ferc_list.remove('CAN')
+        ferc_filt = ferc_final_trade['import ferc region abbr'].isin(ferc_list)
+        ferc_final_trade = ferc_final_trade[ferc_filt]
+        ferc_final_trade.to_csv(output_dir + '/ferc_final_trade_{}.csv'.format(year))
         ferc_final_trade["export_name"]=ferc_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
         return ferc_final_trade
+    elif subregion== 'US':
+        us_import_grouped_tot = df_final_trade_out_filt_melted_merge['value'].sum()
+        us_final_trade = df_final_trade_out_filt_melted_merge.copy()
+        us_final_trade = us_final_trade.groupby(['export BAA'])['value'].sum().reset_index()
+        us_final_trade["fraction"]=us_final_trade["value"]/us_import_grouped_tot
+        us_final_trade = us_final_trade.fillna(value = 0)
+        us_final_trade=us_final_trade.drop(columns = ["value"])
+        us_final_trade["export_name"]=us_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
+        return us_final_trade
+        
 
 
 if __name__=='__main__':
     year=2016
-    subregion = 'BA'
+    subregion = 'US'
     df = ba_io_trading_model(year, subregion)
 
 
@@ -563,10 +570,15 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
         region = list(pd.unique(database[aggregation_column]))
         export_column = "export_name"#'export BAA'
 
+    elif subregion == "US":
+        export_column = "export_name"
+        region=["US"]
+    
     for reg in region:
-
-        database_reg = database.loc[database[aggregation_column] == reg, :
-            ]
+        if subregion =="US":
+            database_reg = database
+        else:
+            database_reg = database.loc[database[aggregation_column] == reg, :]
 
         exchanges_list = []
 

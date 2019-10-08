@@ -75,9 +75,13 @@ def get_generation_process_df(use_alt_gen_process=None, regions=None, **kwargs):
                     gen_df, upstream_df, canadian_gen, upstream_dict
             )
         else:
+            import electricitylci.import_impacts as import_impacts
             gen_df = get_alternate_gen_plus_netl()
-            upstream_df=pd.DataFrame(columns=gen_df.columns)
-            upstream_dict={}
+#            upstream_df=pd.DataFrame(columns=gen_df.columns)
+#            upstream_dict={}
+#            combined_df, canadian_gen = combine_upstream_and_gen_df(gen_df,upstream_df)
+            canadian_gen_df = import_impacts.generate_canadian_mixes(gen_df)
+            gen_df = pd.concat([gen_df, canadian_gen_df], ignore_index=True)
             gen_plus_fuels=gen_df
         #This change has been made to accomodate the new method of generating
         #consumption mixes for FERC regions. They now pull BAs to provide
@@ -87,9 +91,14 @@ def get_generation_process_df(use_alt_gen_process=None, regions=None, **kwargs):
 #        generation_process_df = aggregate_gen(
 #            gen_plus_fuels, subregion=regions
 #        )
-        generation_process_df = aggregate_gen(
-            gen_plus_fuels, subregion="BA"
-        )
+        if regions in ["BA","FERC","US"]:
+            generation_process_df = aggregate_gen(
+                gen_plus_fuels, subregion="BA"
+            )
+        else:
+            generation_process_df = aggregate_gen(
+                gen_plus_fuels, subregion=regions
+            )
         return generation_process_df
 
     else:
@@ -220,7 +229,7 @@ def write_generation_mix_database_to_dict(
     from electricitylci.generation_mix import olcaschema_genmix
     if regions is None:
         regions = model_specs['regional_aggregation']
-    if regions=="FERC":
+    if regions in ["FERC","US","BA"]:
         genmix_dict = olcaschema_genmix(
                 genmix_database, gen_dict, subregion="BA"
         )
@@ -491,8 +500,9 @@ def write_gen_fuel_database_to_dict(
     """
     from electricitylci.alt_generation import olcaschema_genprocess
     if subregion is None:
-#        subregion = model_specs['regional_aggregation']
+        subregion = model_specs['regional_aggregation']
         #Another change to accomodate FERC consumption pulling BAs.
+    if subregion in ["BA","FERC","US"]:    
         subregion="BA"
     print("Converting generator dataframe to dictionaries...")
     gen_plus_fuel_dict = olcaschema_genprocess(
