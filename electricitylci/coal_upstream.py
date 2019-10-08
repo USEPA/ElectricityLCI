@@ -116,6 +116,7 @@ def _transport_code(row):
     return transport_str
 
 def generate_upstream_coal_map(year):
+    from electricitylci.globals import STATE_ABBREV
     eia_fuel_receipts_df=read_eia923_fuel_receipts(year)
     expected_7a_folder=join(data_dir,'f7a_{}'.format(year))
     if not os.path.exists(expected_7a_folder):
@@ -142,38 +143,80 @@ def generate_upstream_coal_map(year):
     eia_fuel_receipts_df.rename(
             columns={'coal_supply_region':'eia_coal_supply_region'},
             inplace=True)
+    eia_fuel_receipts_na = eia_fuel_receipts_df.loc[eia_fuel_receipts_df["eia_coal_supply_region"].isnull(),:]
+    eia_fuel_receipts_good = eia_fuel_receipts_df.loc[~eia_fuel_receipts_df["eia_coal_supply_region"].isnull(),:]
+    county_basin=eia7a_df.groupby(
+            by=["mine_state","mine_county","coal_supply_region"],
+            as_index=False
+            )["production_short_tons"].count()
+    county_basin["mine_state"]=county_basin["mine_state"].str.replace(r" \(.*\)","")
+    county_basin["mine_state_abv"]=county_basin["mine_state"].str.lower().map(STATE_ABBREV).str.upper()
+    county_basin["mine_county"]=county_basin["mine_county"].str.lower()
+    fips_codes = pd.read_csv(f"{data_dir}/fips_codes.csv",)
+    _clean_columns(fips_codes)
+    fips_codes["gu_name"]=fips_codes["gu_name"].str.lower()
+    fips_codes["county_fips_code"]=fips_codes["county_fips_code"].astype(str).str.replace(".0","")
+    county_basin=county_basin.merge(
+            right=fips_codes[["state_abbreviation","county_fips_code","gu_name"]],
+            left_on=["mine_state_abv","mine_county"],
+            right_on=["state_abbreviation","gu_name"],
+            how="left"
+    )
+    county_basin.drop_duplicates(subset=["mine_state_abv","county_fips_code"],inplace=True)
+    eia_fuel_receipts_na = eia_fuel_receipts_na.merge(
+            right=county_basin[["mine_state_abv","county_fips_code","coal_supply_region"]],
+            left_on=["coalmine_state","coalmine_county"],
+            right_on=["mine_state_abv","county_fips_code"],
+            how="left"
+            )
+    eia_fuel_receipts_na["eia_coal_supply_region"]=eia_fuel_receipts_na["coal_supply_region"]
+    eia_fuel_receipts_made_good=eia_fuel_receipts_na.loc[~eia_fuel_receipts_na["eia_coal_supply_region"].isnull(),:].reset_index(drop=True)
+    eia_fuel_receipts_na=eia_fuel_receipts_na.loc[eia_fuel_receipts_na["eia_coal_supply_region"].isnull(),:].reset_index(drop=True)
+    eia_fuel_receipts_made_good.drop(columns=["mine_state_abv","county_fips_code","coal_supply_region"],inplace=True)
+    eia_fuel_receipts_good=pd.concat([eia_fuel_receipts_good,eia_fuel_receipts_made_good],ignore_index=True)
+    eia_netl_basin = pd.read_csv(data_dir+'/eia_to_netl_basin.csv')
+    eia_fuel_receipts_good = eia_fuel_receipts_good.merge(
+            eia_netl_basin,
+            left_on='eia_coal_supply_region',
+            right_on ="eia_basin",
+            how="left").reset_index(drop=True)
     state_region_map = pd.read_csv(data_dir+'/coal_state_to_basin.csv')
-    eia_fuel_receipts_df = eia_fuel_receipts_df.merge(
+    eia_fuel_receipts_na = eia_fuel_receipts_na.merge(
             state_region_map[['state','basin1','basin2']],
             left_on='coalmine_state',right_on='state', how='left')
-    eia_fuel_receipts_df.drop(columns=['state'],inplace=True)
-    eia_netl_basin = pd.read_csv(data_dir+'/eia_to_netl_basin.csv')
-    eia_fuel_receipts_df=eia_fuel_receipts_df.merge(
+    eia_fuel_receipts_na.drop(columns=['state'],inplace=True)
+    eia_fuel_receipts_na=eia_fuel_receipts_na.merge(
             eia_netl_basin,how='left',
             left_on='eia_coal_supply_region',right_on='eia_basin')
-    eia_fuel_receipts_df.drop(columns=['eia_basin'],inplace=True)
-    gulf_lignite = (
-            (eia_fuel_receipts_df['energy_source']=='LIG') &
-            (eia_fuel_receipts_df['eia_coal_supply_region']=='Interior'))
-    eia_fuel_receipts_df.loc[gulf_lignite,['netl_basin']] = 'Gulf Lignite'
-    lignite = ((eia_fuel_receipts_df['energy_source']=='LIG') &
-               (eia_fuel_receipts_df['eia_coal_supply_region']=='Western'))
-    eia_fuel_receipts_df.loc[lignite,['netl_basin']]='Lignite'
-    netl_na = (eia_fuel_receipts_df['netl_basin'].isna())
-    minimerge = pd.merge(left=eia_fuel_receipts_df,
+    eia_fuel_receipts_na.drop(columns=['eia_basin'],inplace=True)
+    netl_na = (eia_fuel_receipts_na['netl_basin'].isna())
+    minimerge = pd.merge(left=eia_fuel_receipts_na,
                          right=eia_netl_basin,
                          left_on='basin1',right_on='eia_basin',
                          how='left')
-    eia_fuel_receipts_df.loc[netl_na,'netl_basin']=(
-            minimerge.loc[netl_na,'netl_basin_y'])
-    eia_fuel_receipts_df[['netl_basin','energy_source','coalmine_type']]
-    eia_fuel_receipts_df.dropna(
+    minimerge.drop(columns=["mine_state_abv","county_fips_code","coal_supply_region","basin1","basin2","netl_basin_x","eia_basin"],inplace=True)
+    minimerge.rename(columns={"netl_basin_y":"netl_basin"},inplace=True)
+    eia_fuel_receipts_good=pd.concat([eia_fuel_receipts_good,minimerge],ignore_index=True)
+    
+    
+    gulf_lignite = (
+            (eia_fuel_receipts_good['energy_source']=='LIG') &
+            (eia_fuel_receipts_good['eia_coal_supply_region']=='Interior'))
+    eia_fuel_receipts_good.loc[gulf_lignite,['netl_basin']] = 'Gulf Lignite'
+    lignite = ((eia_fuel_receipts_good['energy_source']=='LIG') &
+               (eia_fuel_receipts_good['eia_coal_supply_region']=='Western'))
+    eia_fuel_receipts_good.loc[lignite,['netl_basin']]='Lignite'
+
+#    eia_fuel_receipts_df.loc[netl_na,'netl_basin']=(
+#            minimerge.loc[netl_na,'netl_basin_y'])
+#    eia_fuel_receipts_df[['netl_basin','energy_source','coalmine_type']]
+    eia_fuel_receipts_good.dropna(
         subset=['netl_basin','energy_source','coalmine_type'],inplace=True)
-    eia_fuel_receipts_df['coal_source_code']=eia_fuel_receipts_df.apply(
+    eia_fuel_receipts_good['coal_source_code']=eia_fuel_receipts_good.apply(
             _coal_code,axis=1)
-    eia_fuel_receipts_df['heat_input']=eia_fuel_receipts_df['quantity']*eia_fuel_receipts_df['average_heat_content']
-    eia_fuel_receipts_df.drop_duplicates(inplace=True)
-    final_df=eia_fuel_receipts_df.groupby(
+    eia_fuel_receipts_good['heat_input']=eia_fuel_receipts_good['quantity']*eia_fuel_receipts_good['average_heat_content']
+    eia_fuel_receipts_good.drop_duplicates(inplace=True)
+    final_df=eia_fuel_receipts_good.groupby(
             ['plant_id','coal_source_code'],
             as_index=False)['quantity','heat_input'].sum()
     return final_df
