@@ -9,7 +9,7 @@ from os.path import join
 import os
 import zipfile
 import requests
-
+import logging
 from electricitylci.globals import data_dir
 
 
@@ -98,7 +98,11 @@ def row_to_df(rows, data_type):
             datetime = pd.to_datetime([x[0] for x in row['data']],
                                       utc=True, format='%Y%m%dT%HZ')
         except ValueError:
-            continue
+            try:
+                datetime = pd.to_datetime([x[0]+":00" for x in row['data']],
+                                          format='%Y%m%dT%H%z')
+            except ValueError:
+                continue
         data = [x[1] for x in row['data']]
         region = row['series_id'].split('-')[0][4:]
 
@@ -112,7 +116,7 @@ def row_to_df(rows, data_type):
 #        tuple_list.append(_df)
         tuple_data=[x for x in zip([region]*len(datetime),list(datetime),data)]
         tuple_list.extend(tuple_data)
-    df=pd.DataFrame(tuple_list,columns=["region","datetime",data_type])    
+    df=pd.DataFrame(tuple_list,columns=["region","datetime",data_type])
 #    df = pd.concat(df_list).reset_index(drop=True)
 
     return df
@@ -145,7 +149,11 @@ def ba_exchange_to_df(rows, data_type='ba_to_ba'):
             datetime = pd.to_datetime([x[0] for x in row['data']],
                                       utc=True, format='%Y%m%dT%HZ')
         except ValueError:
-            continue
+            try:
+                datetime = pd.to_datetime([x[0]+"00" for x in row['data']],
+                                          format='%Y%m%dT%H%z')
+            except ValueError:
+                continue
         data = [x[1] for x in row['data']]
         from_region = row['series_id'].split('-')[0][4:]
         to_region = row['series_id'].split('-')[1][:-5]
@@ -163,5 +171,4 @@ def ba_exchange_to_df(rows, data_type='ba_to_ba'):
 
 #    df = pd.concat(df_list).reset_index(drop=True)
     df=pd.DataFrame(tuple_list,columns=["from_region","to_region","datetime",data_type])
-
     return df
