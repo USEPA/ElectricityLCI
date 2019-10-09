@@ -61,7 +61,18 @@ from electricitylci.process_dictionary_writer import *
 """
 
 def ba_io_trading_model(year=None, subregion=None):
+    REGION_NAMES = [
+        'California', 'Carolinas', 'Central',
+        'Electric Reliability Council of Texas, Inc.', 'Florida',
+        'Mid-Atlantic', 'Midwest', 'New England ISO',
+        'New York Independent System Operator', 'Northwest', 'Southeast',
+        'Southwest', 'Tennessee Valley Authority'
+    ]
 
+    REGION_ACRONYMS = [
+        'TVA', 'MIDA', 'CAL', 'CAR', 'CENT', 'ERCO', 'FLA',
+        'MIDW', 'ISNE', 'NYIS', 'NW', 'SE', 'SW',
+    ]
     if year is None:
         year = model_specs['NETL_IO_trading_year']
     if subregion is None:
@@ -91,18 +102,25 @@ def ba_io_trading_model(year=None, subregion=None):
 
 #    download_EBA()
     path = join(data_dir, 'bulk_data', 'EBA.zip')
-
+    NET_GEN_ROWS = []
+    BA_TO_BA_ROWS = []
     try:
         logging.info("Using existing bulk data download")
         z = zipfile.ZipFile(path, 'r')
-        with z.open('EBA.txt') as f:
-            raw_txt = f.readlines()
+                
     except FileNotFoundError:
         logging.info("Downloading new bulk data")
         download_EBA()
         z = zipfile.ZipFile(path, 'r')
-        with z.open('EBA.txt') as f:
-            raw_txt = f.readlines()
+        
+    with z.open('EBA.txt') as f:
+        for line in f:
+            if b'EBA.NH.H' in line:
+                NET_GEN_ROWS.append(json.loads(line))
+            elif b'EBA.ID.H' in line:
+                exchange_line=json.loads(line)
+                if exchange_line['series_id'].split('-')[0][4:] not in REGION_ACRONYMS:
+                    BA_TO_BA_ROWS.append(exchange_line)
 
     eia923_gen=eia923.build_generation_data(generation_years=[year])
     eia860_df=eia860.eia860_balancing_authority(year)
@@ -114,42 +132,9 @@ def ba_io_trading_model(year=None, subregion=None):
                                      how="left")
     eia_gen_ba=eia_combined_df.groupby(by=["Balancing Authority Code"],as_index=False)["Electricity"].sum()
     
-    REGION_NAMES = [
-        'California', 'Carolinas', 'Central',
-        'Electric Reliability Council of Texas, Inc.', 'Florida',
-        'Mid-Atlantic', 'Midwest', 'New England ISO',
-        'New York Independent System Operator', 'Northwest', 'Southeast',
-        'Southwest', 'Tennessee Valley Authority'
-    ]
-
-    REGION_ACRONYMS = [
-        'TVA', 'MIDA', 'CAL', 'CAR', 'CENT', 'ERCO', 'FLA',
-        'MIDW', 'ISNE', 'NYIS', 'NW', 'SE', 'SW',
-    ]
     logging.info("Loading json")
 
 
-#    TOTAL_INTERCHANGE_ROWS = [
-#        json.loads(row) for row in raw_txt if b'EBA.TI.H' in row
-#    ]
-
-    NET_GEN_ROWS = [
-        json.loads(row) for row in raw_txt if b'EBA.NG.H' in row
-    ]
-
-#    DEMAND_ROWS = [
-#        json.loads(row) for row in raw_txt if b'EBA.D.H' in row
-#    ]
-
-    EXCHANGE_ROWS = [
-        json.loads(row) for row in raw_txt if b'EBA.ID.H' in row
-    ]
-
-    BA_TO_BA_ROWS = [
-        row for row in EXCHANGE_ROWS
-        if row['series_id'].split('-')[0][4:] not in REGION_ACRONYMS
-    ]
-    del(EXCHANGE_ROWS)
     logging.info("Pivoting")
     #Subset for specified eia_gen_year
     start_datetime = '{}-01-01 00:00:00+00:00'.format(year)
