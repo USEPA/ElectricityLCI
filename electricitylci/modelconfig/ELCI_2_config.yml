@@ -25,7 +25,10 @@ replace_egrid: False
 # from the original EPA version. This method cannot be used with eGRID regions
 use_alt_gen_process: False
 
-# Upstream data from NETL can be included in the outputs
+# Upstream data from NETL can be included in the outputs. This must be set to True if
+# the NETL alternative method for generation process calculations is used.
+# NOT CURRENTLY IMPLEMENTED - UPSTREAM DATA WILL BE INCLUDED IF use_alt_gen_process IS
+# TRUE.
 include_upstream_processes: False
 
 inventories_of_interest:
