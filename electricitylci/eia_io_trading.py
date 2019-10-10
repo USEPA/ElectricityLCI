@@ -475,69 +475,68 @@ def ba_io_trading_model(year=None, subregion=None):
     df_final_trade_out_filt_melted_merge = df_final_trade_out_filt_melted_merge.merge(df_BA_NA, left_on = 'export BAA', right_on = 'BA_Acronym')
     df_final_trade_out_filt_melted_merge.rename(columns={'FERC_Region': 'export ferc region', 'FERC_Region_Abbr':'export ferc region abbr'}, inplace=True)
     df_final_trade_out_filt_melted_merge.drop(columns = ['BA_Acronym', 'BA_Name', 'NCR ID#', 'EIA_Region', 'EIA_Region_Abbr'], inplace = True)
-
-    if subregion == 'BA':
-        #Develop final df for BAA
-        BAA_import_grouped_tot = df_final_trade_out_filt_melted_merge.groupby(['import BAA'])['value'].sum().reset_index()
-        BAA_final_trade = df_final_trade_out_filt_melted_merge.copy()
-        BAA_final_trade = BAA_final_trade.drop(columns = ['import ferc region', 'export ferc region', 'import ferc region abbr', 'export ferc region abbr'])
-        BAA_final_trade = BAA_final_trade.merge(BAA_import_grouped_tot, left_on = 'import BAA', right_on = 'import BAA')
-        BAA_final_trade = BAA_final_trade.rename(columns = {'value_x':'value','value_y':'total'})
-        BAA_final_trade['fraction'] = BAA_final_trade['value']/BAA_final_trade['total']
-        BAA_final_trade = BAA_final_trade.fillna(value = 0)
-        BAA_final_trade = BAA_final_trade.drop(columns = ['value', 'total'])
-        #Remove Canadian BAs in import list
-        BAA_filt = BAA_final_trade['import BAA'].isin(US_BA_acronyms)
-        BAA_final_trade = BAA_final_trade[BAA_filt]
-        #There are some BAs that will have 0 trade. Some of these are legitimate
-        #Alcoa Yadkin has no demand (i.e., all power generation is exported) others
-        #seem to be errors. For those BAs with actual demand, we'll set the 
-        #consumption mix to 100% from that BA. For those without demand,
-        #fraction will be set to near 0 just to make sure systems can be built
-        #in openLCA
-        BAA_zero_trade = [x for x in list(BAA_final_trade["import BAA"].unique()) if BAA_final_trade.loc[BAA_final_trade["import BAA"]==x,"fraction"].sum()==0]
-        BAAs_from_zero_trade_with_demand = []
-        for d_row in DEMAND_ROWS:
-            if d_row["series_id"].split('.')[1].split('-')[0] in BAA_zero_trade:
-                BAAs_from_zero_trade_with_demand.append(d_row["series_id"].split('.')[1].split('-')[0])
-        BAAs_from_zero_trade_with_demand = list(set(BAAs_from_zero_trade_with_demand))
-        del(DEMAND_ROWS)
-        for baa in BAAs_from_zero_trade_with_demand:
-            BAA_final_trade.at[(BAA_final_trade["import BAA"]==baa)&(BAA_final_trade["export BAA"]==baa),"fraction"]=1
-        for baa in list(set(BAA_zero_trade)-set(BAAs_from_zero_trade_with_demand)):
-            BAA_final_trade.at[(BAA_final_trade["import BAA"]==baa)&(BAA_final_trade["export BAA"]==baa),"fraction"]=1E-15
-        BAA_final_trade.to_csv(output_dir + '/BAA_final_trade_{}.csv'.format(year))
-        BAA_final_trade["export_name"]=BAA_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
-        BAA_final_trade["import_name"]=BAA_final_trade["import BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
-        return BAA_final_trade
-    elif subregion == 'FERC':
-        ferc_import_grouped_tot = df_final_trade_out_filt_melted_merge.groupby(['import ferc region'])['value'].sum().reset_index()
-        #Develop final df for FERC Market Region
-        ferc_final_trade = df_final_trade_out_filt_melted_merge.copy()
-    #    ferc_final_trade = ferc_final_trade.groupby(['import ferc region abbr', 'import ferc region', 'export ferc region','export ferc region abbr'])['value'].sum().reset_index()
-        ferc_final_trade = ferc_final_trade.groupby(['import ferc region abbr', 'import ferc region', 'export BAA'])['value'].sum().reset_index()
-        ferc_final_trade = ferc_final_trade.merge(ferc_import_grouped_tot, left_on = 'import ferc region', right_on = 'import ferc region')
-        ferc_final_trade = ferc_final_trade.rename(columns = {'value_x':'value','value_y':'total'})
-        ferc_final_trade['fraction'] = ferc_final_trade['value']/ferc_final_trade['total']
-        ferc_final_trade = ferc_final_trade.fillna(value = 0)
-        ferc_final_trade = ferc_final_trade.drop(columns = ['value', 'total'])
-        #Remove Canadian entry in import list
-        ferc_list.remove('CAN')
-        ferc_filt = ferc_final_trade['import ferc region abbr'].isin(ferc_list)
-        ferc_final_trade = ferc_final_trade[ferc_filt]
-        ferc_final_trade.to_csv(output_dir + '/ferc_final_trade_{}.csv'.format(year))
-        ferc_final_trade["export_name"]=ferc_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
-        return ferc_final_trade
-    elif subregion== 'US':
-        us_import_grouped_tot = df_final_trade_out_filt_melted_merge['value'].sum()
-        us_final_trade = df_final_trade_out_filt_melted_merge.copy()
-        us_final_trade = us_final_trade.groupby(['export BAA'])['value'].sum().reset_index()
-        us_final_trade["fraction"]=us_final_trade["value"]/us_import_grouped_tot
-        us_final_trade = us_final_trade.fillna(value = 0)
-        us_final_trade=us_final_trade.drop(columns = ["value"])
-        us_final_trade["export_name"]=us_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
-        return us_final_trade
-        
+#    if subregion == 'BA':
+    #Develop final df for BAA
+    BAA_import_grouped_tot = df_final_trade_out_filt_melted_merge.groupby(['import BAA'])['value'].sum().reset_index()
+    BAA_final_trade = df_final_trade_out_filt_melted_merge.copy()
+    BAA_final_trade = BAA_final_trade.drop(columns = ['import ferc region', 'export ferc region', 'import ferc region abbr', 'export ferc region abbr'])
+    BAA_final_trade = BAA_final_trade.merge(BAA_import_grouped_tot, left_on = 'import BAA', right_on = 'import BAA')
+    BAA_final_trade = BAA_final_trade.rename(columns = {'value_x':'value','value_y':'total'})
+    BAA_final_trade['fraction'] = BAA_final_trade['value']/BAA_final_trade['total']
+    BAA_final_trade = BAA_final_trade.fillna(value = 0)
+    BAA_final_trade = BAA_final_trade.drop(columns = ['value', 'total'])
+    #Remove Canadian BAs in import list
+    BAA_filt = BAA_final_trade['import BAA'].isin(US_BA_acronyms)
+    BAA_final_trade = BAA_final_trade[BAA_filt]
+    #There are some BAs that will have 0 trade. Some of these are legitimate
+    #Alcoa Yadkin has no demand (i.e., all power generation is exported) others
+    #seem to be errors. For those BAs with actual demand, we'll set the 
+    #consumption mix to 100% from that BA. For those without demand,
+    #fraction will be set to near 0 just to make sure systems can be built
+    #in openLCA
+    BAA_zero_trade = [x for x in list(BAA_final_trade["import BAA"].unique()) if BAA_final_trade.loc[BAA_final_trade["import BAA"]==x,"fraction"].sum()==0]
+    BAAs_from_zero_trade_with_demand = []
+    for d_row in DEMAND_ROWS:
+        if d_row["series_id"].split('.')[1].split('-')[0] in BAA_zero_trade:
+            BAAs_from_zero_trade_with_demand.append(d_row["series_id"].split('.')[1].split('-')[0])
+    BAAs_from_zero_trade_with_demand = list(set(BAAs_from_zero_trade_with_demand))
+    del(DEMAND_ROWS)
+    for baa in BAAs_from_zero_trade_with_demand:
+        BAA_final_trade.at[(BAA_final_trade["import BAA"]==baa)&(BAA_final_trade["export BAA"]==baa),"fraction"]=1
+    for baa in list(set(BAA_zero_trade)-set(BAAs_from_zero_trade_with_demand)):
+        BAA_final_trade.at[(BAA_final_trade["import BAA"]==baa)&(BAA_final_trade["export BAA"]==baa),"fraction"]=1E-15
+    BAA_final_trade.to_csv(output_dir + '/BAA_final_trade_{}.csv'.format(year))
+    BAA_final_trade["export_name"]=BAA_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
+    BAA_final_trade["import_name"]=BAA_final_trade["import BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
+#        return BAA_final_trade
+#    elif subregion == 'FERC':
+    ferc_import_grouped_tot = df_final_trade_out_filt_melted_merge.groupby(['import ferc region'])['value'].sum().reset_index()
+    #Develop final df for FERC Market Region
+    ferc_final_trade = df_final_trade_out_filt_melted_merge.copy()
+#    ferc_final_trade = ferc_final_trade.groupby(['import ferc region abbr', 'import ferc region', 'export ferc region','export ferc region abbr'])['value'].sum().reset_index()
+    ferc_final_trade = ferc_final_trade.groupby(['import ferc region abbr', 'import ferc region', 'export BAA'])['value'].sum().reset_index()
+    ferc_final_trade = ferc_final_trade.merge(ferc_import_grouped_tot, left_on = 'import ferc region', right_on = 'import ferc region')
+    ferc_final_trade = ferc_final_trade.rename(columns = {'value_x':'value','value_y':'total'})
+    ferc_final_trade['fraction'] = ferc_final_trade['value']/ferc_final_trade['total']
+    ferc_final_trade = ferc_final_trade.fillna(value = 0)
+    ferc_final_trade = ferc_final_trade.drop(columns = ['value', 'total'])
+    #Remove Canadian entry in import list
+    ferc_list.remove('CAN')
+    ferc_filt = ferc_final_trade['import ferc region abbr'].isin(ferc_list)
+    ferc_final_trade = ferc_final_trade[ferc_filt]
+    ferc_final_trade.to_csv(output_dir + '/ferc_final_trade_{}.csv'.format(year))
+    ferc_final_trade["export_name"]=ferc_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
+#        return ferc_final_trade
+#    elif subregion== 'US':
+    us_import_grouped_tot = df_final_trade_out_filt_melted_merge['value'].sum()
+    us_final_trade = df_final_trade_out_filt_melted_merge.copy()
+    us_final_trade = us_final_trade.groupby(['export BAA'])['value'].sum().reset_index()
+    us_final_trade["fraction"]=us_final_trade["value"]/us_import_grouped_tot
+    us_final_trade = us_final_trade.fillna(value = 0)
+    us_final_trade=us_final_trade.drop(columns = ["value"])
+    us_final_trade["export_name"]=us_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
+#        return us_final_trade
+    return {'BA':BAA_final_trade,'FERC':ferc_final_trade,'US':us_final_trade}
 
 
 if __name__=='__main__':
