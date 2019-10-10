@@ -62,21 +62,30 @@ def main():
     # it's just easier to split here.
     if model_specs['use_alt_gen_process'] is True:
         print("using alt gen method for consumption mix")
-        cons_mix_df = electricitylci.get_consumption_mix_df()
+        cons_mix_df_dict = electricitylci.get_consumption_mix_df()
         print("write consumption mix to dict")
-        cons_mix_dict = electricitylci.write_consumption_mix_to_dict(
-            cons_mix_df, generation_mix_dict
-        )
+        cons_mix_dicts={}
+        for subreg in cons_mix_df_dict.keys():
+            #####NEED TO FIND A WAY TO SPECIFY REGION HERE
+            cons_mix_dicts[subreg] = electricitylci.write_consumption_mix_to_dict(
+                cons_mix_df_dict[subreg], generation_mix_dict,subregion=subreg
+            )
         print("write consumption mix to jsonld")
-        cons_mix_dict = electricitylci.write_process_dicts_to_jsonld(cons_mix_dict)
+        for subreg in cons_mix_dicts.keys():
+            cons_mix_dicts[subreg] = electricitylci.write_process_dicts_to_jsonld(cons_mix_dicts[subreg])
         print("get distribution mix")
-        dist_mix_df = electricitylci.get_distribution_mix_df(generation_process_df)
+        dist_mix_df_dict={}
+        for subreg in cons_mix_dicts.keys():
+            dist_mix_df_dict[subreg] = electricitylci.get_distribution_mix_df(generation_process_df,subregion=subreg)
         print("write dist mix to dict")
-        dist_mix_dict = electricitylci.write_distribution_mix_to_dict(
-            dist_mix_df, cons_mix_dict
-        )
+        dist_mix_dicts={}
+        for subreg in dist_mix_df_dict.keys():
+            dist_mix_dicts[subreg] = electricitylci.write_distribution_mix_to_dict(
+                dist_mix_df_dict[subreg], cons_mix_dicts[subreg],subregion=subreg
+            )
         print("write dist mix to jsonld")
-        dist_mix_dict = electricitylci.write_process_dicts_to_jsonld(dist_mix_dict)
+        for subreg in dist_mix_dicts.keys():
+            dist_mix_dicts[subreg] = electricitylci.write_process_dicts_to_jsonld(dist_mix_dicts[subreg])
     else:
         #Get surplus and consumption mix dictionary
         sur_con_mix_dict = electricitylci.write_surplus_pool_and_consumption_mix_dict()

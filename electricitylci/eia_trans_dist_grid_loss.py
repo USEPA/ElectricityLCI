@@ -8,7 +8,7 @@ import urllib.request
 from electricitylci.globals import output_dir, data_dir
 import logging
 from xlrd import XLRDError
-
+from functools import lru_cache
 #%%
 # Set working directory, files downloaded from EIA will be saved to this location
 # os.chdir = 'N:/eLCI/Transmission and Distribution'
@@ -17,7 +17,7 @@ from xlrd import XLRDError
 # Define function to extract EIA state-wide electricity profiles and calculate
 # state-wide transmission and distribution losses for the user-specified year
 
-
+@lru_cache(maxsize=10)
 def eia_trans_dist_download_extract(year):
 
     """[This function (1) downloads EIA state-level electricity profiles for all
