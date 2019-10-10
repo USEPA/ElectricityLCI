@@ -9,8 +9,12 @@ from electricitylci.coal_upstream import (
 )
 from electricitylci import write_process_dicts_to_jsonld
 import logging
-
+import yaml
+import time
+from electricitylci.process_dictionary_writer import exchangeDqsystem, processDqsystem
 module_logger=logging.getLogger("upstream_dict.py")
+with open(f"{data_dir}/upstream_metadata.yaml", 'r') as f:
+    metadata = yaml.safe_load(f)
 
 def _unit(unt):
     ar = dict()
@@ -38,7 +42,7 @@ def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
     ar["exchanges"] = exchanges_list
     ar["location"] = ""  # location(region)
     ar["parameters"] = ""
-    # ar['processDocumentation']=process_doc_creation();
+    ar['processDocumentation']=process_doc_creation(fuel_type);
     ar["processType"] = "UNIT_PROCESS"
     ar["name"] = process_name
     ar["category"] = fuel_category_dict[fuel_type]
@@ -393,6 +397,41 @@ def olcaschema_genupstream_processes(merged):
 #        print("complete")
     return upstream_process_dict
 
+def process_doc_creation(fueltype=""):
+
+    global year
+    ar = dict()
+    ar["timeDescription"] = ""
+    ar["validUntil"] = "12/31/2018"
+    ar["validFrom"] = "1/1/2018"
+    ar[
+        "technologyDescription"
+    ] = "This is an aggregation of technology types for this fuel type within this eGRID subregion"
+    ar["dataCollectionDescription"] = metadata["DataCollectionPeriod"]
+    ar["completenessDescription"] = metadata["DataCompleteness"]
+    ar["dataSelectionDescription"] = metadata["DataSelection"]
+    ar["reviewDetails"] = metadata["DatasetOtherEvaluation"]
+    ar["dataTreatmentDescription"] = metadata["DataTreatment"]
+    ar["inventoryMethodDescription"] = metadata["LCIMethod"]
+    ar["modelingConstantsDescription"] = metadata["ModellingConstants"]
+    ar["reviewer"] = metadata["Reviewer"]
+    ar["samplingDescription"] = metadata["SamplingProcedure"]
+    ar["sources"] = ""
+    ar["restrictionsDescription"] = metadata["AccessUseRestrictions"]
+    ar["copyright"] = False
+    ar["creationDate"] = time.time()
+    ar["dataDocumentor"] = metadata["DataDocumentor"]
+    ar["dataGenerator"] = metadata["DataGenerator"]
+    ar["dataSetOwner"] = metadata["DatasetOwner"]
+    ar["intendedApplication"] = metadata["IntendedApplication"]
+    ar["projectDescription"] = metadata["ProjectDescription"]
+    ar["publication"] = ""
+    ar["geographyDescription"] = ""
+    ar["exchangeDqSystem"] = exchangeDqsystem()
+    ar["dqSystem"] = processDqsystem()
+    # Temp place holder for process DQ scores
+    ar["dqEntry"] = "(5;5)"
+    return ar
 
 if __name__ == "__main__":
     import electricitylci.coal_upstream as coal

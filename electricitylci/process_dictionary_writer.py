@@ -12,13 +12,16 @@ from electricitylci.globals import (
 )
 from electricitylci.model_config import egrid_year
 from electricitylci.egrid_facilities import egrid_subregions
+import yaml
 
 year = egrid_year
 
 # Read in general metadata to be used by all processes
-metadata = pd.read_csv(join(data_dir, "metadata.csv"))
+with open(join(data_dir, "process_metadata.yml")) as f:
+    metadata=yaml.safe_load(f)
+#metadata = pd.read_csv(join(data_dir, "metadata.csv"))
 # Use only first row of metadata for all processes for now
-metadata = metadata.iloc[0,]
+#metadata = metadata.iloc[0,]
 
 # Read in process location uuids
 location_UUID = pd.read_csv(join(data_dir, "location_UUIDs.csv"))

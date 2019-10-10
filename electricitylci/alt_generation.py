@@ -792,6 +792,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         flow_table_creation,
         ref_exchange_creator,
         uncertainty_table_creation,
+        process_doc_creation,
     )
 
     from electricitylci.aggregation_selector import subregion_col
@@ -927,7 +928,8 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     process_df["defaultAllocationMethod"] = ""
     process_df["location"] = ""
     process_df["parameters"] = ""
-    process_df["processDocumentation"] = ""
+    process_doc_dict = process_doc_creation()
+    process_df["processDocumentation"] = [process_doc_dict]*len(process_df)
     process_df["processType"] = "UNIT_PROCESS"
     process_df["category"] = (
         "22: Utilities/2211: Electric Power Generation, Transmission and Distribution/"

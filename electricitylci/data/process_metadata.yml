@@ -1,0 +1,111 @@
+IntendedApplication: 'The intended application for these inventories is to provide 
+high-resolution electricity data for the establishment of robust background data used in LCIs of 
+US systems. These data were developed as regionally specific, average electricity 
+generation/consumption LCI for use in the application of LCAs where accurate electricity 
+inventories are needed to assess the system of interest and/or to evaluate the sensitivity to 
+changes in supplied electricity. A full inventory of environmental flows are included enabling 
+use of a full range of LCIA impact categories.'
+DatasetOwner: 'US EPA'
+DataGenerator: 'US EPA and ERG and NREL and NETL!!!'
+DataDocumentor: 'US EPA and ERG and NREL and NETL!!!'
+AccessUseRestrictions: 'No Restrictions'
+ProjectDescription: 'This research was conducted as part of the USEPA Air, Climate, and Energy 
+national research program. Support was provided by the National Renewable Energy Laboratory 
+through interagency agreement DW-89-92448301-1, and by Eastern Research Group (ERG) through 
+USEPA contract EP-C-16-015, task order 008.'
+LCIMethod: 'Attibutional'
+ModellingConstants: 'The model scope is intended to include electricity generation through 
+delivery to the end user via the electricity grid in the United States. This scope is broken 
+down into stages for generation, mixes of produced electricity, mixes of consumed electricity, 
+and distribution to the final user. Inputs to generation including fuels, capital 
+infrastructure and other purchased goods or extracted resources, and any chemical release and 
+hazardous wastes generated. One megawatt-hour (MWh) is the declared unit used in processes 
+within all life cycle stages.'
+DataCompleteness: ''
+DataTreatment: 'Electricity generation processes are primarily based on facility-reported 
+data. All the facilities defined in the eGRID ‘Plants’ list are the electricity generators 
+used as the pool for creating the LCI. The net generation quantity reported in the ‘Plants’ 
+list was used for generation amount. The annual heat input was used to estimate the energy in 
+the fuel or directly captured energy. The heat input to the plant is converted to a physical 
+flow by using information about the fuel source being used and the EIA data for heat content 
+of those respective fuel sources. Emissions and wastes from these facilities are gathered from 
+eGRID as well as the USEPA emissions and waste inventories, NEI, TRI, and RCRAInfo. 
+Alternative generation data was gathered from EIA-923 when the emissions or waste inventories 
+correspond to a non-egrid year. The eGRID subregion identifier in the ‘Plants’ list was used 
+to associate a facility with a region. The fuel and energy types used for the aggregation are 
+the eGRID fuel categories -- oil, natural gas, synthetic gas, nuclear fuel, hydroelectric, 
+biomass, wind, solar, geothermal and other fuel -- except for the coal sources, which are 
+further disaggregated by the eGRID reported primary fuel. The coal fuels are bituminous coal, 
+lignite coal, sub-bituminous coal, refined coal, and waste coal. Each generation process, 
+defined by fuel type and regions, includes a fuel or energy input, linkage to an 
+infrastructure process, and emissions to air, water, and soil, and hazardous waste reported by 
+facilities in that region in the form of emission and waste factors. 
+
+Consumption inventories are based on FERC Form 714 and international trading data in 
+conjunction with the updated generation mixes. There are two different approaches to 
+estimating generation mixes described here: 1) Net Trading and 2) Gross Trading. Both 
+approaches are based on a trading methodology intended to replicate real-world electricity 
+trading between eGRID subregions within the NERC regions. The Net Trading approach assumes 
+that the eGRID regions first provide electricity for their own demand and provide any 
+surpluses (generation>demand) to the shared pool for their respective NERC region whereas the 
+Gross Trading approach contributes all trades out to the shared NERC pool then the eGRID 
+regions draw from that shared pool to meet their annual demand. '
+DataSelection: 'eGRID is a US EPA compiled inventory of electricity generation and selected 
+greenhouse gas and criteria air pollutant emissions for electric power generators that sell 
+electricity to the grid in the United States. eGRID is a primary source along with other USEPA 
+maintained national emission and waste inventories for modeling generation. These inventories 
+include the Toxic Release Inventory (TRI), the National Emissions Inventory (NEI), and 
+Resources Conservation and Recycling Acts’ Biennial Report, which is stored in system called 
+RCRAInfo. The Energy Information Administration (EIA) compiles generation and fuel use data in 
+EIA-923 report used for generation data for odd years when eGRID generation data are not 
+available. EIA also provides heat-content data on fossil and nuclear fuel inputs which are 
+used to relate heat input data to mass quantities of fuel. The Federal Energy Regulatory 
+Commission (FERC) receives and reports electricity trading data on the grid in its 714 form. 
+These data are used for modeling electricity trade across regions.'
+SamplingProcedure: 'BOUNDARY CONDITIONS
+All processes are compiled by US region using boundaries based on electricity trading defined as ‘subregions’ in the Emissions and Generation Resource Integrated Database (eGRID). Generation processes are also aggregated by fuel or energy source and provide the flow of electricity after it has been transformed for transmission on average US high voltage transmission lines (230 – 765 kV ). Mix processes are mixes of generation by fuel type representing the average mix of electricity available on the grid within the region either based on production or consumption. Delivery to the final user is targeted toward an average end user without separation between different user types. The time span for all processes is one year, with the goal to represent the current (2018) year. 
+
+DATA COLLECTION
+All inventories were calculated using secondary data from publicly available datasets.
+
+UNCERTAINTY ESTIMATION
+Flow-level data quality scores are assigned to each elementary flow exchange and process-level 
+scores to each process using the USEPA LCA Data Quality Assessment guidance . In the 
+generation processes, for each emission factor, five data quality scores were assigned on 
+flow-level data quality scoring. Process data quality scores draw on the process US EPA  DQ 
+indicator guidance. Process completeness is calculated by first creating a list of expected 
+flows for each fuel type. U.S. average profiles for the fuels used in electricity generation 
+are developed for expected flows in the following categories: greenhouse gases (GHG), CAPs, 
+toxic and hazardous air pollutants (HAP), toxic water discharges, toxic soil releases, and 
+hazardous waste. To determine the expected flows in each category the number of flows reported 
+in the underlying data sources NEI, TRI, eGRID, RCRAInfo are summed across eGRID subregions by 
+fuel type. Expected flows by fuel type for other inputs and outputs including intermediate 
+inputs, raw energy demands, and water inputs are determined based on flows reported for the 
+relevant electricity generation fuel type in existing LCI datasets such as ANL’s GREET model, 
+NREL’s USLCI, and ecoinvent. Expected nutrient discharges to water are derived from a sample 
+of electric facilities reporting to USEPA’s Discharge Monitoring Report (DMR). The actual 
+flows evaluated for each fuel type by eGRID subregion can then be documented and compared to 
+the U.S. average electrical fuel generation profiles to determine the overall process 
+completeness according to the method described in USEPA LCA Data Quality Assessment guidance. 
+Air emission flow data collection scores can also draw on these fuel-specific profiles by 
+documenting whether an expected flow is being reported by the fuel type in the relevant eGRID 
+subregion. An expected emission may not be captured if there are discrepancies between the 
+facilities covered in eGRID and those reporting to the USEPA databases TRI, NEI, RCRAInfo.'
+DataCollectionPeriod: 'For the generation data, 2016 datasets were used where possible. 
+RCRAInfo data was not available for 2016 so the 2015 dataset was used. The FERC Form 714 data 
+used to model the trading for the consumption inventories is based on 2014 reported trades.'
+Reviewer: 'NETL and USDA'
+DatasetOtherEvaluation: ''
+Source1: ''
+Source2: ''
+Source3: ''
+Source4: ''
+Source5: ''
+Source6: ''
+Source7: ''
+Source8: ''
+Source9: ''
+Source10: ''
+Source11: ''
+Source12: ''
+Source13: ''
