@@ -5,20 +5,59 @@ import math
 import time
 import pandas as pd
 from os.path import join
+import electricitylci
 from electricitylci.globals import (
     data_dir,
     electricity_flow_name_generation_and_distribution,
     electricity_flow_name_consumption,
 )
-from electricitylci.model_config import egrid_year
-from electricitylci.egrid_facilities import egrid_subregions
+from electricitylci.model_config import (
+        egrid_year,
+        regional_aggregation,
+        replace_egrid,
+        model_specs
+)
+#from electricitylci.egrid_facilities import egrid_subregions
 import yaml
+import logging
 
+module_logger = logging.getLogger("process_dictionary_writer.py")
 year = egrid_year
 
 # Read in general metadata to be used by all processes
 with open(join(data_dir, "process_metadata.yml")) as f:
     metadata=yaml.safe_load(f)
+
+
+#Wanted to be able to reuse sections of the metadata in other subsections.
+#in order to do this with yaml, we need to be able to process lists of lists.
+#process_metadata makes this happen.
+def process_metadata(entry):
+    if isinstance(entry,str):
+        return entry
+    elif isinstance(entry,list):
+        try:
+            total_string = ""
+            for x in entry:
+                if isinstance(x,str): 
+                    total_string=total_string+x+"\n"
+                elif isinstance(x,list):
+                    if len(x)==1:
+                        total_string+=x[0]
+                    else:
+                        total_string=total_string+"\n".join([y[0] for y in x])
+#            result = '\n'.join([x[0] for x in entry])
+            return total_string
+        except ValueError:
+            pass
+        
+    elif isinstance(entry,dict):
+        for key in entry.keys():
+            entry[key] = process_metadata(entry[key])
+        return entry
+
+for key in metadata.keys():
+    metadata[key]=process_metadata(metadata[key])
 #metadata = pd.read_csv(join(data_dir, "metadata.csv"))
 # Use only first row of metadata for all processes for now
 #metadata = metadata.iloc[0,]
@@ -111,8 +150,6 @@ def exchange_table_creation_ref_cons(data):
     ar["amountFormula"] = ""
     ar["unit"] = unit("MWh")
     return ar
-
-
 
 def gen_process_ref(fuel, reg):
     processref = dict()
@@ -270,35 +307,84 @@ def location(region):
     ar["name"] = region
     return ar
 
-
-def process_doc_creation():
-
+OLCA_TO_METADATA={
+        "timeDescription":None,
+        "validUntil":None,
+        "validFrom":None,
+        "technologyDescription":"TechnologyDescription",
+        "dataCollectionDescription":"DataCollectionPeriod",
+        "completenessDescription":"DataCompleteness",
+        "dataSelectionDescription":"DataSelection",
+        "reviewDetails":"DatasetOtherEvaluation",
+        "dataTreatmentDescription":"DataTreatment",
+        "inventoryMethodDescription":"LCIMethod",
+        "modelingConstantsDescription":"ModelingConstants",
+        "reviewer":"Reviewer",
+        "samplingDescription":"SamplingProcedure",
+        "sources":None,
+        "restrictionsDescription":"AccessUseRestrictions",
+        "copyright":None,
+        "sources":None,
+        "copyright":None,
+        "creationDate":None,
+        "dataDocumentor":"DataDocumentor",
+        "dataGenerator":"DataGenerator",
+        "dataSetOwner":"DatasetOwner",
+        "intendedApplication":"IntendedApplication",
+        "projectDescription":"ProjectDescription",
+        "publication":None,
+        "geographyDescription":None,
+        "exchangeDqSystem":None,
+        "dqSystem":None,
+        "dqEntry":None
+}
+VALID_FUEL_CATS=[
+        "default",
+        "nuclear",
+        "geothermal",
+        "solar",
+        "solarthermal",
+        "wind",
+        "consumption_mix",
+        "generation_mix",
+        "coal_upstream",
+        "gas_upstream",
+        "oil_upstream",
+        "coal_transport",
+        "plant_construction"
+]
+def process_doc_creation(process_type="default"):
+    try:
+        assert process_type in VALID_FUEL_CATS, f"Invalid process_type ({process_type}), using default"
+    except AssertionError:
+        process_type="default"
+    if model_specs["use_alt_gen_process"] is True:
+        subkey = "replace_egrid"
+    else:
+        subkey= "use_egrid"
     global year
     ar = dict()
+    for key in OLCA_TO_METADATA.keys():
+        if OLCA_TO_METADATA[key] is not None:
+            try:
+                ar[key]=metadata[process_type][OLCA_TO_METADATA[key]]
+            except KeyError:
+                module_logger.info(f"Failed first key ({key}), trying subkey: {subkey}")
+                try:
+                    ar[key]=metadata[process_type][subkey][OLCA_TO_METADATA[key]]
+                    module_logger.info("Failed subkey, likely no entry in metadata for {process_type}:{key}")
+                except KeyError:
+                    ar[key]=metadata["default"][OLCA_TO_METADATA[key]]
+            except TypeError:
+                module_logger.info(f"Failed first key, likely no metadata defined for {process_type}")
+                process_type="default"
+                ar[key]=metadata[process_type][OLCA_TO_METADATA[key]]
     ar["timeDescription"] = ""
     ar["validUntil"] = "12/31/2018"
     ar["validFrom"] = "1/1/2018"
-    ar[
-        "technologyDescription"
-    ] = "This is an aggregation of technology types for this fuel type within this eGRID subregion"
-    ar["dataCollectionDescription"] = metadata["DataCollectionPeriod"]
-    ar["completenessDescription"] = metadata["DataCompleteness"]
-    ar["dataSelectionDescription"] = metadata["DataSelection"]
-    ar["reviewDetails"] = metadata["DatasetOtherEvaluation"]
-    ar["dataTreatmentDescription"] = metadata["DataTreatment"]
-    ar["inventoryMethodDescription"] = metadata["LCIMethod"]
-    ar["modelingConstantsDescription"] = metadata["ModellingConstants"]
-    ar["reviewer"] = metadata["Reviewer"]
-    ar["samplingDescription"] = metadata["SamplingProcedure"]
     ar["sources"] = ""
-    ar["restrictionsDescription"] = metadata["AccessUseRestrictions"]
     ar["copyright"] = False
     ar["creationDate"] = time.time()
-    ar["dataDocumentor"] = metadata["DataDocumentor"]
-    ar["dataGenerator"] = metadata["DataGenerator"]
-    ar["dataSetOwner"] = metadata["DatasetOwner"]
-    ar["intendedApplication"] = metadata["IntendedApplication"]
-    ar["projectDescription"] = metadata["ProjectDescription"]
     ar["publication"] = ""
     ar["geographyDescription"] = ""
     ar["exchangeDqSystem"] = exchangeDqsystem()
@@ -307,6 +393,36 @@ def process_doc_creation():
     ar["dqEntry"] = "(5;5)"
     return ar
 
+def process_description_creation(process_type="fossil"):
+    try:
+        assert process_type in VALID_FUEL_CATS, f"Invalid process_type ({process_type}), using default"
+    except AssertionError:
+        process_type="default"
+    if model_specs["use_alt_gen_process"] is True:
+        subkey = "replace_egrid"
+    else:
+        subkey= "use_egrid"
+    global year
+    key = "Description"
+    try:
+        desc_string=metadata[process_type][key]
+    except KeyError:
+        module_logger.info(f"Failed first key ({key}), trying subkey: {subkey}")
+        try:
+            desc_string=metadata[process_type][subkey][key]
+            module_logger.info("Failed subkey, likely no entry in metadata for {process_type}:{key}")
+        except KeyError:
+            desc_string=metadata["default"][key]
+    except TypeError:
+        module_logger.info(f"Failed first key, likely no metadata defined for {process_type}")
+        process_type="default"
+        desc_string=metadata[process_type][key]
+    return desc_string
+    
+
+if __name__=="__main__":
+    test=process_doc_creation(process_type="oil_upstream")
+    print(test)
 
 def exchangeDqsystem():
     ar = dict()
