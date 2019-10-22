@@ -29,7 +29,10 @@ def write(processes: dict, file_path: str):
                 process.category = _category(
                     category_path, olca.ModelType.PROCESS, writer, created_ids)
                 process.description = _val(d_vals, 'description')
-                process.process_type = olca.ProcessType.UNIT_PROCESS
+                if _val(d_vals,'processType')=="UNIT_PROCESS":
+                    process.process_type = olca.ProcessType.UNIT_PROCESS
+                else:
+                    process.process_type = olca.ProcessType.LCI_RESULT
                 process.location = _location(_val(d_vals, 'location'), writer, created_ids)
                 process.process_documentation = _process_doc(
                     _val(d_vals, 'processDocumentation'), writer, created_ids)
