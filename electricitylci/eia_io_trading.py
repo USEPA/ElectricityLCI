@@ -46,8 +46,9 @@ from electricitylci.process_dictionary_writer import *
 
     Returns
     -------
-    DataFrame with import region, export region, transaction amount, total
-    imports for import region, and fraction of total
+    Dictionary of dataframes with import region, export region, transaction amount, total
+    imports for import region, and fraction of total. The dictionary keys
+    are the level of aggregation: "BA", "FERC", "US".
 
         Sample output:
             ferc_final_trade.head()
@@ -61,12 +62,23 @@ from electricitylci.process_dictionary_writer import *
 """
 
 def ba_io_trading_model(year=None, subregion=None):
+    REGION_NAMES = [
+        'California', 'Carolinas', 'Central',
+        'Electric Reliability Council of Texas, Inc.', 'Florida',
+        'Mid-Atlantic', 'Midwest', 'New England ISO',
+        'New York Independent System Operator', 'Northwest', 'Southeast',
+        'Southwest', 'Tennessee Valley Authority'
+    ]
 
+    REGION_ACRONYMS = [
+        'TVA', 'MIDA', 'CAL', 'CAR', 'CENT', 'ERCO', 'FLA',
+        'MIDW', 'ISNE', 'NYIS', 'NW', 'SE', 'SW',
+    ]
     if year is None:
         year = model_specs['NETL_IO_trading_year']
     if subregion is None:
         subregion = model_specs['regional_aggregation']
-    if subregion not in ['BA', 'FERC']:
+    if subregion not in ['BA', 'FERC','US']:
         raise ValueError(
             f'subregion or regional_aggregation must have a value of "BA" or "FERC" '
             f'when calculating trading with input-output, not {subregion}'
@@ -91,19 +103,45 @@ def ba_io_trading_model(year=None, subregion=None):
 
 #    download_EBA()
     path = join(data_dir, 'bulk_data', 'EBA.zip')
-
+    NET_GEN_ROWS = []
+    BA_TO_BA_ROWS = []
+    DEMAND_ROWS=[]
+    TOTAL_INTERCHANGE_ROWS=[]
     try:
         logging.info("Using existing bulk data download")
         z = zipfile.ZipFile(path, 'r')
-        with z.open('EBA.txt') as f:
-            raw_txt = f.readlines()
+                
     except FileNotFoundError:
         logging.info("Downloading new bulk data")
         download_EBA()
         z = zipfile.ZipFile(path, 'r')
-        with z.open('EBA.txt') as f:
-            raw_txt = f.readlines()
-
+    logging.info("Loading bulk data to json")
+    with z.open('EBA.txt') as f:
+        for line in f:
+            #All but one BA is currently reporting net generation in UTC and local time
+            #for that one BA (GRMA) only UTC time is reported - so only pulling that 
+            #for now.
+            if b'EBA.NG.H' in line and b'EBA.NG.HL' not in line:
+                NET_GEN_ROWS.append(json.loads(line))
+            #Similarly there are 5 interchanges that report interchange in UTC but not in
+            #local time.
+            elif b'EBA.ID.H' in line and b'EBA.ID.HL' not in line:
+                exchange_line=json.loads(line)
+                if exchange_line['series_id'].split('-')[0][4:] not in REGION_ACRONYMS:
+#                    try:
+                        #Adding this check here to hopefully save some time down the road.
+                        #dummy_date=datetime.strptime(exchange_line['data'][0][0],'%Y%m%dT%HZ')
+                        BA_TO_BA_ROWS.append(exchange_line)
+                        #good_date_count+=1
+#                    except ValueError:
+                        #bad_date_count+=1
+#                        continue
+            #Keeping these here just in case
+            elif b'EBA.D.H' in line and b'EBA.D.HL' not in line:
+                DEMAND_ROWS.append(json.loads(line))
+#            elif b'EBA.TI.H' in line:
+#                TOTAL_INTERCHANGE_ROWS.append(json.loads(line))
+    logging.info(f"Net gen rows: {len(NET_GEN_ROWS)}; BA to BA rows:{len(BA_TO_BA_ROWS)}; Demand rows:{len(DEMAND_ROWS)}")
     eia923_gen=eia923.build_generation_data(generation_years=[year])
     eia860_df=eia860.eia860_balancing_authority(year)
     eia860_df["Plant Id"]=eia860_df["Plant Id"].astype(int)
@@ -113,43 +151,9 @@ def ba_io_trading_model(year=None, subregion=None):
                                      right_on=["Plant Id"],
                                      how="left")
     eia_gen_ba=eia_combined_df.groupby(by=["Balancing Authority Code"],as_index=False)["Electricity"].sum()
+
+
     
-    REGION_NAMES = [
-        'California', 'Carolinas', 'Central',
-        'Electric Reliability Council of Texas, Inc.', 'Florida',
-        'Mid-Atlantic', 'Midwest', 'New England ISO',
-        'New York Independent System Operator', 'Northwest', 'Southeast',
-        'Southwest', 'Tennessee Valley Authority'
-    ]
-
-    REGION_ACRONYMS = [
-        'TVA', 'MIDA', 'CAL', 'CAR', 'CENT', 'ERCO', 'FLA',
-        'MIDW', 'ISNE', 'NYIS', 'NW', 'SE', 'SW',
-    ]
-    logging.info("Loading json")
-
-
-#    TOTAL_INTERCHANGE_ROWS = [
-#        json.loads(row) for row in raw_txt if b'EBA.TI.H' in row
-#    ]
-
-    NET_GEN_ROWS = [
-        json.loads(row) for row in raw_txt if b'EBA.NG.H' in row
-    ]
-
-#    DEMAND_ROWS = [
-#        json.loads(row) for row in raw_txt if b'EBA.D.H' in row
-#    ]
-
-    EXCHANGE_ROWS = [
-        json.loads(row) for row in raw_txt if b'EBA.ID.H' in row
-    ]
-
-    BA_TO_BA_ROWS = [
-        row for row in EXCHANGE_ROWS
-        if row['series_id'].split('-')[0][4:] not in REGION_ACRONYMS
-    ]
-    logging.info("Pivoting")
     #Subset for specified eia_gen_year
     start_datetime = '{}-01-01 00:00:00+00:00'.format(year)
     end_datetime = '{}-12-31 23:00:00+00:00'.format(year)
@@ -158,8 +162,10 @@ def ba_io_trading_model(year=None, subregion=None):
     end_datetime = datetime.strptime(end_datetime, '%Y-%m-%d %H:%M:%S%z')
 
     #Net Generation Data Import
-
+    logging.info("Generating df with datetime")
     df_net_gen = row_to_df(NET_GEN_ROWS, 'net_gen')
+    del(NET_GEN_ROWS)
+    logging.info("Pivoting")
     df_net_gen = df_net_gen.pivot(index = 'datetime', columns = 'region', values = 'net_gen')
     ba_cols = US_BA_acronyms
 
@@ -170,7 +176,7 @@ def ba_io_trading_model(year=None, subregion=None):
 
     col_diff = list(ba_ref_set - gen_cols_set)
     col_diff.sort(key = str.upper)
-
+    logging.info("Cleaning net_gen dataframe")
 
     #Add in missing columns, then sort in alphabetical order
     for i in col_diff:
@@ -196,7 +202,7 @@ def ba_io_trading_model(year=None, subregion=None):
     df_CA_Imports_Gen = df_CA_Imports_Gen[str(year)]
 
 
-
+    logging.info("Combining US and Canadian net gen data")
     df_net_gen_sum = pd.concat([df_net_gen_sum,df_CA_Imports_Gen]).sum(axis=1)
     df_net_gen_sum = df_net_gen_sum.to_frame()
     df_net_gen_sum = df_net_gen_sum.sort_index(axis=0)
@@ -205,6 +211,7 @@ def ba_io_trading_model(year=None, subregion=None):
     #If the percent change of a given area is greater than the mean absolute difference
     #of all of the areas, it will be treated as an error and replaced with the 
     #value in EIA923.
+    logging.info("Checking against EIA 923 generation data")
     net_gen_check=df_net_gen_sum.merge(
             right=eia_gen_ba,
             left_index=True,
@@ -237,12 +244,13 @@ def ba_io_trading_model(year=None, subregion=None):
 
     #Group and resample trading data so that it is on an annual basis
 
-
+    logging.info("Creating trading dataframe")
     df_ba_trade = ba_exchange_to_df(BA_TO_BA_ROWS, data_type='ba_to_ba')
+    del(BA_TO_BA_ROWS)
     df_ba_trade = df_ba_trade.set_index('datetime')
     df_ba_trade['transacting regions'] = df_ba_trade['from_region'] + '-' + df_ba_trade['to_region']
 
-
+    logging.info("Filtering trading dataframe")
     #Keep only the columns that match the balancing authority names, there are several other columns included in the dataset
     #that represent states (e.g., TEX, NY, FL) and other areas (US48)
     filt1 = df_ba_trade['from_region'].isin(ba_cols)
@@ -468,11 +476,9 @@ def ba_io_trading_model(year=None, subregion=None):
     df_final_trade_out_filt_melted_merge = df_final_trade_out_filt_melted_merge.merge(df_BA_NA, left_on = 'export BAA', right_on = 'BA_Acronym')
     df_final_trade_out_filt_melted_merge.rename(columns={'FERC_Region': 'export ferc region', 'FERC_Region_Abbr':'export ferc region abbr'}, inplace=True)
     df_final_trade_out_filt_melted_merge.drop(columns = ['BA_Acronym', 'BA_Name', 'NCR ID#', 'EIA_Region', 'EIA_Region_Abbr'], inplace = True)
-
-    BAA_import_grouped_tot = df_final_trade_out_filt_melted_merge.groupby(['import BAA'])['value'].sum().reset_index()
-    ferc_import_grouped_tot = df_final_trade_out_filt_melted_merge.groupby(['import ferc region'])['value'].sum().reset_index()
-
+#    if subregion == 'BA':
     #Develop final df for BAA
+    BAA_import_grouped_tot = df_final_trade_out_filt_melted_merge.groupby(['import BAA'])['value'].sum().reset_index()
     BAA_final_trade = df_final_trade_out_filt_melted_merge.copy()
     BAA_final_trade = BAA_final_trade.drop(columns = ['import ferc region', 'export ferc region', 'import ferc region abbr', 'export ferc region abbr'])
     BAA_final_trade = BAA_final_trade.merge(BAA_import_grouped_tot, left_on = 'import BAA', right_on = 'import BAA')
@@ -483,8 +489,29 @@ def ba_io_trading_model(year=None, subregion=None):
     #Remove Canadian BAs in import list
     BAA_filt = BAA_final_trade['import BAA'].isin(US_BA_acronyms)
     BAA_final_trade = BAA_final_trade[BAA_filt]
+    #There are some BAs that will have 0 trade. Some of these are legitimate
+    #Alcoa Yadkin has no demand (i.e., all power generation is exported) others
+    #seem to be errors. For those BAs with actual demand, we'll set the 
+    #consumption mix to 100% from that BA. For those without demand,
+    #fraction will be set to near 0 just to make sure systems can be built
+    #in openLCA
+    BAA_zero_trade = [x for x in list(BAA_final_trade["import BAA"].unique()) if BAA_final_trade.loc[BAA_final_trade["import BAA"]==x,"fraction"].sum()==0]
+    BAAs_from_zero_trade_with_demand = []
+    for d_row in DEMAND_ROWS:
+        if d_row["series_id"].split('.')[1].split('-')[0] in BAA_zero_trade:
+            BAAs_from_zero_trade_with_demand.append(d_row["series_id"].split('.')[1].split('-')[0])
+    BAAs_from_zero_trade_with_demand = list(set(BAAs_from_zero_trade_with_demand))
+    del(DEMAND_ROWS)
+    for baa in BAAs_from_zero_trade_with_demand:
+        BAA_final_trade.at[(BAA_final_trade["import BAA"]==baa)&(BAA_final_trade["export BAA"]==baa),"fraction"]=1
+    for baa in list(set(BAA_zero_trade)-set(BAAs_from_zero_trade_with_demand)):
+        BAA_final_trade.at[(BAA_final_trade["import BAA"]==baa)&(BAA_final_trade["export BAA"]==baa),"fraction"]=1E-15
     BAA_final_trade.to_csv(output_dir + '/BAA_final_trade_{}.csv'.format(year))
-
+    BAA_final_trade["export_name"]=BAA_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
+    BAA_final_trade["import_name"]=BAA_final_trade["import BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
+#        return BAA_final_trade
+#    elif subregion == 'FERC':
+    ferc_import_grouped_tot = df_final_trade_out_filt_melted_merge.groupby(['import ferc region'])['value'].sum().reset_index()
     #Develop final df for FERC Market Region
     ferc_final_trade = df_final_trade_out_filt_melted_merge.copy()
 #    ferc_final_trade = ferc_final_trade.groupby(['import ferc region abbr', 'import ferc region', 'export ferc region','export ferc region abbr'])['value'].sum().reset_index()
@@ -499,14 +526,18 @@ def ba_io_trading_model(year=None, subregion=None):
     ferc_filt = ferc_final_trade['import ferc region abbr'].isin(ferc_list)
     ferc_final_trade = ferc_final_trade[ferc_filt]
     ferc_final_trade.to_csv(output_dir + '/ferc_final_trade_{}.csv'.format(year))
-
-    if subregion == 'BA':
-        BAA_final_trade["export_name"]=BAA_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
-        BAA_final_trade["import_name"]=BAA_final_trade["import BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
-        return BAA_final_trade
-    elif subregion == 'FERC':
-        ferc_final_trade["export_name"]=ferc_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
-        return ferc_final_trade
+    ferc_final_trade["export_name"]=ferc_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
+#        return ferc_final_trade
+#    elif subregion== 'US':
+    us_import_grouped_tot = df_final_trade_out_filt_melted_merge['value'].sum()
+    us_final_trade = df_final_trade_out_filt_melted_merge.copy()
+    us_final_trade = us_final_trade.groupby(['export BAA'])['value'].sum().reset_index()
+    us_final_trade["fraction"]=us_final_trade["value"]/us_import_grouped_tot
+    us_final_trade = us_final_trade.fillna(value = 0)
+    us_final_trade=us_final_trade.drop(columns = ["value"])
+    us_final_trade["export_name"]=us_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
+#        return us_final_trade
+    return {'BA':BAA_final_trade,'FERC':ferc_final_trade,'US':us_final_trade}
 
 
 if __name__=='__main__':
@@ -563,10 +594,15 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
         region = list(pd.unique(database[aggregation_column]))
         export_column = "export_name"#'export BAA'
 
+    elif subregion == "US":
+        export_column = "export_name"
+        region=["US"]
+    
     for reg in region:
-
-        database_reg = database.loc[database[aggregation_column] == reg, :
-            ]
+        if subregion =="US":
+            database_reg = database
+        else:
+            database_reg = database.loc[database[aggregation_column] == reg, :]
 
         exchanges_list = []
 

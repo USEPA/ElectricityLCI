@@ -51,9 +51,21 @@ def generate_canadian_mixes(us_inventory):
             "FlowUUID",
             "Unit",
             #                    'stage_code',
-        ],
-        as_index=False,
-    )["Electricity", "FlowAmount", "quantity"].sum()
+        ]
+    )["FlowAmount", "quantity"].sum()
+    us_inventory_electricity = us_inventory.drop_duplicates(subset=["FuelCategory","FlowName","FlowUUID","Unit","Electricity"]).groupby(
+        by=[
+            "FuelCategory",
+            #                    'Compartment',
+            "FlowName",
+            #                    'ElementaryFlowPrimeContext',
+            "FlowUUID",
+            "Unit",
+            #                    'stage_code',
+        ]
+    )["Electricity"].sum()
+    us_inventory_summary=pd.concat([us_inventory_summary,us_inventory_electricity],axis=1)
+    us_inventory_summary = us_inventory_summary.reset_index()
     flowuuid_compartment_df = us_inventory[
         ["FlowUUID", "Compartment"]
     ].drop_duplicates(subset=["FlowUUID"])
@@ -79,7 +91,7 @@ def generate_canadian_mixes(us_inventory):
         ca_inventory.dropna(subset=["FuelCategory_fraction"], inplace=True)
         ca_mix_list.append(ca_inventory)
     blank_df = pd.DataFrame(columns=us_inventory.columns)
-    ca_mix_inventory = pd.concat(ca_mix_list + [blank_df])
+    ca_mix_inventory = pd.concat(ca_mix_list + [blank_df],ignore_index=True)
 
     ca_mix_inventory[
         ["Electricity", "FlowAmount", "quantity"]
