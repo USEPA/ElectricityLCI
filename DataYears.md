@@ -7,8 +7,8 @@ A summary of input data and years available for use in building electricity mode
 |NEI ([stewi](https://github.com/USEPA/standardizedinventories#usepa-inventories-covered-by-data-reporting-year-current-version))| x | | | x | | x| | |
 |RCRAInfo ([stewi](https://github.com/USEPA/standardizedinventories#usepa-inventories-covered-by-data-reporting-year-current-version))| x | |x| |x | | | |
 |TRI ([stewi](https://github.com/USEPA/standardizedinventories#usepa-inventories-covered-by-data-reporting-year-current-version))| x |x |x | x |x | x |  | |
-|EIA 860| | |x |x |x |x |x | |
-|EIA 923| | |x |x |x |x |x | |
+|EIA 860| | |x |x |x |x |x |x |
+|EIA 923| | | |x |x |x |x |x |
 |EIA 7a| | | |x |x |x |x | |
 |EPA CEMS |x |x |x |x |x |x |x |x |
 |consumption mix Hottle et al| | | |x | | | | |
