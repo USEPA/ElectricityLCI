@@ -391,27 +391,34 @@ def get_alternate_gen_plus_netl():
     import electricitylci.plant_water_use as water
     import electricitylci.hydro_upstream as hydro
     import electricitylci.solar_thermal_upstream as solartherm
-
-    print(
-        "Generating inventories for geothermal, solar, wind, hydro, and solar thermal..."
-    )
-    geo_df = geo.generate_upstream_geo(eia_gen_year)
-    solar_df = solar.generate_upstream_solar(eia_gen_year)
-    wind_df = wind.generate_upstream_wind(eia_gen_year)
-    hydro_df = hydro.generate_hydro_emissions()
-    solartherm_df = solartherm.generate_upstream_solarthermal(eia_gen_year)
-    netl_gen = concat_map_upstream_databases(
-        geo_df, solar_df, wind_df, hydro_df, solartherm_df
-    )
-    netl_gen["DataCollection"] = 5
-    netl_gen["GeographicalCorrelation"] = 1
-    netl_gen["TechnologicalCorrelation"] = 1
-    netl_gen["ReliabilityScore"] = 1
+    
+    if model_specs["include_renewable_generation"] is True:
+        print(
+            "Generating inventories for geothermal, solar, wind, hydro, and solar thermal..."
+        )
+        geo_df = geo.generate_upstream_geo(eia_gen_year)
+        solar_df = solar.generate_upstream_solar(eia_gen_year)
+        wind_df = wind.generate_upstream_wind(eia_gen_year)
+        hydro_df = hydro.generate_hydro_emissions()
+        solartherm_df = solartherm.generate_upstream_solarthermal(eia_gen_year)
+        netl_gen = concat_map_upstream_databases(
+            geo_df, solar_df, wind_df, hydro_df, solartherm_df
+        )
+        netl_gen["DataCollection"] = 5
+        netl_gen["GeographicalCorrelation"] = 1
+        netl_gen["TechnologicalCorrelation"] = 1
+        netl_gen["ReliabilityScore"] = 1
+    else:
+        netl_gen=pd.DataFrame()
+        hydro_df=pd.DataFrame()
     print("Getting reported emissions for generators...")
     gen_df = alt_gen.create_generation_process_df()
     water_df = water.generate_plant_water_use(eia_gen_year)
     gen_df = pd.concat([gen_df, water_df, hydro_df], ignore_index=True)
-    combined_gen = concat_clean_upstream_and_plant(gen_df, netl_gen)
+    if  model_specs["include_renewable_generation"] is True:
+        combined_gen = concat_clean_upstream_and_plant(gen_df, netl_gen)
+    else:
+        combined_gen = gen_df
     return combined_gen
 
 

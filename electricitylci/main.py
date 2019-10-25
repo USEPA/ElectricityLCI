@@ -60,7 +60,7 @@ def main():
 
     # At this point the two methods diverge from underlying functions enough that
     # it's just easier to split here.
-    if model_specs['use_alt_gen_process'] is True:
+    if model_specs['EPA_eGRID_trading'] is False:
         print("using alt gen method for consumption mix")
         cons_mix_df_dict = electricitylci.get_consumption_mix_df()
         print("write consumption mix to dict")

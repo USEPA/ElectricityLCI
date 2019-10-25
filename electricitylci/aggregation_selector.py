@@ -21,4 +21,6 @@ def subregion_col(subregion="BA"):
         region_agg = ["FERC_Region"]
     elif subregion == "EIA":
         region_agg = ["EIA_Region"]
+    elif subregion == "eGRID":
+        region_agg = ["Subregion"]
     return region_agg

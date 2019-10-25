@@ -76,11 +76,14 @@ def create_ba_region_map(
         elif 'us' in region_col.lower():
             region_col = 'ferc_region'
         else:
-            raise (
-                ValueError,
-                f'regional_col value is {region_col}, but should match "ferc_region" '
-                'or "eia_region"'
-            )
+            module_logger.warning(f"regional_col value is {region_col} - a mapping for this does not exist, using ferc_region instead")
+#                'or "eia_region"')
+            region_col = 'ferc_region'
+#            raise (
+#                ValueError,
+#                f'regional_col value is {region_col}, but should match "ferc_region" '
+#                'or "eia_region"'
+#            )
 
         map_series = region_match[region_col]
     return map_series

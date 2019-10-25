@@ -445,7 +445,7 @@ def create_generation_process_df():
         final_database.loc[
             final_database["FuelCategory"] == "COAL", ["Final_fuel_agg"]
         ] = final_database.loc[
-            final_database["FuelCategory"] == "COAL", "Primary_Fuel"
+            final_database["FuelCategory"] == "COAL", "PrimaryFuel"
         ]
 
     try:
