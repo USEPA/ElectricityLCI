@@ -665,14 +665,18 @@ def aggregate_data(total_db, subregion="BA"):
 
     def wtd_mean(pdser, total_db, cols):
         try:
-            wts = total_db.loc[pdser.index, "Electricity"]
+            wts = total_db.loc[pdser.index, "FlowAmount"]
             result = np.average(pdser, weights=wts)
         except:
             module_logger.info(
                 f"Error calculating weighted mean for {pdser.name}-"
                 f"{total_db.loc[pdser.index[0],cols]}"
             )
-            result = float("nan")
+            try:
+                with np.errstate(all='raise'):
+                    result = np.average(pdser)
+            except ArithmeticError or ValueError or FloatingPointError:    
+                result = float("nan")
         return result
 
     wm = lambda x: wtd_mean(x, total_db, groupby_cols)
