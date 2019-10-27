@@ -34,7 +34,7 @@ include_renewable_generation: False
 # the NETL alternative method for generation process calculations is used.
 # NOT CURRENTLY IMPLEMENTED - UPSTREAM DATA WILL BE INCLUDED IF use_alt_gen_process IS
 # TRUE.
-include_upstream_processes: 'False'
+include_upstream_processes: False
 
 inventories_of_interest:
   eGRID: 2016
@@ -92,5 +92,5 @@ NETL_IO_trading_year: 2016
 
 fedelemflowlist_version: 1.0
 post_process_generation_emission_factors: False
-use_primaryfuel_for_coal: True
+use_primaryfuel_for_coal: False
 fuel_name_file: fuelname_1.csv
