@@ -668,9 +668,10 @@ def aggregate_data(total_db, subregion="BA"):
             wts = total_db.loc[pdser.index, "FlowAmount"]
             result = np.average(pdser, weights=wts)
         except:
-            module_logger.info(
+            module_logger.debug(
                 f"Error calculating weighted mean for {pdser.name}-"
-                f"{total_db.loc[pdser.index[0],cols]}"
+                f"likely from 0 FlowAmounts"
+                #f"{total_db.loc[pdser.index[0],cols]}"
             )
             try:
                 with np.errstate(all='raise'):
