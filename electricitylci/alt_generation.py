@@ -56,6 +56,24 @@ def aggregate_facility_flows(df):
         "Compartment_path",
         "stage_code"
     ]
+    def wtd_mean(pdser, total_db, cols):
+        try:
+            wts = total_db.loc[pdser.index, "FlowAmount"]
+            result = np.average(pdser, weights=wts)
+        except:
+            module_logger.debug(
+                f"Error calculating weighted mean for {pdser.name}-"
+                f"likely from 0 FlowAmounts"
+                #f"{total_db.loc[pdser.index[0],cols]}"
+            )
+            try:
+                with np.errstate(all='raise'):
+                    result = np.average(pdser)
+            except ArithmeticError or ValueError or FloatingPointError:    
+                result = float("nan")
+        return result
+
+    wm = lambda x: wtd_mean(x, df, groupby_cols)
     emissions = df["Compartment"].isin(emission_compartments)
     df_emissions = df[emissions]
     df_nonemissions = df[~emissions]
@@ -63,8 +81,12 @@ def aggregate_facility_flows(df):
     df_red = df_emissions.drop(df_emissions[df_dupes].index)
     group_db = (
         df_emissions.loc[df_dupes, :]
-        .groupby(groupby_cols, as_index=False)["FlowAmount"]
-        .sum()
+        .groupby(groupby_cols, as_index=False).agg(
+                {
+                        "FlowAmount":"sum",
+                        "ReliabilityScore":wm
+                }
+        )
     )
     #    group_db=df.loc[emissions,:].groupby(groupby_cols,as_index=False)['FlowAmount'].sum()
     group_db_merge = group_db.merge(
@@ -74,7 +96,7 @@ def aggregate_facility_flows(df):
         suffixes=("", "_right"),
     )
     try:
-        delete_cols = ["FlowAmount_right"]
+        delete_cols = ["FlowAmount_right","ReliabilityScore_right"]
         group_db_merge.drop(columns=delete_cols, inplace=True)
     except KeyError:
         pass
