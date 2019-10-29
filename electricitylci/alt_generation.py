@@ -541,9 +541,6 @@ def aggregate_data(total_db, subregion="BA"):
     from electricitylci.aggregation_selector import subregion_col
 
     def geometric_mean(p_series, df, cols):
-        # I think I actually need to replace this with the function contained in
-        # process_exchange_aggregator_uncertainty.py. The approach to add 1 will
-        # also lead to some large errors when dealing with small numbers.
         # Alternatively we can use scipy.stats.lognorm to fit a distribution
         # and provide the parameters
         if (len(p_series) > 3) & (p_series.quantile(0.5) > 0):
@@ -614,7 +611,7 @@ def aggregate_data(total_db, subregion="BA"):
             return None
 
     def calc_geom_std(df):
-
+        module_logger.info(f"{df['Subregion']}-{df['FuelCategory']}-{df['FlowName']}")
         if df["uncertaintyLognormParams"] is None:
             return None, None
         if isinstance(df["uncertaintyLognormParams"], str):
@@ -627,33 +624,44 @@ def aggregate_data(total_db, subregion="BA"):
                 f"{df['uncertaintyLognormParams']}"
             )
             return None, None
+        
         if length != 3:
             module_logger.info(
                 f"Error estimating standard deviation - length: {len(params)}"
             )
-        try:
-            geomean = df["Emission_factor"]
-            geostd = np.exp(
-                (
-                    np.log(df["uncertaintyLognormParams"][2])
-                    - np.log(df["Emission_factor"])
-                )
-                / norm.ppf(0.95)
-            )
-        except ArithmeticError:
-            module_logger.info("Error estimating standard deviation")
-            return None, None
-        if (
-            (geostd is np.inf)
-            or (geostd is np.NINF)
-            or (geostd is np.nan)
-            or (geostd is float("nan"))
-            or str(geostd) == "nan"
-        ):
-            return None, None
-        if geostd * geomean > df["uncertaintyMax"]:
-            return None, None
-        return str(geomean), str(geostd)
+        else:
+            #In some cases, the final emission factor is far different than the
+            #geometric mean of the individual emission factor. Depending on the 
+            #severity, this could be a clear sign of outliers having a large impact
+            #on the final emission factor. When the uncertainty is generated for
+            #these cases, the results can be nonsensical - hence we skip them. A more
+            #agressive approach would be to re-assign the emission factor as well.
+            if df["Emission_factor"]>df["uncertaintyLognormParams"][2]:
+                return None, None
+            else:
+                try:
+                    geomean = df["Emission_factor"]
+                    geostd = np.exp(
+                        (
+                            np.log(df["uncertaintyLognormParams"][2])
+                            - np.log(df["Emission_factor"])
+                        )
+                        / norm.ppf(0.95)
+                    )
+                except ArithmeticError:
+                    module_logger.info("Error estimating standard deviation")
+                    return None, None
+                if (
+                    (geostd is np.inf)
+                    or (geostd is np.NINF)
+                    or (geostd is np.nan)
+                    or (geostd is float("nan"))
+                    or str(geostd) == "nan"
+                ):
+                    return None, None
+                if geostd * geomean > df["uncertaintyMax"]:
+                    return None, None
+                return str(geomean), str(geostd)
 
     region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"]
@@ -679,6 +687,7 @@ def aggregate_data(total_db, subregion="BA"):
     total_db, electricity_df = calculate_electricity_by_source(
         total_db, subregion
     )
+    total_db.replace(to_replace=0,value=1E-15,inplace=True)
     total_db = add_data_collection_score(total_db, electricity_df, subregion)
     total_db["facility_emission_factor"] = (
         total_db["FlowAmount"] / total_db["Electricity"]
@@ -783,6 +792,9 @@ def aggregate_data(total_db, subregion="BA"):
                 "uncertaintyLognormParams",
                 "uncertaintyMin",
                 "uncertaintyMax",
+                "FuelCategory",
+                "Subregion",
+                "FlowName"
             ]
         ].apply(calc_geom_std, axis=1)
     )
