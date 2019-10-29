@@ -15,6 +15,7 @@ formatter = logging.Formatter(
 logging.basicConfig(
     format="%(levelname)s:%(filename)s:%(funcName)s:%(message)s",
     level=logging.INFO,
+#    filename=f"{output_dir}/run_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
 )
 logger = logging.getLogger("electricitylci")
 
