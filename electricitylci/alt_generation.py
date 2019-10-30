@@ -5,7 +5,7 @@ Created on Tue Jun  4 12:07:46 2019
 
 @author: jamiesom
 """
-from electricitylci.model_config import replace_egrid, use_primaryfuel_for_coal
+from electricitylci.model_config import replace_egrid, use_primaryfuel_for_coal, model_specs
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows
 import pandas as pd
 import numpy as np
@@ -416,9 +416,13 @@ def create_generation_process_df():
             cems_df, emissions_and_waste_for_selected_egrid_facilities
         )
     else:
-        generation_data = build_generation_data(
-            egrid_facilities_to_include=egrid_facilities_to_include
-        )
+        from electricitylci.egrid_filter import electricity_for_selected_egrid_facilities
+        generation_data=electricity_for_selected_egrid_facilities
+        generation_data["Year"]=model_specs["egrid_year"]
+        generation_data["FacilityID"]=generation_data["FacilityID"].astype(int)
+#        generation_data = build_generation_data(
+#            egrid_facilities_to_include=egrid_facilities_to_include
+#        )
     emissions_and_waste_for_selected_egrid_facilities.drop(
         columns=["FacilityID"]
     )
@@ -611,7 +615,7 @@ def aggregate_data(total_db, subregion="BA"):
             return None
 
     def calc_geom_std(df):
-        module_logger.info(f"{df['Subregion']}-{df['FuelCategory']}-{df['FlowName']}")
+        module_logger.debug(f"{df['Subregion']}-{df['FuelCategory']}-{df['FlowName']}")
         if df["uncertaintyLognormParams"] is None:
             return None, None
         if isinstance(df["uncertaintyLognormParams"], str):
