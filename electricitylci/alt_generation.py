@@ -573,7 +573,7 @@ def aggregate_data(total_db, subregion="BA"):
                     return None
                 l = len(data)
                 try:
-                    sd = np.std(log_data)
+                    sd = np.std(log_data)/np.sqrt(l)
                     sd2 = sd ** 2
                 except ArithmeticError or ValueError or FloatingPointError:
                     module_logger.debug("Problem with std function")
@@ -670,6 +670,7 @@ def aggregate_data(total_db, subregion="BA"):
                     or (geostd is np.nan)
                     or (geostd is float("nan"))
                     or str(geostd) == "nan"
+                    or (geostd == 0)
                 ):
                     return None, None
                 return str(geomean), str(geostd)
