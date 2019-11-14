@@ -616,7 +616,7 @@ def aggregate_data(total_db, subregion="BA"):
             return None
 
     def calc_geom_std(df):
-        module_logger.debug(f"{df['Subregion']}-{df['FuelCategory']}-{df['FlowName']}")
+        module_logger.debug(f"{df[region_agg]}-{df['FuelCategory']}-{df['FlowName']}")
         if df["uncertaintyLognormParams"] is None:
             return None, None
         if isinstance(df["uncertaintyLognormParams"], str):
@@ -805,9 +805,8 @@ def aggregate_data(total_db, subregion="BA"):
                 "uncertaintyMin",
                 "uncertaintyMax",
                 "FuelCategory",
-                "Subregion",
                 "FlowName"
-            ]
+            ]+region_agg
         ].apply(calc_geom_std, axis=1)
     )
     database_f3.sort_values(by=groupby_cols, inplace=True)
