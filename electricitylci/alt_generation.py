@@ -616,7 +616,11 @@ def aggregate_data(total_db, subregion="BA"):
             return None
 
     def calc_geom_std(df):
-        module_logger.debug(f"{df[region_agg]}-{df['FuelCategory']}-{df['FlowName']}")
+        if region_agg is not None:
+            debug_string=f"{df[region_agg]}-{df['FuelCategory']}-{df['FlowName']}"
+        else:
+            debug_string=f"{df['FuelCategory']}-{df['FlowName']}"
+        module_logger.debug(debug_string)
         if df["uncertaintyLognormParams"] is None:
             return None, None
         if isinstance(df["uncertaintyLognormParams"], str):
@@ -797,18 +801,32 @@ def aggregate_data(total_db, subregion="BA"):
     database_f3["Emission_factor"] = (
         database_f3["FlowAmount"] / database_f3["electricity_sum"]
     )
-    database_f3["GeomMean"], database_f3["GeomSD"] = zip(
-        *database_f3[
-            [
-                "Emission_factor",
-                "uncertaintyLognormParams",
-                "uncertaintyMin",
-                "uncertaintyMax",
-                "FuelCategory",
-                "FlowName"
-            ]+region_agg
-        ].apply(calc_geom_std, axis=1)
-    )
+    if region_agg is not None:
+        database_f3["GeomMean"], database_f3["GeomSD"] = zip(
+            *database_f3[
+                [
+                    "Emission_factor",
+                    "uncertaintyLognormParams",
+                    "uncertaintyMin",
+                    "uncertaintyMax",
+                    "FuelCategory",
+                    "FlowName"
+                ]+region_agg
+            ].apply(calc_geom_std, axis=1)
+        )
+    else:
+        database_f3["GeomMean"], database_f3["GeomSD"] = zip(
+            *database_f3[
+                [
+                    "Emission_factor",
+                    "uncertaintyLognormParams",
+                    "uncertaintyMin",
+                    "uncertaintyMax",
+                    "FuelCategory",
+                    "FlowName"
+                ]
+            ].apply(calc_geom_std, axis=1)
+        )
     database_f3.sort_values(by=groupby_cols, inplace=True)
     return database_f3
 
