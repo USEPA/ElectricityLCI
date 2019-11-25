@@ -101,7 +101,7 @@ electricity_at_grid_flow = {
     "flowProperties": "",
     "name": electricity_flow_name_generation_and_distribution,
     "id": "",
-    "category": "22: Utilities/2211: Electric Power Generation, Transmission and Distribution",
+    "category": "Technosphere Flows/22: Utilities/2211: Electric Power Generation, Transmission and Distribution",
 }
 
 electricity_at_user_flow = {
@@ -109,7 +109,7 @@ electricity_at_user_flow = {
     "flowProperties": "",
     "name": electricity_flow_name_consumption,
     "id": "",
-    "category": "22: Utilities/2211: Electric Power Generation, Transmission and Distribution",
+    "category": "Technosphere Flows/22: Utilities/2211: Electric Power Generation, Transmission and Distribution",
 }
 
 
@@ -553,20 +553,20 @@ def flow_table_creation(data):
     comp = str(data["Compartment"].iloc[0])
     if (flowtype == "ELEMENTARY_FLOW") & (comp != ""):
         ar["category"] = (
-            "Elementary flows/"
+            "Elementary Flows/"
             + str(data["ElementaryFlowPrimeContext"].iloc[0])
             + "/"
             + comp
         )
     elif (flowtype == "PRODUCT_FLOW") & (comp != ""):
-        ar["category"] = comp
+        ar["category"] = "Technosphere Flows/" + comp
     elif flowtype == "WASTE_FLOW":
         ar["category"] = "Waste flows/"
     else:
         # Assume this is electricity or a byproduct
         ar[
             "category"
-        ] = "22: Utilities/2211: Electric Power Generation, Transmission and Distribution"
+        ] = "Technosphere Flows/22: Utilities/2211: Electric Power Generation, Transmission and Distribution"
     return ar
 
 
