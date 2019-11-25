@@ -510,8 +510,12 @@ def write_gen_fuel_database_to_dict(
     if subregion is None:
         subregion = model_specs['regional_aggregation']
         #Another change to accomodate FERC consumption pulling BAs.
-    if subregion in ["BA","FERC","US"]:    
-        subregion="BA"
+    #Removing the statements below for now. This is preventing the generation
+    #of dictionaries for other levels of aggregation. This logic will need to
+    #be implemented in main.py so that FERC consumption mixes can be made
+    #using the required BA aggregation.
+    # if subregion in ["BA","FERC","US"]:    
+    #     subregion="BA"
     print("Converting generator dataframe to dictionaries...")
     gen_plus_fuel_dict = olcaschema_genprocess(
         gen_plus_fuel_df, upstream_dict, subregion=subregion
