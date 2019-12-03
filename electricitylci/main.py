@@ -13,37 +13,46 @@ def main():
     print("get generation process")
 
     print("write generation process to dict")
-    if model_specs['use_alt_gen_process'] is True:
-        # UUID's for upstream processes are created when converting to JSON-LD. This
-        # has to be done here if the information is going to be included in final
-        # outputs.
-        if model_specs['include_upstream_processes'] is True:
-            upstream_df = electricitylci.get_upstream_process_df()
-            upstream_dict = electricitylci.write_upstream_process_database_to_dict(
-                upstream_df
-            )
-            upstream_dict = electricitylci.write_upstream_dicts_to_jsonld(upstream_dict)
-        else:
-            upstream_dict={}
-            upstream_df=None
+    # UUID's for upstream processes are created when converting to JSON-LD. This
+    # has to be done here if the information is going to be included in final
+    # outputs.
+    if model_specs['include_upstream_processes'] is True:
+        upstream_df = electricitylci.get_upstream_process_df()
+        upstream_dict = electricitylci.write_upstream_process_database_to_dict(
+            upstream_df
+        )
+        upstream_dict = electricitylci.write_upstream_dicts_to_jsonld(upstream_dict)
         generation_process_df = electricitylci.get_generation_process_df(
             upstream_df=upstream_df
         )
-        generation_process_dict = electricitylci.write_gen_fuel_database_to_dict(
-            generation_process_df, upstream_dict
-        )
+        print("write gen process to jsonld")
+        if model_specs["regional_aggregation"] in ["FERC","US"]:
+            generation_process_dict = electricitylci.write_gen_fuel_database_to_dict(
+                generation_process_df, upstream_dict,subregion="BA"
+            )
+        else:
+            generation_process_dict = electricitylci.write_gen_fuel_database_to_dict(
+                generation_process_df, upstream_dict
+            )
     else:
-        generation_process_df = electricitylci.get_generation_process_df()
-        generation_process_dict = (
-            electricitylci.write_generation_process_database_to_dict(
+        upstream_dict={}
+        upstream_df=None
+        generation_process_df = electricitylci.get_generation_process_df(
+            upstream_df=upstream_df
+        )
+        print("write gen process to jsonld")
+        if model_specs["regional_aggregation"] in ["FERC","US"]:
+            generation_process_dict = electricitylci.write_generation_process_database_to_dict(
+                generation_process_df, regions="BA"
+            )
+        else:
+            generation_process_dict = electricitylci.write_generation_process_database_to_dict(
                 generation_process_df
             )
-        )
-
-    print("write gen process to jsonld")
     generation_process_dict = electricitylci.write_process_dicts_to_jsonld(
         generation_process_dict
     )
+    
     print("get gen mix process")
     if model_specs["regional_aggregation"] in ["FERC","US"]:
         generation_mix_df = electricitylci.get_generation_mix_process_df("BA")
@@ -56,8 +65,6 @@ def main():
     generation_mix_dict = electricitylci.write_process_dicts_to_jsonld(
         generation_mix_dict
     )
-
-
     # At this point the two methods diverge from underlying functions enough that
     # it's just easier to split here.
     if model_specs['EPA_eGRID_trading'] is False:
