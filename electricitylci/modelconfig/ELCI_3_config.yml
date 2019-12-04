@@ -78,7 +78,7 @@ efficiency_of_distribution_grid: 0.95
 EPA_eGRID_trading: True
 net_trading: False
 
-NETL_IO_trading: False
+
 NETL_IO_trading_year: 2016
 
 
