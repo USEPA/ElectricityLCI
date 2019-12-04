@@ -8,19 +8,20 @@ from electricitylci.utils import fill_default_provider_uuids
 def main():
 
     logger = logging.getLogger("main")
-    # Create dataframe with all generation process data. If the alternate NETL method
-    # is being used this will also include upstream and Canadian data.
-    print("get generation process")
-
-    print("write generation process to dict")
-    # UUID's for upstream processes are created when converting to JSON-LD. This
-    # has to be done here if the information is going to be included in final
-    # outputs.
+    #There are essentially two paths - with and without upstream (i.e., fuel)
+    #processes.
     if model_specs['include_upstream_processes'] is True:
+        # Create dataframe with all generation process data. This will also 
+        # include upstream and Canadian data.
+        print("get generation process")
         upstream_df = electricitylci.get_upstream_process_df()
+        print("write generation process to dict")
         upstream_dict = electricitylci.write_upstream_process_database_to_dict(
             upstream_df
         )
+        # UUID's for upstream processes are created when converting to JSON-LD. This
+        # has to be done here if the information is going to be included in final
+        # outputs.
         upstream_dict = electricitylci.write_upstream_dicts_to_jsonld(upstream_dict)
         generation_process_df = electricitylci.get_generation_process_df(
             upstream_df=upstream_df
@@ -35,6 +36,8 @@ def main():
                 generation_process_df, upstream_dict
             )
     else:
+        # Create dataframe with all generation process data. This will also 
+        # include upstream and Canadian data.
         upstream_dict={}
         upstream_df=None
         generation_process_df = electricitylci.get_generation_process_df(
@@ -52,7 +55,9 @@ def main():
     generation_process_dict = electricitylci.write_process_dicts_to_jsonld(
         generation_process_dict
     )
-    
+    #We force the generation of BA aggregation if we're doing FERC, US, or BA
+    #regions. This is because the consumption mixes are based on imports from
+    #balancing authority areas.
     print("get gen mix process")
     if model_specs["regional_aggregation"] in ["FERC","US"]:
         generation_mix_df = electricitylci.get_generation_mix_process_df("BA")
