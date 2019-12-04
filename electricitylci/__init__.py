@@ -59,15 +59,16 @@ def get_generation_process_df(regions=None, **kwargs):
     if model_specs['include_upstream_processes'] is True:
         try:
             upstream_df = kwargs['upstream_df']
+            upstream_dict = kwargs['upstream_dict']
         except KeyError:
             print(
                 "A kwarg named 'upstream_dict' must be included if include_upstream_processes"
                 "is True"
             )
-        upstream_dict = write_upstream_process_database_to_dict(
-            upstream_df
-        )
-        upstream_dict = write_upstream_dicts_to_jsonld(upstream_dict)
+#        upstream_dict = write_upstream_process_database_to_dict(
+#            upstream_df
+#        )
+#        upstream_dict = write_upstream_dicts_to_jsonld(upstream_dict)
         combined_df, canadian_gen = combine_upstream_and_gen_df(
                 generation_process_df, upstream_df
         )

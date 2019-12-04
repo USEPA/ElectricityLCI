@@ -24,7 +24,7 @@ def main():
         # outputs.
         upstream_dict = electricitylci.write_upstream_dicts_to_jsonld(upstream_dict)
         generation_process_df = electricitylci.get_generation_process_df(
-            upstream_df=upstream_df
+            upstream_df=upstream_df, upstream_dict=upstream_dict
         )
         print("write gen process to jsonld")
         if model_specs["regional_aggregation"] in ["FERC","US"]:
