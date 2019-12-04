@@ -42,12 +42,12 @@ def main():
         )
         print("write gen process to jsonld")
         if model_specs["regional_aggregation"] in ["FERC","US"]:
-            generation_process_dict = electricitylci.write_generation_process_database_to_dict(
-                generation_process_df, regions="BA"
+            generation_process_dict = electricitylci.write_gen_fuel_database_to_dict(
+                generation_process_df, upstream_dict, subregion="BA"
             )
         else:
-            generation_process_dict = electricitylci.write_generation_process_database_to_dict(
-                generation_process_df
+            generation_process_dict = electricitylci.write_gen_fuel_database_to_dict(
+                generation_process_df, upstream_dict
             )
     generation_process_dict = electricitylci.write_process_dicts_to_jsonld(
         generation_process_dict
