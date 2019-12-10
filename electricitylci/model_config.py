@@ -75,3 +75,31 @@ fuel_name_file = model_specs["fuel_name_file"]
 fuel_name = pd.read_csv(join(data_dir, fuel_name_file))
 post_process_generation_emission_factors = model_specs["post_process_generation_emission_factors"]
 gen_mix_from_model_generation_data=False
+class ConfigurationError(Exception):
+    """Exception raised for errors in the configuration file"""
+    def __init__(self,message):
+        self.message = message
+
+def check_model_specs():
+    #Check for consumption matching region selection
+    if model_specs["regional_aggregation"] in ["FERC, BA, US"] and model_specs["EPA_eGRID_trading"]:
+        raise ConfigurationError(
+            "EPA trading method is not compatible with selected regional "
+            f"aggregation - {model_specs['regional_aggregation']}"
+        )
+        raise
+        
+    if model_specs["regional_aggregation"]!="eGRID" and model_specs["EPA_eGRID_trading"]:
+        raise ConfigurationError(
+            "EPA trading method is not compatible with selected regional "
+            f"aggregation - {model_specs['regional_aggregation']}"
+        )
+    if not model_specs["replace_egrid"] and model_specs["egrid_year"]!=model_specs["eia_gen_year"] and model_specs["include_upstream_processes"]:
+        raise ConfigurationError(
+                f"When using egrid data and adding upstream processes, "
+                f"egrid_year ({model_specs['egrid_year']}) should match eia_gen_year "
+                f"({model_specs['eia_gen_year']}). This is because upstream processes "
+                f"use eia_gen_year to calculate fuel use. The json-ld file "
+                f"will not import correctly."
+        )
+check_model_specs()

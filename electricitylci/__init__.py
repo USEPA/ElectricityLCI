@@ -15,11 +15,12 @@ formatter = logging.Formatter(
 logging.basicConfig(
     format="%(levelname)s:%(filename)s:%(funcName)s:%(message)s",
     level=logging.INFO,
+#    filename=f"{output_dir}/run_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
 )
 logger = logging.getLogger("electricitylci")
 
 
-def get_generation_process_df(use_alt_gen_process=None, regions=None, **kwargs):
+def get_generation_process_df(regions=None, **kwargs):
     """
     Create a dataframe of emissions from power generation by fuel type in each
     region. kwargs would include the upstream emissions dataframe (upstream_df) if
@@ -27,9 +28,6 @@ def get_generation_process_df(use_alt_gen_process=None, regions=None, **kwargs):
 
     Parameters
     ----------
-    use_alt_gen_process : bool, optional
-        If the NETL alternate generation process method should be used (the default is
-        None, which uses the value is read from a settings YAML file).
     regions : str, optional
         Regions to include in the analysis (the default is None, which uses the value
         read from a settings YAML file). Other options include "eGRID", "NERC", "BA",
@@ -37,7 +35,6 @@ def get_generation_process_df(use_alt_gen_process=None, regions=None, **kwargs):
 
     Returns
     -------
-    If
     DataFrame
         Each row represents information about a single emission from a fuel category
         in a single region. Columns are:
@@ -48,41 +45,41 @@ def get_generation_process_df(use_alt_gen_process=None, regions=None, **kwargs):
        'Emission_factor', 'Reliability_Score', 'GeographicalCorrelation',
        'GeomMean', 'GeomSD', 'Maximum', 'Minimum'
     """
-    if use_alt_gen_process is None:
-        use_alt_gen_process = model_specs['use_alt_gen_process']
-    if regions is None:
-        regions = model_specs['regional_aggregation']
-
-    if use_alt_gen_process is True:
+    from electricitylci.generation import create_generation_process_df
+    if model_specs["include_renewable_generation"] is True:
+        generation_process_df=get_gen_plus_netl()
+    else:
+        generation_process_df = create_generation_process_df()
+    if model_specs["include_netl_water"] is True:
+        from electricitylci.model_config import eia_gen_year
+        import electricitylci.plant_water_use as water
+        water_df = water.generate_plant_water_use(eia_gen_year)
+        generation_process_df=pd.concat([generation_process_df,water_df],sort=False, ignore_index=True)
+    # upstream_df = get_upstream_process_df()
+    if model_specs['include_upstream_processes'] is True:
         try:
             upstream_df = kwargs['upstream_df']
+            upstream_dict = kwargs['upstream_dict']
         except KeyError:
             print(
-                "A kwarg named 'upstream_dict' must be included if use_alt_gen_process "
+                "A kwarg named 'upstream_dict' must be included if include_upstream_processes"
                 "is True"
             )
-        # upstream_df = get_upstream_process_df()
-        if model_specs['include_upstream_processes'] is True:
-            upstream_dict = write_upstream_process_database_to_dict(
-                upstream_df
-            )
-            upstream_dict = write_upstream_dicts_to_jsonld(upstream_dict)
-            gen_df = get_alternate_gen_plus_netl()
-            combined_df, canadian_gen = combine_upstream_and_gen_df(
-                    gen_df, upstream_df
-            )
-            gen_plus_fuels = add_fuels_to_gen(
-                    gen_df, upstream_df, canadian_gen, upstream_dict
-            )
-        else:
-            import electricitylci.import_impacts as import_impacts
-            gen_df = get_alternate_gen_plus_netl()
-#            upstream_df=pd.DataFrame(columns=gen_df.columns)
-#            upstream_dict={}
-#            combined_df, canadian_gen = combine_upstream_and_gen_df(gen_df,upstream_df)
-            canadian_gen_df = import_impacts.generate_canadian_mixes(gen_df)
-            gen_df = pd.concat([gen_df, canadian_gen_df], ignore_index=True)
-            gen_plus_fuels=gen_df
+#        upstream_dict = write_upstream_process_database_to_dict(
+#            upstream_df
+#        )
+#        upstream_dict = write_upstream_dicts_to_jsonld(upstream_dict)
+        combined_df, canadian_gen = combine_upstream_and_gen_df(
+                generation_process_df, upstream_df
+        )
+        gen_plus_fuels = add_fuels_to_gen(
+                generation_process_df, upstream_df, canadian_gen, upstream_dict
+        )
+    else:
+        import electricitylci.import_impacts as import_impacts
+        canadian_gen_df = import_impacts.generate_canadian_mixes(generation_process_df)
+        generation_process_df = pd.concat([generation_process_df, canadian_gen_df], ignore_index=True)
+        gen_plus_fuels=generation_process_df
         #This change has been made to accomodate the new method of generating
         #consumption mixes for FERC regions. They now pull BAs to provide
         #a more accurate inventory. The tradeoff here is that it's no longer possible
@@ -91,45 +88,17 @@ def get_generation_process_df(use_alt_gen_process=None, regions=None, **kwargs):
 #        generation_process_df = aggregate_gen(
 #            gen_plus_fuels, subregion=regions
 #        )
-        if regions in ["BA","FERC","US"]:
-            generation_process_df = aggregate_gen(
-                gen_plus_fuels, subregion="BA"
-            )
-        else:
-            generation_process_df = aggregate_gen(
-                gen_plus_fuels, subregion=regions
-            )
-        return generation_process_df
-
-    else:
-        from electricitylci.egrid_filter import (
-            electricity_for_selected_egrid_facilities,
-            egrid_facilities_to_include,
-            emissions_and_waste_for_selected_egrid_facilities,
+    if regions is None:
+        regions = model_specs['regional_aggregation']
+    if regions in ["BA","FERC","US"]:
+        generation_process_df = aggregate_gen(
+            gen_plus_fuels, subregion="BA"
         )
-        from electricitylci.eia923_generation import build_generation_data
-        from electricitylci.generation import create_generation_process_df
-        from electricitylci.model_config import replace_egrid
-
-        if replace_egrid is True:
-            # This is a dummy function that doesn't exist yet
-            # updated_emissions = build_new_emissions(year)
-
-            generation_data = build_generation_data()
-            generation_process_df = create_generation_process_df(
-                generation_data,
-                emissions_and_waste_for_selected_egrid_facilities,
-                subregion=regions,
-            )
-
-        else:
-            electricity_for_selected_egrid_facilities["Year"] = model_specs["egrid_year"]
-            generation_process_df = create_generation_process_df(
-                electricity_for_selected_egrid_facilities,
-                emissions_and_waste_for_selected_egrid_facilities,
-                subregion=regions,
-            )
-        return generation_process_df
+    else:
+        generation_process_df = aggregate_gen(
+            gen_plus_fuels, subregion=regions
+        )
+    return generation_process_df
 
 
 def get_generation_mix_process_df(regions=None):
@@ -142,8 +111,6 @@ def get_generation_mix_process_df(regions=None):
 
     Parameters
     ----------
-    use_alt_gen_process : str, optional
-        Not currently used (the default is 'egrid', which [default_description])
     regions : str, optional
         Which regions to include (the default is 'all', which includes all eGRID
         subregions)
@@ -347,7 +314,7 @@ def combine_upstream_and_gen_df(gen_df, upstream_df):
     Parameters
     ----------
     gen_df : dataframe
-        The generator dataframe, generated by get_alternate_gen_plus_netl or
+        The generator dataframe, generated by get_gen_plus_netl or
         get_generation_process_df. Note that get_generation_process_df returns
         two dataframes. The intention would be to send the second returned
         dataframe (plant-level emissions) to this routine.
@@ -365,7 +332,7 @@ def combine_upstream_and_gen_df(gen_df, upstream_df):
     return combined_df, canadian_gen
 
 
-def get_alternate_gen_plus_netl():
+def get_gen_plus_netl():
     """
     This will combine the netl life cycle data for solar, geothermal, and wind,
     which will include impacts from construction, etc. that would be omitted
@@ -380,7 +347,7 @@ def get_alternate_gen_plus_netl():
     dataframe
     """
     from electricitylci.model_config import eia_gen_year
-    import electricitylci.alt_generation as alt_gen
+    import electricitylci.generation as gen
     from electricitylci.combinator import (
         concat_map_upstream_databases,
         concat_clean_upstream_and_plant,
@@ -391,7 +358,7 @@ def get_alternate_gen_plus_netl():
     import electricitylci.plant_water_use as water
     import electricitylci.hydro_upstream as hydro
     import electricitylci.solar_thermal_upstream as solartherm
-
+    
     print(
         "Generating inventories for geothermal, solar, wind, hydro, and solar thermal..."
     )
@@ -407,10 +374,9 @@ def get_alternate_gen_plus_netl():
     netl_gen["GeographicalCorrelation"] = 1
     netl_gen["TechnologicalCorrelation"] = 1
     netl_gen["ReliabilityScore"] = 1
+
     print("Getting reported emissions for generators...")
-    gen_df = alt_gen.create_generation_process_df()
-    water_df = water.generate_plant_water_use(eia_gen_year)
-    gen_df = pd.concat([gen_df, water_df, hydro_df], ignore_index=True)
+    gen_df = gen.create_generation_process_df()
     combined_gen = concat_clean_upstream_and_plant(gen_df, netl_gen)
     return combined_gen
 
@@ -426,14 +392,14 @@ def aggregate_gen(gen_df, subregion="BA"):
     Parameters
     ----------
     gen_df : dataframe
-        The generation dataframe as generated by get_alternate_gen_plus_netl
+        The generation dataframe as generated by get_gen_plus_netl
         or get_generation_process_df.
 
     subregion : str, optional
         The level of subregion that the data will be aggregated to. Choices
         are 'eGRID', 'NERC', 'FERC', 'BA', 'US', by default 'BA', by default "BA"
     """
-    import electricitylci.alt_generation as alt_gen
+    import electricitylci.generation as gen
     if subregion is None:
 #        subregion = model_specs['regional_aggregation']
         #This change has been made to accomodate the new method of generating
@@ -443,7 +409,7 @@ def aggregate_gen(gen_df, subregion="BA"):
         #Or it could be possible but would requir running through aggregate twice.
         subregion="BA"
     print(f"Aggregating to subregion - {subregion}")
-    aggregate_df = alt_gen.aggregate_data(gen_df, subregion=subregion)
+    aggregate_df = gen.aggregate_data(gen_df, subregion=subregion)
     return aggregate_df
 
 
@@ -454,7 +420,7 @@ def add_fuels_to_gen(gen_df, fuel_df, canadian_gen, upstream_dict):
     Parameters
     ----------
     gen_df : dataframe
-        The generation dataframe, as generated by get_alternate_gen_plus_netl
+        The generation dataframe, as generated by get_gen_plus_netl
         or get_generation_process_df.
     upstream_df : dataframe
         The combined upstream dataframe.
@@ -498,12 +464,16 @@ def write_gen_fuel_database_to_dict(
         A dictionary of generation unit processes ready to be written to
         openLCA.
     """
-    from electricitylci.alt_generation import olcaschema_genprocess
+    from electricitylci.generation import olcaschema_genprocess
     if subregion is None:
         subregion = model_specs['regional_aggregation']
         #Another change to accomodate FERC consumption pulling BAs.
-    if subregion in ["BA","FERC","US"]:    
-        subregion="BA"
+    #Removing the statements below for now. This is preventing the generation
+    #of dictionaries for other levels of aggregation. This logic will need to
+    #be implemented in main.py so that FERC consumption mixes can be made
+    #using the required BA aggregation.
+    # if subregion in ["BA","FERC","US"]:    
+    #     subregion="BA"
     print("Converting generator dataframe to dictionaries...")
     gen_plus_fuel_dict = olcaschema_genprocess(
         gen_plus_fuel_df, upstream_dict, subregion=subregion
