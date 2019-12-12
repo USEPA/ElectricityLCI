@@ -142,8 +142,14 @@ def get_generation_mix_process_df(regions=None):
     if regions is None:
         regions = model_specs['regional_aggregation']
 
-    if replace_egrid:
+    if replace_egrid or regions in ["BA","FERC"]:
         # assert regions == 'BA' or regions == 'NERC', 'Regions must be BA or NERC'
+        if regions in ["BA","FERC"] and not replace_egrid:
+            logger.info(
+                f"Actual generation data is being used for the generation mix "
+                f"despite replace_egrid = False. The reference eGrid electricity "
+                f"data cannot be reorgnznied to match BA or FERC regions"
+                )
         print("Actual generation data is used when replacing eGRID")
         generation_data = build_generation_data(
             generation_years=[eia_gen_year]
