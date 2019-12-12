@@ -101,6 +101,7 @@ def create_generation_mix_process_df_from_model_generation_data(
         #     database_for_genmix_final['Balancing Authority Name']
         # )
     else:
+        egrid_facilities_w_fuel_region["FacilityID"]=egrid_facilities_w_fuel_region["FacilityID"].astype(int)
         database_for_genmix_final = pd.merge(
             generation_data, egrid_facilities_w_fuel_region, on="FacilityID"
         )
