@@ -237,17 +237,20 @@ def create_generation_mix_process_df_from_model_generation_data(
 # Only possible for a subregion, NERC region, or total US
 def create_generation_mix_process_df_from_egrid_ref_data(subregion=None):
     """
-    [summary]
+    Creates fuel generation mix by subregion using egrid reference data.
 
     Parameters
     ----------
-    subregion : [type]
+    generation_data : DataFrame
         [description]
+    subregion : str
+        Description of single region or group of regions. 
 
     Returns
     -------
-    [type]
-        [description]
+    DataFrame
+        Dataframe contains the fraction of various generation technologies
+        to produce 1 MWh of electricity.
     """
     if subregion is None:
         subregion = regional_aggregation
