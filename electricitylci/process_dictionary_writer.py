@@ -358,7 +358,7 @@ def process_doc_creation(process_type="default"):
         assert process_type in VALID_FUEL_CATS, f"Invalid process_type ({process_type}), using default"
     except AssertionError:
         process_type="default"
-    if model_specs["use_alt_gen_process"] is True:
+    if model_specs["replace_egrid"] is True:
         subkey = "replace_egrid"
     else:
         subkey= "use_egrid"
@@ -398,7 +398,7 @@ def process_description_creation(process_type="fossil"):
         assert process_type in VALID_FUEL_CATS, f"Invalid process_type ({process_type}), using default"
     except AssertionError:
         process_type="default"
-    if model_specs["use_alt_gen_process"] is True:
+    if model_specs["replace_egrid"] is True:
         subkey = "replace_egrid"
     else:
         subkey= "use_egrid"

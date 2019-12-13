@@ -20,15 +20,14 @@ egrid_year: 2014
 eia_gen_year: 2017
 replace_egrid: False
 
-# NETL has developed an alternate method for generation process calculations. While
-# this `alt_generation` method is faster, the uncertainty calculations are different
-# from the original EPA version. This method cannot be used with eGRID regions
-use_alt_gen_process: False
+#NETL has developed profiles for renewable generation to capture construction
+#impacts (e.g., solar PV menufacturing).
+include_renewable_generation: True
 
-# Upstream data from NETL can be included in the outputs. This must be set to True if
-# the NETL alternative method for generation process calculations is used.
-# NOT CURRENTLY IMPLEMENTED - UPSTREAM DATA WILL BE INCLUDED IF use_alt_gen_process IS
-# TRUE.
+#NETL has developed profiles for power plant water use.
+include_netl_water: True
+
+# Upstream data from NETL can be included in the outputs.
 include_upstream_processes: False
 
 inventories_of_interest:
@@ -71,14 +70,14 @@ efficiency_of_distribution_grid: 0.95
 EPA_eGRID_trading: True
 net_trading: False
 
-NETL_IO_trading: False
+
 NETL_IO_trading_year: 2016
 
 
 
 # OTHER PARAMETERS
 
-fedelemflowlist_version: 0.2
+fedelemflowlist_version: 1.0
 post_process_generation_emission_factors: False
 use_primaryfuel_for_coal: False
 fuel_name_file: fuelname_1.csv

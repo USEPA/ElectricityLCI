@@ -167,16 +167,16 @@ def create_generation_mix_process_df_from_model_generation_data(
         #simplicity and because NBSO is an imported BA, we'll remove the US-side 
         #and assume it's covered under the Canadian imports.
         subregion_fuel_gen=subregion_fuel_gen.loc[subregion_fuel_gen["Subregion"]!="New Brunswick System Operator",:]
-        canada_list=[]
-        canada_subregions = ["B.C. Hydro & Power Authority",
-                             "Hydro-Quebec TransEnergie",
-                             "Manitoba Hydro",
-                             "New Brunswick System Operator",
-                             "Ontario IESO"
-                             ]
-        for reg in canada_subregions:
-            canada_list.append((reg,"ALL",1.0,1.0))
-        canada_df=pd.DataFrame(canada_list,columns=["Subregion","FuelCategory","Electricity","Generation_Ratio"])
+    canada_list=[]
+    canada_subregions = ["B.C. Hydro & Power Authority",
+                            "Hydro-Quebec TransEnergie",
+                            "Manitoba Hydro",
+                            "New Brunswick System Operator",
+                            "Ontario IESO"
+                            ]
+    for reg in canada_subregions:
+        canada_list.append((reg,"ALL",1.0,1.0))
+    canada_df=pd.DataFrame(canada_list,columns=["Subregion","FuelCategory","Electricity","Generation_Ratio"])
     subregion_fuel_gen = pd.concat([subregion_fuel_gen,canada_df], ignore_index=True)
     return subregion_fuel_gen
 

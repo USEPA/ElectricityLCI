@@ -42,6 +42,10 @@ def generate_canadian_mixes(us_inventory):
         var_name="FuelCategory",
         value_name="FuelCategory_fraction",
     )
+    #If there are no upstream inventories, then the quantity column will not exist.
+    #Let's create it.
+    if "quantity" not in list(us_inventory.columns):
+        us_inventory["quantity"]=float("nan")
     us_inventory_summary = us_inventory.groupby(
         by=[
             "FuelCategory",
