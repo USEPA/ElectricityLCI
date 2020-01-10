@@ -655,7 +655,7 @@ def aggregate_data(total_db, subregion="BA"):
                 try:
                     result = (np.exp(mean), 0, np.exp(upper_interval))
                 except ArithmeticError or ValueError or FloatingPointError:
-                    print("Prolem with result")
+                    module_logger.info("Problem with result")
                     return None
                 if result is not None:
                     return result
