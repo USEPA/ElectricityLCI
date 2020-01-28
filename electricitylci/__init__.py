@@ -273,8 +273,9 @@ def get_upstream_process_df():
     nuke_df = nuke.generate_upstream_nuc(eia_gen_year)
     const = const.generate_power_plant_construction(eia_gen_year)
     upstream_df = concat_map_upstream_databases(
-        coal_df, ng_df, petro_df, nuke_df, const
+        petro_df, nuke_df, const
     )
+    upstream_df=pd.concat([upstream_df,coal_df,ng_df])
     return upstream_df
 
 
