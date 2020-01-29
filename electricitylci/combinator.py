@@ -207,6 +207,7 @@ def concat_map_upstream_databases(*arg):
             "Compartment_path_netl",
         ],
         inplace=True,
+        errors="ignore"
     )
     upstream_mapped_df = upstream_mapped_df.rename(
         columns=mapped_column_dict, copy=False
