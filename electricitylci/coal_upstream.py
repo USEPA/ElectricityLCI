@@ -446,7 +446,7 @@ def generate_upstream_coal(year):
             )
     merged_coal_upstream = pd.concat([coal_mining_inventory_df, 
                                       melted_database_transport],sort=False).reset_index(drop=True)
-    merged_coal_upstream['fuel_type']='Coal'
+    merged_coal_upstream['FuelCategory']='COAL'
     merged_coal_upstream.rename(columns={
             'coal_source_code':'stage_code',
             'Source':'stage'
@@ -457,6 +457,8 @@ def generate_upstream_coal(year):
             ['plant_id','stage','stage_code','Compartment','FlowName'],
             inplace=True)
     merged_coal_upstream.reset_index(drop=True,inplace=True)
+    merged_coal_upstream["Year"]=year
+    merged_coal_upstream["Source"]="netl"
     return merged_coal_upstream
 
 if __name__=='__main__':

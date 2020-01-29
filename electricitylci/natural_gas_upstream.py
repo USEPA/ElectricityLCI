@@ -69,7 +69,7 @@ def generate_upstream_ng(year):
     ng_lci = pd.read_csv(data_dir + '/NG_LCI.csv',index_col=[0,1,2,3,4,5])
             #sheet_name = 'Basin_Mean_Data')
     ng_lci_columns=[
-            "compartment",
+            "Compartment",
             "FlowName",
             "FlowUUID",
             "Unit",
@@ -106,12 +106,17 @@ def generate_upstream_ng(year):
     #not normalized to electricity output
  
 
-    ng_lci_basin['fuel_type']='GAS'
+    ng_lci_basin['FuelCategory']='GAS'
     ng_lci_basin.rename(columns={
             'Plant Id':'plant_id',
             'NG_LCI_Name':'stage_code',
             'Stage':'stage'
             },inplace=True)
+    ng_lci_basin["Year"]=year
+    ng_lci_basin["Source"]="netl"
+    ng_lci_basin["ElementaryFlowPrimeContext"]="emission"
+    ng_lci_basin.loc[ng_lci_basin["Compartment"].str.contains("resource/"),"ElementaryFlowPrimeContext"]="resource"
+    ng_lci_basin.loc[ng_lci_basin["Compartment"].str.contains("Technosphere/"),"ElementaryFlowPrimeContext"]="technosphere"
     return ng_lci_basin
 
 if __name__=='__main__':
