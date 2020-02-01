@@ -262,6 +262,7 @@ def generate_upstream_coal(year):
     coal_mining_inventory["ElementaryFlowPrimeContext"]=float("nan")
     coal_mining_inventory.loc[coal_mining_inventory["Compartment"].str.contains("emission/"),"ElementaryFlowPrimeContext"]="emission"
     coal_mining_inventory.loc[coal_mining_inventory["Compartment"].str.contains("resource/"),"ElementaryFlowPrimeContext"]="resource"
+    coal_mining_inventory.loc[coal_mining_inventory["Compartment"].str.contains("Technosphere"),"ElementaryFlowPrimeContext"]="technosphere"
     coal_mining_inventory.reset_index(drop=True,inplace=True)
 #    air_list=[x for x in coal_mining_inventory.index if "emission/air" in coal_mining_inventory.loc[x,"FlowPath"]]
 #    water_list=[x for x in coal_mining_inventory.index if "emission/water" in coal_mining_inventory.loc[x,"FlowPath"]]
