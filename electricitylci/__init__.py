@@ -377,13 +377,13 @@ def get_gen_plus_netl():
     hydro_df = hydro.generate_hydro_emissions()
     solartherm_df = solartherm.generate_upstream_solarthermal(eia_gen_year)
     netl_gen = concat_map_upstream_databases(
-        geo_df, solar_df, wind_df, hydro_df, solartherm_df
+        geo_df, solar_df, wind_df, solartherm_df,
     )
     netl_gen["DataCollection"] = 5
     netl_gen["GeographicalCorrelation"] = 1
     netl_gen["TechnologicalCorrelation"] = 1
     netl_gen["ReliabilityScore"] = 1
-
+    netl_gen=pd.concat([netl_gen,hydro_df],ignore_index=True,sort=False)
     print("Getting reported emissions for generators...")
     gen_df = gen.create_generation_process_df()
     combined_gen = concat_clean_upstream_and_plant(gen_df, netl_gen)
