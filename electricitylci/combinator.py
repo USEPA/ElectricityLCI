@@ -283,8 +283,6 @@ def concat_map_upstream_databases(*arg,**kwargs):
     upstream_mapped_df.loc[upstream_mapped_df["Compartment"].str.contains("resource"),"ElementaryFlowPrimeContext"]="resource"
     upstream_mapped_df["Source"] = "netl"
     upstream_mapped_df["Year"] = eia_gen_year
-    ##The following section is used to generate a list of flows that did
-    #or did not get matched. It shouldn't make it into the final code.
     final_columns=[
         "plant_id",
         "FuelCategory",
@@ -292,6 +290,8 @@ def concat_map_upstream_databases(*arg,**kwargs):
         "FlowName",
         "Compartment",
         "Compartment_path",
+        "FlowUUID",
+        "Unit",
         "ElementaryFlowPrimeContext",
         "FlowAmount",
         "quantity",
@@ -301,7 +301,10 @@ def concat_map_upstream_databases(*arg,**kwargs):
         ]
     if "Electricity" in upstream_df.columns:
         final_columns=final_columns+["Electricity"]
-    if kwargs is not None:
+    #I added the section below to help generate lists of matched and unmatched
+    #flows. Because of the groupby, it's expensive enough not to run everytime.
+    #I didn't want to get rid of it in case it comes in handy later.
+    if kwargs != {}:
         if "group_name" in kwargs:
             unique_orig=upstream_df.groupby(by=["FlowName_orig","Compartment_path_orig"]).groups
             unique_mapped=upstream_mapped_df.groupby(by=["FlowName_orig","Compartment_path_orig","Unit_orig","FlowName","Compartment","Unit"]).groups
