@@ -275,7 +275,7 @@ def get_upstream_process_df():
     upstream_df = concat_map_upstream_databases(
         petro_df, nuke_df, const
     )
-    upstream_df=pd.concat([upstream_df,coal_df,ng_df])
+    upstream_df=pd.concat([upstream_df,coal_df,ng_df],sort=False,ignore_index=True)
     return upstream_df
 
 
@@ -383,7 +383,7 @@ def get_gen_plus_netl():
     netl_gen["GeographicalCorrelation"] = 1
     netl_gen["TechnologicalCorrelation"] = 1
     netl_gen["ReliabilityScore"] = 1
-    netl_gen=pd.concat([netl_gen,hydro_df],ignore_index=True,sort=False)
+    netl_gen=pd.concat([netl_gen,hydro_df[netl_gen.columns]],ignore_index=True,sort=False)
     print("Getting reported emissions for generators...")
     gen_df = gen.create_generation_process_df()
     combined_gen = concat_clean_upstream_and_plant(gen_df, netl_gen)
