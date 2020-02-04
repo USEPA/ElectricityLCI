@@ -115,7 +115,8 @@ def fill_nans(df, key_column="FacilityID", target_columns=[], dropna=True):
     return df
 
 
-def concat_map_upstream_databases(*arg):
+def concat_map_upstream_databases(*arg,**kwargs):
+    import fedelemflowlist as fedefl
     """
     Concatenates all of the upstream databases given as args. Then all of the
     emissions in the combined database are mapped to the federal elementary
@@ -137,37 +138,77 @@ def concat_map_upstream_databases(*arg):
         #        "UUID (EPA)": "FlowUUID",
         #         "FlowName": "model_flow_name",
         #        "Flow name (EPA)": "FlowName",
-        "Flowable": "FlowName",
-        "Flow UUID": "FlowUUID",
-        "Compartment_path_y": "Compartment_path",
+        "TargetFlowName": "FlowName",
+        "TargetFlowUUID": "FlowUUID",
+        "TargetFlowContext":"Compartment",
+#        "Compartment_path_y": "Compartment_path",
+        "TargetUnit":"Unit",
+        
     }
     compartment_mapping = {
         "air": "emission/air",
         "water": "emission/water",
         "ground": "emission/ground",
-        "soil": "emission/soil",
+        "soil": "emission/ground",
         "resource": "resource",
+        "NETL database/emissions":"NETL database/emissions",
+        "NETL database/resources":"NETL database/resources",
     }
     print(f"Concatenating and flow-mapping {len(arg)} upstream databases.")
     upstream_df_list = list()
     for df in arg:
-        upstream_df_list.append(df)
+        if isinstance(df, pd.DataFrame):
+            upstream_df_list.append(df)
     upstream_df = pd.concat(upstream_df_list, ignore_index=True, sort=False)
-    upstream_df["Compartment_path"] = upstream_df["Compartment"].map(
-        compartment_mapping
-    )
-    netl_epa_flows = pd.read_csv(
-        data_dir + "/netl_fedelem_crosswalk.csv",
-        header=0,
-        usecols=[
-            1,
-            4,
-            10,
-            14,
-            20,
-            18,
-        ],  # FlowName_netl, Compartment_path_netl, CAS, Compartment_path, Flowable, Flow UUID
-    )
+    if "Compartment_path" not in upstream_df.columns:
+        upstream_df["Compartment_path"]=float("nan")
+    upstream_df["Compartment_path"].fillna(upstream_df["Compartment"].map(compartment_mapping),inplace=True)
+#    upstream_df["Compartment_path"] = upstream_df["Compartment"].map(
+#        compartment_mapping
+#    )
+    flow_mapping=fedefl.get_flowmapping()
+    fedefl_df=fedefl.get_flows()
+
+    fedefl_df["SourceFlowName"]=fedefl_df["Flowable"].str.lower()
+    fedefl_df["SourceFlowContext"]=fedefl_df["Context"].str.lower()
+    target_contexts=[
+            "emission/air",
+            "emission/water",
+            "emission/water/fresh water body",
+            "resource/water",
+            "emission/ground",
+            "emission/ground/human-dominated/agricultural",
+            "emission/ground/human-dominated/industrial"
+            ]
+    fedefl_df.rename(columns={"Flowable":"TargetFlowName","Context":"TargetFlowContext","Unit":"TargetUnit","Flow UUID":"TargetFlowUUID"},inplace=True)
+    fedefl_df=fedefl_df.loc[fedefl_df["SourceFlowContext"].isin(target_contexts),:].reset_index()
+    fedefl_df_stripped_context=fedefl_df.copy()
+    fedefl_df_stripped_context["SourceFlowContext"]=fedefl_df_stripped_context["SourceFlowContext"].str.replace("emission/","")
+    flow_mapping["SourceFlowName"]=flow_mapping["SourceFlowName"].str.lower()
+    flow_mapping=pd.concat(
+            [flow_mapping,fedefl_df,fedefl_df_stripped_context],
+            ignore_index=True, sort=False).drop_duplicates(
+                    subset=["SourceFlowName","SourceFlowContext"]).reset_index()
+    flow_mapping.drop_duplicates(subset=["SourceFlowName","SourceFlowContext"],inplace=True)
+    upstream_df["FlowName_orig"]=upstream_df["FlowName"]
+    upstream_df["Compartment_orig"]=upstream_df["Compartment"]
+    upstream_df["Compartment_path_orig"]=upstream_df["Compartment_path"]
+    upstream_df["Unit_orig"]=upstream_df["Unit"]
+    upstream_df["FlowName"]=upstream_df["FlowName"].str.lower().str.rstrip()
+    upstream_df["Compartment"]=upstream_df["Compartment"].str.lower().str.rstrip()
+    upstream_df["Compartment_path"]=upstream_df["Compartment_path"].str.lower().str.rstrip()
+#    netl_epa_flows = pd.read_csv(
+#        data_dir + "/netl_fedelem_crosswalk.csv",
+#        header=0,
+#        usecols=[
+#            1,
+#            4,
+#            10,
+#            14,
+#            20,
+#            18,
+#        ],  # FlowName_netl, Compartment_path_netl, CAS, Compartment_path, Flowable, Flow UUID
+#    )
     if "Unit" in upstream_df.columns.values:
         groupby_cols = [
             "fuel_type",
@@ -177,38 +218,49 @@ def concat_map_upstream_databases(*arg):
             "plant_id",
             "Compartment_path",
             "Unit",
+            "FlowName_orig",
+            "Compartment_path_orig",
+            "Unit_orig"
         ]
         upstream_df["Unit"].fillna("kg", inplace=True)
+#    else:
+#        groupby_cols = [
+#            "fuel_type",
+#            "stage_code",
+#            "FlowName",
+#            "Compartment",
+#            "plant_id",
+#            "Compartment_path",
+#        ]  
+    if "Electricity" in upstream_df.columns:
+        upstream_df_grp = upstream_df.groupby(groupby_cols, as_index=False).agg(
+                {"FlowAmount": "sum", "quantity": "mean","Electricity":"mean"}
+        )  
     else:
-        groupby_cols = [
-            "fuel_type",
-            "stage_code",
-            "FlowName",
-            "Compartment",
-            "plant_id",
-            "Compartment_path",
-        ]
-    upstream_df = upstream_df.groupby(groupby_cols, as_index=False).agg(
-        {"FlowAmount": "sum", "quantity": "mean", "Electricity": "mean"}
-    )
+        upstream_df_grp = upstream_df.groupby(groupby_cols, as_index=False).agg(
+                {"FlowAmount": "sum", "quantity": "mean"}
+        )  
     upstream_mapped_df = pd.merge(
-        left=upstream_df,
-        right=netl_epa_flows,
+        left=upstream_df_grp,
+        right=flow_mapping,
         left_on=["FlowName", "Compartment_path"],
-        right_on=["FlowName_netl", "Compartment_path_netl"],
+        right_on=["SourceFlowName", "SourceFlowContext"],
         how="left",
     )
-    upstream_mapped_df.drop(
-        columns=[
-            "Compartment_path_x",
+#    upstream_mapped_df.drop(
+#        columns=[
+#            "FlowName",
+#            "Compartment",
+#            "Unit"
+#        ],
+#        inplace=True,
+#        errors="ignore"
+#    )
+    upstream_mapped_df.drop(columns={
             "FlowName",
-            "Compartment_path_x",
-            "Compartment_path_netl",
-            "Compartment_path_netl",
-        ],
-        inplace=True,
-        errors="ignore"
-    )
+            "Compartment",
+            "Unit"
+            },inplace=True)
     upstream_mapped_df = upstream_mapped_df.rename(
         columns=mapped_column_dict, copy=False
     )
@@ -217,10 +269,10 @@ def concat_map_upstream_databases(*arg):
         inplace=True,
     )
     upstream_mapped_df.dropna(subset=["FlowName"], inplace=True)
-    garbage = upstream_mapped_df.loc[
-        upstream_mapped_df["FlowName"] == "[no match]", :
-    ].index
-    upstream_mapped_df.drop(garbage, inplace=True)
+#    garbage = upstream_mapped_df.loc[
+#        upstream_mapped_df["FlowName"] == "[no match]", :
+#    ].index
+#    upstream_mapped_df.drop(garbage, inplace=True)
     upstream_mapped_df.rename(
         columns={"fuel_type": "FuelCategory"}, inplace=True
     )
@@ -228,8 +280,50 @@ def concat_map_upstream_databases(*arg):
         "FuelCategory"
     ].str.upper()
     upstream_mapped_df["ElementaryFlowPrimeContext"] = "emission"
+    upstream_mapped_df.loc[upstream_mapped_df["Compartment"].str.contains("resource"),"ElementaryFlowPrimeContext"]="resource"
     upstream_mapped_df["Source"] = "netl"
     upstream_mapped_df["Year"] = eia_gen_year
+    ##The following section is used to generate a list of flows that did
+    #or did not get matched. It shouldn't make it into the final code.
+    final_columns=[
+        "plant_id",
+        "FuelCategory",
+        "stage_code",
+        "FlowName",
+        "Compartment",
+        "Compartment_path",
+        "ElementaryFlowPrimeContext",
+        "FlowAmount",
+        "quantity",
+#            "Electricity",
+        "Source",
+        "Year",
+        ]
+    if "Electricity" in upstream_df.columns:
+        final_columns=final_columns+["Electricity"]
+    if kwargs is not None:
+        if "group_name" in kwargs:
+            unique_orig=upstream_df.groupby(by=["FlowName_orig","Compartment_path_orig"]).groups
+            unique_mapped=upstream_mapped_df.groupby(by=["FlowName_orig","Compartment_path_orig","Unit_orig","FlowName","Compartment","Unit"]).groups
+            unique_mapped_set=set(unique_mapped.keys())
+            unique_orig_set=set(unique_orig.keys())
+            unmatched_list=sorted(list(unique_orig_set-unique_mapped_set))
+            matched_list=sorted(list(unique_mapped_set))
+            fname_append=f"_{kwargs['group_name']}"
+            with open(f"{output_dir}/flowmapping_lists{fname_append}.txt","w") as f:
+                f.write("Unmatched flows\n")
+                if kwargs is not None:
+                    if kwargs["group_name"] is not None:
+                        f.write(f"From the group: {kwargs['group_name']}\n")
+                for x in unmatched_list:
+                    f.write(f"{x}\n")
+                f.write("\nMatched flows\n")
+                for x in matched_list:
+                    f.write(f"{x}\n")
+                f.close()
+            upstream_mapped_df=upstream_mapped_df[final_columns]
+            return upstream_mapped_df, unmatched_list, matched_list
+    upstream_mapped_df=upstream_mapped_df[final_columns]
     return upstream_mapped_df
 
 
@@ -355,10 +449,10 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     fuel_df["FlowAmount"] = upstream_reduced["quantity"]
     fuel_df["FlowUUID"] = expand_fuel_df["q_reference_id"]
     fuel_df["Unit"] = expand_fuel_df["q_reference_unit"]
-    fuel_df["eGRID_ID"] = upstream_df["plant_id"]
-    fuel_df["FacilityID"] = upstream_df["plant_id"]
-    fuel_df["FuelCategory"] = upstream_df["FuelCategory"]
-    fuel_df["Year"] = upstream_df["Year"]
+    fuel_df["eGRID_ID"] = upstream_reduced["plant_id"]
+    fuel_df["FacilityID"] = upstream_reduced["plant_id"]
+    fuel_df["FuelCategory"] = upstream_reduced["FuelCategory"]
+    fuel_df["Year"] = upstream_reduced["Year"]
     merge_cols = [
         "Age",
         "Balancing Authority Code",
