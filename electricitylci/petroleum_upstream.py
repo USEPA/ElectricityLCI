@@ -43,7 +43,7 @@ def generate_petroleum_upstream(year):
     #that the crude represented in each PADD is the mix of crude going into
     #that PADD, domestically-produced and imported, and the refining emissions
     #are representative of the mix of refinery types in that PADD.
-    state_padd_df=pd.read_csv(data_dir+'/state_padd.csv')
+    state_padd_df=pd.read_csv(data_dir+'/state_padd.csv',low_memory=False)
     state_padd_dict=pd.Series(
             state_padd_df.padd.values,index=state_padd_df.state).to_dict()
 
@@ -65,24 +65,44 @@ def generate_petroleum_upstream(year):
             fn = f'PRELIM_Mixer__{fuel}___PADD_{padd}_.xlsx'
             path = join(data_dir,expected_lci_folder,fn)
             key = f'{fuels_map[fuel]}_{padd}'
-            petroleum_lci[key]=pd.read_excel(
-                    path,
+            petrol_excel=pd.ExcelFile(path)
+            petroleum_lci_emissions=petrol_excel.parse(
                     sheet_name='Inventory',
                     usecols="I:N",
+#                    header=0,
+#                    mangle_dupe_cols=False,
                     skiprows=2)
+#            petroleum_lci_emissions=pd.read_excel(
+#                    path,
+#                    sheet_name='Inventory',
+#                    usecols="I:N",
+#                    header=0,
+##                    mangle_dupe_cols=False,
+#                    skiprows=2)
+            petroleum_lci_emissions.loc[petroleum_lci_emissions["Category.1"]=="NETL database","Category.1"]="NETL database/emissions"
+            petroleum_lci_emissions.rename(columns={
+                "Flow UUID.1":"Flow UUID",
+                "Flow.1":"Flow",
+                "Category.1":"Category",
+                "Sub-category.1":"Sub-category",
+                "Unit.1":"Unit",
+                "Result.1":"Result"
+                },
+                inplace=True)
+            petroleum_lci_input=petrol_excel.parse(
+                    sheet_name='Inventory',
+                    usecols="B:G",
+#                    header=1,
+#                    mangle_dupe_cols=False,
+                    skiprows=2)
+            petroleum_lci_input.loc[petroleum_lci_input["Category"]=="NETL database","Category"]="NETL database/resources"
+            total_petroleum=pd.concat([petroleum_lci_emissions,petroleum_lci_input],ignore_index=True)
+            petroleum_lci[key]=total_petroleum
             petroleum_lci[key]['fuel_code']=f'{fuels_map[fuel]}_{padd}'
 
     #Merging the dataframes within the dictionary to a single datframe
     combined_lci=pd.concat(petroleum_lci,ignore_index=True)
-    combined_lci.rename(columns={
-            "Flow UUID.1":"Flow UUID",
-            "Flow.1":"Flow",
-            "Category.1":"Category",
-            "Sub-category.1":"Sub-category",
-            "Unit.1":"Unit",
-            "Result.1":"Result"
-            },
-            inplace=True)
+
     petroleum_fuel['fuel_padd']=(petroleum_fuel['reported_fuel_type_code']+
                         '_'+petroleum_fuel['padd'].astype(str))
 
@@ -100,7 +120,7 @@ def generate_petroleum_upstream(year):
 
     #Cleaning up unneeded columns and renaming
     merged_inventory.drop(
-            columns=['fuel_padd','Unit',
+            columns=['fuel_padd',
                      'Sub-category','Flow UUID'],
             inplace=True)
     colnames={
@@ -117,7 +137,8 @@ def generate_petroleum_upstream(year):
     #Change compartment values to be standard'
     compartment_dict={
             'Emission to air':'air',
-            'NETL database':'NETL',
+            "NETL database/emissions":"NETL database/emissions",
+            "NETL database/resources":"NETL database/resources",
             'Emission to water':'water',
             'Emission to soil':'soil'}
     merged_inventory['Compartment']=merged_inventory['Compartment'].map(
