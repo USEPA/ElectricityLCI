@@ -87,7 +87,7 @@ def read_eia923_fuel_receipts(year):
                     and '_page_5_reduced.csv' in f]
         if csv_file:
             csv_path = os.path.join(expected_923_folder,csv_file[0])
-            eia_fuel_receipts_df=pd.read_csv(csv_path)    
+            eia_fuel_receipts_df=pd.read_csv(csv_path,low_memory=False)    
         else:
             eia923_path, eia923_name = find_file_in_folder(
                     folder_path=expected_923_folder,

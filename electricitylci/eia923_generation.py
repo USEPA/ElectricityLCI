@@ -192,6 +192,7 @@ def eia923_download_extract(
             eia = pd.read_csv(
                 csv_path,
                 dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
+                low_memory=False
             )
 
         else:
@@ -477,6 +478,7 @@ def eia923_generation_and_fuel(year):
             eia = pd.read_csv(
                 csv_path,
                 dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
+                low_memory=False
             )
         else:
             print(
@@ -538,6 +540,7 @@ def eia923_boiler_fuel(year):
             eia = pd.read_csv(
                 csv_path,
                 dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
+                low_memory=False
             )
         else:
             print(
@@ -599,6 +602,7 @@ def eia923_sched8_aec(year):
             eia = pd.read_csv(
                 csv_path,
                 dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
+                low_memory=False
             )
         else:
             print(
