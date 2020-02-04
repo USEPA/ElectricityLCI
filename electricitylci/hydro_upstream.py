@@ -55,7 +55,7 @@ def generate_hydro_emissions():
                             right_on="Plant Id",
                             suffixes=["","_eia"])
     hydro_df.drop(columns=["FlowDict","flow","NERC Region","Plant Id"],inplace=True)
-    hydro_df.loc[hydro_df["FlowName"]=="Waster, fresh","FlowAmount"]=hydro_df.loc[hydro_df["FlowName"]=="Waster, fresh","FlowAmount"]*1000
+    hydro_df.loc[hydro_df["FlowName"]=="Water, fresh","FlowAmount"]=hydro_df.loc[hydro_df["FlowName"]=="Waster, fresh","FlowAmount"]*1000
     hydro_df["Unit"]="kg"
     hydro_df["stage_code"] = "Power plant"
     hydro_df["TechnologicalCorrelation"] = 1
@@ -66,6 +66,10 @@ def generate_hydro_emissions():
     hydro_df["eGRID_ID"]=hydro_df["FacilityID"]
     hydro_df["FuelCategory"]="HYDRO"
     hydro_df["PrimaryFuel"]="WAT"
+    hydro_df["quantity"]=hydro_df["Electricity"]
+    hydro_df["ElementaryFlowPrimeContext"]="emission"
+    hydro_df.loc[hydro_df["FlowName"]=="Water, fresh","ElementaryFlowPrimeContext"]="resource"
+    hydro_df["plant_id"]=hydro_df["FacilityID"]
     return hydro_df
 
 if __name__=="__main__":

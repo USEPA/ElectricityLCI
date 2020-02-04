@@ -57,8 +57,9 @@ def generate_upstream_wind(year):
         how="left",
     )
     wind_upstream.rename(
-        columns={"Net Generation (Megawatthours)": "Electricity"}, inplace=True
+        columns={"Net Generation (Megawatthours)": "quantity"}, inplace=True
     )
+    wind_upstream["Electricity"]=wind_upstream["quantity"]
     wind_upstream.drop(
         columns=[
             "Plant Id",
@@ -79,6 +80,7 @@ def generate_upstream_wind(year):
     wind_upstream["Compartment"] = wind_upstream["Compartment"].map(
         compartment_map
     )
+    wind_upstream["Unit"]="kg"
     # wind_upstream['Compartment']=wind_upstream['Compartment'].str.lower()
     return wind_upstream
 
