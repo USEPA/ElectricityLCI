@@ -82,7 +82,7 @@ def generate_power_plant_construction(year):
     gen_df_group=gen_df_group.merge(prime_energy_combo[['prime_mover', 'energy_source_1', 'const_type']],
                                     on=["prime_mover","energy_source_1"],
                                     how="left")
-    inventory = pd.read_csv(f"{data_dir}/plant_construction_inventory.csv")
+    inventory = pd.read_csv(f"{data_dir}/plant_construction_inventory.csv",low_memory=False)
     inventory = pd.concat([inventory, inventory["Flow"].str.rsplit('/',1,expand=True)],axis=1).drop(columns=["Flow"]).rename(columns={0:"Flow",1:"Unit"})
     inventory = pd.concat([inventory, inventory["Flow"].str.rsplit('/',1,expand=True)],axis=1).drop(columns=["Flow"]).rename(columns={0:"Compartment_path",1:"FlowName"})
     inventory = pd.concat([inventory,inventory["Compartment_path"].str.split('/',n=1,expand=True)],axis=1).rename(columns={0:"Compartment",1:"delete"}).drop(columns="delete")
