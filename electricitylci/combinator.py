@@ -169,7 +169,7 @@ def concat_map_upstream_databases(*arg, **kwargs):
 
     flow_mapping = fedefl.get_flowmapping()
     fedefl_df = fedefl.get_flows()
-
+    fedefl_unique_uuids = fedefl_df["Flow UUID"].unique()
     fedefl_df["SourceFlowName"] = fedefl_df["Flowable"].str.lower()
     fedefl_df["SourceFlowContext"] = fedefl_df["Context"].str.lower()
     target_contexts = [
@@ -327,6 +327,14 @@ def concat_map_upstream_databases(*arg, **kwargs):
     ]
     if "Electricity" in upstream_df.columns:
         final_columns = final_columns + ["Electricity"]
+    #This is to help avoid an issue (as noted in 
+    #https://github.com/USEPA/ElectricityLCI/issues/81) where the final
+    #flow UUID doesn't actually exist in the fedefl. When these exchanges are 
+    #imported into openLCA they are assigned a NULL flow reference and the
+    #inputs/outputs sheet in an openLCA process will not show.
+    upstream_mapped_df = upstream_mapped_df.loc[
+        upstream_mapped_df["FlowUUID"] in fedefl_unique_uuids, :
+    ]
     # I added the section below to help generate lists of matched and unmatched
     # flows. Because of the groupby, it's expensive enough not to run everytime.
     # I didn't want to get rid of it in case it comes in handy later.
