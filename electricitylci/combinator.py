@@ -333,7 +333,7 @@ def concat_map_upstream_databases(*arg, **kwargs):
     #imported into openLCA they are assigned a NULL flow reference and the
     #inputs/outputs sheet in an openLCA process will not show.
     upstream_mapped_df = upstream_mapped_df.loc[
-        upstream_mapped_df["FlowUUID"] in fedefl_unique_uuids, :
+        upstream_mapped_df["FlowUUID"].isin(fedefl_unique_uuids), :
     ]
     # I added the section below to help generate lists of matched and unmatched
     # flows. Because of the groupby, it's expensive enough not to run everytime.
