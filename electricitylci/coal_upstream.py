@@ -362,7 +362,7 @@ def generate_upstream_coal(year):
             )
     
     coal_mining_inventory_df["Source"]="Mining"
-    coal_mining_inventory_df=coal_mining_inventory_df[["plant_id","coal_source_code","quantity","FlowName","FlowAmount","Compartment","Source","FlowUUID","ElementaryFlowPrimeContext","Unit","FlowType"]]
+    coal_mining_inventory_df=coal_mining_inventory_df[["plant_id","coal_source_code","quantity","FlowName","FlowAmount","Compartment","input","Source","FlowUUID","ElementaryFlowPrimeContext","Unit","FlowType"]]
     #Keep the plant ID and air emissions columns
 #    merged_input_eia_coal_a = merged_input_eia_coal_a[
 #            ['plant_id','coal_source_code','quantity'] + column_air_emission]

@@ -68,7 +68,9 @@ def generate_hydro_emissions():
     hydro_df["PrimaryFuel"]="WAT"
     hydro_df["quantity"]=hydro_df["Electricity"]
     hydro_df["ElementaryFlowPrimeContext"]="emission"
+    hydro_df["input"]=False
     hydro_df.loc[hydro_df["FlowName"]=="Water, fresh","ElementaryFlowPrimeContext"]="resource"
+    hydro_df.loc[hydro_df["FlowName"]=="Water, fresh","input"]=True
     hydro_df["plant_id"]=hydro_df["FacilityID"]
     hydro_df["Compartment"]=hydro_df["Compartment_path"]
     return hydro_df

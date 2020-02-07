@@ -5,6 +5,9 @@ from os.path import join
 from electricitylci.globals import data_dir, output_dir
 import electricitylci.PhysicalQuantities as pq
 import electricitylci.eia923_generation as eia923
+import logging
+
+module_logger=logging.getLogger("petroleum_upstream.py")
 
 def generate_petroleum_upstream(year):
     """
@@ -63,6 +66,7 @@ def generate_petroleum_upstream(year):
     for fuel in fuels:
         for padd in padds:
             fn = f'PRELIM_Mixer__{fuel}___PADD_{padd}_.xlsx'
+            module_logger.info(f"Reading petroleum inventory: {fn}")
             path = join(data_dir,expected_lci_folder,fn)
             key = f'{fuels_map[fuel]}_{padd}'
             petrol_excel=pd.ExcelFile(path)
@@ -89,12 +93,14 @@ def generate_petroleum_upstream(year):
                 "Result.1":"Result"
                 },
                 inplace=True)
+            petroleum_lci_emissions["input"]=False
             petroleum_lci_input=petrol_excel.parse(
                     sheet_name='Inventory',
                     usecols="B:G",
 #                    header=1,
 #                    mangle_dupe_cols=False,
                     skiprows=2)
+            petroleum_lci_input["input"]=True
             petroleum_lci_input.loc[petroleum_lci_input["Category"]=="NETL database","Category"]="NETL database/resources"
             total_petroleum=pd.concat([petroleum_lci_emissions,petroleum_lci_input],ignore_index=True)
             petroleum_lci[key]=total_petroleum

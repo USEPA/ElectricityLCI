@@ -88,6 +88,9 @@ def generate_upstream_nuc(year):
         columns={"compartment": "Compartment", "Plant Id": "plant_id"},
         inplace=True,
     )
+    input_dict={"emission":False,"resource":True}
+    nuc_merged["directionality"]=nuc_merged["directionality"].map(input_dict)
+    nuc_merged.rename(columns={"directionality":"input"},inplace=True)
     return nuc_merged
 
 
