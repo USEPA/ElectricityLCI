@@ -385,7 +385,7 @@ def build_generation_data(
     ['FacilityID', 'Electricity', 'Year']
     """
 
-    if not generation_years:
+    if generation_years is None:
         # Use the years from inventories of interest
         generation_years = set(
             list(inventories_of_interest.values()) + [eia_gen_year]
