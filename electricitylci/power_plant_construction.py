@@ -98,6 +98,9 @@ def generate_power_plant_construction(year):
     ngcc_inventory["FlowAmount"] = ngcc_inventory["FlowAmount"]/30/630
     inventory = pd.concat([scpc_inventory,ngcc_inventory])
     inventory["Compartment_path"]=inventory["Compartment_path"].map(compartment_mapping)
+    inventory["input"]=False
+    input_list=["resource" in x for x in inventory["Compartment"]]
+    inventory["input"]=input_list
     construction_df = gen_df_group.merge(inventory,on="const_type",how="left")
     construction_df["FlowAmount"]=construction_df["FlowAmount"]*construction_df["nameplate_capacity_mw"]
     construction_df.rename(columns={"nameplate_capacity_mw":"quantity"},inplace=True)

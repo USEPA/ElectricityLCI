@@ -79,6 +79,7 @@ def generate_upstream_solar(year):
     }
     solar_upstream['Compartment']=solar_upstream['Compartment'].map(compartment_map)
     solar_upstream["Unit"]="kg"
+    solar_upstream["input"]=False
     #solar_upstream['Compartment']=solar_upstream['Compartment'].str.lower()
     
     return solar_upstream

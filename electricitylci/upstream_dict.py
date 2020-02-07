@@ -178,7 +178,14 @@ def _exchange_table_creation_ref(fuel_type):
 
 def _flow_table_creation(data):
     ar = dict()
-    ar["flowType"] = "ELEMENTARY_FLOW"
+    if "emission" in data["Compartment"] or "resource" in data["Compartment"]:
+        ar["flowType"] = "ELEMENTARY_FLOW"
+    elif "technosphere" in data["Compartment"].lower() or "valuable" in data["Compartment"].lower():
+        ar["flowType"] = "PRODUCT_FLOW"
+    elif "waste" in data["Compartment"].lower():
+        ar["flowType"] = "WASTE_FLOW"
+    else:
+        ar["flowType"] = "ELEMENTARY_FLOW"
     ar["flowProperties"] = ""
     ar["name"] = data["FlowName"][
         0:255
@@ -186,7 +193,10 @@ def _flow_table_creation(data):
     ar["id"] = data["FlowUUID"]
     comp = str(data["Compartment"])
     if (ar["flowType"] == "ELEMENTARY_FLOW") & (comp != ""):
-        ar["category"] = "Elementary flows/" + "emission" + "/" + comp
+        if "emission" in comp or "resource" in comp:
+            ar["category"]="Elementary flows/"+comp
+        else:
+            ar["category"] = "Elementary flows/" + "emission" + "/" + comp
     elif (ar["flowType"] == "PRODUCT_FLOW") & (comp != ""):
         ar["category"] = comp
     elif ar["flowType"] == "WASTE_FLOW":
@@ -207,13 +217,13 @@ def _exchange_table_creation_output(data):
     ar["avoidedProduct"] = False
     ar["flow"] = _flow_table_creation(data)
     ar["flowProperty"] = ""
-    ar["input"] = False
+    ar["input"] = data["input"]
     ar["quantitativeReference"] = False
     ar["baseUncertainty"] = ""
     ar["provider"] = ""
     ar["amount"] = data["emission_factor"]
     ar["amountFormula"] = ""
-    ar["unit"] = _unit("kg")
+    ar["unit"] = _unit(data["Unit"])
     ar["pedigreeUncertainty"] = ""
     #    ar['dqEntry'] = '('+str(round(data['Reliability_Score'].iloc[0],1))+\
     #                    ';'+str(round(data['TemporalCorrelation'].iloc[0],1))+\
@@ -290,11 +300,13 @@ def olcaschema_genupstream_processes(merged):
             "FlowUUID",
             "Compartment",
             "plant_id",
+            "Unit",
+            "input"
         ],
         as_index=False,
     ).agg({"FlowAmount": "sum", "quantity": "mean"})
     merged_summary = merged_summary.groupby(
-        ["FuelCategory", "stage_code", "FlowName", "FlowUUID", "Compartment"],
+        ["FuelCategory", "stage_code", "FlowName", "FlowUUID", "Compartment","Unit","input"],
         as_index=False,
     )["quantity", "FlowAmount"].sum()
     # ng_rows = merged_summary['fuel_type']=='Natural gas'
@@ -313,7 +325,7 @@ def olcaschema_genupstream_processes(merged):
         # if x not in coal_transport
     )
 
-    merged_summary["FlowDirection"] = "output"
+    #merged_summary["FlowDirection"] = "output"
     upstream_process_dict = dict()
     # upstream_list=['Appalachian']
     for upstream in upstream_list:
