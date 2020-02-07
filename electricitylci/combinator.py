@@ -166,7 +166,7 @@ def concat_map_upstream_databases(*arg, **kwargs):
     upstream_df["Compartment_path"].fillna(
         upstream_df["Compartment"].map(compartment_mapping), inplace=True
     )
-
+    module_logger.info("Creating flow mapping database")
     flow_mapping = fedefl.get_flowmapping()
     fedefl_df = fedefl.get_flows()
     fedefl_unique_uuids = fedefl_df["Flow UUID"].unique()
@@ -209,9 +209,11 @@ def concat_map_upstream_databases(*arg, **kwargs):
         .drop_duplicates(subset=["SourceFlowName", "SourceFlowContext"])
         .reset_index()
     )
-    flow_mapping.drop_duplicates(
-        subset=["SourceFlowName", "SourceFlowContext"], inplace=True
-    )
+    del(fedefl_df_stripped_context, fedefl_df)
+#    flow_mapping.drop_duplicates(
+#        subset=["SourceFlowName", "SourceFlowContext"], inplace=True
+#    )
+    module_logger.info("Preping upstream df for merge")
     upstream_df["FlowName_orig"] = upstream_df["FlowName"]
     upstream_df["Compartment_orig"] = upstream_df["Compartment"]
     upstream_df["Compartment_path_orig"] = upstream_df["Compartment_path"]
@@ -223,12 +225,13 @@ def concat_map_upstream_databases(*arg, **kwargs):
     upstream_df["Compartment_path"] = (
         upstream_df["Compartment_path"].str.lower().str.rstrip()
     )
-
+    upstream_columns=upstream_df.columns
     groupby_cols = [
         "fuel_type",
         "stage_code",
         "FlowName",
         "Compartment",
+        "input",
         "plant_id",
         "Compartment_path",
         "Unit",
@@ -237,6 +240,7 @@ def concat_map_upstream_databases(*arg, **kwargs):
         "Unit_orig",
     ]
     upstream_df["Unit"].fillna("kg", inplace=True)
+    module_logger.info("Grouping upstream database")
     if "Electricity" in upstream_df.columns:
         upstream_df_grp = upstream_df.groupby(
             groupby_cols, as_index=False
@@ -245,6 +249,8 @@ def concat_map_upstream_databases(*arg, **kwargs):
         upstream_df_grp = upstream_df.groupby(
             groupby_cols, as_index=False
         ).agg({"FlowAmount": "sum", "quantity": "mean"})
+    upstream_df=upstream_df[["FlowName_orig", "Compartment_path_orig","stage_code"]]
+    module_logger.info("Merging upstream database and flow mapping")
     upstream_mapped_df = pd.merge(
         left=upstream_df_grp,
         right=flow_mapping,
@@ -252,7 +258,7 @@ def concat_map_upstream_databases(*arg, **kwargs):
         right_on=["SourceFlowName", "SourceFlowContext"],
         how="left",
     )
-
+    del(upstream_df_grp,flow_mapping)
     upstream_mapped_df.drop(
         columns={"FlowName", "Compartment", "Unit"}, inplace=True
     )
@@ -264,6 +270,7 @@ def concat_map_upstream_databases(*arg, **kwargs):
         inplace=True,
     )
     upstream_mapped_df.dropna(subset=["FlowName"], inplace=True)
+    module_logger.info("Checking for mismatched units")
     mismatched_units_filter = [
         x[0] != x[1]
         for x in zip(
@@ -325,8 +332,10 @@ def concat_map_upstream_databases(*arg, **kwargs):
         "Source",
         "Year",
     ]
-    if "Electricity" in upstream_df.columns:
+    if "Electricity" in upstream_columns:
         final_columns = final_columns + ["Electricity"]
+    if "input" in upstream_columns:
+        final_columns = final_columns+["input"]
     #This is to help avoid an issue (as noted in 
     #https://github.com/USEPA/ElectricityLCI/issues/81) where the final
     #flow UUID doesn't actually exist in the fedefl. When these exchanges are 
@@ -340,6 +349,7 @@ def concat_map_upstream_databases(*arg, **kwargs):
     # I didn't want to get rid of it in case it comes in handy later.
     if kwargs != {}:
         if "group_name" in kwargs:
+            module_logger.info("kwarg group_name used: generating flows lists")
             unique_orig = upstream_df.groupby(
                 by=["FlowName_orig", "Compartment_path_orig"]
             ).groups
