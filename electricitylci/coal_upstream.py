@@ -445,6 +445,7 @@ def generate_upstream_coal(year):
                     },
             inplace=True
             )
+    melted_database_transport["input"]=False
     merged_coal_upstream = pd.concat([coal_mining_inventory_df, 
                                       melted_database_transport],sort=False).reset_index(drop=True)
     merged_coal_upstream['FuelCategory']='COAL'
