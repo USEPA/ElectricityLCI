@@ -159,13 +159,13 @@ def concat_map_upstream_databases(*arg, **kwargs):
     upstream_df_list = list()
     for df in arg:
         if isinstance(df, pd.DataFrame):
+            if "Compartment_path" not in df.columns:
+                df["Compartment_path"] = float("nan")
+                df["Compartment_path"].fillna(
+                        df["Compartment"].map(compartment_mapping), inplace=True
+                        )
             upstream_df_list.append(df)
     upstream_df = pd.concat(upstream_df_list, ignore_index=True, sort=False)
-    if "Compartment_path" not in upstream_df.columns:
-        upstream_df["Compartment_path"] = float("nan")
-    upstream_df["Compartment_path"].fillna(
-        upstream_df["Compartment"].map(compartment_mapping), inplace=True
-    )
     module_logger.info("Creating flow mapping database")
     flow_mapping = fedefl.get_flowmapping()
     fedefl_df = fedefl.get_flows()
@@ -213,7 +213,7 @@ def concat_map_upstream_databases(*arg, **kwargs):
 #    flow_mapping.drop_duplicates(
 #        subset=["SourceFlowName", "SourceFlowContext"], inplace=True
 #    )
-    module_logger.info("Preping upstream df for merge")
+    module_logger.info("Preparing upstream df for merge")
     upstream_df["FlowName_orig"] = upstream_df["FlowName"]
     upstream_df["Compartment_orig"] = upstream_df["Compartment"]
     upstream_df["Compartment_path_orig"] = upstream_df["Compartment_path"]
