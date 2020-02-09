@@ -197,6 +197,7 @@ def generate_plant_water_use(year):
         },
         inplace=True,
     )
+    final_water["plant_id"]=final_water["FacilityID"]
     final_water["eGRID_ID"] = final_water["FacilityID"]
     final_water["Year"] = year
     final_water["Source"] = "netl"
