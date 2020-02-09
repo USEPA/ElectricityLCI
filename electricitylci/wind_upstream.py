@@ -80,6 +80,8 @@ def generate_upstream_wind(year):
     wind_upstream["Compartment"] = wind_upstream["Compartment"].map(
         compartment_map
     )
+    wind_upstream["input"]=False
+    wind_upstream.loc[wind_upstream["Compartment"]=="input","input"]=True
     wind_upstream["Unit"]="kg"
     # wind_upstream['Compartment']=wind_upstream['Compartment'].str.lower()
     return wind_upstream
