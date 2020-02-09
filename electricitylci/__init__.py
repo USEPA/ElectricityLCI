@@ -46,6 +46,7 @@ def get_generation_process_df(regions=None, **kwargs):
        'GeomMean', 'GeomSD', 'Maximum', 'Minimum'
     """
     from electricitylci.generation import create_generation_process_df
+    from electricitylci.combinator import concat_clean_upstream_and_plant
     if model_specs["include_renewable_generation"] is True:
         generation_process_df=get_gen_plus_netl()
     else:
@@ -54,7 +55,7 @@ def get_generation_process_df(regions=None, **kwargs):
         from electricitylci.model_config import eia_gen_year
         import electricitylci.plant_water_use as water
         water_df = water.generate_plant_water_use(eia_gen_year)
-        generation_process_df=pd.concat([generation_process_df,water_df],sort=False, ignore_index=True)
+        generation_process_df=concat_clean_upstream_and_plant(generation_process_df,water_df)
     # upstream_df = get_upstream_process_df()
     if model_specs['include_upstream_processes'] is True:
         try:
@@ -146,13 +147,13 @@ def get_generation_mix_process_df(regions=None):
         # assert regions == 'BA' or regions == 'NERC', 'Regions must be BA or NERC'
         if regions in ["BA","FERC","US"] and not replace_egrid:
             logger.info(
-                f"Actual generation data is being used for the generation mix "
+                f"EIA923 generation data is being used for the generation mix "
                 f"despite replace_egrid = False. The reference eGrid electricity "
                 f"data cannot be reorgnznied to match BA or FERC regions. For "
                 f"the US region, the function for generating US mixes does not "
                 f"support aggregating to the US."
                 )
-        print("Actual generation data is used when replacing eGRID")
+        print("EIA923 generation data is used when replacing eGRID")
         generation_data = build_generation_data(
             generation_years=[eia_gen_year]
         )
