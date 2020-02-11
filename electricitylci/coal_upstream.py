@@ -87,7 +87,7 @@ def read_eia923_fuel_receipts(year):
                     and '_page_5_reduced.csv' in f]
         if csv_file:
             csv_path = os.path.join(expected_923_folder,csv_file[0])
-            eia_fuel_receipts_df=pd.read_csv(csv_path)    
+            eia_fuel_receipts_df=pd.read_csv(csv_path,low_memory=False)    
         else:
             eia923_path, eia923_name = find_file_in_folder(
                     folder_path=expected_923_folder,
@@ -222,6 +222,7 @@ def generate_upstream_coal_map(year):
     return final_df
 
 def generate_upstream_coal(year):
+    from ast import literal_eval
     """
     Generate the annual coal mining and transportation emissions (in kg) for 
     each plant in EIA923.
@@ -243,35 +244,42 @@ def generate_upstream_coal(year):
     coal_transportation = pd.read_csv(data_dir+
                                       '/2016_Coal_Trans_By_Plant_ABB_Data.csv')
       
-    coal_mining_inventory = pd.read_csv(data_dir+'/all_coal_scens_coal_cleaned.csv')
-    coal_mining_inventory.drop(columns=["@type","flow.@type"], inplace=True)
+    coal_mining_inventory = pd.read_csv(data_dir+'/coal_mining_lci.csv')
+    coal_mining_inventory.drop(columns=["@type","flow.@type"], inplace=True, errors="ignore")
     coal_mining_inventory.rename(columns={
-            "flow.categoryPath":"FlowPath",
+            "flow.categoryPath":"Compartment",
             "flow.name":"FlowName",
             "flow.refUnit":"Unit",
             "flow.flowType":"FlowType",
-            "Basin_Type":"Coal Code",
-            "flow.@id":"netl_FlowUUID",
+            "Scenario":"Coal Code",
+            "flow.@id":"FlowUUID",
             },inplace=True)
 #    coal_mining_inventory=coal_mining_inventory.loc[coal_mining_inventory["Per_Cleaned"]==coal_cleaning_percent,:]
 #    coal_mining_inventory.drop(columns=["Per_Cleaned"],inplace=True)
+    coal_mining_inventory["Compartment"]=coal_mining_inventory["Compartment"].apply(literal_eval)
+    coal_mining_inventory["Compartment"]=coal_mining_inventory["Compartment"].str.join("/")
+    coal_mining_inventory["Compartment"]=coal_mining_inventory["Compartment"].str.replace("Elementary Flows/","")
+    coal_mining_inventory["ElementaryFlowPrimeContext"]=float("nan")
+    coal_mining_inventory.loc[coal_mining_inventory["Compartment"].str.contains("emission/"),"ElementaryFlowPrimeContext"]="emission"
+    coal_mining_inventory.loc[coal_mining_inventory["Compartment"].str.contains("resource/"),"ElementaryFlowPrimeContext"]="resource"
+    coal_mining_inventory.loc[coal_mining_inventory["Compartment"].str.contains("Technosphere"),"ElementaryFlowPrimeContext"]="technosphere"
     coal_mining_inventory.reset_index(drop=True,inplace=True)
-    air_list=[x for x in coal_mining_inventory.index if "air" in coal_mining_inventory.loc[x,"FlowPath"]]
-    water_list=[x for x in coal_mining_inventory.index if "water" in coal_mining_inventory.loc[x,"FlowPath"]]
-    input_list=[x for x in coal_mining_inventory.index if "Resource" in coal_mining_inventory.loc[x,"FlowPath"]]
-    waste_list=[x for x in coal_mining_inventory.index if "Deposited" in coal_mining_inventory.loc[x,"FlowPath"]]
-    coal_mining_inventory["Compartment"]=float("nan")
-    coal_mining_inventory.loc[air_list,"Compartment"]="air"
-    coal_mining_inventory.loc[water_list,"Compartment"]="water"
-    coal_mining_inventory.loc[input_list,"Compartment"]="input"
-    coal_mining_inventory.loc[waste_list,"Compartment"]="waste"
-    coal_mining_inventory=coal_mining_inventory.dropna(subset=["Compartment"]).reset_index(drop=True)
+#    air_list=[x for x in coal_mining_inventory.index if "emission/air" in coal_mining_inventory.loc[x,"FlowPath"]]
+#    water_list=[x for x in coal_mining_inventory.index if "emission/water" in coal_mining_inventory.loc[x,"FlowPath"]]
+#    input_list=[x for x in coal_mining_inventory.index if "resource/" in coal_mining_inventory.loc[x,"FlowPath"]]
+#    technosphere_list=[x for x in coal_mining_inventory.index if "Technosphere Flows" in coal_mining_inventory.loc[x,"FlowPath"] or "Third party flows" in coal_mining_inventory.loc[x,"FlowPath"]]
+#    waste_list=[x for x in coal_mining_inventory.index if "Deposited" in coal_mining_inventory.loc[x,"FlowPath"]]
+#    coal_mining_inventory["Compartment"]=float("nan")
+#    coal_mining_inventory.loc[technosphere_list,"Compartment"]="technosphere"
+#    coal_mining_inventory=coal_mining_inventory.dropna(subset=["Compartment"]).reset_index(drop=True)
     #Reading coal inventory for transportation emissions due transportation 
     #(units = kg/ton-mile) 
     coal_inventory_transportation = pd.read_excel(
-            data_dir+'/Coal_model_Basin_and_transportation_inventory.xlsx',
+            data_dir+'/Coal_model_transportation_inventory.xlsx',
             sheet_name = 'transportation')
-    
+    coal_transportation_flowmapping=pd.read_excel(
+            data_dir+'/Coal_model_transportation_inventory.xlsx',
+            sheet_name = 'flowmapping')
     #Merge the coal input with the coal mining air emissions dataframe using 
     #the coal code (basin-coal_type-mine_type) as the common entity
     coal_input_eia_scens=list(coal_input_eia["coal_source_code"].unique())
@@ -289,7 +297,7 @@ def generate_upstream_coal(year):
             right_on=["Coal Code"],
             how="left"
             )
-    groupby_cols=["netl_FlowUUID","FlowPath","FlowType","FlowName","Unit","input","Compartment"]
+    groupby_cols=["FlowUUID"]
     def wtd_mean(pdser, total_db):
         try:
             wts = total_db.loc[pdser.index, "quantity"]
@@ -303,6 +311,7 @@ def generate_upstream_coal(year):
         return result
     wm = lambda x: wtd_mean(x, existing_scens_merge)
     missing_scens_df_list=[]
+    inventory_flow_info=coal_mining_inventory[["FlowUUID","Compartment","FlowType","FlowName","Unit","input","ElementaryFlowPrimeContext"]].drop_duplicates("FlowUUID")
     for scen in missing_scens:
         coals_to_include=None
         if scen.split("-")[0]=="IMP":
@@ -323,10 +332,15 @@ def generate_upstream_coal(year):
         target_inventory_df=existing_scens_merge.loc[existing_scens_merge["coal_source_code"].isin(coals_to_include)]
         scen_inventory_df=target_inventory_df.groupby(by=groupby_cols, as_index=False).agg(
                 {
-                        "value":wm
+                        "p50":wm
                         }
                 )
         scen_inventory_df["Coal Code"]=scen
+        scen_inventory_df=scen_inventory_df.merge(
+                inventory_flow_info,
+                on=["FlowUUID"],
+                how="left"
+                )
         missing_scens_df_list.append(scen_inventory_df)
     missing_scens_df=pd.concat(missing_scens_df_list).reset_index(drop=True)
     missing_scens_merge=coal_input_eia.loc[coal_input_eia["coal_source_code"].isin(missing_scens),:].merge(
@@ -343,12 +357,12 @@ def generate_upstream_coal(year):
     #convert to kg - coal input in tons (US)
     coal_mining_inventory_df["FlowAmount"] = (
             pq.convert(1,'ton','kg')*
-            coal_mining_inventory_df["value"].multiply(
+            coal_mining_inventory_df["p50"].multiply(
                     coal_mining_inventory_df['quantity'],axis = "index")
             )
     
     coal_mining_inventory_df["Source"]="Mining"
-    coal_mining_inventory_df=coal_mining_inventory_df[["plant_id","coal_source_code","quantity","FlowName","FlowAmount","Compartment","Source"]]
+    coal_mining_inventory_df=coal_mining_inventory_df[["plant_id","coal_source_code","quantity","FlowName","FlowAmount","Compartment","input","Source","FlowUUID","ElementaryFlowPrimeContext","Unit","FlowType"]]
     #Keep the plant ID and air emissions columns
 #    merged_input_eia_coal_a = merged_input_eia_coal_a[
 #            ['plant_id','coal_source_code','quantity'] + column_air_emission]
@@ -411,12 +425,30 @@ def generate_upstream_coal(year):
             _transport_code,axis=1)
     #Adding to new columns for the compartment (water) and 
     #The source of the emissisons (mining). 
-    melted_database_transport['Compartment'] = 'air'
+    melted_database_transport['Compartment'] = 'emission/air'
     melted_database_transport['Source'] = 'Transportation'
-    
+    melted_database_transport["ElementaryFlowPrimeContext"]="emission"
+    melted_database_transport["FlowType"]="ELEMENTARY_FLOW"
+    melted_database_transport=melted_database_transport.merge(
+            coal_transportation_flowmapping,
+            left_on=["FlowName","Compartment"],
+            right_on=["flowname","compartment"],
+            how="left"
+            )
+    melted_database_transport.drop(columns=["FlowName","Compartment","flowname","compartment"],errors="ignore",inplace=True)
+    melted_database_transport.rename(
+            columns={
+                    "TargetFlowUUID":"FlowUUID",
+                    "TargetFlowContext":"Compartment",
+                    "TargetUnit":"Unit",
+                    "TargetFlowName":"FlowName"
+                    },
+            inplace=True
+            )
+    melted_database_transport["input"]=False
     merged_coal_upstream = pd.concat([coal_mining_inventory_df, 
                                       melted_database_transport],sort=False).reset_index(drop=True)
-    merged_coal_upstream['fuel_type']='Coal'
+    merged_coal_upstream['FuelCategory']='COAL'
     merged_coal_upstream.rename(columns={
             'coal_source_code':'stage_code',
             'Source':'stage'
@@ -427,6 +459,8 @@ def generate_upstream_coal(year):
             ['plant_id','stage','stage_code','Compartment','FlowName'],
             inplace=True)
     merged_coal_upstream.reset_index(drop=True,inplace=True)
+    merged_coal_upstream["Year"]=year
+    merged_coal_upstream["Source"]="netl"
     return merged_coal_upstream
 
 if __name__=='__main__':

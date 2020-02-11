@@ -32,7 +32,7 @@ def generate_hydro_emissions():
     hydro_df.rename(columns={"Plant Id":"FacilityID","Annual Net Generation (MWh)":"Electricity"},inplace=True)
     FLOW_DICTIONARY={
             "co2 (kg)":{"FlowName":"Carbon dioxide","FlowUUID":"b6f010fb-a764-3063-af2d-bcb8309a97b7","Compartment_path":"emission/air","Compartment":"air"},
-            "ch4 (kg)":{"FlowName":"Methane","FlowUUID":"b6f010fb-a764-3063-af2d-bcb8309a97b7","Compartment_path":"emission/air","Compartment":"air"},
+            "ch4 (kg)":{"FlowName":"Methane","FlowUUID":"aab83476-ec6c-3742-af85-15d320b7ce80","Compartment_path":"emission/air","Compartment":"air"},
             "water use (m3)":{"FlowName":"Water, fresh","FlowUUID":"8ba7dd57-b502-397b-944a-f63c6615f754","Compartment_path":"resource/water","Compartment":"input"}
             }
     hydro_df.drop(columns=["co2e (kg)"],inplace=True)
@@ -55,7 +55,7 @@ def generate_hydro_emissions():
                             right_on="Plant Id",
                             suffixes=["","_eia"])
     hydro_df.drop(columns=["FlowDict","flow","NERC Region","Plant Id"],inplace=True)
-    hydro_df.loc[hydro_df["FlowName"]=="Waster, fresh","FlowAmount"]=hydro_df.loc[hydro_df["FlowName"]=="Waster, fresh","FlowAmount"]*1000
+    hydro_df.loc[hydro_df["FlowName"]=="Water, fresh","FlowAmount"]=hydro_df.loc[hydro_df["FlowName"]=="Waster, fresh","FlowAmount"]*1000
     hydro_df["Unit"]="kg"
     hydro_df["stage_code"] = "Power plant"
     hydro_df["TechnologicalCorrelation"] = 1
@@ -66,6 +66,13 @@ def generate_hydro_emissions():
     hydro_df["eGRID_ID"]=hydro_df["FacilityID"]
     hydro_df["FuelCategory"]="HYDRO"
     hydro_df["PrimaryFuel"]="WAT"
+    hydro_df["quantity"]=hydro_df["Electricity"]
+    hydro_df["ElementaryFlowPrimeContext"]="emission"
+    hydro_df["input"]=False
+    hydro_df.loc[hydro_df["FlowName"]=="Water, fresh","ElementaryFlowPrimeContext"]="resource"
+    hydro_df.loc[hydro_df["FlowName"]=="Water, fresh","input"]=True
+    hydro_df["plant_id"]=hydro_df["FacilityID"]
+    hydro_df["Compartment"]=hydro_df["Compartment_path"]
     return hydro_df
 
 if __name__=="__main__":
