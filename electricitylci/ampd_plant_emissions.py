@@ -41,7 +41,7 @@ def generate_plant_emissions(year):
         "BIT": "COAL",
         #            "BLQ",
         "DFO": "OIL",
-        "GEO": "GEO",
+        "GEO": "GEOTHERMAL",
         #            "JF",
         #            "KER",
         #            "LFG",
@@ -1321,7 +1321,7 @@ def generate_plant_emissions(year):
     total_criteria = (fuel_input_criteria) & (emission_criteria)
     result_agg_final.loc[
         total_criteria, "SO2_emissions_lbs"
-    ] = result_agg_final.loc[total_criteria, "SO2 (lbs)"]
+    ] = result_agg_final.loc[total_criteria, "ampd SO2 (lbs)"]
     result_agg_final.loc[total_criteria, "SO2_Source"] = "ampd"
 
     result_agg_final["NOx_emissions_lbs"] = result_agg_final["NOx (lbs)"]
@@ -1333,8 +1333,9 @@ def generate_plant_emissions(year):
     total_criteria = (fuel_input_criteria) & (emission_criteria)
     result_agg_final.loc[
         total_criteria, "NOx_emissions_lbs"
-    ] = result_agg_final.loc[total_criteria, "NOx (lbs)"]
-    result_agg_final["NOx_Source"] = "ampd"
+    ] = result_agg_final.loc[total_criteria, "ampd NOX (lbs)"]
+    result_agg_final.loc[
+        total_criteria,"NOx_Source"] = "ampd"
 
     result_agg_final["Net Efficiency"] = (
         result_agg_final["net_generation_megawatthours"]

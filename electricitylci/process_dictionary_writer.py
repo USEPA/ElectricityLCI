@@ -208,7 +208,7 @@ def exchange_table_creation_input_genmix(database, fuelname):
     ar["unit"] = unit("MWh")
     ar["pedigreeUncertainty"] = ""
     # ar['category']='22: Utilities/2211: Electric Power Generation, Transmission and Distribution'+fuelname
-    ar["comment"] = "from " + fuelname + region
+    ar["comment"] = "from " + fuelname +" - "+ region
     ar["uncertainty"] = ""
     return ar
 
@@ -490,7 +490,7 @@ def exchange_table_creation_output(data):
     ar["provider"] = ""
     ar["amount"] = data["Emission_factor"].iloc[0]
     ar["amountFormula"] = ""
-    ar["unit"] = unit("kg")
+    ar["unit"] = unit(data["Unit"].iloc[0])
     ar["pedigreeUncertainty"] = ""
     ar["dqEntry"] = (
         "("
@@ -552,16 +552,25 @@ def flow_table_creation(data):
     ar["id"] = data["FlowUUID"].iloc[0]
     comp = str(data["Compartment"].iloc[0])
     if (flowtype == "ELEMENTARY_FLOW") & (comp != ""):
-        ar["category"] = (
-            "Elementary Flows/"
-            + str(data["ElementaryFlowPrimeContext"].iloc[0])
-            + "/"
-            + comp
+        if "emission" in comp or "resource" in comp:
+            ar["category"] = (
+                "Elementary Flows/"
+                + comp
+            )
+        elif "input" in comp:
+            ar["category"] = (
+                "Elementary Flows/resource"
         )
+        else:
+            ar["category"] = (
+                "Elementary Flows/"
+                "emission/"
+                + comp.lstrip("/")
+            )
     elif (flowtype == "PRODUCT_FLOW") & (comp != ""):
-        ar["category"] = "Technosphere Flows/" + comp
+        ar["category"] = comp
     elif flowtype == "WASTE_FLOW":
-        ar["category"] = "Waste flows/"
+        ar["category"] = comp
     else:
         # Assume this is electricity or a byproduct
         ar[
