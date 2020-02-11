@@ -7,11 +7,11 @@ from electricitylci.model_config import inventories_of_interest
 #Check to see if the stewicombo output of interest is stored as a csv
 stewicombooutputfile = ''
 for k,v in inventories_of_interest.items():
-    stewicombooutputfile = stewicombooutputfile+k+'_'+v+'_'
+    stewicombooutputfile = stewicombooutputfile+"{}_{}_".format(k, v)
 stewicombooutputfile = stewicombooutputfile + 'fromstewicombo.csv'
 
-if os.path.exists(data_dir+stewicombooutputfile):
-    emissions_and_wastes_by_facility = pd.read_csv(data_dir+stewicombooutputfile,header=0,dtype={"FacilityID":"str","Year":"int","eGRID_ID":"str"})
+if os.path.exists(data_dir+"/"+stewicombooutputfile):
+    emissions_and_wastes_by_facility = pd.read_csv(data_dir+"/"+stewicombooutputfile,header=0,dtype={"FacilityID":"str","Year":"int","eGRID_ID":"str"})
 else:
     emissions_and_wastes_by_facility = stewicombo.combineInventoriesforFacilitiesinOneInventory("eGRID",inventories_of_interest,filter_for_LCI=True)
     #drop SRS fields
