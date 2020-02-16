@@ -100,7 +100,7 @@ def _exchange(dict_d: dict, writer: pack.Writer,
     e.quantitative_reference = _val(dict_d, 'quantitativeReference', default=False)
     e.avoided_product = _val(dict_d, 'avoidedProduct', default=False)
     e.amount = _val(dict_d, 'amount', default=0.0)
-    unit_name = _val(dict_d, 'unit', 'name')
+    unit_name = _val(dict_d, 'unit', default='kg')
     e.unit = _unit(unit_name)
     flowprop = _flow_property(unit_name)
     e.flow_property = flowprop
@@ -115,6 +115,12 @@ def _exchange(dict_d: dict, writer: pack.Writer,
 def _unit(unit_name: str) -> Optional[olca.Ref]:
     """ Get the ID of the openLCA reference unit with the given name. """
     ref_id = None
+    if isinstance(unit_name,dict):
+        try:
+            unit_name=unit_name["name"]
+        except KeyError:
+            log.error('dict passed as unit_name but does not contain name key')
+            return None
     if unit_name == 'MWh':
         ref_id = '92e3bd49-8ed5-4885-9db6-fc88c7afcfcb'
     elif unit_name == 'MJ':
@@ -133,6 +139,10 @@ def _unit(unit_name: str) -> Optional[olca.Ref]:
         ref_id = 'a40229e6-7275-42e3-a304-23d590044770'
     elif unit_name == 'Item(s)':
         ref_id='6dabe201-aaac-4509-92f0-d00c26cb72ab'
+    elif unit_name == "kBq":
+        ref_id='e9773595-284e-46dd-9671-5fc9ff406833'
+    elif unit_name == "m2*a":
+        ref_id='c7266b67-4ea2-457f-b391-9b94e26e195a'
     if ref_id is None:
         log.error('unknown unit %s; no unit reference', unit_name)
         return None
@@ -143,6 +153,12 @@ def _flow_property(unit_name: str) -> Optional[olca.Ref]:
     """ Get the ID of the openLCA reference flow property for the unit with
         the given name.
     """
+    if isinstance(unit_name,dict):
+        try:
+            unit_name=unit_name["name"]
+        except KeyError:
+            log.error('dict passed as unit_name but does not contain name key')
+            return None
     if unit_name == 'MWh':
         ref_id = 'f6811440-ee37-11de-8a39-0800200c9a66'
         return olca.ref(olca.FlowProperty, ref_id, 'Energy')
@@ -167,6 +183,12 @@ def _flow_property(unit_name: str) -> Optional[olca.Ref]:
     elif unit_name == 'kg*km':
         ref_id = '838aaa20-0117-11db-92e3-0800200c9a66'
         return olca.ref(olca.FlowProperty, ref_id, 'Goods transport (mass*distance)')
+    elif unit_name == 'kBq':
+        ref_id = '93a60a56-a3c8-17da-a746-0800200c9a66'
+        return olca.ref(olca.FlowProperty, ref_id, 'Radioactivity')
+    elif unit_name == 'm2*a':
+        ref_id = '93a60a56-a3c8-21da-a746-0800200c9a66'
+        return olca.ref(olca.FlowProperty,ref_id,'Area*time')
     elif unit_name == 'Item(s)':
         ref_id = '01846770-4cfe-4a25-8ad9-919d8d378345'
         return olca.ref(olca.FlowProperty, ref_id, 'Number of items')
@@ -180,10 +202,27 @@ def _flow(dict_d: dict, flowprop: olca.Ref, writer: pack.Writer,
         return None
     uid = _val(dict_d, 'id')
     name = _val(dict_d, 'name')
+    orig_uid=None
+    #Checking for technosphere or third party flows that were mapped in 
+    #an openLCA model, but these flows must be created in the json-ld here.
+    if (isinstance(uid,str) 
+        and uid !='' 
+        and (
+                "technosphere" in _val(dict_d,'category').lower()
+                or "third party" in _val(dict_d,'category').lower()
+                or "waste" in _val(dict_d,'category').lower()
+            )
+        ):
+            orig_uid=uid
+            uid=''
+        
     if isinstance(uid, str) and uid != '':
         return olca.ref(olca.Flow, uid, name)
     category_path = _val(dict_d, 'category', default='')
-    uid = _uid(olca.ModelType.FLOW, category_path, name)
+    if orig_uid is None:
+        uid = _uid(olca.ModelType.FLOW, category_path, name)
+    else:
+        uid=orig_uid
     if uid not in created_ids:
         flow = olca.Flow()
         flow.id = uid

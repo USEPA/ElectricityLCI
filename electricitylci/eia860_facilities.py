@@ -122,7 +122,7 @@ def eia860_balancing_authority(year):
             print("Loading {} EIA-860 plant data from csv file".format(year))
             fn = csv_file[0]
             csv_path = join(expected_860_folder, fn)
-            eia = pd.read_csv(csv_path, dtype={"Plant Id": str})
+            eia = pd.read_csv(csv_path, dtype={"Plant Id": str},low_memory=False)
 
         else:
             print("Loading data from previously downloaded excel file")
@@ -214,7 +214,7 @@ def eia860_EnviroAssoc_so2(year):
             print("Loading {} EIA-860 plant data from csv file".format(year))
             fn = csv_file[0]
             csv_path = join(expected_860_folder, fn)
-            eia = pd.read_csv(csv_path, dtype={"Plant Id": str})
+            eia = pd.read_csv(csv_path, dtype={"Plant Id": str},low_memory=False)
 
         else:
             print("Loading data from previously downloaded excel file")
@@ -277,7 +277,7 @@ def eia860_boiler_info_design(year):
             print("Loading {} EIA-860 plant data from csv file".format(year))
             fn = csv_file[0]
             csv_path = join(expected_860_folder, fn)
-            eia = pd.read_csv(csv_path, dtype={"Plant Id": str})
+            eia = pd.read_csv(csv_path, dtype={"Plant Id": str},low_memory=False)
 
         else:
             print("Loading data from previously downloaded excel file")
@@ -350,7 +350,7 @@ def eia860_EnviroAssoc_nox(year):
             print("Loading {} EIA-860 plant data from csv file".format(year))
             fn = csv_file[0]
             csv_path = join(expected_860_folder, fn)
-            eia = pd.read_csv(csv_path, dtype={"Plant Id": str})
+            eia = pd.read_csv(csv_path, dtype={"Plant Id": str},low_memory=False)
 
         else:
             print("Loading data from previously downloaded excel file")
@@ -420,7 +420,7 @@ def eia860_generator_info(year):
             print("Loading {} EIA-860 plant data from csv file".format(year))
             fn = csv_file[0]
             csv_path = join(expected_860_folder, fn)
-            eia = pd.read_csv(csv_path, dtype={"Plant Id": str})
+            eia = pd.read_csv(csv_path, dtype={"Plant Id": str},low_memory=False)
 
         else:
             print("Loading data from previously downloaded excel file")

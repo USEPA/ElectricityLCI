@@ -50,8 +50,8 @@ def generate_upstream_nuc(year):
     )
 
     # Read the nuclear LCI excel file
-    nuc_lci = pd.read_csv(data_dir + "/nuclear_LCI.csv", index_col=0)
-
+    nuc_lci = pd.read_csv(data_dir + "/nuclear_LCI.csv", index_col=0,low_memory=False)
+    nuc_lci.dropna(subset=["compartment"],inplace=True)
     # There is no column to merge the inventory and generation data on,
     # so we iterate through the plants and make a new column in the lci
     # dataframe using the plant id. And add a copy of that dataframe to a
@@ -83,11 +83,14 @@ def generate_upstream_nuc(year):
     nuc_merged["fuel_type"] = "Nuclear"
     nuc_merged["stage"] = "mine-to-plant"
     nuc_merged["stage_code"] = "NUC"
-    nuc_merged.drop(columns=["unit"])
+    nuc_merged.rename(columns={"unit":"Unit"},inplace=True)
     nuc_merged.rename(
         columns={"compartment": "Compartment", "Plant Id": "plant_id"},
         inplace=True,
     )
+    input_dict={"emission":False,"resource":True}
+    nuc_merged["directionality"]=nuc_merged["directionality"].map(input_dict)
+    nuc_merged.rename(columns={"directionality":"input"},inplace=True)
     return nuc_merged
 
 

@@ -58,6 +58,7 @@ def generate_upstream_solarthermal(year):
             },
             inplace=True
     )
+    solarthermal_upstream["quantity"]=solarthermal_upstream["Electricity"]
     solarthermal_upstream.drop(columns=[
             'Plant Id',
             'NAICS Code',
@@ -78,7 +79,8 @@ def generate_upstream_solarthermal(year):
     }
     solarthermal_upstream['Compartment']=solarthermal_upstream['Compartment'].map(compartment_map)
     #solarthermal_upstream['Compartment']=solarthermal_upstream['Compartment'].str.lower()
-    
+    solarthermal_upstream["Unit"]="kg"
+    solarthermal_upstream["input"]=False
     return solarthermal_upstream
 
 if __name__=='__main__':

@@ -14,7 +14,7 @@ egrid_facilities.rename(columns={'Plant primary coal/oil/gas/ other fossil fuel 
 #Remove NERC from original egrid output in stewi because there are mismatches in the original data with more than 1 NERC per egrid subregion
 egrid_facilities = egrid_facilities.drop(columns='NERC')
 #Bring in eGRID subregion-NERC mapping
-egrid_nerc = pd.read_csv(join(data_dir, 'egrid_subregion_to_NERC.csv'))
+egrid_nerc = pd.read_csv(join(data_dir, 'egrid_subregion_to_NERC.csv'),low_memory=False)
 egrid_facilities = pd.merge(egrid_facilities,egrid_nerc,on='Subregion',how='left')
 
 len(egrid_facilities)

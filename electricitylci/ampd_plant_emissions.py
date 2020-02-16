@@ -41,7 +41,7 @@ def generate_plant_emissions(year):
         "BIT": "COAL",
         #            "BLQ",
         "DFO": "OIL",
-        "GEO": "GEO",
+        "GEO": "GEOTHERMAL",
         #            "JF",
         #            "KER",
         #            "LFG",
