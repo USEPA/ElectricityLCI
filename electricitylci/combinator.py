@@ -239,7 +239,7 @@ def concat_map_upstream_databases(*arg, **kwargs):
         "Compartment_path_orig",
         "Unit_orig",
     ]
-    upstream_df["Unit"].fillna("kg", inplace=True)
+    upstream_df["Unit"].fillna("<blank>", inplace=True)
     module_logger.info("Grouping upstream database")
     if "Electricity" in upstream_df.columns:
         upstream_df_grp = upstream_df.groupby(
@@ -272,7 +272,7 @@ def concat_map_upstream_databases(*arg, **kwargs):
     upstream_mapped_df.dropna(subset=["FlowName"], inplace=True)
     module_logger.info("Checking for mismatched units")
     mismatched_units_filter = [
-        x[0] != x[1]
+        (x[0] != x[1] and x[0]!=["<blank>"]) 
         for x in zip(
             upstream_mapped_df["Unit_orig"], upstream_mapped_df["Unit"]
         )
