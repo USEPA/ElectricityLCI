@@ -297,12 +297,12 @@ def concat_map_upstream_databases(*arg, **kwargs):
         not x for x in mismatched_units_w_alt_units
     ]
     # For now just dropping anything where the units don't align
-    upstream_mapped_df.drop(
-        index=mismatched_units.loc[
-            mismatched_units_no_conversion_filter, :
-        ].index,
-        inplace=True,
-    )
+#    upstream_mapped_df.drop(
+#        index=mismatched_units.loc[
+#            mismatched_units_no_conversion_filter, :
+#        ].index,
+#        inplace=True,
+#    )
     upstream_mapped_df.rename(
         columns={"fuel_type": "FuelCategory"}, inplace=True
     )
