@@ -106,6 +106,7 @@ def generate_power_plant_construction(year):
     construction_df.rename(columns={"nameplate_capacity_mw":"quantity"},inplace=True)
     construction_df.drop(columns=["const_type","energy_source_1","prime_mover"],inplace=True)
     construction_df["fuel_type"]="Construction"
+    construction_df["Unit"]=construction_df["Unit"].str.replace("mj","MJ")
     return construction_df
 
 if __name__ == "__main__":
