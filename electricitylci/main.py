@@ -26,15 +26,6 @@ def main():
         generation_process_df = electricitylci.get_generation_process_df(
             upstream_df=upstream_df, upstream_dict=upstream_dict
         )
-        print("write gen process to jsonld")
-        if model_specs["regional_aggregation"] in ["FERC","US"]:
-            generation_process_dict = electricitylci.write_gen_fuel_database_to_dict(
-                generation_process_df, upstream_dict,subregion="BA"
-            )
-        else:
-            generation_process_dict = electricitylci.write_gen_fuel_database_to_dict(
-                generation_process_df, upstream_dict
-            )
     else:
         # Create dataframe with all generation process data. This will also 
         # include upstream and Canadian data.
@@ -43,15 +34,15 @@ def main():
         generation_process_df = electricitylci.get_generation_process_df(
             upstream_df=upstream_df
         )
-        print("write gen process to jsonld")
-        if model_specs["regional_aggregation"] in ["FERC","US"]:
-            generation_process_dict = electricitylci.write_gen_fuel_database_to_dict(
-                generation_process_df, upstream_dict, subregion="BA"
-            )
-        else:
-            generation_process_dict = electricitylci.write_gen_fuel_database_to_dict(
-                generation_process_df, upstream_dict
-            )
+    print("write gen process to jsonld")
+    if model_specs["regional_aggregation"] in ["FERC","US"]:
+        generation_process_dict = electricitylci.write_gen_fuel_database_to_dict(
+            generation_process_df, upstream_dict, subregion="BA"
+        )
+    else:
+        generation_process_dict = electricitylci.write_gen_fuel_database_to_dict(
+            generation_process_df, upstream_dict
+        )
     generation_process_dict = electricitylci.write_process_dicts_to_jsonld(
         generation_process_dict
     )
