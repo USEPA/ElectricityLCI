@@ -69,7 +69,7 @@ def generate_upstream_geo(year):
         int
     )
 
-    # Read the nuclear LCI excel file
+    # Read the geothermal LCI excel file
     geo_lci = pd.read_csv(data_dir + "/geothermal_lci.csv", index_col=0)
     geo_lci = geo_lci.melt(
         id_vars=["FlowName", "Compartment","unit","Directionality"],
@@ -106,6 +106,9 @@ def generate_upstream_geo(year):
         inplace=True,
     )
     geo_merged["Compartment"].fillna(geo_merged["Directionality"],inplace=True)
+    input_dict={"emission":False,"resource":True}
+    geo_merged["Directionality"]=geo_merged["Directionality"].map(input_dict)
+    geo_merged.rename(columns={"Directionality":"input"},inplace=True)
     return geo_merged
 
 

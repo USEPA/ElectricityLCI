@@ -123,8 +123,8 @@ def concat_map_upstream_databases(*arg, **kwargs):
     """
     Concatenates all of the databases given as args. Then all of the
     emissions in the combined database are mapped to the federal elementary
-    flows list in preparation for being turned into openLCA processes and
-    combined with the generation emissions.
+    flows list based on the mapping file 'eLCI' in preparation for being 
+    turned into openLCA processes and combined with the generation emissions.
 
     Parameters
     ----------
@@ -167,52 +167,9 @@ def concat_map_upstream_databases(*arg, **kwargs):
             upstream_df_list.append(df)
     upstream_df = pd.concat(upstream_df_list, ignore_index=True, sort=False)
     module_logger.info("Creating flow mapping database")
-    flow_mapping = fedefl.get_flowmapping()
-    fedefl_df = fedefl.get_flows()
-    fedefl_unique_uuids = fedefl_df["Flow UUID"].unique()
-    fedefl_df["SourceFlowName"] = fedefl_df["Flowable"].str.lower()
-    fedefl_df["SourceFlowContext"] = fedefl_df["Context"].str.lower()
-    target_contexts = [
-        "emission/air",
-        "emission/water",
-        "emission/water/fresh water body",
-        "resource/water",
-        "emission/ground",
-        "emission/ground/human-dominated/agricultural",
-        "emission/ground/human-dominated/industrial",
-    ]
-    fedefl_df.rename(
-        columns={
-            "Flowable": "TargetFlowName",
-            "Context": "TargetFlowContext",
-            "Unit": "TargetUnit",
-            "Flow UUID": "TargetFlowUUID",
-        },
-        inplace=True,
-    )
-    fedefl_df = fedefl_df.loc[
-        fedefl_df["SourceFlowContext"].isin(target_contexts), :
-    ].reset_index()
-    fedefl_df_stripped_context = fedefl_df.copy()
-    fedefl_df_stripped_context[
-        "SourceFlowContext"
-    ] = fedefl_df_stripped_context["SourceFlowContext"].str.replace(
-        "emission/", ""
-    )
+    flow_mapping = fedefl.get_flowmapping('eLCI')
     flow_mapping["SourceFlowName"] = flow_mapping["SourceFlowName"].str.lower()
-    flow_mapping = (
-        pd.concat(
-            [flow_mapping, fedefl_df, fedefl_df_stripped_context],
-            ignore_index=True,
-            sort=False,
-        )
-        .drop_duplicates(subset=["SourceFlowName", "SourceFlowContext"])
-        .reset_index()
-    )
-    del(fedefl_df_stripped_context, fedefl_df)
-#    flow_mapping.drop_duplicates(
-#        subset=["SourceFlowName", "SourceFlowContext"], inplace=True
-#    )
+
     module_logger.info("Preparing upstream df for merge")
     upstream_df["FlowName_orig"] = upstream_df["FlowName"]
     upstream_df["Compartment_orig"] = upstream_df["Compartment"]
@@ -270,39 +227,11 @@ def concat_map_upstream_databases(*arg, **kwargs):
         inplace=True,
     )
     upstream_mapped_df.dropna(subset=["FlowName"], inplace=True)
-    module_logger.info("Checking for mismatched units")
-    mismatched_units_filter = [
-        (x[0] != x[1] and x[0]!=["<blank>"]) 
-        for x in zip(
-            upstream_mapped_df["Unit_orig"], upstream_mapped_df["Unit"]
-        )
-    ]
-    mismatched_units = upstream_mapped_df.loc[mismatched_units_filter, :]
-    mismatched_units_w_alt_units = [
-        (x[0] == x[1] and x[2] is not float("nan"))
-        for x in zip(
-            mismatched_units["Unit_orig"],
-            mismatched_units["AltUnit"],
-            mismatched_units["AltUnitConversionFactor"],
-        )
-    ]
-    mismatched_units.loc[mismatched_units_w_alt_units, "FlowAmount"] = (
-        mismatched_units["FlowAmount"]
-        / mismatched_units["AltUnitConversionFactor"]
-    )
-    upstream_mapped_df.loc[
-        mismatched_units.index, "FlowAmount"
-    ] = mismatched_units["FlowAmount"]
-    mismatched_units_no_conversion_filter = [
-        not x for x in mismatched_units_w_alt_units
-    ]
-    # For now just dropping anything where the units don't align
-    upstream_mapped_df.drop(
-        index=mismatched_units.loc[
-            mismatched_units_no_conversion_filter, :
-        ].index,
-        inplace=True,
-    )
+    #upstream_mapped_df.to_csv(f"{output_dir}/upstream_mapped_df.csv")
+
+    module_logger.info("Applying conversion factors")
+    upstream_mapped_df["FlowAmount"]=(upstream_mapped_df["FlowAmount"]*
+                                       upstream_mapped_df["ConversionFactor"])
     upstream_mapped_df.rename(
         columns={"fuel_type": "FuelCategory"}, inplace=True
     )
@@ -336,14 +265,7 @@ def concat_map_upstream_databases(*arg, **kwargs):
         final_columns = final_columns + ["Electricity"]
     if "input" in upstream_columns:
         final_columns = final_columns+["input"]
-    #This is to help avoid an issue (as noted in 
-    #https://github.com/USEPA/ElectricityLCI/issues/81) where the final
-    #flow UUID doesn't actually exist in the fedefl. When these exchanges are 
-    #imported into openLCA they are assigned a NULL flow reference and the
-    #inputs/outputs sheet in an openLCA process will not show.
-    upstream_mapped_df = upstream_mapped_df.loc[
-        upstream_mapped_df["FlowUUID"].isin(fedefl_unique_uuids), :
-    ]
+
     # I added the section below to help generate lists of matched and unmatched
     # flows. Because of the groupby, it's expensive enough not to run everytime.
     # I didn't want to get rid of it in case it comes in handy later.
@@ -576,15 +498,15 @@ if __name__ == "__main__":
     import electricitylci.wind_upstream as wind
     import electricitylci.nuclear_upstream as nuke
 
-    coal_df = coal.generate_upstream_coal(2016)
-    ng_df = ng.generate_upstream_ng(2016)
+    #coal_df = coal.generate_upstream_coal(2016)
+    #ng_df = ng.generate_upstream_ng(2016)
     petro_df = petro.generate_petroleum_upstream(2016)
     geo_df = geo.generate_upstream_geo(2016)
     solar_df = solar.generate_upstream_solar(2016)
     wind_df = wind.generate_upstream_wind(2016)
     nuke_df = nuke.generate_upstream_nuc(2016)
     upstream_df = concat_map_upstream_databases(
-        coal_df, ng_df, petro_df, geo_df, nuke_df, solar_df, wind_df
+        petro_df, geo_df, solar_df, wind_df, nuke_df
     )
     plant_df = gen.create_generation_process_df()
     plant_df["stage_code"] = "Power plant"
