@@ -208,6 +208,8 @@ def generate_plant_water_use(year):
     final_water["TemporalCorrelation"] = 1
     final_water["DataCollection"] = 5
     final_water["ReliabilityScore"] = 1
+    final_water["input"]=True
+    final_water.loc[final_water["Compartment_path"].str.contains("emission"),"input"]=False
     return final_water
 
 

@@ -333,7 +333,7 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
         "Subregion",
     ]
 
-    up_df = up_df.merge(
+    up_df = up_df.drop(columns=["eGRID_ID"],errors="ignore").merge(
         right=pl_df[["eGRID_ID"] + region_cols].drop_duplicates(),
         left_on="plant_id",
         right_on="eGRID_ID",
