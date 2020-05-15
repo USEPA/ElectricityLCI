@@ -1238,7 +1238,7 @@ def generate_plant_emissions(year):
         & (ampd["heat_content_mmbtu"] > 0)
     ].copy()
     ampd_rev["ampd CO2 (Tons)"] = ampd_rev["co2_mass_tons"] * pq.convert(
-        1, "ton", "Mg"
+        1, "ton", "ton"
     )
     ampd_rev["ampd SO2 (lbs)"] = ampd_rev["so2_mass_tons"] * pq.convert(
         1, "ton", "lb"
