@@ -383,8 +383,8 @@ def process_doc_creation(process_type="default"):
                 ar[key]=metadata[process_type][OLCA_TO_METADATA[key]]
     ar["timeDescription"] = ""
     if not ar["validUntil"]:
-        ar["validUntil"] = "12/31/"+targetyear
-        ar["validFrom"] = "1/1/"+targetyear
+        ar["validUntil"] = "12/31/"+str(targetyear)
+        ar["validFrom"] = "1/1/"+str(targetyear)
     ar["sources"] = ""
     ar["copyright"] = False
     ar["creationDate"] = time.time()
