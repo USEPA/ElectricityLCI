@@ -713,13 +713,9 @@ coal_upstream:
   regions. Further information can be found in the coal baseline report - 
   http://netl.doe.gov/LCA (report currently under review).'
 
-  DataTreatment: 'Resource extraction processes are primarily based on
-  PADD-reported data. All the fields defined through OPGEE were used as the
-  pool for creating the LCI. The production quantities reported throughout the
-  baselines list were used for the physical flows and to generate the emissions
-  and wastes values from facilities like refineries. Locational data was used
-  to associate a field with a region. Each fuel production process, defined by
-  fuel type and regions, includes emissions to air and water.'
+  DataTreatment: 'The coal model divides annual reported and calculated
+  emissions by either the production rate at a mine or the throughput at a facility
+  to provide results on the basis of 1 kg coal.'
 
   SamplingProcedure:
     - 'BOUNDARY CONDITIONS 
