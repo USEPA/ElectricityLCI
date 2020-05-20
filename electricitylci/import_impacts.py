@@ -33,6 +33,14 @@ def generate_canadian_mixes(us_inventory):
         "NBSO": 9999995,
         "NEWL": 9999996,
     }
+    input_map={
+            "air":False,
+            "water":False,
+            "input":True,
+            "waste":False,
+            "output":False,
+            "ground":False
+            }
     print("Generating inventory for Canadian balancing authority areas")
     canadian_mix = pd.read_csv(f"{data_dir}/canadian_imports.csv")
     baa_codes = list(canadian_mix["Code"].unique())
@@ -42,6 +50,11 @@ def generate_canadian_mixes(us_inventory):
         var_name="FuelCategory",
         value_name="FuelCategory_fraction",
     )
+    if "input" in us_inventory.columns:
+        us_inventory.loc[us_inventory["input"].isna(),"input"]=us_inventory["Compartment"].map(input_map)
+    else:
+        us_inventory["input"]=us_inventory["Compartment"].map(input_map)
+    
     #If there are no upstream inventories, then the quantity column will not exist.
     #Let's create it.
     if "quantity" not in list(us_inventory.columns):
@@ -53,7 +66,6 @@ def generate_canadian_mixes(us_inventory):
             "FlowName",
             #                    'ElementaryFlowPrimeContext',
             "FlowUUID",
-            "Unit",
             #                    'stage_code',
         ]
     )["FlowAmount", "quantity"].sum()
@@ -64,23 +76,25 @@ def generate_canadian_mixes(us_inventory):
             "FlowName",
             #                    'ElementaryFlowPrimeContext',
             "FlowUUID",
-            "Unit",
             #                    'stage_code',
         ]
     )["Electricity"].sum()
     us_inventory_summary=pd.concat([us_inventory_summary,us_inventory_electricity],axis=1)
     us_inventory_summary = us_inventory_summary.reset_index()
     flowuuid_compartment_df = us_inventory[
-        ["FlowUUID", "Compartment"]
-    ].drop_duplicates(subset=["FlowUUID"])
-    flow_compartment_dict = dict(
-        zip(
-            flowuuid_compartment_df["FlowUUID"],
-            flowuuid_compartment_df["Compartment"],
-        )
-    )
+        ["FlowUUID", "Compartment","input","Compartment_path","Unit"]
+    ].drop_duplicates(subset=["FlowUUID"]).set_index("FlowUUID")
     us_inventory_summary["Compartment"] = us_inventory_summary["FlowUUID"].map(
-        flow_compartment_dict
+        flowuuid_compartment_df["Compartment"]
+    )
+    us_inventory_summary["input"] = us_inventory_summary["FlowUUID"].map(
+        flowuuid_compartment_df["input"]
+    )
+    us_inventory_summary["Unit"]=us_inventory_summary["FlowUUID"].map(
+        flowuuid_compartment_df["Unit"]
+    )
+    us_inventory_summary["Compartment_path"]=us_inventory_summary["FlowUUID"].map(
+        flowuuid_compartment_df["Compartment_path"]
     )
     ca_mix_list = list()
     for baa_code in baa_codes:
@@ -110,8 +124,11 @@ def generate_canadian_mixes(us_inventory):
             "Code",
             "Balancing Authority Name",
             "Compartment",
+            "Compartment_path",
             "FlowName",
             "FlowUUID",
+            "input",
+            "Unit"
         ],
         as_index=False,
     )[["Electricity", "FlowAmount", "quantity"]].sum()

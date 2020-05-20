@@ -69,10 +69,10 @@ def generate_upstream_geo(year):
         int
     )
 
-    # Read the nuclear LCI excel file
+    # Read the geothermal LCI excel file
     geo_lci = pd.read_csv(data_dir + "/geothermal_lci.csv", index_col=0)
     geo_lci = geo_lci.melt(
-        id_vars=["FlowName", "Compartment"],
+        id_vars=["FlowName", "Compartment","unit","Directionality"],
         value_vars=geothermal_states,
         var_name="stage_code",
         value_name="FlowAmount",
@@ -90,7 +90,7 @@ def generate_upstream_geo(year):
     geo_merged.rename(
         columns={"Net Generation (Megawatthours)": "quantity"}, inplace=True
     )
-
+    geo_merged["Electricity"]=geo_merged["quantity"]
     # Convert the inventory per MWh emissions to an annual emission
     geo_merged["FlowAmount"] = (
         geo_merged["FlowAmount"] * geo_merged["quantity"]
@@ -100,10 +100,15 @@ def generate_upstream_geo(year):
     geo_merged["fuel_type"] = "Geothermal"
     geo_merged["stage_code"] = "Power plant"
     #    geo_merged.drop(columns=['unit'])
+    geo_merged.rename(columns={"unit":"Unit"},inplace=True)
     geo_merged.rename(
         columns={"compartment": "Compartment", "Plant Id": "plant_id"},
         inplace=True,
     )
+    geo_merged["Compartment"].fillna(geo_merged["Directionality"],inplace=True)
+    input_dict={"emission":False,"resource":True}
+    geo_merged["Directionality"]=geo_merged["Directionality"].map(input_dict)
+    geo_merged.rename(columns={"Directionality":"input"},inplace=True)
     return geo_merged
 
 

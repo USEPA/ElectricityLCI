@@ -82,7 +82,7 @@ def generate_power_plant_construction(year):
     gen_df_group=gen_df_group.merge(prime_energy_combo[['prime_mover', 'energy_source_1', 'const_type']],
                                     on=["prime_mover","energy_source_1"],
                                     how="left")
-    inventory = pd.read_csv(f"{data_dir}/plant_construction_inventory.csv")
+    inventory = pd.read_csv(f"{data_dir}/plant_construction_inventory.csv",low_memory=False)
     inventory = pd.concat([inventory, inventory["Flow"].str.rsplit('/',1,expand=True)],axis=1).drop(columns=["Flow"]).rename(columns={0:"Flow",1:"Unit"})
     inventory = pd.concat([inventory, inventory["Flow"].str.rsplit('/',1,expand=True)],axis=1).drop(columns=["Flow"]).rename(columns={0:"Compartment_path",1:"FlowName"})
     inventory = pd.concat([inventory,inventory["Compartment_path"].str.split('/',n=1,expand=True)],axis=1).rename(columns={0:"Compartment",1:"delete"}).drop(columns="delete")
@@ -98,11 +98,15 @@ def generate_power_plant_construction(year):
     ngcc_inventory["FlowAmount"] = ngcc_inventory["FlowAmount"]/30/630
     inventory = pd.concat([scpc_inventory,ngcc_inventory])
     inventory["Compartment_path"]=inventory["Compartment_path"].map(compartment_mapping)
+    inventory["input"]=False
+    input_list=["resource" in x for x in inventory["Compartment"]]
+    inventory["input"]=input_list
     construction_df = gen_df_group.merge(inventory,on="const_type",how="left")
     construction_df["FlowAmount"]=construction_df["FlowAmount"]*construction_df["nameplate_capacity_mw"]
     construction_df.rename(columns={"nameplate_capacity_mw":"quantity"},inplace=True)
     construction_df.drop(columns=["const_type","energy_source_1","prime_mover"],inplace=True)
     construction_df["fuel_type"]="Construction"
+    construction_df["Unit"]=construction_df["Unit"].str.replace("mj","MJ")
     return construction_df
 
 if __name__ == "__main__":

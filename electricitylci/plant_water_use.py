@@ -197,6 +197,7 @@ def generate_plant_water_use(year):
         },
         inplace=True,
     )
+    final_water["plant_id"]=final_water["FacilityID"]
     final_water["eGRID_ID"] = final_water["FacilityID"]
     final_water["Year"] = year
     final_water["Source"] = "netl"
@@ -207,6 +208,10 @@ def generate_plant_water_use(year):
     final_water["TemporalCorrelation"] = 1
     final_water["DataCollection"] = 5
     final_water["ReliabilityScore"] = 1
+    final_water["input"]=True
+    final_water["ElementaryFlowPrimeContext"]="input"
+    final_water.loc[final_water["Compartment_path"].str.contains("emission"),"input"]=False
+    final_water.loc[final_water["Compartment_path"].str.contains("emission"),"ElementaryFlowPrimeContext"]="emission"
     return final_water
 
 

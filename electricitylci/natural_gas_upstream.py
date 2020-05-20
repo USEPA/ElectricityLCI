@@ -11,43 +11,9 @@ from electricitylci.globals import (
 
 from electricitylci.eia923_generation import eia923_download_extract
 import electricitylci.PhysicalQuantities as pq
+import logging
 
-
-strings = [' air','unspecified','Organic intermediate products',
-           ' water','agricultural soil'
-]
-
-replacement = ['air','air','air','water','soil']
-
-mapping = dict(zip(strings,replacement))
-
-def determine_compartment(df):
-    result = []
-    for searchcol in df['FlowName']:
-        for s in mapping:
-            if s in searchcol:
-                result.append(mapping[s])
-                break
-        else:
-            result.append(float('nan'))
-    df['Compartment']=result
-#    if ' air' in df_row['FlowName']:
-#        return 'air'
-#    elif 'unspecified' in df_row['FlowName']:
-#        return 'air'
-#    elif ' water' in df_row['FlowName']:
-#        return 'water'
-#    elif 'agricultural soil' in df_row['FlowName']:
-#        return 'soil'
-#    else:
-#        return float('nan')
-
-def _remove_brackets(text):
-    start = text.find(' [')
-    if start!=1:
-        return text[0:start]
-    else:
-        pass
+module_logger = logging.getLogger(name="natural_gas_upstream.py")
 
 def generate_upstream_ng(year):
     """
@@ -63,7 +29,7 @@ def generate_upstream_ng(year):
     ----------
     dataframe
     """
-    
+    module_logger.info("Generating natural gas inventory")
     #Get the EIA generation data for the specified year, this dataset includes
     #the fuel consumption for generating electricity for each facility
     #and fuel type. Filter the data to only include NG facilities and on 
@@ -100,25 +66,24 @@ def generate_upstream_ng(year):
             columns = ['Plant Code'])
     
     #Read the NG LCI excel file
-    ng_lci = pd.read_csv(data_dir + '/NG_LCI.csv') 
+    ng_lci = pd.read_csv(data_dir + '/NG_LCI.csv',index_col=[0,1,2,3,4,5])
             #sheet_name = 'Basin_Mean_Data')
+    ng_lci_columns=[
+            "Compartment",
+            "FlowName",
+            "FlowUUID",
+            "Unit",
+            "FlowType",
+            "input",
+            "Basin",
+            "FlowAmount"
+            ]
+    ng_lci_stack = pd.DataFrame(ng_lci.stack()).reset_index()
+    ng_lci_stack.columns=ng_lci_columns
     
-    #Getting list of column values which are basically the emissions names
-    emissions_list = list(ng_lci.columns[2:])
-    
-    # This line can go away once the elementary flow names are replaced in the 
-    #NG_LCI.xlsx file.
-    emissions_list = [
-            emission.replace(' (kg/MJ)','') for emission in emissions_list] 
-   
-    ng_lci_cols = ['Basin', 'Stage'] + emissions_list
-    
-    ng_lci.columns = ng_lci_cols
-    
-    ng_lci['Basin']=ng_lci['Basin'].str.strip()
     #Merge basin data with LCI dataset
     ng_lci_basin = pd.merge(
-            ng_lci, 
+            ng_lci_stack, 
             ng_generation_data_basin, 
             left_on = 'Basin', 
             right_on = 'NG_LCI_Name',
@@ -127,55 +92,32 @@ def generate_upstream_ng(year):
     
     #Multiplying with the EIA 923 fuel consumption; conversion factor is 
     #for MMBtu to MJ
-    for i in emissions_list:
-        ng_lci_basin[i] = (
-                ng_lci_basin[i] * 
-                ng_lci_basin['Total Fuel Consumption MMBtu'] * 
-                pq.convert(10**6,'Btu','MJ'))
+    btu_to_MJ=pq.convert(10**6,'Btu','MJ')
+    ng_lci_basin["FlowAmount"]=(
+            ng_lci_basin["FlowAmount"]
+            * ng_lci_basin['Total Fuel Consumption MMBtu'] 
+            * btu_to_MJ
+    )
         
     ng_lci_basin = ng_lci_basin.rename(columns=
             {'Total Fuel Consumption MMBtu':'quantity'})
-    ng_lci_basin["quantity"]=ng_lci_basin["quantity"]*pq.convert(10**6,"Btu","MJ")
+    ng_lci_basin["quantity"]=ng_lci_basin["quantity"]*btu_to_MJ
     #Output is kg emission for the specified year by facility Id, 
     #not normalized to electricity output
-    ng_lci_basin_melt = ng_lci_basin.melt(
-            id_vars = ['Plant Id', 'Stage','NG_LCI_Name',
-                       'quantity'],
-            value_vars = emissions_list,
-            var_name = 'FlowName',
-            value_name = 'FlowAmount')
+ 
 
-    #Aggregate process stages 'PRODUCTION', 'GATHERING & BOOSTING', 
-    #'PROCESSING', 'TRANSMISSION','STORAGE', 'PIPELINE' to just 
-    #"extraction" and "transportation"
-    
-    ng_stage_dict = {'PRODUCTION':'extraction', 
-                     'GATHERING & BOOSTING':'extraction',
-                     'PROCESSING':'extraction', 
-                     'TRANSMISSION':'transportation', 
-                     'STORAGE':'transportation', 
-                     'PIPELINE':'transportation'}
-    ng_lci_basin_melt['Stage']=ng_lci_basin_melt['Stage'].map(ng_stage_dict)
-    #Group emissiosn by new stage designation - extraction and transportation    
-    
-    ng_lci_basin_grouped = ng_lci_basin_melt.groupby(
-            ['Plant Id',
-             'NG_LCI_Name',
-             'Stage',
-             'FlowName',
-             'quantity']).agg({'FlowAmount':'sum'}).reset_index()
-#    ng_lci_basin_grouped['Compartment']=ng_lci_basin_grouped.apply(
-#        determine_compartment, axis=1)
-    determine_compartment(ng_lci_basin_grouped)    
-    ng_lci_basin_grouped['fuel_type']='GAS'
-    ng_lci_basin_grouped.rename(columns={
+    ng_lci_basin['FuelCategory']='GAS'
+    ng_lci_basin.rename(columns={
             'Plant Id':'plant_id',
             'NG_LCI_Name':'stage_code',
             'Stage':'stage'
             },inplace=True)
-    ng_lci_basin_grouped['FlowName']=ng_lci_basin_grouped['FlowName'].map(
-            _remove_brackets)
-    return ng_lci_basin_grouped
+    ng_lci_basin["Year"]=year
+    ng_lci_basin["Source"]="netl"
+    ng_lci_basin["ElementaryFlowPrimeContext"]="emission"
+    ng_lci_basin.loc[ng_lci_basin["Compartment"].str.contains("resource/"),"ElementaryFlowPrimeContext"]="resource"
+    ng_lci_basin.loc[ng_lci_basin["Compartment"].str.contains("Technosphere/"),"ElementaryFlowPrimeContext"]="technosphere"
+    return ng_lci_basin
 
 if __name__=='__main__':
     year=2016

@@ -11,6 +11,7 @@ setup(
     author_email='ingwersen.wesley@epa.gov',
     description='Create life cycle inventory data for regionalized electricity generation, mix of generation, mix of consumption, and distribution to the end-user in the United States.',
     install_requires=[
+        'fedelemflowlist @ git+git://github.com/USEPA/https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List@v1.0.2#egg=fedelemflowlist'
         'numpy>=1.14',
         'pandas>=0.24',
         'olca-ipc>=0.0.6',

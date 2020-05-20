@@ -15,7 +15,8 @@ from electricitylci.model_config import (
         egrid_year,
         regional_aggregation,
         replace_egrid,
-        model_specs
+        model_specs,
+        electricity_lci_target_year
 )
 from electricitylci.egrid_facilities import egrid_subregions
 import yaml
@@ -23,6 +24,7 @@ import logging
 
 module_logger = logging.getLogger("process_dictionary_writer.py")
 year = egrid_year
+targetyear=electricity_lci_target_year
 
 # Read in general metadata to be used by all processes
 with open(join(data_dir, "process_metadata.yml")) as f:
@@ -208,7 +210,7 @@ def exchange_table_creation_input_genmix(database, fuelname):
     ar["unit"] = unit("MWh")
     ar["pedigreeUncertainty"] = ""
     # ar['category']='22: Utilities/2211: Electric Power Generation, Transmission and Distribution'+fuelname
-    ar["comment"] = "from " + fuelname + region
+    ar["comment"] = "from " + fuelname +" - "+ region
     ar["uncertainty"] = ""
     return ar
 
@@ -309,8 +311,8 @@ def location(region):
 
 OLCA_TO_METADATA={
         "timeDescription":None,
-        "validUntil":None,
-        "validFrom":None,
+        "validUntil":"End_date",
+        "validFrom":"Start_date",
         "technologyDescription":"TechnologyDescription",
         "dataCollectionDescription":"DataCollectionPeriod",
         "completenessDescription":"DataCompleteness",
@@ -380,8 +382,9 @@ def process_doc_creation(process_type="default"):
                 process_type="default"
                 ar[key]=metadata[process_type][OLCA_TO_METADATA[key]]
     ar["timeDescription"] = ""
-    ar["validUntil"] = "12/31/2018"
-    ar["validFrom"] = "1/1/2018"
+    if not ar["validUntil"]:
+        ar["validUntil"] = "12/31/"+str(targetyear)
+        ar["validFrom"] = "1/1/"+str(targetyear)
     ar["sources"] = ""
     ar["copyright"] = False
     ar["creationDate"] = time.time()
@@ -490,7 +493,7 @@ def exchange_table_creation_output(data):
     ar["provider"] = ""
     ar["amount"] = data["Emission_factor"].iloc[0]
     ar["amountFormula"] = ""
-    ar["unit"] = unit("kg")
+    ar["unit"] = unit(data["Unit"].iloc[0])
     ar["pedigreeUncertainty"] = ""
     ar["dqEntry"] = (
         "("
@@ -552,16 +555,25 @@ def flow_table_creation(data):
     ar["id"] = data["FlowUUID"].iloc[0]
     comp = str(data["Compartment"].iloc[0])
     if (flowtype == "ELEMENTARY_FLOW") & (comp != ""):
-        ar["category"] = (
-            "Elementary Flows/"
-            + str(data["ElementaryFlowPrimeContext"].iloc[0])
-            + "/"
-            + comp
+        if "emission" in comp or "resource" in comp:
+            ar["category"] = (
+                "Elementary Flows/"
+                + comp
+            )
+        elif "input" in comp:
+            ar["category"] = (
+                "Elementary Flows/resource"
         )
+        else:
+            ar["category"] = (
+                "Elementary Flows/"
+                "emission/"
+                + comp.lstrip("/")
+            )
     elif (flowtype == "PRODUCT_FLOW") & (comp != ""):
-        ar["category"] = "Technosphere Flows/" + comp
+        ar["category"] = comp
     elif flowtype == "WASTE_FLOW":
-        ar["category"] = "Waste flows/"
+        ar["category"] = comp
     else:
         # Assume this is electricity or a byproduct
         ar[

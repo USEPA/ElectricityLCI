@@ -46,6 +46,7 @@ def get_generation_process_df(regions=None, **kwargs):
        'GeomMean', 'GeomSD', 'Maximum', 'Minimum'
     """
     from electricitylci.generation import create_generation_process_df
+    from electricitylci.combinator import concat_clean_upstream_and_plant
     if model_specs["include_renewable_generation"] is True:
         generation_process_df=get_gen_plus_netl()
     else:
@@ -54,7 +55,7 @@ def get_generation_process_df(regions=None, **kwargs):
         from electricitylci.model_config import eia_gen_year
         import electricitylci.plant_water_use as water
         water_df = water.generate_plant_water_use(eia_gen_year)
-        generation_process_df=pd.concat([generation_process_df,water_df],sort=False, ignore_index=True)
+        generation_process_df=concat_clean_upstream_and_plant(generation_process_df,water_df)
     # upstream_df = get_upstream_process_df()
     if model_specs['include_upstream_processes'] is True:
         try:
@@ -146,13 +147,13 @@ def get_generation_mix_process_df(regions=None):
         # assert regions == 'BA' or regions == 'NERC', 'Regions must be BA or NERC'
         if regions in ["BA","FERC","US"] and not replace_egrid:
             logger.info(
-                f"Actual generation data is being used for the generation mix "
+                f"EIA923 generation data is being used for the generation mix "
                 f"despite replace_egrid = False. The reference eGrid electricity "
                 f"data cannot be reorgnznied to match BA or FERC regions. For "
                 f"the US region, the function for generating US mixes does not "
                 f"support aggregating to the US."
                 )
-        print("Actual generation data is used when replacing eGRID")
+        print("EIA923 generation data is used when replacing eGRID")
         generation_data = build_generation_data(
             generation_years=[eia_gen_year]
         )
@@ -256,7 +257,7 @@ def get_upstream_process_df():
     """
     Automatically load all of the upstream emissions data from the various
     modules. Will return a dataframe with upstream emissions from
-    coal, natural gas, petroleum, and nuclear.
+    coal, natural gas, petroleum, nuclear, and plant construction.
     """
     import electricitylci.coal_upstream as coal
     import electricitylci.natural_gas_upstream as ng
@@ -272,9 +273,11 @@ def get_upstream_process_df():
     petro_df = petro.generate_petroleum_upstream(eia_gen_year)
     nuke_df = nuke.generate_upstream_nuc(eia_gen_year)
     const = const.generate_power_plant_construction(eia_gen_year)
+    #coal and ng already conform to mapping so no mapping needed
     upstream_df = concat_map_upstream_databases(
-        coal_df, ng_df, petro_df, nuke_df, const
+        petro_df, nuke_df, const
     )
+    upstream_df=pd.concat([upstream_df,coal_df,ng_df],sort=False,ignore_index=True)
     return upstream_df
 
 
@@ -342,10 +345,10 @@ def combine_upstream_and_gen_df(gen_df, upstream_df):
 
 def get_gen_plus_netl():
     """
-    This will combine the netl life cycle data for solar, geothermal, and wind,
-    which will include impacts from construction, etc. that would be omitted
-    from the regular sources of emissions. It also uses the alternate generation
-    module to get power plant emissions. The two different dataframes are
+    This will combine the netl life cycle data for solar, solar thermal, 
+    geothermal, wind, and hydro and will include impacts from construction, etc.
+    that would be omitted from the regular sources of emissions. 
+    It then generates power plant emissions. The two different dataframes are
     combined to provide a single dataframe representing annual emissions or
     life cycle emissions apportioned over the appropriate number of years for
     all reporting power plants.
@@ -363,7 +366,6 @@ def get_gen_plus_netl():
     import electricitylci.geothermal as geo
     import electricitylci.solar_upstream as solar
     import electricitylci.wind_upstream as wind
-    import electricitylci.plant_water_use as water
     import electricitylci.hydro_upstream as hydro
     import electricitylci.solar_thermal_upstream as solartherm
     
@@ -376,13 +378,13 @@ def get_gen_plus_netl():
     hydro_df = hydro.generate_hydro_emissions()
     solartherm_df = solartherm.generate_upstream_solarthermal(eia_gen_year)
     netl_gen = concat_map_upstream_databases(
-        geo_df, solar_df, wind_df, hydro_df, solartherm_df
+        geo_df, solar_df, wind_df, solartherm_df,
     )
     netl_gen["DataCollection"] = 5
     netl_gen["GeographicalCorrelation"] = 1
     netl_gen["TechnologicalCorrelation"] = 1
     netl_gen["ReliabilityScore"] = 1
-
+    netl_gen=pd.concat([netl_gen,hydro_df[netl_gen.columns]],ignore_index=True,sort=False)
     print("Getting reported emissions for generators...")
     gen_df = gen.create_generation_process_df()
     combined_gen = concat_clean_upstream_and_plant(gen_df, netl_gen)

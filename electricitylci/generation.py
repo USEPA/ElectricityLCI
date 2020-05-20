@@ -574,6 +574,7 @@ def create_generation_process_df():
     final_database["Compartment"] = final_database["Compartment_path"].map(
         COMPARTMENT_DICT
     )
+    final_database["Balancing Authority Name"]=final_database["Balancing Authority Code"].map(ba_codes["BA_Name"])
     final_database["EIA_Region"] = final_database["Balancing Authority Code"].map(
         ba_codes["EIA_Region"]
     )
@@ -740,7 +741,7 @@ def aggregate_data(total_db, subregion="BA"):
         groupby_cols = (
             region_agg
             + fuel_agg
-            + ["stage_code", "FlowName", "Compartment", "FlowUUID"]
+            + ["stage_code", "FlowName", "Compartment", "FlowUUID","Unit"]
         )
         elec_df_groupby_cols = (
             region_agg + fuel_agg + ["Year", "source_string"]
@@ -751,6 +752,7 @@ def aggregate_data(total_db, subregion="BA"):
             "FlowName",
             "Compartment",
             "FlowUUID",
+            "Unit"
         ]
         elec_df_groupby_cols = fuel_agg + ["Year", "source_string"]
     total_db["FlowUUID"] = total_db["FlowUUID"].fillna(value="dummy-uuid")
@@ -758,7 +760,7 @@ def aggregate_data(total_db, subregion="BA"):
     total_db, electricity_df = calculate_electricity_by_source(
         total_db, subregion
     )
-    total_db.replace(to_replace=0,value=1E-15,inplace=True)
+    total_db["FlowAmount"].replace(to_replace=0,value=1E-15,inplace=True)
     total_db = add_data_collection_score(total_db, electricity_df, subregion)
     total_db["facility_emission_factor"] = (
         total_db["FlowAmount"] / total_db["Electricity"]
@@ -856,6 +858,9 @@ def aggregate_data(total_db, subregion="BA"):
     database_f3["Emission_factor"] = (
         database_f3["FlowAmount"] / database_f3["electricity_sum"]
     )
+    #Infinite values generally coming from places with 0 generation. This happens
+    #particularly with the Canadian mixes.
+    database_f3["Emission_factor"].replace(to_replace=float("inf"),value=0,inplace=True)
     if region_agg is not None:
         database_f3["GeomMean"], database_f3["GeomSD"] = zip(
             *database_f3[
@@ -931,6 +936,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         "FlowName",
         "FlowUUID",
         "Compartment",
+        "Unit",
         "Year",
         "source_string",
         "TemporalCorrelation",
@@ -944,8 +950,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         "Emission_factor",
         "GeomMean",
         "GeomSD",
-    ]
-
+    ]   
     def turn_data_to_dict(data, upstream_dict):
 
         module_logger.debug(
@@ -978,18 +983,29 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         data["@type"] = "Exchange"
         data["avoidedProduct"] = False
         data["flowProperty"] = ""
-        data["input"] = False
-        input_filter = (data["Compartment"] == "input") | (
-            data["Compartment"].str.find("resource") != -1
+        data["input"]=False
+        input_filter = (
+                (data["Compartment"].str.lower().str.contains("input")) 
+                | (data["Compartment"].str.lower().str.contains("resource"))
+                | (data["Compartment"].str.lower().str.contains("technosphere"))
         )
         data.loc[input_filter, "input"] = True
         data["baseUncertainty"] = ""
         data["provider"] = ""
-        data["unit"] = ""
-        data["ElementaryFlowPrimeContext"] = data["Compartment"]
-        default_unit = unit("kg")
-        data["unit"] = [default_unit] * len(data)
-        data["FlowType"] = "ELEMENTARY_FLOW"
+        data["unit"] = data["Unit"]
+#        data["ElementaryFlowPrimeContext"] = data["Compartment"]
+#        default_unit = unit("kg")
+#        data["unit"] = [default_unit] * len(data)
+        data["FlowType"]="ELEMENTARY_FLOW"
+        product_filter=(
+                (data["Compartment"].str.lower().str.contains("technosphere"))
+                |(data["Compartment"].str.lower().str.contains("valuable"))
+        )
+        data.loc[product_filter,"FlowType"] = "PRODUCT_FLOW"
+        waste_filter=(
+                (data["Compartment"].str.lower().str.contains("technosphere"))
+        )
+        data.loc[waste_filter,"FlowType"] = "WASTE_FLOW"
         data["flow"] = ""
         provider_filter = data["stage_code"].isin(upstream_dict.keys())
         for index, row in data.loc[provider_filter, :].iterrows():
