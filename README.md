@@ -1,6 +1,6 @@
 # Electricity Life Cycle Inventory
 
-A python package that uses standardized facility release data to create regionalized life cycle inventory (LCI) models for the generation,
+A python package that uses standardized facility release and generation data to create regionalized life cycle inventory (LCI) models for the generation,
  mix of generation, mix of consumption, and distribution of electricity to end users for the US. The LCI models can be exported
  for use in standard life cycle assessment software.
 
