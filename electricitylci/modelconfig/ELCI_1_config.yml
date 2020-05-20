@@ -17,7 +17,7 @@ regional_aggregation: 'FERC'
 # If egrid is not used as a primary data source then set "replace_egrid" to True. This
 # will trigger the use of EPA CEMS and EIA data as substitutes for eGRID. Replacing
 # eGRID will also use EIA generation data to determine the generation mix.
-egrid_year: 2014
+egrid_year: 2016
 eia_gen_year: 2016
 replace_egrid: True
 
@@ -29,7 +29,7 @@ include_renewable_generation: True
 include_netl_water: True
 
 # Upstream data from NETL can be included in the outputs.
-include_upstream_processes: False
+include_upstream_processes: True
 
 inventories_of_interest:
   eGRID: 2016
@@ -85,7 +85,7 @@ NETL_IO_trading_year: 2016
 
 # OTHER PARAMETERS
 
-fedelemflowlist_version: 1.0
+fedelemflowlist_version: 1.0.1
 post_process_generation_emission_factors: False
 use_primaryfuel_for_coal: False
 fuel_name_file: fuelname_1.csv
