@@ -257,7 +257,7 @@ def get_upstream_process_df():
     """
     Automatically load all of the upstream emissions data from the various
     modules. Will return a dataframe with upstream emissions from
-    coal, natural gas, petroleum, and nuclear.
+    coal, natural gas, petroleum, nuclear, and plant construction.
     """
     import electricitylci.coal_upstream as coal
     import electricitylci.natural_gas_upstream as ng
@@ -273,6 +273,7 @@ def get_upstream_process_df():
     petro_df = petro.generate_petroleum_upstream(eia_gen_year)
     nuke_df = nuke.generate_upstream_nuc(eia_gen_year)
     const = const.generate_power_plant_construction(eia_gen_year)
+    #coal and ng already conform to mapping so no mapping needed
     upstream_df = concat_map_upstream_databases(
         petro_df, nuke_df, const
     )
@@ -344,10 +345,10 @@ def combine_upstream_and_gen_df(gen_df, upstream_df):
 
 def get_gen_plus_netl():
     """
-    This will combine the netl life cycle data for solar, geothermal, and wind,
-    which will include impacts from construction, etc. that would be omitted
-    from the regular sources of emissions. It also uses the alternate generation
-    module to get power plant emissions. The two different dataframes are
+    This will combine the netl life cycle data for solar, solar thermal, 
+    geothermal, wind, and hydro and will include impacts from construction, etc.
+    that would be omitted from the regular sources of emissions. 
+    It then generates power plant emissions. The two different dataframes are
     combined to provide a single dataframe representing annual emissions or
     life cycle emissions apportioned over the appropriate number of years for
     all reporting power plants.
@@ -365,7 +366,6 @@ def get_gen_plus_netl():
     import electricitylci.geothermal as geo
     import electricitylci.solar_upstream as solar
     import electricitylci.wind_upstream as wind
-    import electricitylci.plant_water_use as water
     import electricitylci.hydro_upstream as hydro
     import electricitylci.solar_thermal_upstream as solartherm
     

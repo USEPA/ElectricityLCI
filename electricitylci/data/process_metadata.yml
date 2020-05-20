@@ -3,22 +3,24 @@ default_boundary_statement: &boundary_statement
   
     All processes are compiled by US
     region using boundaries based on electricity trading defined as
-    ‘subregions’ in the Emissions and Generation Resource Integrated Database
+    ''subregions'' in the Emissions and Generation Resource Integrated Database
     (eGRID). Generation processes are also aggregated by fuel or energy source
     and provide the flow of electricity after it has been transformed for
-    transmission on average US high voltage transmission lines (230 – 765 kV ).
+    transmission on average US high voltage transmission lines (230 - 765 kV ).
     Mix processes are mixes of generation by fuel type representing the average
     mix of electricity available on the grid within the region either based on
     production or consumption. Delivery to the final user is targeted toward an
     average end user without separation between different user types. The time
     span for all processes is one year, with the goal to represent the current
-    (2018) year.' 
+    (2018) year.
+    ' 
 
 default_datacollection_statement: &datacollection_statement
   - 'DATA COLLECTION 
   
     All inventories were calculated
-    using secondary data from publicly available datasets.'
+    using secondary data from publicly available datasets.
+    '
 
 default_uncertainty_statement: &uncertainty_statement
   - 'UNCERTAINTY ESTIMATION 
@@ -28,7 +30,7 @@ default_uncertainty_statement: &uncertainty_statement
     process using the USEPA LCA Data Quality Assessment guidance . In the
     generation processes, for each emission factor, five data quality scores were
     assigned on flow-level data quality scoring. Process data quality scores draw
-    on the process US EPA  DQ indicator guidance. Process completeness is
+    on the process US EPA DQ indicator guidance. Process completeness is
     calculated by first creating a list of expected flows for each fuel type. U.S.
     average profiles for the fuels used in electricity generation are developed for
     expected flows in the following categories: greenhouse gases (GHG), CAPs, toxic
@@ -39,8 +41,8 @@ default_uncertainty_statement: &uncertainty_statement
     fuel type for other inputs and outputs including intermediate inputs, raw
     energy demands, and water inputs are determined based on flows reported for the
     relevant electricity generation fuel type in existing LCI datasets such as
-    ANL’s GREET model, NREL’s USLCI, and ecoinvent. Expected nutrient discharges to
-    water are derived from a sample of electric facilities reporting to USEPA’s
+    ANL''s GREET model, NREL''s USLCI, and ecoinvent. Expected nutrient discharges to
+    water are derived from a sample of electric facilities reporting to USEPA''s
     Discharge Monitoring Report (DMR). The actual flows evaluated for each fuel
     type by eGRID subregion can then be documented and compared to the U.S. average
     electrical fuel generation profiles to determine the overall process
@@ -49,7 +51,8 @@ default_uncertainty_statement: &uncertainty_statement
     these fuel-specific profiles by documenting whether an expected flow is being
     reported by the fuel type in the relevant eGRID subregion. An expected emission
     may not be captured if there are discrepancies between the facilities covered
-    in eGRID and those reporting to the USEPA databases TRI, NEI, RCRAInfo.'
+    in eGRID and those reporting to the USEPA databases TRI, NEI, RCRAInfo.
+    '
 
 no_uncertainty_statement: &no_uncertainty
   - 'UNCERTAINTY ESTIMATION 
@@ -85,6 +88,10 @@ default:
   - *default_techno_intro
   - *default_techno_process
 
+  Start_date: ''
+  
+  End_date: ''
+  
   SamplingProcedure:
   - *boundary_statement
   - *datacollection_statement
@@ -241,7 +248,7 @@ nuclear_upstream:
   - 'This process represents the cradle-to-gate inventory for the
   production of electricity from US generation II nuclear reactors, including
   uranium extraction, enrichment, fuel fabrication, fuel transport, power plant
-  construction, and power plant emissions.'
+  construction, and power plant emissions. '
 
   techno_process: &nuclear_techno_process
   - 'Documentation for the original model
@@ -303,7 +310,7 @@ geothermal:
 
   techno_intro: &geothermal_techno_intro
   - 'This process represents the cradle-to-gate inventory for
-  electricity production from US geothermal power plants.'
+  electricity production from US geothermal power plants. '
 
   techno_process: &geothermal_techno_process
   - 'Power plant
@@ -360,7 +367,7 @@ solar:
 
   techno_intro: &solar_techno_intro
   - 'This process represents the cradle-to-gate inventory for
-  electricity production from US solar photovoltaic power plants.'
+  electricity production from US solar photovoltaic power plants. '
 
   techno_process: &solar_techno_process
   - 'Inventories
@@ -421,7 +428,7 @@ solarthermal:
   techno_intro: &solarthermal_techno_intro
 
   - 'This process represents the cradle-to-gate inventory for electricity
-  production from US solar thermal power plants.'
+  production from US solar thermal power plants. '
 
   techno_process: &solarthermal_techno_process
 
@@ -481,7 +488,7 @@ wind:
   techno_intro: &wind_techno_intro
 
   - 'This process represents the cradle-to-gate inventory for electricity
-  production from US wind farms.'
+  production from US wind farms. '
 
   techno_process: &wind_techno_process
 
@@ -657,7 +664,7 @@ coal_upstream:
   techno_intro: &coal_upstream_techno_intro
 
   - 'The cradle-to-gate inventory for production of coal aggregated to basin,
-  mine type, and coal type groups.'
+  mine type, and coal type groups. '
 
   techno_process: &coal_upstream_techno_process
 
@@ -676,6 +683,10 @@ coal_upstream:
   TechnologyDescription:
   - *coal_upstream_techno_intro
   - *coal_upstream_techno_process 
+
+  Start_date: '1/1/2016'
+  
+  End_date: '12/31/2016'
 
   DatasetOwner: 'NETL'
 
@@ -702,13 +713,9 @@ coal_upstream:
   regions. Further information can be found in the coal baseline report - 
   http://netl.doe.gov/LCA (report currently under review).'
 
-  DataTreatment: 'Resource extraction processes are primarily based on
-  PADD-reported data. All the fields defined through OPGEE were used as the
-  pool for creating the LCI. The production quantities reported throughout the
-  baselines list were used for the physical flows and to generate the emissions
-  and wastes values from facilities like refineries. Locational data was used
-  to associate a field with a region. Each fuel production process, defined by
-  fuel type and regions, includes emissions to air and water.'
+  DataTreatment: 'The coal model divides annual reported and calculated
+  emissions by either the production rate at a mine or the throughput at a facility
+  to provide results on the basis of 1 kg coal.'
 
   SamplingProcedure:
     - 'BOUNDARY CONDITIONS 
@@ -732,7 +739,7 @@ gas_upstream:
 
   techno_intro: &gas_upstream_techno_intro
 
-  - 'The cradle-to-gate inventory for production of gas aggregated to basin.'
+  - 'The cradle-to-gate inventory for production of gas aggregated to basin. '
 
   techno_process: &gas_upstream_techno_process
 
@@ -754,6 +761,9 @@ gas_upstream:
   - *gas_upstream_techno_intro
   - *gas_upstream_techno_process 
 
+  Start_date: '1/1/2016'
+  
+  End_date: '12/31/2016'
   
   DatasetOwner: 'NETL'
 
@@ -808,7 +818,7 @@ oil_upstream:
 
   - 'The cradle-to-gate inventory for production of refinery products (residual
   fuel oil or diesel fuel oil) for each U.S. Petroleum Administration for
-  Defense District (PADD).'
+  Defense District (PADD). '
 
   techno_process: &oil_upstream_techno_process
 
@@ -834,6 +844,9 @@ oil_upstream:
   - *oil_upstream_techno_intro
   - *oil_upstream_techno_process 
 
+  Start_date: '1/1/2016'
+  
+  End_date: '12/31/2016'
   
   DatasetOwner: 'Stanford University and University of Calgary'
 
@@ -894,7 +907,7 @@ coal_transport_upstream:
 
   - 'The cradle-to-gate inventory for the transportation
   of coal aggregated to basin, mine type, and coal type groups and also for the
-  various modes of coal transportation.'
+  various modes of coal transportation. '
 
   techno_process: &coal_transport_techno_process
 
@@ -915,6 +928,9 @@ coal_transport_upstream:
   - *coal_transport_techno_intro
   - *coal_transport_techno_process 
 
+  Start_date: '1/1/2016'
+  
+  End_date: '12/31/2016'
 
   DatasetOwner: 'NETL'
 
@@ -970,7 +986,7 @@ construction_upstream:
   techno_intro: &construction_techno_intro
 
   - 'The cradle-to-gate inventory for the construction of the fossil fuel
-  generators (coal, gas, and oil).'
+  generators (coal, gas, and oil). '
 
   techno_process: &construction_techno_process
 
