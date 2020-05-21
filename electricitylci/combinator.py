@@ -228,40 +228,6 @@ def concat_map_upstream_databases(*arg, **kwargs):
     )
     upstream_mapped_df.dropna(subset=["FlowName"], inplace=True)
 
-    module_logger.info("Checking for mismatched units")
-    mismatched_units_filter = [
-        (x[0] != x[1] and x[0]!=["<blank>"]) 
-        for x in zip(
-            upstream_mapped_df["Unit_orig"], upstream_mapped_df["Unit"]
-        )
-    ]
-    mismatched_units = upstream_mapped_df.loc[mismatched_units_filter, :]
-    mismatched_units_w_alt_units = [
-        (x[0] == x[1] and x[2] is not float("nan"))
-        for x in zip(
-            mismatched_units["Unit_orig"],
-            mismatched_units["AltUnit"],
-            mismatched_units["AltUnitConversionFactor"],
-        )
-    ]
-    mismatched_units.loc[mismatched_units_w_alt_units, "FlowAmount"] = (
-        mismatched_units["FlowAmount"]
-        / mismatched_units["AltUnitConversionFactor"]
-    )
-    upstream_mapped_df.loc[
-        mismatched_units.index, "FlowAmount"
-    ] = mismatched_units["FlowAmount"]
-    mismatched_units_no_conversion_filter = [
-        not x for x in mismatched_units_w_alt_units
-    ]
-    # For now just dropping anything where the units don't align
-#    upstream_mapped_df.drop(
-#        index=mismatched_units.loc[
-#            mismatched_units_no_conversion_filter, :
-#        ].index,
-#        inplace=True,
-#    )
-
     #upstream_mapped_df.to_csv(f"{output_dir}/upstream_mapped_df.csv")
 
     module_logger.info("Applying conversion factors")
