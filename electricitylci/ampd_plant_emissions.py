@@ -32,7 +32,7 @@ def generate_plant_emissions(year):
         Returns a dataframe with emissions for all power plants reporting to
         AMPD or EIA923. Emissions are either actual measured emissions (marked
         as Source = "cems") or from ap42 emission factors applied at either 
-        the boiler or generator fuel type level (market as Source = "ap42").
+        the boiler or generator fuel type level (marked as Source = "ap42").
     """
     COMPARTMENT_MAP = {"emission/air": "air"}
     FUELCAT_MAP = {
@@ -1238,7 +1238,7 @@ def generate_plant_emissions(year):
         & (ampd["heat_content_mmbtu"] > 0)
     ].copy()
     ampd_rev["ampd CO2 (Tons)"] = ampd_rev["co2_mass_tons"] * pq.convert(
-        1, "ton", "Mg"
+        1, "ton", "ton"
     )
     ampd_rev["ampd SO2 (lbs)"] = ampd_rev["so2_mass_tons"] * pq.convert(
         1, "ton", "lb"

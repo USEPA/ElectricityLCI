@@ -15,7 +15,8 @@ from electricitylci.model_config import (
         egrid_year,
         regional_aggregation,
         replace_egrid,
-        model_specs
+        model_specs,
+        electricity_lci_target_year
 )
 from electricitylci.egrid_facilities import egrid_subregions
 import yaml
@@ -23,6 +24,7 @@ import logging
 
 module_logger = logging.getLogger("process_dictionary_writer.py")
 year = egrid_year
+targetyear=electricity_lci_target_year
 
 # Read in general metadata to be used by all processes
 with open(join(data_dir, "process_metadata.yml")) as f:
@@ -309,8 +311,8 @@ def location(region):
 
 OLCA_TO_METADATA={
         "timeDescription":None,
-        "validUntil":None,
-        "validFrom":None,
+        "validUntil":"End_date",
+        "validFrom":"Start_date",
         "technologyDescription":"TechnologyDescription",
         "dataCollectionDescription":"DataCollectionPeriod",
         "completenessDescription":"DataCompleteness",
@@ -380,8 +382,9 @@ def process_doc_creation(process_type="default"):
                 process_type="default"
                 ar[key]=metadata[process_type][OLCA_TO_METADATA[key]]
     ar["timeDescription"] = ""
-    ar["validUntil"] = "12/31/2018"
-    ar["validFrom"] = "1/1/2018"
+    if not ar["validUntil"]:
+        ar["validUntil"] = "12/31/"+str(targetyear)
+        ar["validFrom"] = "1/1/"+str(targetyear)
     ar["sources"] = ""
     ar["copyright"] = False
     ar["creationDate"] = time.time()

@@ -598,6 +598,14 @@ def aggregate_data(total_db, subregion="BA"):
     subregion : str, optional
         The level of subregion that the data will be aggregated to. Choices
         are 'all', 'NERC', 'BA', 'US', by default 'BA'.
+    
+    Returns
+    -------
+    dataframe 
+        The dataframe provides the emissions aggregated to the specified
+        subregion for each technology and stage in the input total_db. This
+        dataframe includes an average emission factor and, when applicable
+        uncertainty distributions.
     """
     from electricitylci.aggregation_selector import subregion_col
 
@@ -656,7 +664,7 @@ def aggregate_data(total_db, subregion="BA"):
                 try:
                     result = (np.exp(mean), 0, np.exp(upper_interval))
                 except ArithmeticError or ValueError or FloatingPointError:
-                    print("Prolem with result")
+                    print("Problem with result")
                     return None
                 if result is not None:
                     return result
