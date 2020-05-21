@@ -14,8 +14,10 @@ import copy
 
 def generate_upstream_geo(year):
     """
-    Generate the annual uranium extraction, processing and transportation 
-    emissions (in kg) for each plant in EIA923.
+    Generate the annual emissions from geothermal power plants. These emissions
+    are from an NETL-developed model that takes into account the insoluble gases
+    present in the geothermal fluid and the type of geothermal power to develop
+    emission factors for those gases.
     
     Parameters
     ----------
