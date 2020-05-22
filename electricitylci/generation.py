@@ -869,6 +869,7 @@ def aggregate_data(total_db, subregion="BA"):
     #Infinite values generally coming from places with 0 generation. This happens
     #particularly with the Canadian mixes.
     database_f3["Emission_factor"].replace(to_replace=float("inf"),value=0,inplace=True)
+    database_f3["Emission_factor"].replace(to_replace=float("-inf"),value=0,inplace=True)
     if region_agg is not None:
         database_f3["GeomMean"], database_f3["GeomSD"] = zip(
             *database_f3[
