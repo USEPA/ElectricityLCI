@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
+
+"""Add docstring."""
+
 import logging
 
 module_logger = logging.getLogger("aggregation_selector.py")
 
 
 def subregion_col(subregion="BA"):
+    """Add docstring."""
     available_options = ["eGRID", "NERC", "BA", "US", "FERC", "EIA"]
     if subregion not in available_options:
         module_logger.warning("Invalid subregion specified - US selected")

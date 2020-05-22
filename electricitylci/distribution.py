@@ -14,5 +14,3 @@ def distribution_mix_dictionary():
         print(reg+' Distribution Process Created')
         distribution_dict['Distribution'+reg] = final;
     return distribution_dict
-
-
