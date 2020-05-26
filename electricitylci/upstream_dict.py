@@ -477,4 +477,3 @@ if __name__ == "__main__":
     merged.to_csv(f"{output_dir}/total_upstream_{year}.csv")
     upstream_process_dict = olcaschema_genupstream_processes(merged)
     upstream_olca_processes = write_process_dicts_to_jsonld(upstream_process_dict)
-

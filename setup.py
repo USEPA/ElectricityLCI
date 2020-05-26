@@ -11,7 +11,7 @@ setup(
     author_email='ingwersen.wesley@epa.gov',
     description='Create life cycle inventory data for regionalized electricity generation, mix of generation, mix of consumption, and distribution to the end-user in the United States.',
     install_requires=[
-        'fedelemflowlist @ git+git://github.com/USEPA/https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List@v1.0.2#egg=fedelemflowlist'
+        'fedelemflowlist @ git+git://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List@v1.0.2#egg=fedelemflowlist'
         'numpy>=1.14',
         'pandas>=0.24',
         'olca-ipc>=0.0.6',
@@ -22,8 +22,8 @@ setup(
         'xlrd>=1.1',
         'pyyaml>=5.1',
         ],
-    long_description = open('README.md').read(),
-    classifiers = [
+    long_description=open('README.md').read(),
+    classifiers=[
         "Development Status :: Alpha",
         "Environment :: IDE",
         "Intended Audience :: Science/Research",
@@ -31,7 +31,7 @@ setup(
         "Programming Language :: Python :: 3.x",
         "Topic :: Utilities",
     ],
-    #This does not automatically install these dependencies
+    # This does not automatically install these dependencies
     dependency_links=['https://github.com/USEPA/standardizedinventories/archive/v0,9.zip',
                       'https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List/archive/master.zip']
 )

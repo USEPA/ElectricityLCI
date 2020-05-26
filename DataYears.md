@@ -1,5 +1,5 @@
 
-A summary of input data and years available for use in building electricity models.
+# A summary of input data and years available for use in building electricity models
 
 |Dataset|2011<sup>1</sup>|2012|2013|2014|2015|2016|2017|2018|
 |---|---|---|---|---|---|---|---|---|
@@ -23,7 +23,7 @@ A summary of input data and years available for use in building electricity mode
 |solar thermal LCI<sup>3</sup>| | | | | |x | | |
 |transmission and distribution losses| | | | |x |x |x |x |
 
-Notes: 
+Notes:
 
 <sup>1</sup> - Only years since 2011 are depicted, but some sources, like EPA CEMS, are available many years back.
  For LCI sources, which can be constructed from multiple dates, the target year is used.
@@ -36,5 +36,3 @@ Notes:
  2016. For example, the inventory for wind farm x is calculated using the turbines
  that existed in 2016. However, so long as the same plants exist in other years
  in the EIA 923 data, that inventory can be re-used and applied to different years.
-
-

@@ -68,7 +68,5 @@ egrid_facilities_fuel_cat_per_gen = egrid_facilities_fuel_cat_per_gen.drop(colum
 egrid_facilities = egrid_facilities.drop(columns=per_gen_cols)
 
 
-
-
 #Merge back into facilities
 egrid_facilities = pd.merge(egrid_facilities,egrid_facilities_fuel_cat_per_gen,on=['FacilityID','FuelCategory'],how='left')

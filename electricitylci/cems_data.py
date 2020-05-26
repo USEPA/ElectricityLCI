@@ -7,19 +7,19 @@ This modules pulls data from EPA's published CSV files.
 
 Copyright 2017 Catalyst Cooperative and the Climate Policy Initiative
 
-Permission is hereby granted, free of charge, to any person obtaining a copy 
-of this software and associated documentation files (the "Software"), to deal 
-in the Software without restriction, including without limitation the rights 
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell 
-copies of the Software, and to permit persons to whom the Software is 
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-The above copyright notice and this permission notice shall be included in all 
+The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 """
 import os
 import pandas as pd
-#from pudl.settings import SETTINGS
-#import pudl.constants as pc
+# from pudl.settings import SETTINGS
+# import pudl.constants as pc
 from electricitylci.globals import data_dir, output_dir
 import logging
 
@@ -189,16 +189,17 @@ cems_states = {k: v for k, v in us_states.items() if v not in
                }
 
 cems_col_names = {
-        'GLOAD (MWh)':'gross_load_mwh',
-        'SO2_MASS (tons)':'so2_mass_tons',
-        'NOX_MASS (tons)':'nox_mass_tons',
-        'SUM_OP_TIME':'sum_op_time',
-        'COUNT_OP_TIME':'count_op_time'
+        'GLOAD (MWh)': 'gross_load_mwh',
+        'SO2_MASS (tons)': 'so2_mass_tons',
+        'NOX_MASS (tons)': 'nox_mass_tons',
+        'SUM_OP_TIME': 'sum_op_time',
+        'COUNT_OP_TIME': 'count_op_time'
 }
+
 
 def get_epacems_dir(year):
     """
-    Data directory search for EPA CEMS hourly
+    Data directory search for EPA CEMS hourly.
 
     Args:
         year (int): The year that we're trying to read data for.
@@ -234,7 +235,9 @@ def get_epacems_file(year, qtr, state):
 
 
 def read_cems_csv(filename):
-    """Read one CEMS CSV file
+    """
+    Read one CEMS CSV file.
+
     Note that some columns are not read. See epacems_columns_to_ignores.
     """
     df = pd.read_csv(
@@ -255,11 +258,11 @@ def extract(epacems_years, states, verbose=True):
     """
     # TODO: this is really slow. Can we do some parallel processing?
     logging.info("Extracting EPA CEMS data...")
-    dfs=[]
+    dfs = []
     for year in epacems_years:
         # The keys of the us_states dictionary are the state abbrevs
         for state in states:
-            #dfs = []
+            # dfs = []
             for qtr in range(1, 5):
                 filename = get_epacems_file(year, qtr, state)
 
@@ -274,16 +277,18 @@ def extract(epacems_years, states, verbose=True):
 #            }
     return dfs
 
+
 import urllib
 import ftplib
 import zipfile
 import shutil
 import warnings
-#import pudl.constants as pc
-#from pudl.settings import SETTINGS
+# import pudl.constants as pc
+# from pudl.settings import SETTINGS
 
 
 def assert_valid_param(source, year, qtr=None, state=None, check_month=None):
+    """Add docstring."""
     assert source in ('epacems'), \
         f"Source '{source}' not found in valid data sources."
     assert source in data_years, \
@@ -566,8 +571,8 @@ def _download_FTP(src_urls, tmp_files, allow_retry=True):
         elif allow_retry and src_urls != url_to_retry:
             # If there were multiple URLs and at least one didn't fail,
             # keep retrying until all fail or all succeed.
-            return _download_FTP(url_to_retry, 
-                                 tmp_to_retry, 
+            return _download_FTP(url_to_retry,
+                                 tmp_to_retry,
                                  allow_retry=allow_retry
                                  )
         if url_to_retry == src_urls:
@@ -615,15 +620,15 @@ def _download_default(src_urls, tmp_files, allow_retry=True):
     if num_failed > 0:
         if allow_retry and len(src_urls) == 1:
             # If there was only one URL and it failed, retry once.
-            return _download_default(url_to_retry, 
-                                     tmp_to_retry, 
+            return _download_default(url_to_retry,
+                                     tmp_to_retry,
                                      allow_retry=False
                                      )
         elif allow_retry and src_urls != url_to_retry:
             # If there were multiple URLs and at least one didn't fail,
             # keep retrying until all fail or all succeed.
-            return _download_default(url_to_retry, 
-                                     tmp_to_retry, 
+            return _download_default(url_to_retry,
+                                     tmp_to_retry,
                                      allow_retry=allow_retry
                                      )
         if url_to_retry == src_urls:
@@ -773,11 +778,11 @@ def update(source, year, states, clobber=False, unzip=True, verbose=True,
 
     Returns: nothing
     """
-    need_update = check_if_need_update(source=source, 
-                                       year=year, 
+    need_update = check_if_need_update(source=source,
+                                       year=year,
                                        states=states,
-                                       datadir=datadir, 
-                                       clobber=clobber, 
+                                       datadir=datadir,
+                                       clobber=clobber,
                                        verbose=verbose
                                        )
     if need_update:
@@ -787,17 +792,19 @@ def update(source, year, states, clobber=False, unzip=True, verbose=True,
         organize(source, year, states, unzip=unzip, datadir=datadir,
                  verbose=verbose, no_download=no_download)
 
+
 def build_cems_df(year):
+    """Add docstring."""
     states = cems_states.keys()
-    update('epacems',year,states)
+    update('epacems', year, states)
     raw_dfs = extract(
             epacems_years=[year],
             states=states,
             verbose=True
         )
     df = pd.concat(raw_dfs)
-    df.rename(columns=cems_col_names,inplace=True)
-    cols_to_sum=[
+    df.rename(columns=cems_col_names, inplace=True)
+    cols_to_sum = [
             'gross_load_mwh',
             'steam_load_1000_lbs',
             'so2_mass_tons',
@@ -806,13 +813,14 @@ def build_cems_df(year):
             'heat_content_mmbtu'
     ]
     summary_df = df.groupby(
-            by=['state','plant_id_eia','facility_id'],
+            by=['state', 'plant_id_eia', 'facility_id'],
             group_keys=False,
             as_index=False
             )[cols_to_sum].sum()
     return summary_df
 
+
 if __name__ == '__main__':
-    year=2016
+    year = 2016
     df = build_cems_df(year)
     df.to_csv(f'{output_dir}/cems_emissions_{year}.csv')
