@@ -25,8 +25,3 @@ def lookup_score_with_bound_key(raw_score, bound_to_dqi):
     else:
         score = bound_to_dqi[None]
     return score
-
-
-
-
-

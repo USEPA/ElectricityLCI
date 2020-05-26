@@ -1,7 +1,4 @@
-"""
-Extract hourly real-time EIA data from the bulk-download zip file
-"""
-
+"""Extract hourly real-time EIA data from the bulk-download zip file."""
 
 import pandas as pd
 import json
@@ -14,6 +11,7 @@ from electricitylci.globals import data_dir
 
 
 def download_EBA():
+    """Add docstring."""
     url = 'http://api.eia.gov/bulk/EBA.zip'
     print(f"Downloading eia bulk data from {url}...", end = "")
     r = requests.get(url)
