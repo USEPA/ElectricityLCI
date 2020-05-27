@@ -58,6 +58,7 @@ def process_metadata(entry):
             entry[key] = process_metadata(entry[key])
         return entry
 
+
 for key in metadata.keys():
     metadata[key]=process_metadata(metadata[key])
 # metadata = pd.read_csv(join(data_dir, "metadata.csv"))
@@ -137,6 +138,7 @@ def exchange_table_creation_ref(data):
     ar["unit"] = unit("MWh")
     return ar
 
+
 def exchange_table_creation_ref_cons(data):
     ar = dict()
     ar["internalId"] = ""
@@ -152,6 +154,7 @@ def exchange_table_creation_ref_cons(data):
     ar["amountFormula"] = ""
     ar["unit"] = unit("MWh")
     return ar
+
 
 def gen_process_ref(fuel, reg):
     processref = dict()
@@ -238,6 +241,7 @@ def exchange_table_creation_input_con_mix(
     # ar['location'] = location(loc)
     return ar
 
+
 def process_table_creation_gen(fuelname, exchanges_list, region):
     ar = dict()
     ar["@type"] = "Process"
@@ -309,6 +313,7 @@ def location(region):
     ar["name"] = region
     return ar
 
+
 OLCA_TO_METADATA={
         "timeDescription":None,
         "validUntil":"End_date",
@@ -355,6 +360,8 @@ VALID_FUEL_CATS=[
         "coal_transport_upstream",
         "construction_upstream"
 ]
+
+
 def process_doc_creation(process_type="default"):
     try:
         assert process_type in VALID_FUEL_CATS, f"Invalid process_type ({process_type}), using default"
@@ -395,6 +402,7 @@ def process_doc_creation(process_type="default"):
     # Temp place holder for process DQ scores
     ar["dqEntry"] = "(5;5)"
     return ar
+
 
 def process_description_creation(process_type="fossil"):
     try:

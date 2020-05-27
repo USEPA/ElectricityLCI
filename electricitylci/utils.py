@@ -15,6 +15,7 @@ import logging
 
 module_logger = logging.getLogger("utils.py")
 
+
 def download_unzip(url, unzip_path):
     """
     Download a zip file from url and extract contents to a given path
@@ -87,6 +88,7 @@ def create_ba_region_map(
 
         map_series = region_match[region_col]
     return map_series
+
 
 def fill_default_provider_uuids(dict_to_fill, *args):
     """Fills in UUIDs for default providers in the specified dictionary

@@ -11,6 +11,7 @@ import numpy as np
 from electricitylci.eia860_facilities import eia860_generator_info
 import re
 
+
 def generate_power_plant_construction(year):
     """This function uses an NETL study that generated the life cycle inventory
     for power plant construction using an economic input output model. Two types

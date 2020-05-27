@@ -18,7 +18,6 @@ def compilation(db,total_gen):
         # Removing all rows here emissions are not reported for second dataframe
         db2 = db.dropna()
 
-
         # keeping the unreported emissions and facilities in separate database
 
         # This check is to make sure that the second database is not empt after droppins all NA. if empty, then we only use first database.
@@ -79,8 +78,6 @@ def uncertainty(db,mean_gen,total_gen,total_facility_considered):
         x = var('x')
 
 
-
-
         if math.isnan(pi3) == True:
             return None,None;
 
@@ -110,8 +107,6 @@ def uncertainty(db,mean_gen,total_gen,total_facility_considered):
                return round(log_mean,12),round(sd2,12)
 
 
-
-
 def max_min(db,mean_gen,total_gen,total_facility_considered):
         # Troy Method
         # Creating copy of database by substitution the NA emissions with zero
@@ -132,7 +127,7 @@ def max_min(db,mean_gen,total_gen,total_facility_considered):
 
          #   data = data_1.append(df2,ignore_index = True)
          #  data_1 = data
-            
+
         data = db
         maximum = (data.iloc[:,1]/data.iloc[:,0]).max();
         minimum = (data.iloc[:,1]/data.iloc[:,0]).min();

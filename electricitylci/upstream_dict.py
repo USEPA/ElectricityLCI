@@ -18,8 +18,9 @@ from electricitylci.process_dictionary_writer import (
         process_description_creation
 )
 module_logger=logging.getLogger("upstream_dict.py")
-#with open(f"{data_dir}/upstream_metadata.yaml", 'r') as f:
+# with open(f"{data_dir}/upstream_metadata.yaml", 'r') as f:
 #    metadata = yaml.safe_load(f)
+
 
 def _unit(unt):
     ar = dict()

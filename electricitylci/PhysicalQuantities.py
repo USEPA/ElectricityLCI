@@ -71,6 +71,7 @@ cd   candela
 
 """
 
+
 class NumberDict(dict):
 
     """
@@ -128,6 +129,7 @@ class NumberDict(dict):
     __truediv__ = __div__
 
 # Class definitions
+
 
 class PhysicalQuantity:
 
@@ -244,7 +246,7 @@ class PhysicalQuantity:
 
     def __cmp__(self, other):
         diff = self._sum(other, 1, -1)
-        return (diff.value > 0) - (diff.value<0)#cmp(diff.value, 0)
+        return (diff.value > 0) - (diff.value<0)  # cmp(diff.value, 0)
 
     def __mul__(self, other):
         if not isPhysicalQuantity(other):
@@ -334,14 +336,14 @@ class PhysicalQuantity:
         @raises TypeError: if any of the specified units are not compatible
         with the original unit
         """
-        #units = list(map(_findUnit, units))
+        # units = list(map(_findUnit, units))
         units = [_findUnit(x) for x in units]
         if len(units) == 1:
             unit = units[0]
             value = _convertValue (self.value, self.unit, unit)
             return self.__class__(value, unit)
         else:
-            #units.sort()
+            # units.sort()
             result = []
             value = self.value
             unit = self.unit
@@ -367,7 +369,7 @@ class PhysicalQuantity:
         num = ''
         denom = ''
         for i in range(9):
-        #for i in list(self.unit.powers):
+        # for i in list(self.unit.powers):
             unit = _base_names[i]
             power = list(self.unit.powers)[i]
             if power < 0:
@@ -470,7 +472,7 @@ class PhysicalUnit:
     def __cmp__(self, other):
         if self.powers != other.powers:
             raise TypeError('Incompatible units')
-        return (self.factor > other.factor) - (self.factor < other.factor) #cmp(self.factor, other.factor)
+        return (self.factor > other.factor) - (self.factor < other.factor)  # cmp(self.factor, other.factor)
 
     def __mul__(self, other):
         if self.offset != 0 or (isPhysicalUnit (other) and other.offset != 0):
@@ -558,7 +560,7 @@ class PhysicalUnit:
                              (self.name(), other.name()))
         return self.factor/other.factor
 
-    def conversionTupleTo(self, other): # added 1998/09/29 GPW
+    def conversionTupleTo(self, other):  # added 1998/09/29 GPW
         """
         @param other: another unit
         @type other: L{PhysicalUnit}
@@ -641,6 +643,7 @@ def isPhysicalUnit(x):
     """
     return hasattr(x, 'factor') and hasattr(x, 'powers')
 
+
 def isPhysicalQuantity(x):
     """
     @param x: an object
@@ -665,6 +668,7 @@ def _findUnit(unit):
         raise TypeError(str(unit) + ' is not a unit')
     return unit
 
+
 def _round(x):
     if N.greater(x, 0.):
         return N.floor(x)
@@ -676,9 +680,11 @@ def _convertValue (value, src_unit, target_unit):
     (factor, offset) = src_unit.conversionTupleTo(target_unit)
     return (value + offset) * factor
 
+
 def convert(value, src_unit,target_unit):
     return _convertValue(value,_findUnit(src_unit),_findUnit(target_unit))
 # SI unit definitions
+
 
 _base_names = ['m', 'kg', 's', 'A', 'K', 'mol', 'cd', 'rad', 'sr']
 

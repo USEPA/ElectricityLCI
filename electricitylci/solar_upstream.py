@@ -4,6 +4,7 @@ from electricitylci.globals import output_dir, data_dir
 import numpy as np
 from electricitylci.eia923_generation import eia923_download_extract
 
+
 def generate_upstream_solar(year):
     """
     Generate the annual emissions for solar panel construction for each
@@ -68,8 +69,8 @@ def generate_upstream_solar(year):
             'State',
             'Plant Name',
             ],inplace=True)
-    #These emissions will later be aggregated with any inventory power plant
-    #emissions because each facility has its own construction impacts.
+    # These emissions will later be aggregated with any inventory power plant
+    # emissions because each facility has its own construction impacts.
     solar_upstream['stage_code']="Power plant"
     solar_upstream['fuel_type']='SOLAR'
     compartment_map={
@@ -80,9 +81,10 @@ def generate_upstream_solar(year):
     solar_upstream['Compartment']=solar_upstream['Compartment'].map(compartment_map)
     solar_upstream["Unit"]="kg"
     solar_upstream["input"]=False
-    #solar_upstream['Compartment']=solar_upstream['Compartment'].str.lower()
+    # solar_upstream['Compartment']=solar_upstream['Compartment'].str.lower()
 
     return solar_upstream
+
 
 if __name__=='__main__':
     year=2016
