@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+
+"""Add docstring."""
+
 import pandas as pd
 from electricitylci.globals import output_dir, data_dir
 import numpy as np
@@ -7,11 +10,13 @@ from electricitylci.eia923_generation import eia923_download_extract
 
 def generate_upstream_solar(year):
     """
-    Generate the annual emissions for solar panel construction for each
-    plant in EIA923. The emissions inventory file has already allocated the
-    total emissions to construct panels and balance of system for the entire
-    power plant over the assumed 30 year life of the panels. So the emissions
-    returned below represent 1/30th of the total site construction emissions.
+    Generate the annual emissions.
+    
+    For solar panel construction for each plant in EIA923. The emissions
+    inventory file has already allocated the total emissions to construct panels
+    and balance of system for the entire power plant over the assumed 30 year
+    life of the panels. So the emissions returned below represent 1/30th of the
+    total site construction emissions.
 
     Parameters
     ----------

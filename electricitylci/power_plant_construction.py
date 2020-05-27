@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jul 18 04:52:01 2019
+Created on Thu Jul 18 04:52:01 2019.
 
 @author: jamiesom
 """
@@ -13,18 +13,21 @@ import re
 
 
 def generate_power_plant_construction(year):
-    """This function uses an NETL study that generated the life cycle inventory
-    for power plant construction using an economic input output model. Two types
-    of plants are considered: sub-critical pulverized coal and a natural gas
-    combined cycle plant. The inventory provided by the study is for an entire plant.
-    This inventory is divided by the net generation capacity of those plants to
-    place the inventory on the basis of a MW and then divided by an assumed plant
-    life of 30 years, which is a conservative assumption considering the lifetime
-    of these plants is typically much longer. These per year/per MW impacts
-    are mapped to the fossil power generators in the U.S. where they are scaled
-    by the net generating capacity of the plants (as provided by EIA data). These
-    impacts are eventually divided by the generation for the year in MWh to provide
-    the construction impacts on the basis of the functional unit.
+    """
+    Function uses an NETL study.
+    
+    That generated the life cycle inventory for power plant construction using
+    an economic input output model. Two types of plants are considered: sub-
+    critical pulverized coal and a natural gas combined cycle plant. The
+    inventory provided by the study is for an entire plant. This inventory is
+    divided by the net generation capacity of those plants to place the
+    inventory on the basis of a MW and then divided by an assumed plant life of
+    30 years, which is a conservative assumption considering the lifetime of
+    these plants is typically much longer. These per year/per MW impacts are
+    mapped to the fossil power generators in the U.S. where they are scaled by
+    the net generating capacity of the plants (as provided by EIA data). These
+    impacts are eventually divided by the generation for the year in MWh to
+    provide the construction impacts on the basis of the functional unit.
 
     Parameters
     ----------

@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+
+"""Add docstring."""
+
 import pandas as pd
 from electricitylci.globals import output_dir, data_dir
 import numpy as np
@@ -7,11 +10,12 @@ from electricitylci.eia923_generation import eia923_download_extract
 
 def generate_upstream_solarthermal(year):
     """
-    Generate the annual emissions for solar thermal plant construction for each
-    plant in EIA923. The emissions inventory file has already allocated the
-    total emissions to construct the entire power plant over its assumed 30 year
-    life. So the emissions returned below represent 1/30th of the total site
-    construction emissions.
+    Generate the annual emissions.
+    
+    For solar thermal plant construction for each plant in EIA923. The emissions
+    inventory file has already allocated the total emissions to construct the
+    entire power plant over its assumed 30 year life. So the emissions returned
+    below represent 1/30th of the total site construction emissions.
 
     Parameters
     ----------

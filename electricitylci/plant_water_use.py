@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+"""Add docstring."""
+
 import pandas as pd
 from electricitylci.globals import output_dir, data_dir
 import electricitylci.PhysicalQuantities as pq
@@ -9,10 +11,12 @@ from electricitylci.eia923_generation import eia923_download_extract
 
 def generate_plant_water_use(year):
     """
-    Uses data from an NETL water use analysis to generate water withdrawal and
-    discharge flows for power plants. The underlying data represents an analysis
-    of water use in 2016. The water intensities are used to generate annual
-    amounts of water use using generation data from the given year.
+    Uses data from an NETL.
+    
+    Water use analysis to generate water withdrawal and discharge flows for
+    power plants. The underlying data represents an analysis of water use in
+    2016. The water intensities are used to generate annual amounts of water use
+    using generation data from the given year.
 
     Parameters
     ----------
