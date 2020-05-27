@@ -6,20 +6,20 @@ from electricitylci.globals import data_dir, output_dir
 def generate_canadian_mixes(us_inventory):
     from electricitylci.combinator import ba_codes
     """
-    Uses aggregate U.S.-level inventory to fuel category. These U.S. fuel 
+    Uses aggregate U.S.-level inventory to fuel category. These U.S. fuel
     category inventories are then used as proxies for Canadian generation. The
-    inventories are weighted by the percent of that type of generation for the 
+    inventories are weighted by the percent of that type of generation for the
     Canadian balancing authority area (e.g., if the BC Hydro & Power Authority
     generation mix includes 9% biomass, then U.S.-level biomass emissions are
-    multiplied by 0.09. The result is a dataframe that includes balancing 
+    multiplied by 0.09. The result is a dataframe that includes balancing
     authority level inventories for Canadian imports.
-    
+
     Parameters
     ----------
     us_inventory: dataframe
         A dataframe containing flow-level inventory for all fuel categories in
         the United States.
-    
+
     Returns
     ----------
     dataframe
@@ -54,9 +54,9 @@ def generate_canadian_mixes(us_inventory):
         us_inventory.loc[us_inventory["input"].isna(),"input"]=us_inventory["Compartment"].map(input_map)
     else:
         us_inventory["input"]=us_inventory["Compartment"].map(input_map)
-    
-    #If there are no upstream inventories, then the quantity column will not exist.
-    #Let's create it.
+
+    # If there are no upstream inventories, then the quantity column will not exist.
+    # Let's create it.
     if "quantity" not in list(us_inventory.columns):
         us_inventory["quantity"]=float("nan")
     us_inventory_summary = us_inventory.groupby(

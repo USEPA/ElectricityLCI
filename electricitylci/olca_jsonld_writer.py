@@ -17,7 +17,7 @@ def write(processes: dict, file_path: str):
     with pack.Writer(file_path) as writer:
         list_of_dicts=list()
         created_ids = set()
-        #for d_vals in processes.values():
+        # for d_vals in processes.values():
         for p_key in processes.keys():
                 d_vals = processes[p_key]
                 process = olca.Process()
@@ -54,6 +54,7 @@ def write(processes: dict, file_path: str):
                 writer.write(process)
                 processes[p_key]['uuid']=process.id
     return processes
+
 
 def _process_dq(dict_d: dict, process: olca.Process):
     process.dq_entry = _format_dq_entry(
@@ -203,8 +204,8 @@ def _flow(dict_d: dict, flowprop: olca.Ref, writer: pack.Writer,
     uid = _val(dict_d, 'id')
     name = _val(dict_d, 'name')
     orig_uid=None
-    #Checking for technosphere or third party flows that were mapped in
-    #an openLCA model, but these flows must be created in the json-ld here.
+    # Checking for technosphere or third party flows that were mapped in
+    # an openLCA model, but these flows must be created in the json-ld here.
     if (isinstance(uid,str)
         and uid !=''
         and (
@@ -229,8 +230,8 @@ def _flow(dict_d: dict, flowprop: olca.Ref, writer: pack.Writer,
         flow.name = name
         flow.flow_type = olca.FlowType[_val(
             dict_d, 'flowType', default='ELEMENTARY_FLOW')]
-        #Do not assign flows a location
-        #flow.location = _location(_val(dict_d, 'location'),
+        # Do not assign flows a location
+        # flow.location = _location(_val(dict_d, 'location'),
         #                          writer, created_ids)
         flow.category = _category(category_path, olca.ModelType.FLOW,
                                   writer, created_ids)
@@ -242,6 +243,7 @@ def _flow(dict_d: dict, flowprop: olca.Ref, writer: pack.Writer,
         writer.write(flow)
         created_ids.add(uid)
     return olca.ref(olca.Flow, uid, name)
+
 
 def _location(dict_d: dict, writer: pack.Writer,
               created_ids: set) -> Optional[olca.Ref]:

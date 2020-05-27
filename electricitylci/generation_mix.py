@@ -124,7 +124,7 @@ def create_generation_mix_process_df_from_model_generation_data(
         ]
     elif subregion == "eGRID":
         database_for_genmix_final["Subregion"] = database_for_genmix_final[
-            "eGRID" # Value was "NERC", which I think is wrong
+            "eGRID"  # Value was "NERC", which I think is wrong
         ]
     elif subregion == "FERC":
         database_for_genmix_final["Subregion"] = database_for_genmix_final["FERC_Region"]
@@ -161,12 +161,12 @@ def create_generation_mix_process_df_from_model_generation_data(
         subregion_fuel_gen["Electricity"] / subregion_total_gen
     )
     if subregion == "BA":
-        #Dropping US generation data on New Brunswick System Operator (NBSO). There are several
-        #US plants in NBSO and as a result, there is a generation mix for the US
-        #side and the routines below generate one for the Canada side. This manifests
-        #itself as a generation mix that pulls 2 MWh for every 1MWh generated. For
-        #simplicity and because NBSO is an imported BA, we'll remove the US-side
-        #and assume it's covered under the Canadian imports.
+        # Dropping US generation data on New Brunswick System Operator (NBSO). There are several
+        # US plants in NBSO and as a result, there is a generation mix for the US
+        # side and the routines below generate one for the Canada side. This manifests
+        # itself as a generation mix that pulls 2 MWh for every 1MWh generated. For
+        # simplicity and because NBSO is an imported BA, we'll remove the US-side
+        # and assume it's covered under the Canadian imports.
         subregion_fuel_gen=subregion_fuel_gen.loc[subregion_fuel_gen["Subregion"]!="New Brunswick System Operator",:]
     canada_list=[]
     canada_subregions = ["B.C. Hydro & Power Authority",
@@ -298,13 +298,13 @@ def create_generation_mix_process_df_from_egrid_ref_data(subregion=None):
         total_gen_reg = np.sum(database["Electricity"])
         database["Generation_Ratio"] = database["Electricity"] / total_gen_reg
         # for index,row in database.iterrows():
-        #     # cropping the database according to the current fuel being considered
+        #     cropping the database according to the current fuel being considered
         #     row['Generation_Ratio'] = row['Electricity']/total_gen_reg
         result_database = pd.concat([result_database, database])
 
     return result_database
 
-    ##MOVE TO NEW FUNCTION
+    # MOVE TO NEW FUNCTION
     # if database_for_genmix_reg_specific.empty != True:
     # data_transfer(database_for_genmix_reg_specific, fuelname, fuelheat)
     # Move to separate function

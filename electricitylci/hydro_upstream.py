@@ -7,6 +7,7 @@ import electricitylci.PhysicalQuantities as pq
 from electricitylci.eia923_generation import eia923_download_extract
 from electricitylci.eia860_facilities import eia860_balancing_authority
 
+
 def generate_hydro_emissions():
     """
     This generates a dataframe of hydro power plant emissions using data
