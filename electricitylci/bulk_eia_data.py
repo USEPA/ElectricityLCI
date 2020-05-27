@@ -13,13 +13,14 @@ from electricitylci.globals import data_dir
 def download_EBA():
     """Add docstring."""
     url = 'http://api.eia.gov/bulk/EBA.zip'
-    print(f"Downloading eia bulk data from {url}...", end = "")
+    print(f"Downloading eia bulk data from {url}...", end="")
     r = requests.get(url)
     os.makedirs(join(data_dir, 'bulk_data'), exist_ok=True)
     output = open(join(data_dir, 'bulk_data', 'EBA.zip'), 'wb')
     output.write(r.content)
     output.close()
     print(f"complete.")
+
 
 path = join(data_dir, 'bulk_data', 'EBA.zip')
 
@@ -34,39 +35,39 @@ if __name__=="__main__":
         with z.open('EBA.txt') as f:
             raw_txt = f.readlines()
 
-#REGION_NAMES = [
+# REGION_NAMES = [
 #    'California', 'Carolinas', 'Central',
 #    'Electric Reliability Council of Texas, Inc.', 'Florida',
 #    'Mid-Atlantic', 'Midwest', 'New England ISO',
 #    'New York Independent System Operator', 'Northwest', 'Southeast',
 #    'Southwest', 'Tennessee Valley Authority'
-#]
+# ]
 #
-#REGION_ACRONYMS = [
+# REGION_ACRONYMS = [
 #    'TVA', 'MIDA', 'CAL', 'CAR', 'CENT', 'ERCO', 'FLA',
 #    'MIDW', 'ISNE', 'NYIS', 'NW', 'SE', 'SW',
-#]
+# ]
 #
-#TOTAL_INTERCHANGE_ROWS = [
+# TOTAL_INTERCHANGE_ROWS = [
 #    json.loads(row) for row in raw_txt if b'EBA.TI.H' in row
-#]
+# ]
 #
-#NET_GEN_ROWS = [
+# NET_GEN_ROWS = [
 #    json.loads(row) for row in raw_txt if b'EBA.NG.H' in row
-#]
+# ]
 #
-#DEMAND_ROWS = [
+# DEMAND_ROWS = [
 #    json.loads(row) for row in raw_txt if b'EBA.D.H' in row
-#]
+# ]
 #
-#EXCHANGE_ROWS = [
+# EXCHANGE_ROWS = [
 #    json.loads(row) for row in raw_txt if b'EBA.ID.H' in row
-#]
+# ]
 #
-#BA_TO_BA_ROWS = [
+# BA_TO_BA_ROWS = [
 #    row for row in EXCHANGE_ROWS
 #    if row['series_id'].split('-')[0][4:] not in REGION_ACRONYMS
-#]
+# ]
 
 
 def row_to_df(rows, data_type):
@@ -112,9 +113,9 @@ def row_to_df(rows, data_type):
 #        region_list=[region for x in datetime]
 #        _df = pd.DataFrame(df_data)
 #        tuple_list.append(_df)
-        tuple_data=[x for x in zip([region]*len(datetime),list(datetime),data)]
+        tuple_data=[x for x in zip([region]*len(datetime), list(datetime), data)]
         tuple_list.extend(tuple_data)
-    df=pd.DataFrame(tuple_list,columns=["region","datetime",data_type])
+    df=pd.DataFrame(tuple_list, columns=["region", "datetime", data_type])
 #    df = pd.concat(df_list).reset_index(drop=True)
 
     return df
@@ -162,11 +163,11 @@ def ba_exchange_to_df(rows, data_type='ba_to_ba'):
 #            'datetime': datetime,
 #            data_type: data,
 #        }
-        tuple_data = [x for x in zip([from_region]*len(datetime),[to_region]*len(datetime),datetime,data)]
+        tuple_data = [x for x in zip([from_region]*len(datetime), [to_region]*len(datetime), datetime, data)]
         tuple_list.extend(tuple_data)
 #        _df = pd.DataFrame(df_data)
 #        df_list.append(_df)
 
 #    df = pd.concat(df_list).reset_index(drop=True)
-    df=pd.DataFrame(tuple_list,columns=["from_region","to_region","datetime",data_type])
+    df=pd.DataFrame(tuple_list, columns=["from_region", "to_region", "datetime", data_type])
     return df

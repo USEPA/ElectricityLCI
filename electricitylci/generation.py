@@ -24,6 +24,7 @@ egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','Pri
 
 module_logger = logging.getLogger("generation.py")
 
+
 def eia_facility_fuel_region(year):
     primary_fuel = eia923_primary_fuel(year=year)
     ba_match = eia860_balancing_authority(year)
@@ -46,15 +47,17 @@ def eia_facility_fuel_region(year):
 
     return combined
 
+
 def add_technological_correlation_score(db):
-    #Create col, set to 5 by default
+    # Create col, set to 5 by default
     # db['TechnologicalCorrelation'] = 5
     from electricitylci.dqi import technological_correlation_lower_bound_to_dqi
-    #convert PercentGen to fraction
+    # convert PercentGen to fraction
     db['PercentGenerationfromDesignatedFuelCategory'] = db['PercentGenerationfromDesignatedFuelCategory']/100
     db['TechnologicalCorrelation'] = db['PercentGenerationfromDesignatedFuelCategory'].apply(lambda x: lookup_score_with_bound_key(x,technological_correlation_lower_bound_to_dqi))
     # db = db.drop(columns='PercentGenerationfromDesignatedFuelCategory')
     return db
+
 
 def add_flow_representativeness_data_quality_scores(db,total_gen):
     db = add_technological_correlation_score(db)
@@ -62,17 +65,19 @@ def add_flow_representativeness_data_quality_scores(db,total_gen):
     db = add_data_collection_score(db,total_gen)
     return db
 
+
 def add_temporal_correlation_score(db):
     # db['TemporalCorrelation'] = 5
     from electricitylci.dqi import temporal_correlation_lower_bound_to_dqi
     from electricitylci.model_config import electricity_lci_target_year
 
-    #Could be more precise here with year
+    # Could be more precise here with year
     db['Age'] =  electricity_lci_target_year - pd.to_numeric(db['Year'])
     db['TemporalCorrelation'] = db['Age'].apply(
         lambda x: lookup_score_with_bound_key(x, temporal_correlation_lower_bound_to_dqi))
     # db = db.drop(columns='Age')
     return db
+
 
 def aggregate_facility_flows(df):
     """Thus function aggregates flows from the same source (NEI, netl, etc.) within
@@ -112,6 +117,7 @@ def aggregate_facility_flows(df):
         "Compartment_path",
         "stage_code"
     ]
+
     def wtd_mean(pdser, total_db, cols):
         try:
             wts = total_db.loc[pdser.index, "FlowAmount"]
@@ -120,7 +126,7 @@ def aggregate_facility_flows(df):
             module_logger.debug(
                 f"Error calculating weighted mean for {pdser.name}-"
                 f"likely from 0 FlowAmounts"
-                #f"{total_db.loc[pdser.index[0],cols]}"
+                # f"{total_db.loc[pdser.index[0],cols]}"
             )
             try:
                 with np.errstate(all='raise'):
@@ -703,12 +709,12 @@ def aggregate_data(total_db, subregion="BA"):
                 f"Error estimating standard deviation - length: {len(params)}"
             )
         else:
-            #In some cases, the final emission factor is far different than the
-            #geometric mean of the individual emission factor. Depending on the
-            #severity, this could be a clear sign of outliers having a large impact
-            #on the final emission factor. When the uncertainty is generated for
-            #these cases, the results can be nonsensical - hence we skip them. A more
-            #agressive approach would be to re-assign the emission factor as well.
+            # In some cases, the final emission factor is far different than the
+            # geometric mean of the individual emission factor. Depending on the
+            # severity, this could be a clear sign of outliers having a large impact
+            # on the final emission factor. When the uncertainty is generated for
+            # these cases, the results can be nonsensical - hence we skip them. A more
+            # agressive approach would be to re-assign the emission factor as well.
             if df["Emission_factor"]>df["uncertaintyLognormParams"][2]:
                 return None, None
             else:
@@ -783,12 +789,12 @@ def aggregate_data(total_db, subregion="BA"):
             module_logger.debug(
                 f"Error calculating weighted mean for {pdser.name}-"
                 f"likely from 0 FlowAmounts"
-                #f"{total_db.loc[pdser.index[0],cols]}"
+                # f"{total_db.loc[pdser.index[0],cols]}"
             )
             try:
                 with np.errstate(all='raise'):
                     result = np.average(pdser)
-            except ArithmeticError or ValueError or FloatingPointError:    
+            except ArithmeticError or ValueError or FloatingPointError:
                 result = float("nan")
         return result
 
@@ -866,8 +872,8 @@ def aggregate_data(total_db, subregion="BA"):
     database_f3["Emission_factor"] = (
         database_f3["FlowAmount"] / database_f3["electricity_sum"]
     )
-    #Infinite values generally coming from places with 0 generation. This happens
-    #particularly with the Canadian mixes.
+    # Infinite values generally coming from places with 0 generation. This happens
+    # particularly with the Canadian mixes.
     database_f3["Emission_factor"].replace(to_replace=float("inf"),value=0,inplace=True)
     if region_agg is not None:
         database_f3["GeomMean"], database_f3["GeomSD"] = zip(

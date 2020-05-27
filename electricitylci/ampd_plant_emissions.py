@@ -1199,7 +1199,6 @@ def generate_plant_emissions(year):
         / eia_gen_fuel_net_gen_output["Annual Net Generation (MWh)"]
     )
 
-
     eia_gen_fuel_net_gen_output = eia_gen_fuel_net_gen_output.assign(
         Primary_Fuel=eia_gen_fuel_net_gen_output.apply(
             eia_primary_fuel, axis=1
@@ -1207,7 +1206,7 @@ def generate_plant_emissions(year):
     )
     if not keep_mixed_plant_category:
         eia_gen_fuel_net_gen_output = eia_gen_fuel_net_gen_output.loc[
-                eia_gen_fuel_net_gen_output["Primary_Fuel"]!="Mixed Fuel Type",:
+                eia_gen_fuel_net_gen_output["Primary_Fuel"]!="Mixed Fuel Type", :
                 ]
     plant_fuel_class = eia_gen_fuel_net_gen_output[
         ["plant_id", "Primary_Fuel", "Primary Fuel %"]
@@ -1335,7 +1334,7 @@ def generate_plant_emissions(year):
         total_criteria, "NOx_emissions_lbs"
     ] = result_agg_final.loc[total_criteria, "ampd NOX (lbs)"]
     result_agg_final.loc[
-        total_criteria,"NOx_Source"] = "ampd"
+        total_criteria, "NOx_Source"] = "ampd"
 
     result_agg_final["Net Efficiency"] = (
         result_agg_final["net_generation_megawatthours"]

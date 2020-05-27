@@ -1,14 +1,15 @@
-#Scoring based on USEPA 2016: Guidance on Data Quality Assessment for Life Cycle Inventory Data
+# Scoring based on USEPA 2016: Guidance on Data Quality Assessment for Life Cycle Inventory Data
 
-flow_data_quality_fields = ['Reliability_Score','TemporalCorrelation','GeographicalCorrelation',
-                            'TechnologicalCorrelation','DataCollection']
-temporal_correlation_lower_bound_to_dqi = {3:1,6:2,10:3,15:4,None:5}
+flow_data_quality_fields = ['Reliability_Score', 'TemporalCorrelation', 'GeographicalCorrelation',
+                            'TechnologicalCorrelation', 'DataCollection']
+temporal_correlation_lower_bound_to_dqi = {3: 1, 6: 2, 10: 3, 15: 4, None: 5}
 
-data_collection_lower_bound_to_dqi = {.4:4,.6:3,.8:2,1:1,None:5}
+data_collection_lower_bound_to_dqi = {.4: 4, .6: 3, .8: 2, 1: 1, None: 5}
 
-#This is a varation from USEPA 2016 flow indicators. Instead this is intended to
-#represent fraction of generation coming from this intended fuel
-technological_correlation_lower_bound_to_dqi = {.4:4,.6:3,.8:2,1:1,None:5}
+# This is a varation from USEPA 2016 flow indicators. Instead this is intended to
+# represent fraction of generation coming from this intended fuel
+technological_correlation_lower_bound_to_dqi = {.4: 4, .6: 3, .8: 2, 1: 1, None: 5}
+
 
 def lookup_score_with_bound_key(raw_score, bound_to_dqi):
     breakpoints = list(bound_to_dqi.keys())

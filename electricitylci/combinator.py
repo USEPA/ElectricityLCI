@@ -206,7 +206,7 @@ def concat_map_upstream_databases(*arg, **kwargs):
         upstream_df_grp = upstream_df.groupby(
             groupby_cols, as_index=False
         ).agg({"FlowAmount": "sum", "quantity": "mean"})
-    upstream_df=upstream_df[["FlowName_orig", "Compartment_path_orig","stage_code"]]
+    upstream_df=upstream_df[["FlowName_orig", "Compartment_path_orig", "stage_code"]]
     module_logger.info("Merging upstream database and flow mapping")
     upstream_mapped_df = pd.merge(
         left=upstream_df_grp,
@@ -215,7 +215,7 @@ def concat_map_upstream_databases(*arg, **kwargs):
         right_on=["SourceFlowName", "SourceFlowContext"],
         how="left",
     )
-    del(upstream_df_grp,flow_mapping)
+    del(upstream_df_grp, flow_mapping)
     upstream_mapped_df.drop(
         columns={"FlowName", "Compartment", "Unit"}, inplace=True
     )
@@ -228,7 +228,7 @@ def concat_map_upstream_databases(*arg, **kwargs):
     )
     upstream_mapped_df.dropna(subset=["FlowName"], inplace=True)
 
-    #upstream_mapped_df.to_csv(f"{output_dir}/upstream_mapped_df.csv")
+    # upstream_mapped_df.to_csv(f"{output_dir}/upstream_mapped_df.csv")
 
     module_logger.info("Applying conversion factors")
     upstream_mapped_df["FlowAmount"]=(upstream_mapped_df["FlowAmount"]*
@@ -335,7 +335,7 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
         "Subregion",
     ]
 
-    up_df = up_df.drop(columns=["eGRID_ID"],errors="ignore").merge(
+    up_df = up_df.drop(columns=["eGRID_ID"], errors="ignore").merge(
         right=pl_df[["eGRID_ID"] + region_cols].drop_duplicates(),
         left_on="plant_id",
         right_on="eGRID_ID",
@@ -500,8 +500,8 @@ if __name__ == "__main__":
     import electricitylci.wind_upstream as wind
     import electricitylci.nuclear_upstream as nuke
 
-    #coal_df = coal.generate_upstream_coal(2016)
-    #ng_df = ng.generate_upstream_ng(2016)
+    # coal_df = coal.generate_upstream_coal(2016)
+    # ng_df = ng.generate_upstream_ng(2016)
     petro_df = petro.generate_petroleum_upstream(2016)
     geo_df = geo.generate_upstream_geo(2016)
     solar_df = solar.generate_upstream_solar(2016)

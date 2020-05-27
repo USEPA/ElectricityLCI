@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import pandas as pd
-#import eia
+# import eia
 from datetime import datetime
 import pytz
 import json
@@ -13,7 +13,7 @@ import logging
 
 from electricitylci.globals import data_dir, output_dir
 from electricitylci.bulk_eia_data import download_EBA, row_to_df, ba_exchange_to_df
-#from electricitylci.bulk_eia_data import (
+# from electricitylci.bulk_eia_data import (
 #    REGION_NAMES,
 #    REGION_ACRONYMS
 #    )
@@ -61,6 +61,7 @@ from electricitylci.process_dictionary_writer import *
 
 """
 
+
 def ba_io_trading_model(year=None, subregion=None):
     REGION_NAMES = [
         'California', 'Carolinas', 'Central',
@@ -84,22 +85,22 @@ def ba_io_trading_model(year=None, subregion=None):
             f'when calculating trading with input-output, not {subregion}'
         )
 
-    #Read in BAA file which contains the names and abbreviations
+    # Read in BAA file which contains the names and abbreviations
     df_BA = pd.read_excel(data_dir + '/BA_Codes_930.xlsx', sheet_name = 'US', header = 4)
     df_BA.rename(columns={'etag ID': 'BA_Acronym', 'Entity Name': 'BA_Name','NCR_ID#': 'NRC_ID', 'Region': 'Region'}, inplace=True)
     BA = pd.np.array(df_BA['BA_Acronym'])
     US_BA_acronyms = df_BA['BA_Acronym'].tolist()
 
-    #Read in BAA file which contains the names and abbreviations
-    #Original df_BAA does not include the Canadian balancing authorities
-    #Import them here, then concatenate to make a single df_BAA_NA (North America)
+    # Read in BAA file which contains the names and abbreviations
+    # Original df_BAA does not include the Canadian balancing authorities
+    # Import them here, then concatenate to make a single df_BAA_NA (North America)
 
     df_BA_CA = pd.read_excel(data_dir + '/BA_Codes_930.xlsx', sheet_name = 'Canada', header = 4)
     df_BA_CA.rename(columns={'etag ID': 'BA_Acronym', 'Entity Name': 'BA_Name','NCR_ID#': 'NRC_ID', 'Region': 'Region'}, inplace=True)
     df_BA_NA = pd.concat([df_BA, df_BA_CA])
     ferc_list = df_BA_NA['FERC_Region_Abbr'].unique().tolist()
 
-    #Read in the bulk data
+    # Read in the bulk data
 
 #    download_EBA()
     path = join(data_dir, 'bulk_data', 'EBA.zip')
@@ -118,25 +119,25 @@ def ba_io_trading_model(year=None, subregion=None):
     logging.info("Loading bulk data to json")
     with z.open('EBA.txt') as f:
         for line in f:
-            #All but one BA is currently reporting net generation in UTC and local time
-            #for that one BA (GRMA) only UTC time is reported - so only pulling that
-            #for now.
+            # All but one BA is currently reporting net generation in UTC and local time
+            # for that one BA (GRMA) only UTC time is reported - so only pulling that
+            # for now.
             if b'EBA.NG.H' in line and b'EBA.NG.HL' not in line:
                 NET_GEN_ROWS.append(json.loads(line))
-            #Similarly there are 5 interchanges that report interchange in UTC but not in
-            #local time.
+            # Similarly there are 5 interchanges that report interchange in UTC but not in
+            # local time.
             elif b'EBA.ID.H' in line and b'EBA.ID.HL' not in line:
                 exchange_line=json.loads(line)
                 if exchange_line['series_id'].split('-')[0][4:] not in REGION_ACRONYMS:
 #                    try:
-                        #Adding this check here to hopefully save some time down the road.
-                        #dummy_date=datetime.strptime(exchange_line['data'][0][0],'%Y%m%dT%HZ')
+                        # Adding this check here to hopefully save some time down the road.
+                        # dummy_date=datetime.strptime(exchange_line['data'][0][0],'%Y%m%dT%HZ')
                         BA_TO_BA_ROWS.append(exchange_line)
-                        #good_date_count+=1
+                        # good_date_count+=1
 #                    except ValueError:
-                        #bad_date_count+=1
+                        # bad_date_count+=1
 #                        continue
-            #Keeping these here just in case
+            # Keeping these here just in case
             elif b'EBA.D.H' in line and b'EBA.D.HL' not in line:
                 DEMAND_ROWS.append(json.loads(line))
 #            elif b'EBA.TI.H' in line:
@@ -152,16 +153,14 @@ def ba_io_trading_model(year=None, subregion=None):
                                      how="left")
     eia_gen_ba=eia_combined_df.groupby(by=["Balancing Authority Code"],as_index=False)["Electricity"].sum()
 
-
-
-    #Subset for specified eia_gen_year
+    # Subset for specified eia_gen_year
     start_datetime = '{}-01-01 00:00:00+00:00'.format(year)
     end_datetime = '{}-12-31 23:00:00+00:00'.format(year)
 
     start_datetime = datetime.strptime(start_datetime, '%Y-%m-%d %H:%M:%S%z')
     end_datetime = datetime.strptime(end_datetime, '%Y-%m-%d %H:%M:%S%z')
 
-    #Net Generation Data Import
+    # Net Generation Data Import
     logging.info("Generating df with datetime")
     df_net_gen = row_to_df(NET_GEN_ROWS, 'net_gen')
     del(NET_GEN_ROWS)
@@ -178,39 +177,37 @@ def ba_io_trading_model(year=None, subregion=None):
     col_diff.sort(key = str.upper)
     logging.info("Cleaning net_gen dataframe")
 
-    #Add in missing columns, then sort in alphabetical order
+    # Add in missing columns, then sort in alphabetical order
     for i in col_diff:
         df_net_gen[i] = 0
 
-    #Keep only the columns that match the balancing authority names, there are several other columns included in the dataset
-    #that represent states (e.g., TEX, NY, FL) and other areas (US48)
+    # Keep only the columns that match the balancing authority names, there are several other columns included in the dataset
+    # that represent states (e.g., TEX, NY, FL) and other areas (US48)
 
     df_net_gen = df_net_gen[ba_cols]
 
-    #Resort columns so the headers are in alpha order
+    # Resort columns so the headers are in alpha order
     df_net_gen = df_net_gen.sort_index(axis=1)
     df_net_gen = df_net_gen.fillna(value = 0)
 
     df_net_gen = df_net_gen.loc[start_datetime:end_datetime]
 
-
-    #Sum values in each column
+    # Sum values in each column
     df_net_gen_sum = df_net_gen.sum(axis = 0).to_frame()
     logging.info("Reading canadian import data")
-    #Add Canadian import data to the net generation dataset, concatenate and put in alpha order
+    # Add Canadian import data to the net generation dataset, concatenate and put in alpha order
     df_CA_Imports_Gen = pd.read_csv(data_dir + '/CA_Imports_Gen.csv', index_col = 0)
     df_CA_Imports_Gen = df_CA_Imports_Gen[str(year)]
-
 
     logging.info("Combining US and Canadian net gen data")
     df_net_gen_sum = pd.concat([df_net_gen_sum,df_CA_Imports_Gen]).sum(axis=1)
     df_net_gen_sum = df_net_gen_sum.to_frame()
     df_net_gen_sum = df_net_gen_sum.sort_index(axis=0)
 
-    #Check the net generation of each Balancing Authority against EIA 923 data.
-    #If the percent change of a given area is greater than the mean absolute difference
-    #of all of the areas, it will be treated as an error and replaced with the
-    #value in EIA923.
+    # Check the net generation of each Balancing Authority against EIA 923 data.
+    # If the percent change of a given area is greater than the mean absolute difference
+    # of all of the areas, it will be treated as an error and replaced with the
+    # value in EIA923.
     logging.info("Checking against EIA 923 generation data")
     net_gen_check=df_net_gen_sum.merge(
             right=eia_gen_ba,
@@ -224,8 +221,8 @@ def ba_io_trading_model(year=None, subregion=None):
     df_net_gen_sum.loc[net_gen_swap.index,[0]]=np.nan
     net_gen_swap.rename(columns={"Electricity":0},inplace=True)
     df_net_gen_sum=df_net_gen_sum.combine_first(net_gen_swap)
-    #First work on the trading data from the 'df_trade_all_stack_2016' frame
-    #This cell does the following:
+    # First work on the trading data from the 'df_trade_all_stack_2016' frame
+    # This cell does the following:
     # 1. reformats the data to an annual basis
     # 2. formats the BA names in the corresponding columns
     # 3. evalutes the trade values from both BA perspectives
@@ -242,7 +239,7 @@ def ba_io_trading_model(year=None, subregion=None):
     # Output is a pivot with index (rows) representing exporting BAs,
     #   columns representing importing BAs, and values for the traded amount
 
-    #Group and resample trading data so that it is on an annual basis
+    # Group and resample trading data so that it is on an annual basis
 
     logging.info("Creating trading dataframe")
     df_ba_trade = ba_exchange_to_df(BA_TO_BA_ROWS, data_type='ba_to_ba')
@@ -251,71 +248,71 @@ def ba_io_trading_model(year=None, subregion=None):
     df_ba_trade['transacting regions'] = df_ba_trade['from_region'] + '-' + df_ba_trade['to_region']
 
     logging.info("Filtering trading dataframe")
-    #Keep only the columns that match the balancing authority names, there are several other columns included in the dataset
-    #that represent states (e.g., TEX, NY, FL) and other areas (US48)
+    # Keep only the columns that match the balancing authority names, there are several other columns included in the dataset
+    # that represent states (e.g., TEX, NY, FL) and other areas (US48)
     filt1 = df_ba_trade['from_region'].isin(ba_cols)
     filt2 = df_ba_trade['to_region'].isin(ba_cols)
     filt = filt1 & filt2
     df_ba_trade = df_ba_trade[filt]
 
-    #Subset for eia_gen_year, need to pivot first because of non-unique datetime index
+    # Subset for eia_gen_year, need to pivot first because of non-unique datetime index
     df_ba_trade_pivot = df_ba_trade.pivot(columns = 'transacting regions', values = 'ba_to_ba')
 
     df_ba_trade_pivot = df_ba_trade_pivot.loc[start_datetime:end_datetime]
 
-    #Sum columns - represents the net transactced amount between the two BAs
+    # Sum columns - represents the net transactced amount between the two BAs
     df_ba_trade_sum = df_ba_trade_pivot.sum(axis = 0).to_frame()
     df_ba_trade_sum = df_ba_trade_sum.reset_index()
     df_ba_trade_sum.columns = ['BAAs','Exchange']
 
-    #Split BAA string into exporting and importing BAA columns
+    # Split BAA string into exporting and importing BAA columns
     df_ba_trade_sum['BAA1'], df_ba_trade_sum['BAA2'] = df_ba_trade_sum['BAAs'].str.split('-', 1).str
     df_ba_trade_sum = df_ba_trade_sum.rename(columns={'BAAs': 'Transacting BAAs'})
 
-    #Create two perspectives - import and export to use for comparison in selection of the final exchange value between the BAAs
+    # Create two perspectives - import and export to use for comparison in selection of the final exchange value between the BAAs
     df_trade_sum_1_2 = df_ba_trade_sum.groupby(['BAA1', 'BAA2','Transacting BAAs'], as_index=False)[['Exchange']].sum()
     df_trade_sum_2_1 = df_ba_trade_sum.groupby(['BAA2', 'BAA1', 'Transacting BAAs'], as_index=False)[['Exchange']].sum()
     df_trade_sum_1_2.columns = ['BAA1_1_2', 'BAA2_1_2','Transacting BAAs_1_2', 'Exchange_1_2']
     df_trade_sum_2_1.columns = ['BAA2_2_1', 'BAA1_2_1','Transacting BAAs_2_1', 'Exchange_2_1']
 
-    #Combine two grouped tables for comparison for exchange values
+    # Combine two grouped tables for comparison for exchange values
     df_concat_trade = pd.concat([df_trade_sum_1_2,df_trade_sum_2_1], axis = 1)
     df_concat_trade['Exchange_1_2_abs'] = df_concat_trade['Exchange_1_2'].abs()
     df_concat_trade['Exchange_2_1_abs'] = df_concat_trade['Exchange_2_1'].abs()
 
-    #Create new column to check if BAAs designate as either both exporters or both importers
-    #or if one of the entities in the transaction reports a zero value
-    #Drop combinations where any of these conditions are true, keep everything else
+    # Create new column to check if BAAs designate as either both exporters or both importers
+    # or if one of the entities in the transaction reports a zero value
+    # Drop combinations where any of these conditions are true, keep everything else
     df_concat_trade['Status_Check'] = np.where(((df_concat_trade['Exchange_1_2'] > 0) & (df_concat_trade['Exchange_2_1'] > 0)) \
                    |((df_concat_trade['Exchange_1_2'] < 0) & (df_concat_trade['Exchange_2_1'] < 0)) \
                    | ((df_concat_trade['Exchange_1_2'] == 0) | (df_concat_trade['Exchange_2_1'] == 0)), 'drop', 'keep')
 
-    #Calculate the difference in exchange values
+    # Calculate the difference in exchange values
     df_concat_trade['Delta'] = df_concat_trade['Exchange_1_2_abs'] - df_concat_trade['Exchange_2_1_abs']
 
-    #Calculate percent diff of exchange_abs values - this can be down two ways:
-    #relative to 1_2 exchange or relative to 2_1 exchange - perform the calc both ways
-    #and take the average
+    # Calculate percent diff of exchange_abs values - this can be down two ways:
+    # relative to 1_2 exchange or relative to 2_1 exchange - perform the calc both ways
+    # and take the average
     df_concat_trade['Percent_Diff_Avg']= ((abs((df_concat_trade['Exchange_1_2_abs']/df_concat_trade['Exchange_2_1_abs'])-1)) \
         + (abs((df_concat_trade['Exchange_2_1_abs']/df_concat_trade['Exchange_1_2_abs'])-1)))/2
 
-    #Mean exchange value
+    # Mean exchange value
     df_concat_trade['Exchange_mean'] = df_concat_trade[['Exchange_1_2_abs', 'Exchange_2_1_abs']].mean(axis=1)
 
-    #Percent diff equations creats NaN where both values are 0, fill with 0
+    # Percent diff equations creats NaN where both values are 0, fill with 0
     df_concat_trade['Percent_Diff_Avg'].fillna(0, inplace = True)
 
-    #Final exchange value based on logic; if percent diff is less than 20%, take mean,
-    #if not use the value as reported by the exporting BAA. First figure out which BAA is the exporter
-    #by checking the value of the Exchance_1_2
-    #If that value is positive, it indicates that BAA1 is exported to BAA2; if negative, use the
-    #value from Exchange_2_1
+    # Final exchange value based on logic; if percent diff is less than 20%, take mean,
+    # if not use the value as reported by the exporting BAA. First figure out which BAA is the exporter
+    # by checking the value of the Exchance_1_2
+    # If that value is positive, it indicates that BAA1 is exported to BAA2; if negative, use the
+    # value from Exchange_2_1
     df_concat_trade['Final_Exchange'] = np.where((df_concat_trade['Percent_Diff_Avg'].abs() < 0.2),
                    df_concat_trade['Exchange_mean'],np.where((df_concat_trade['Exchange_1_2'] > 0),
                                   df_concat_trade['Exchange_1_2'],df_concat_trade['Exchange_2_1']))
 
 
-    #Assign final designation of BAA as exporter or importer based on logical assignment
+    # Assign final designation of BAA as exporter or importer based on logical assignment
     df_concat_trade['Export_BAA'] = np.where((df_concat_trade['Exchange_1_2'] > 0), df_concat_trade['BAA1_1_2'],
                    np.where((df_concat_trade['Exchange_1_2'] < 0), df_concat_trade['BAA2_1_2'],''))
 
@@ -325,7 +322,7 @@ def ba_io_trading_model(year=None, subregion=None):
     df_concat_trade = df_concat_trade[df_concat_trade['Status_Check'] == 'keep']
 
 
-    #Create the final trading matrix; first grab the necessary columns, rename the columns and then pivot
+    # Create the final trading matrix; first grab the necessary columns, rename the columns and then pivot
     df_concat_trade_subset = df_concat_trade[['Export_BAA', 'Import_BAA', 'Final_Exchange']]
 
     df_concat_trade_subset.columns = ['Exporting_BAA', 'Importing_BAA', 'Amount']
@@ -350,13 +347,13 @@ def ba_io_trading_model(year=None, subregion=None):
     trade_row_diff = list(trade_ba_ref_set - trade_rows_set)
     trade_row_diff.sort(key=str.upper)
 
-    #Add in missing columns, then sort in alphabetical order
+    # Add in missing columns, then sort in alphabetical order
     for i in trade_col_diff:
         df_trade_pivot[i] = 0
 
     df_trade_pivot = df_trade_pivot.sort_index(axis=1)
 
-    #Add in missing rows, then sort in alphabetical order
+    # Add in missing rows, then sort in alphabetical order
     for i in trade_row_diff:
         df_trade_pivot.loc[i,:] = 0
 
@@ -377,10 +374,10 @@ def ba_io_trading_model(year=None, subregion=None):
     df_trade_pivot = df_trade_pivot.sort_index(axis=0)
     df_trade_pivot = df_trade_pivot.sort_index(axis=1)
 
-    #Perform trading calculations as provided in Qu et al (2018) to
-    #determine the composition of a BA consumption mix
+    # Perform trading calculations as provided in Qu et al (2018) to
+    # determine the composition of a BA consumption mix
 
-    #Create total inflow vector x and then convert to a diagonal matrix x-hat
+    # Create total inflow vector x and then convert to a diagonal matrix x-hat
     logging.info("Inflow vector")
     x = []
     for i in range (len(df_net_gen_sum)):
@@ -388,7 +385,7 @@ def ba_io_trading_model(year=None, subregion=None):
 
     x_np = np.array(x)
 
-    #If values are zero, x_hat matrix will be singular, set BAAs with 0 to small value (1)
+    # If values are zero, x_hat matrix will be singular, set BAAs with 0 to small value (1)
     df_x = pd.DataFrame(data = x_np, index = df_trade_pivot.index)
     df_x = df_x.rename(columns = {0:'inflow'})
     df_x.loc[df_x['inflow'] == 0] = 1
@@ -398,8 +395,8 @@ def ba_io_trading_model(year=None, subregion=None):
     x_hat = np.diagflat(x_np)
 
 
-    #Create consumption vector c and then convert to a digaonal matrix c-hat
-    #Calculate c based on x and T
+    # Create consumption vector c and then convert to a digaonal matrix c-hat
+    # Calculate c based on x and T
     logging.info("consumption vector")
     c = []
 
@@ -409,11 +406,11 @@ def ba_io_trading_model(year=None, subregion=None):
     c_np = np.array(c)
     c_hat = np.diagflat(c_np)
 
-    #Convert df_trade_pivot to matrix
+    # Convert df_trade_pivot to matrix
     T = df_trade_pivot.values
 
-    #Create matrix to split T into distinct interconnections - i.e., prevent trading between eastern and western interconnects
-    #Connections between the western and eastern interconnects are through SWPP and WAUE
+    # Create matrix to split T into distinct interconnections - i.e., prevent trading between eastern and western interconnects
+    # Connections between the western and eastern interconnects are through SWPP and WAUE
     logging.info("Matrix operations")
     interconnect = df_trade_pivot.copy()
     interconnect[:] = 1
@@ -422,7 +419,7 @@ def ba_io_trading_model(year=None, subregion=None):
     interconnect_mat = interconnect.values
     T_split = np.multiply(T, interconnect_mat)
 
-    #Matrix trading math (see Qu et al. 2018 ES&T paper)
+    # Matrix trading math (see Qu et al. 2018 ES&T paper)
     x_hat_inv = np.linalg.inv(x_hat)
 
     B = np.matmul(T_split, x_hat_inv)
@@ -442,17 +439,17 @@ def ba_io_trading_model(year=None, subregion=None):
     df_B = pd.DataFrame(B)
     df_H = pd.DataFrame(H)
 
-    #Convert H to pandas dataframe, populate index and columns
+    # Convert H to pandas dataframe, populate index and columns
 
     df_final_trade_out = df_H
     df_final_trade_out.columns = df_net_gen_sum.index
     df_final_trade_out.index = df_net_gen_sum.index
 
-    #Develop trading input for the eLCI code. Need to melt the dataframe to end up with a three column
-    #dataframe:Repeat for both possible aggregation levels - BA and FERC market region
+    # Develop trading input for the eLCI code. Need to melt the dataframe to end up with a three column
+    # dataframe:Repeat for both possible aggregation levels - BA and FERC market region
 
-    #Establish a threshold of 0.00001 to be included in the final trading matrix
-    #Lots of really small values as a result of the matrix calculate (e.g., 2.0e-15)
+    # Establish a threshold of 0.00001 to be included in the final trading matrix
+    # Lots of really small values as a result of the matrix calculate (e.g., 2.0e-15)
 
     df_final_trade_out_filt = df_final_trade_out.copy()
     col_list = df_final_trade_out.columns.tolist()
@@ -467,17 +464,17 @@ def ba_io_trading_model(year=None, subregion=None):
     df_final_trade_out_filt_melted = df_final_trade_out_filt_melted.rename(columns = {'Source BAA':'export BAA', 'variable':'import BAA'})
 
 
-    #Merge to bring in import region name matched with BAA
+    # Merge to bring in import region name matched with BAA
     df_final_trade_out_filt_melted_merge = df_final_trade_out_filt_melted.merge(df_BA_NA, left_on = 'import BAA', right_on = 'BA_Acronym')
     df_final_trade_out_filt_melted_merge.rename(columns={'FERC_Region': 'import ferc region', 'FERC_Region_Abbr':'import ferc region abbr'}, inplace=True)
     df_final_trade_out_filt_melted_merge.drop(columns = ['BA_Acronym', 'BA_Name', 'NCR ID#', 'EIA_Region', 'EIA_Region_Abbr'], inplace = True)
 
-    #Merge to bring in export region name matched with BAA
+    # Merge to bring in export region name matched with BAA
     df_final_trade_out_filt_melted_merge = df_final_trade_out_filt_melted_merge.merge(df_BA_NA, left_on = 'export BAA', right_on = 'BA_Acronym')
     df_final_trade_out_filt_melted_merge.rename(columns={'FERC_Region': 'export ferc region', 'FERC_Region_Abbr':'export ferc region abbr'}, inplace=True)
     df_final_trade_out_filt_melted_merge.drop(columns = ['BA_Acronym', 'BA_Name', 'NCR ID#', 'EIA_Region', 'EIA_Region_Abbr'], inplace = True)
 #    if subregion == 'BA':
-    #Develop final df for BAA
+    # Develop final df for BAA
     BAA_import_grouped_tot = df_final_trade_out_filt_melted_merge.groupby(['import BAA'])['value'].sum().reset_index()
     BAA_final_trade = df_final_trade_out_filt_melted_merge.copy()
     BAA_final_trade = BAA_final_trade.drop(columns = ['import ferc region', 'export ferc region', 'import ferc region abbr', 'export ferc region abbr'])
@@ -486,15 +483,15 @@ def ba_io_trading_model(year=None, subregion=None):
     BAA_final_trade['fraction'] = BAA_final_trade['value']/BAA_final_trade['total']
     BAA_final_trade = BAA_final_trade.fillna(value = 0)
     BAA_final_trade = BAA_final_trade.drop(columns = ['value', 'total'])
-    #Remove Canadian BAs in import list
+    # Remove Canadian BAs in import list
     BAA_filt = BAA_final_trade['import BAA'].isin(US_BA_acronyms)
     BAA_final_trade = BAA_final_trade[BAA_filt]
-    #There are some BAs that will have 0 trade. Some of these are legitimate
-    #Alcoa Yadkin has no demand (i.e., all power generation is exported) others
-    #seem to be errors. For those BAs with actual demand, we'll set the 
-    #consumption mix to 100% from that BA. For those without demand,
-    #fraction will be set to near 0 just to make sure systems can be built
-    #in openLCA
+    # There are some BAs that will have 0 trade. Some of these are legitimate
+    # Alcoa Yadkin has no demand (i.e., all power generation is exported) others
+    # seem to be errors. For those BAs with actual demand, we'll set the 
+    # consumption mix to 100% from that BA. For those without demand,
+    # fraction will be set to near 0 just to make sure systems can be built
+    # in openLCA
     BAA_zero_trade = [x for x in list(BAA_final_trade["import BAA"].unique()) if BAA_final_trade.loc[BAA_final_trade["import BAA"]==x,"fraction"].sum()==0]
     BAAs_from_zero_trade_with_demand = []
     for d_row in DEMAND_ROWS:
@@ -512,7 +509,7 @@ def ba_io_trading_model(year=None, subregion=None):
 #        return BAA_final_trade
 #    elif subregion == 'FERC':
     ferc_import_grouped_tot = df_final_trade_out_filt_melted_merge.groupby(['import ferc region'])['value'].sum().reset_index()
-    #Develop final df for FERC Market Region
+    # Develop final df for FERC Market Region
     ferc_final_trade = df_final_trade_out_filt_melted_merge.copy()
 #    ferc_final_trade = ferc_final_trade.groupby(['import ferc region abbr', 'import ferc region', 'export ferc region','export ferc region abbr'])['value'].sum().reset_index()
     ferc_final_trade = ferc_final_trade.groupby(['import ferc region abbr', 'import ferc region', 'export BAA'])['value'].sum().reset_index()
@@ -521,7 +518,7 @@ def ba_io_trading_model(year=None, subregion=None):
     ferc_final_trade['fraction'] = ferc_final_trade['value']/ferc_final_trade['total']
     ferc_final_trade = ferc_final_trade.fillna(value = 0)
     ferc_final_trade = ferc_final_trade.drop(columns = ['value', 'total'])
-    #Remove Canadian entry in import list
+    # Remove Canadian entry in import list
     ferc_list.remove('CAN')
     ferc_filt = ferc_final_trade['import ferc region abbr'].isin(ferc_list)
     ferc_final_trade = ferc_final_trade[ferc_filt]
@@ -544,13 +541,6 @@ if __name__=='__main__':
     year=2016
     subregion = 'BA'
     df = ba_io_trading_model(year, subregion)
-
-
-
-
-
-
-
 
 
 def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
@@ -577,11 +567,11 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
     )
     import logging
 
-###DELETE NEXT LINE
+# DELETE NEXT LINE
 #    database = cons_mix_df
 #    database = database.drop(columns = ['value', 'total'])
 #    dist_dict = dist_mix_dict
-###DELETE ABOVE
+# DELETE ABOVE
 
     consumption_mix_dict = {}
     if subregion == "FERC":
@@ -590,9 +580,9 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
         export_column = 'export_name'
 
     elif subregion == "BA":
-        aggregation_column = "import_name" #"import BAA"
+        aggregation_column = "import_name"  # "import BAA"
         region = list(pd.unique(database[aggregation_column]))
-        export_column = "export_name"#'export BAA'
+        export_column = "export_name"  # 'export BAA'
 
     elif subregion == "US":
         export_column = "export_name"
