@@ -125,7 +125,7 @@ def aggregate_facility_flows(df):
             try:
                 with np.errstate(all='raise'):
                     result = np.average(pdser)
-            except ArithmeticError or ValueError or FloatingPointError:    
+            except ArithmeticError or ValueError or FloatingPointError:
                 result = float("nan")
         return result
 
@@ -598,10 +598,10 @@ def aggregate_data(total_db, subregion="BA"):
     subregion : str, optional
         The level of subregion that the data will be aggregated to. Choices
         are 'all', 'NERC', 'BA', 'US', by default 'BA'.
-    
+
     Returns
     -------
-    dataframe 
+    dataframe
         The dataframe provides the emissions aggregated to the specified
         subregion for each technology and stage in the input total_db. This
         dataframe includes an average emission factor and, when applicable
@@ -697,14 +697,14 @@ def aggregate_data(total_db, subregion="BA"):
                 f"{df['uncertaintyLognormParams']}"
             )
             return None, None
-        
+
         if length != 3:
             module_logger.info(
                 f"Error estimating standard deviation - length: {len(params)}"
             )
         else:
             #In some cases, the final emission factor is far different than the
-            #geometric mean of the individual emission factor. Depending on the 
+            #geometric mean of the individual emission factor. Depending on the
             #severity, this could be a clear sign of outliers having a large impact
             #on the final emission factor. When the uncertainty is generated for
             #these cases, the results can be nonsensical - hence we skip them. A more

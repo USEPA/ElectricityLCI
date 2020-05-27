@@ -110,7 +110,7 @@ def ba_io_trading_model(year=None, subregion=None):
     try:
         logging.info("Using existing bulk data download")
         z = zipfile.ZipFile(path, 'r')
-                
+
     except FileNotFoundError:
         logging.info("Downloading new bulk data")
         download_EBA()
@@ -119,7 +119,7 @@ def ba_io_trading_model(year=None, subregion=None):
     with z.open('EBA.txt') as f:
         for line in f:
             #All but one BA is currently reporting net generation in UTC and local time
-            #for that one BA (GRMA) only UTC time is reported - so only pulling that 
+            #for that one BA (GRMA) only UTC time is reported - so only pulling that
             #for now.
             if b'EBA.NG.H' in line and b'EBA.NG.HL' not in line:
                 NET_GEN_ROWS.append(json.loads(line))
@@ -145,7 +145,7 @@ def ba_io_trading_model(year=None, subregion=None):
     eia923_gen=eia923.build_generation_data(generation_years=[year])
     eia860_df=eia860.eia860_balancing_authority(year)
     eia860_df["Plant Id"]=eia860_df["Plant Id"].astype(int)
-    
+
     eia_combined_df=eia923_gen.merge(eia860_df,
                                      left_on=["FacilityID"],
                                      right_on=["Plant Id"],
@@ -153,7 +153,7 @@ def ba_io_trading_model(year=None, subregion=None):
     eia_gen_ba=eia_combined_df.groupby(by=["Balancing Authority Code"],as_index=False)["Electricity"].sum()
 
 
-    
+
     #Subset for specified eia_gen_year
     start_datetime = '{}-01-01 00:00:00+00:00'.format(year)
     end_datetime = '{}-12-31 23:00:00+00:00'.format(year)
@@ -206,10 +206,10 @@ def ba_io_trading_model(year=None, subregion=None):
     df_net_gen_sum = pd.concat([df_net_gen_sum,df_CA_Imports_Gen]).sum(axis=1)
     df_net_gen_sum = df_net_gen_sum.to_frame()
     df_net_gen_sum = df_net_gen_sum.sort_index(axis=0)
-    
+
     #Check the net generation of each Balancing Authority against EIA 923 data.
     #If the percent change of a given area is greater than the mean absolute difference
-    #of all of the areas, it will be treated as an error and replaced with the 
+    #of all of the areas, it will be treated as an error and replaced with the
     #value in EIA923.
     logging.info("Checking against EIA 923 generation data")
     net_gen_check=df_net_gen_sum.merge(

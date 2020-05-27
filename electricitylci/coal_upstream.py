@@ -63,7 +63,7 @@ def read_eia923_fuel_receipts(year):
     if not os.path.exists(expected_923_folder):
         print('Downloading EIA-923 files')
         eia923_download(year=year, save_path=expected_923_folder)
-        
+
         eia923_path, eia923_name = find_file_in_folder(
             folder_path=expected_923_folder,
             file_pattern_match=['2_3_4_5'],

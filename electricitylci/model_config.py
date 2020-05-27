@@ -88,7 +88,7 @@ def check_model_specs():
             f"aggregation - {model_specs['regional_aggregation']}"
         )
         raise
-        
+
     if model_specs["regional_aggregation"]!="eGRID" and model_specs["EPA_eGRID_trading"]:
         raise ConfigurationError(
             "EPA trading method is not compatible with selected regional "

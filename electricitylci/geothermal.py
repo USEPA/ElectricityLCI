@@ -18,12 +18,12 @@ def generate_upstream_geo(year):
     are from an NETL-developed model that takes into account the insoluble gases
     present in the geothermal fluid and the type of geothermal power to develop
     emission factors for those gases.
-    
+
     Parameters
     ----------
     year: int
         Year of EIA-923 fuel data to use.
-    
+
     Returns
     ----------
     dataframe

@@ -165,7 +165,7 @@ def create_generation_mix_process_df_from_model_generation_data(
         #US plants in NBSO and as a result, there is a generation mix for the US
         #side and the routines below generate one for the Canada side. This manifests
         #itself as a generation mix that pulls 2 MWh for every 1MWh generated. For
-        #simplicity and because NBSO is an imported BA, we'll remove the US-side 
+        #simplicity and because NBSO is an imported BA, we'll remove the US-side
         #and assume it's covered under the Canadian imports.
         subregion_fuel_gen=subregion_fuel_gen.loc[subregion_fuel_gen["Subregion"]!="New Brunswick System Operator",:]
     canada_list=[]
@@ -245,7 +245,7 @@ def create_generation_mix_process_df_from_egrid_ref_data(subregion=None):
     generation_data : DataFrame
         [description]
     subregion : str
-        Description of single region or group of regions. 
+        Description of single region or group of regions.
 
     Returns
     -------
@@ -361,7 +361,7 @@ def olcaschema_genmix(database, gen_dict, subregion=None):
                     }
                 exchange(ra, exchanges_list)
                 # Writing final file
-        
+
         final = process_table_creation_genmix(reg, exchanges_list)
 
         # print(reg +' Process Created')

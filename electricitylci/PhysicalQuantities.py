@@ -479,7 +479,7 @@ class PhysicalUnit:
             return PhysicalUnit(self.names+other.names,
                                 self.factor*other.factor,
                                 [sum(x) for x in zip(self.powers,other.powers)])
-                                    
+
         else:
             return PhysicalUnit(self.names+{str(other): 1},
                                 self.factor*other,

@@ -203,10 +203,10 @@ def _flow(dict_d: dict, flowprop: olca.Ref, writer: pack.Writer,
     uid = _val(dict_d, 'id')
     name = _val(dict_d, 'name')
     orig_uid=None
-    #Checking for technosphere or third party flows that were mapped in 
+    #Checking for technosphere or third party flows that were mapped in
     #an openLCA model, but these flows must be created in the json-ld here.
-    if (isinstance(uid,str) 
-        and uid !='' 
+    if (isinstance(uid,str)
+        and uid !=''
         and (
                 "technosphere" in _val(dict_d,'category').lower()
                 or "third party" in _val(dict_d,'category').lower()
@@ -215,7 +215,7 @@ def _flow(dict_d: dict, flowprop: olca.Ref, writer: pack.Writer,
         ):
             orig_uid=uid
             uid=''
-        
+
     if isinstance(uid, str) and uid != '':
         return olca.ref(olca.Flow, uid, name)
     category_path = _val(dict_d, 'category', default='')

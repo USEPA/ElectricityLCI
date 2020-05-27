@@ -6,17 +6,17 @@ from electricitylci.eia923_generation import eia923_download_extract
 
 def generate_upstream_solarthermal(year):
     """
-    Generate the annual emissions for solar thermal plant construction for each 
+    Generate the annual emissions for solar thermal plant construction for each
     plant in EIA923. The emissions inventory file has already allocated the
-    total emissions to construct the entire power plant over its assumed 30 year 
-    life. So the emissions returned below represent 1/30th of the total site 
+    total emissions to construct the entire power plant over its assumed 30 year
+    life. So the emissions returned below represent 1/30th of the total site
     construction emissions.
-    
+
     Parameters
     ----------
     year: int
         Year of EIA-923 fuel data to use.
-    
+
     Returns
     ----------
     dataframe

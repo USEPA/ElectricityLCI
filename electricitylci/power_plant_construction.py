@@ -14,27 +14,27 @@ import re
 def generate_power_plant_construction(year):
     """This function uses an NETL study that generated the life cycle inventory
     for power plant construction using an economic input output model. Two types
-    of plants are considered: sub-critical pulverized coal and a natural gas 
+    of plants are considered: sub-critical pulverized coal and a natural gas
     combined cycle plant. The inventory provided by the study is for an entire plant.
     This inventory is divided by the net generation capacity of those plants to
     place the inventory on the basis of a MW and then divided by an assumed plant
     life of 30 years, which is a conservative assumption considering the lifetime
-    of these plants is typically much longer. These per year/per MW impacts 
+    of these plants is typically much longer. These per year/per MW impacts
     are mapped to the fossil power generators in the U.S. where they are scaled
     by the net generating capacity of the plants (as provided by EIA data). These
     impacts are eventually divided by the generation for the year in MWh to provide
     the construction impacts on the basis of the functional unit.
-    
+
     Parameters
     ----------
     year : int
         Year of EIA data to use to provide net generating capacity
-    
+
     Returns
     -------
     dataframe
-        This dataframe provides construction inventory for each power plant 
-        reporting to EIA. 
+        This dataframe provides construction inventory for each power plant
+        reporting to EIA.
     """
     gen_df = eia860_generator_info(year)
     gen_columns=[
@@ -64,8 +64,8 @@ def generate_power_plant_construction(year):
             'soil/industrial':"emission/soil",
             'soil/unspecified/2,4':"emission/soil",
             'water/unspecified/2,4':"emission/water",
-            '/':"", 
-            'resource/groundwater':"resource", 
+            '/':"",
+            'resource/groundwater':"resource",
             'resource/surface water':"resource",
             'water/surface water':"resource"
             }

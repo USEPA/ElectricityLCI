@@ -12,8 +12,8 @@ import logging
 import yaml
 import time
 from electricitylci.process_dictionary_writer import (
-        exchangeDqsystem, 
-        processDqsystem, 
+        exchangeDqsystem,
+        processDqsystem,
         process_doc_creation,
         process_description_creation
 )
@@ -247,17 +247,17 @@ def olcaschema_genupstream_processes(merged):
     """
     Generate olca-schema dictionaries for upstream processes for the inventory
     provided in the given dataframe.
-    
+
     Parameters
     ----------
     merged: dataframe
         Dataframe containing the inventory for upstream processes used by
         eletricity generation.
-    
+
     Returns
     ----------
     dictionary
-        Dictionary containing all of the unit processes to be written to 
+        Dictionary containing all of the unit processes to be written to
         JSON-LD for import to openLCA
     """
     #    mapped_column_dict={

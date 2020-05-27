@@ -8,18 +8,18 @@ from electricitylci.eia923_generation import eia923_download_extract
 
 def generate_upstream_wind(year):
     """
-    Generate the annual emissions for wind farm construction for each 
+    Generate the annual emissions for wind farm construction for each
     plant in EIA923. The emissions inventory file has already allocated the
-    total emissions to construct the turbines and balance of system for the 
-    entire wind farm over the assumed 20 year life of the panels. So the 
-    emissions returned below represent 1/20th of the total site construction 
+    total emissions to construct the turbines and balance of system for the
+    entire wind farm over the assumed 20 year life of the panels. So the
+    emissions returned below represent 1/20th of the total site construction
     emissions.
-    
+
     Parameters
     ----------
     year: int
         Year of EIA-923 fuel data to use.
-    
+
     Returns
     ----------
     dataframe

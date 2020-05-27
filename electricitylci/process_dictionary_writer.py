@@ -31,9 +31,9 @@ with open(join(data_dir, "process_metadata.yml")) as f:
     metadata=yaml.safe_load(f)
 
 
-#Wanted to be able to reuse sections of the metadata in other subsections.
-#in order to do this with yaml, we need to be able to process lists of lists.
-#process_metadata makes this happen.
+# Wanted to be able to reuse sections of the metadata in other subsections.
+# in order to do this with yaml, we need to be able to process lists of lists.
+# process_metadata makes this happen.
 def process_metadata(entry):
     if isinstance(entry,str):
         return entry
@@ -41,7 +41,7 @@ def process_metadata(entry):
         try:
             total_string = ""
             for x in entry:
-                if isinstance(x,str): 
+                if isinstance(x,str):
                     total_string=total_string+x+"\n"
                 elif isinstance(x,list):
                     if len(x)==1:
@@ -52,7 +52,7 @@ def process_metadata(entry):
             return total_string
         except ValueError:
             pass
-        
+
     elif isinstance(entry,dict):
         for key in entry.keys():
             entry[key] = process_metadata(entry[key])
@@ -60,9 +60,9 @@ def process_metadata(entry):
 
 for key in metadata.keys():
     metadata[key]=process_metadata(metadata[key])
-#metadata = pd.read_csv(join(data_dir, "metadata.csv"))
+# metadata = pd.read_csv(join(data_dir, "metadata.csv"))
 # Use only first row of metadata for all processes for now
-#metadata = metadata.iloc[0,]
+# metadata = metadata.iloc[0,]
 
 # Read in process location uuids
 location_UUID = pd.read_csv(join(data_dir, "location_UUIDs.csv"))
@@ -421,11 +421,12 @@ def process_description_creation(process_type="fossil"):
         process_type="default"
         desc_string=metadata[process_type][key]
     return desc_string
-    
+
 
 if __name__=="__main__":
     test=process_doc_creation(process_type="oil_upstream")
     print(test)
+
 
 def exchangeDqsystem():
     ar = dict()

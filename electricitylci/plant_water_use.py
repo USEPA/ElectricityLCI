@@ -13,7 +13,7 @@ def generate_plant_water_use(year):
     discharge flows for power plants. The underlying data represents an analysis
     of water use in 2016. The water intensities are used to generate annual
     amounts of water use using generation data from the given year.
-    
+
     Parameters
     ----------
     year : int
@@ -113,9 +113,9 @@ def generate_plant_water_use(year):
         inplace=True,
     )
     water_df_group["Plant Id"] = water_df_group["Plant Id"].astype(int)
-    
+
     #While the analysis includes water intensities, these intensities are
-    #at the boiler level, on a monthly basis, so we calculate new ones based 
+    #at the boiler level, on a monthly basis, so we calculate new ones based
     #on the annual withdrawal and electricity generated.
     water_df_group["withdrawal_intensity"] = (
         water_df_group["annual_withdrawal"]

@@ -6,17 +6,17 @@ from electricitylci.eia923_generation import eia923_download_extract
 
 def generate_upstream_solar(year):
     """
-    Generate the annual emissions for solar panel construction for each 
+    Generate the annual emissions for solar panel construction for each
     plant in EIA923. The emissions inventory file has already allocated the
     total emissions to construct panels and balance of system for the entire
     power plant over the assumed 30 year life of the panels. So the emissions
     returned below represent 1/30th of the total site construction emissions.
-    
+
     Parameters
     ----------
     year: int
         Year of EIA-923 fuel data to use.
-    
+
     Returns
     ----------
     dataframe
@@ -81,7 +81,7 @@ def generate_upstream_solar(year):
     solar_upstream["Unit"]="kg"
     solar_upstream["input"]=False
     #solar_upstream['Compartment']=solar_upstream['Compartment'].str.lower()
-    
+
     return solar_upstream
 
 if __name__=='__main__':
