@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+"""Add docstring."""
+
 import pandas as pd
 from electricitylci.globals import output_dir, data_dir
 from electricitylci.coal_upstream import (
@@ -246,8 +248,9 @@ def _exchange_table_creation_output(data):
 
 def olcaschema_genupstream_processes(merged):
     """
-    Generate olca-schema dictionaries for upstream processes for the inventory
-    provided in the given dataframe.
+    Generate olca-schema dictionaries.
+    
+    For upstream processes for the inventory provided in the given dataframe.
 
     Parameters
     ----------

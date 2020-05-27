@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 # -*- coding: utf-8 -*-
+
+"""Add docstring in public module."""
+
 import pandas as pd
 from electricitylci.globals import output_dir, data_dir
 import numpy as np
@@ -8,12 +11,13 @@ from electricitylci.eia923_generation import eia923_download_extract
 
 def generate_upstream_wind(year):
     """
-    Generate the annual emissions for wind farm construction for each
-    plant in EIA923. The emissions inventory file has already allocated the
-    total emissions to construct the turbines and balance of system for the
-    entire wind farm over the assumed 20 year life of the panels. So the
-    emissions returned below represent 1/20th of the total site construction
-    emissions.
+    Generate the annual emissions.
+    
+    For wind farm construction for each plant in EIA923. The emissions inventory
+    file has already allocated the total emissions to construct the turbines and
+    balance of system for the entire wind farm over the assumed 20 year life of
+    the panels. So the emissions returned below represent 1/20th of the total
+    site construction emissions.
 
     Parameters
     ----------
