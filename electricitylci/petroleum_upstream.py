@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+
+"""Add docstring."""
+
+
 import pandas as pd
 from electricitylci.coal_upstream import read_eia923_fuel_receipts
 from os.path import join
@@ -12,8 +16,10 @@ module_logger=logging.getLogger("petroleum_upstream.py")
 
 def generate_petroleum_upstream(year):
     """
-    Generate the annual petroleum extraction, transport, and refining emissions
-    (in kg) for each plant in EIA923.
+    Generate annual.
+    
+    Petroleum extraction, transport, and refining emissions (in kg) for each
+    plant in EIA923.
 
     Parameters
     ----------

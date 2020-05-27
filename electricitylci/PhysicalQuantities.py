@@ -10,6 +10,9 @@
 # (The NumberDict class is included and Scientific.N is
 # replaced by numpy. Modifications by H. P. Langtangen
 # <hpl@simula.no>. To test: py.test/nosetests -s -v PhysicalQuantities.py)
+
+"""Add docstring."""
+
 from functools import reduce
 import numpy as N
 import re
@@ -73,9 +76,8 @@ cd   candela
 
 
 class NumberDict(dict):
-
     """
-    Dictionary storing numerical values
+    Dictionary storing numerical values.
 
     Constructor: NumberDict()
 
@@ -87,17 +89,20 @@ class NumberDict(dict):
     """
 
     def __getitem__(self, item):
+        """Add docstring."""
         try:
             return dict.__getitem__(self, item)
         except KeyError:
             return 0
 
     def __coerce__(self, other):
+        """Add docstring."""
         if type(other) == type({}):
             other = NumberDict(other)
         return self, other
 
     def __add__(self, other):
+        """Add docstring."""
         sum_dict = NumberDict()
         for key in self.keys():
             sum_dict[key] = self[key]
@@ -106,6 +111,7 @@ class NumberDict(dict):
         return sum_dict
 
     def __sub__(self, other):
+        """Add docstring."""
         sum_dict = NumberDict()
         for key in self.keys():
             sum_dict[key] = self[key]
@@ -114,6 +120,7 @@ class NumberDict(dict):
         return sum_dict
 
     def __mul__(self, other):
+        """Add docstring."""
         new = NumberDict()
         for key in self.keys():
             new[key] = other*self[key]
@@ -121,6 +128,7 @@ class NumberDict(dict):
     __rmul__ = __mul__
 
     def __div__(self, other):
+        """Add docstring."""
         new = NumberDict()
         for key in self.keys():
             new[key] = self[key]/other
@@ -132,17 +140,15 @@ class NumberDict(dict):
 
 
 class PhysicalQuantity:
-
     """
-    Physical quantity with units
+    Physical quantity with units.
 
-    PhysicalQuantity instances allow addition, subtraction,
-    multiplication, and division with each other as well as
-    multiplication, division, and exponentiation with numbers.
-    Addition and subtraction check that the units of the two operands
-    are compatible and return the result in the units of the first
-    operand. A limited set of mathematical functions (from module
-    Numeric) is applicable as well:
+    Physical Quantity instances allow addition, subtraction, multiplication, and
+    division with each other as well as multiplication, division, and
+    exponentiation with numbers. Addition and subtraction check that the units
+    of the two operands are compatible and return the result in the units of the
+    first operand. A limited set of mathematical functions (from module Numeric)
+    is applicable as well:
 
       - sqrt: equivalent to exponentiation with 0.5.
 
@@ -220,9 +226,11 @@ class PhysicalQuantity:
     _number = re.compile('[+-]?[0-9]+(\\.[0-9]*)?([eE][+-]?[0-9]+)?')
 
     def __str__(self):
+        """Add docstring."""
         return str(self.value) + ' ' + self.unit.name()
 
     def __repr__(self):
+        """Add docstring."""
         return (self.__class__.__name__ + '(' + str(self.value) + ',' +
                 self.unit.name() + ')')
 
@@ -234,21 +242,26 @@ class PhysicalQuantity:
         return self.__class__(new_value, self.unit)
 
     def __add__(self, other):
+        """Add docstring."""
         return self._sum(other, 1, 1)
 
     __radd__ = __add__
 
     def __sub__(self, other):
+        """Add docstring."""
         return self._sum(other, 1, -1)
 
     def __rsub__(self, other):
+        """Add docstring."""
         return self._sum(other, -1, 1)
 
     def __cmp__(self, other):
+        """Add docstring."""
         diff = self._sum(other, 1, -1)
         return (diff.value > 0) - (diff.value<0)  # cmp(diff.value, 0)
 
     def __mul__(self, other):
+        """Add docstring."""
         if not isPhysicalQuantity(other):
             return self.__class__(self.value*other, self.unit)
         value = self.value*other.value
@@ -261,6 +274,7 @@ class PhysicalQuantity:
     __rmul__ = __mul__
 
     def __div__(self, other):
+        """Add docstring."""
         if not isPhysicalQuantity(other):
             return self.__class__(self.value/other, self.unit)
         value = self.value/other.value
@@ -273,6 +287,7 @@ class PhysicalQuantity:
     __truediv__ = __div__
 
     def __rdiv__(self, other):
+        """Add docstring."""
         if not isPhysicalQuantity(other):
             return self.__class__(other/self.value, pow(self.unit, -1))
         value = other.value/self.value
@@ -283,30 +298,37 @@ class PhysicalQuantity:
             return self.__class__(value, unit)
 
     def __pow__(self, other):
+        """Add docstring."""
         if isPhysicalQuantity(other):
             raise TypeError('Exponents must be dimensionless')
         return self.__class__(pow(self.value, other), pow(self.unit, other))
 
     def __rpow__(self, other):
+        """Add docstring."""
         raise TypeError('Exponents must be dimensionless')
 
     def __abs__(self):
+        """Add docstring."""
         return self.__class__(abs(self.value), self.unit)
 
     def __pos__(self):
+        """Add docstring."""
         return self
 
     def __neg__(self):
+        """Add docstring."""
         return self.__class__(-self.value, self.unit)
 
     def __nonzero__(self):
+        """Add docstring."""
         return self.value != 0
 
     def convertToUnit(self, unit):
         """
-        Change the unit and adjust the value such that
-        the combination is equivalent to the original one. The new unit
-        must be compatible with the previous unit of the object.
+        Change the unit and adjust the value.
+        
+        Such that the combination is equivalent to the original one. The new
+        unit must be compatible with the previous unit of the object.
 
         @param unit: a unit
         @type unit: C{str}
@@ -406,9 +428,11 @@ class PhysicalQuantity:
         return self.unit.name()
 
     def sqrt(self):
+        """Add docstring."""
         return pow(self, 0.5)
 
     def sin(self):
+        """Add docstring."""
         if self.unit.isAngle():
             return N.sin(self.value * \
                              self.unit.conversionFactorTo(_unit_table['rad']))
@@ -416,6 +440,7 @@ class PhysicalQuantity:
             raise TypeError('Argument of sin must be an angle')
 
     def cos(self):
+        """Add docstring."""
         if self.unit.isAngle():
             return N.cos(self.value * \
                              self.unit.conversionFactorTo(_unit_table['rad']))
@@ -423,6 +448,7 @@ class PhysicalQuantity:
             raise TypeError('Argument of cos must be an angle')
 
     def tan(self):
+        """Add docstring."""
         if self.unit.isAngle():
             return N.tan(self.value * \
                              self.unit.conversionFactorTo(_unit_table['rad']))
@@ -431,7 +457,6 @@ class PhysicalQuantity:
 
 
 class PhysicalUnit:
-
     """
     Physical unit
 
@@ -465,16 +490,19 @@ class PhysicalUnit:
         self.powers = powers
 
     def __repr__(self):
+        """Add docstring."""
         return '<PhysicalUnit ' + self.name() + '>'
 
     __str__ = __repr__
 
     def __cmp__(self, other):
+        """Add docstring."""
         if self.powers != other.powers:
             raise TypeError('Incompatible units')
         return (self.factor > other.factor) - (self.factor < other.factor)  # cmp(self.factor, other.factor)
 
     def __mul__(self, other):
+        """Add docstring."""
         if self.offset != 0 or (isPhysicalUnit (other) and other.offset != 0):
             raise TypeError("cannot multiply units with non-zero offset")
         if isPhysicalUnit(other):
@@ -491,6 +519,7 @@ class PhysicalUnit:
     __rmul__ = __mul__
 
     def __div__(self, other):
+        """Add docstring."""
         if self.offset != 0 or (isPhysicalUnit (other) and other.offset != 0):
             raise TypeError("cannot divide units with non-zero offset")
         if isPhysicalUnit(other):
@@ -504,6 +533,7 @@ class PhysicalUnit:
     __truediv__ = __div__
 
     def __rdiv__(self, other):
+        """Add docstring."""
         if self.offset != 0 or (isPhysicalUnit (other) and other.offset != 0):
             raise TypeError("cannot divide units with non-zero offset")
         if isPhysicalUnit(other):
@@ -516,6 +546,7 @@ class PhysicalUnit:
                                 [-x for x in self.powers])
 
     def __pow__(self, other):
+        """Add docstring."""
         if self.offset != 0:
             raise TypeError("cannot exponentiate units with non-zero offset")
         if isinstance(other, int):
@@ -602,17 +633,21 @@ class PhysicalUnit:
         return self.powers == other.powers
 
     def isDimensionless(self):
+        """Add docstring."""
         return not reduce(lambda a,b: a or b, self.powers)
 
     def isAngle(self):
+        """Add docstring."""
         return self.powers[7] == 1 and \
                reduce(lambda a,b: a + b, self.powers) == 1
 
     def setName(self, name):
+        """Add docstring."""
         self.names = NumberDict()
         self.names[name] = 1
 
     def name(self):
+        """Add docstring."""
         num = ''
         denom = ''
         for unit in self.names.keys():
@@ -682,6 +717,7 @@ def _convertValue (value, src_unit, target_unit):
 
 
 def convert(value, src_unit,target_unit):
+    """Add docstring."""
     return _convertValue(value,_findUnit(src_unit),_findUnit(target_unit))
 # SI unit definitions
 
@@ -917,6 +953,7 @@ def description():
     return s
 
 def test_PQ():
+    """Add docstring."""
     PQ = PhysicalQuantity
     v = PQ('120 yd/min')   # velocity: yards per minute
     t = PQ('1 h')          # time: hours
@@ -934,6 +971,7 @@ def test_PQ():
 
 
 def demo():
+    """Add docstring."""
     # Some demonstration code. Run with "python -i PhysicalQuantities.py"
     # to have this available.
     l = PhysicalQuantity(10., 'm')

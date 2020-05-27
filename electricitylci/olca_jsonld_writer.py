@@ -1,3 +1,5 @@
+"""Add docstring."""
+
 import datetime
 import pytz
 import logging as log
@@ -11,9 +13,7 @@ import olca.pack as pack
 
 
 def write(processes: dict, file_path: str):
-    """ Write the given process dictionary to a olca-schema zip file with the
-        given path.
-    """
+    """Write the given process dictionary to a olca-schema zip file with the given path."""
     with pack.Writer(file_path) as writer:
         list_of_dicts=list()
         created_ids = set()
@@ -114,7 +114,7 @@ def _exchange(dict_d: dict, writer: pack.Writer,
 
 
 def _unit(unit_name: str) -> Optional[olca.Ref]:
-    """ Get the ID of the openLCA reference unit with the given name. """
+    """Get the ID of the openLCA reference unit with the given name."""
     ref_id = None
     if isinstance(unit_name,dict):
         try:
@@ -151,9 +151,7 @@ def _unit(unit_name: str) -> Optional[olca.Ref]:
 
 
 def _flow_property(unit_name: str) -> Optional[olca.Ref]:
-    """ Get the ID of the openLCA reference flow property for the unit with
-        the given name.
-    """
+    """Get the ID of the openLCA reference flow property for the unit with the given name."""
     if isinstance(unit_name,dict):
         try:
             unit_name=unit_name["name"]
@@ -395,8 +393,12 @@ def _isnum(n) -> bool:
 
 
 def _format_dq_entry(entry: str) -> Optional[str]:
-    """ The data quality entries may contain floating point numbers which are
-        converted to integer numbers in this function."""
+    """
+    Data quality entries.
+    
+    May contain floating point numbers which are converted to integer numbers in
+    this function.
+    """
     if not isinstance(entry, str):
         return None
     e = entry.strip()
@@ -412,8 +414,11 @@ def _format_dq_entry(entry: str) -> Optional[str]:
 
 
 def _format_date(entry: str) -> Optional[str]:
-    """ Date entries currently have the format `month/day/year`. This function
-        converts such entries into the ISO format year-month-day. """
+    """
+    Date entries currently have the format `month/day/year`.
+    
+    This function converts such entries into the ISO format year-month-day.
+    """
     if not isinstance(entry, str):
         return None
     parts = entry.split('/')
