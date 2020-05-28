@@ -7,11 +7,8 @@
 # This method ensures that all installed packages are in the requirements file, which
 # includes packages that are sub-requirements of other packages.
 
-#---------------------------------------------------------------------------------------#
-# All of these packages appear to be necessary for both Windows and Linux environments. #
-#---------------------------------------------------------------------------------------#
-
 git+git://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List@v1.0.2#egg=fedelemflowlist
+git+git://github.com/USEPA/standardizedinventories@v0.9.2#egg=StEWI
 numpy>=1.1        # NumPy is the fundamental package for array computing with Python.
 pandas>=0.24      # Powerful Python data analysis toolkit.
 olca-ipc>=0.0.6   # A Python package for calling openLCA functions from Python.
