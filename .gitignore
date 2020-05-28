@@ -2,7 +2,9 @@
 *.p
 *.pk
 electricitylci/__pycache__/
+__pycache__/
 *.zip
+build/
 /*.csv
 # IDE files
 .idea/
