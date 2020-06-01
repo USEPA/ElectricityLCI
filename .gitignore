@@ -22,6 +22,7 @@ ElectricityLCI.pyproj
 
 # downloaded excel files and csv transformations
 electricitylci/data/**/*.*
+!electricitylci/data/petroleum_inventory/*.*
 .spyproject/codestyle.ini
 .spyproject/encoding.ini
 .spyproject/vcs.ini
