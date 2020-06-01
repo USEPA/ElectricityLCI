@@ -4,7 +4,7 @@ setup(
     name='ElectricityLCI',
     version='1.0alpha',
     packages=['electricitylci'],
-    package_data={'electricitylci': ["data/*.*", "output/*.*"]},
+    package_data={'electricitylci': ["data/*.*", "output/*.*", "data/EFs/*.*", "data/petroleum_inventory/*.*","modelconfig/*.yml]},
     url='https://github.com/USEPA/ElectricityLCI',
     license='CC0',
     author='Wesley Ingwersen',
