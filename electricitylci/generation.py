@@ -670,7 +670,7 @@ def aggregate_data(total_db, subregion="BA"):
                 try:
                     result = (np.exp(mean), 0, np.exp(upper_interval))
                 except ArithmeticError or ValueError or FloatingPointError:
-                    print("Problem with result")
+                    module_logger.debug("Unable to calculate geometric_mean")
                     return None
                 if result is not None:
                     return result
