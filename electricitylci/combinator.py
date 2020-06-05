@@ -113,7 +113,8 @@ def fill_nans(df, key_column="FacilityID", target_columns=[], dropna=True):
         df["State"].isna(), "eGRID_ID"
     ].map(plant_ba["State"])
     if dropna:
-        df.dropna(subset=confirmed_target, inplace=True)
+        df.dropna(subset=confirmed_target, inplace=True, how="all")
+        df.dropna(subset=["Electricity"],inplace=True)
     return df
 
 
