@@ -2,17 +2,17 @@ from distutils.core import setup
 
 setup(
     name='ElectricityLCI',
-    version='1.0alpha',
+    version='1.0',
     packages=['electricitylci'],
     package_data={'electricitylci': ["data/*.*", "output/*.*"]},
     url='https://github.com/USEPA/ElectricityLCI',
     license='CC0',
-    author='Wesley Ingwersen',
+    author='Matt Jamieson, Wesley Ingwersen, Greg Schively, TJ Ghosh, Ben Young, Troy Hottle',
     author_email='ingwersen.wesley@epa.gov',
     description='Create life cycle inventory data for regionalized electricity generation, mix of generation, mix of consumption, and distribution to the end-user in the United States.',
     install_requires=[
         'fedelemflowlist @ git+git://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List@v1.0.2#egg=fedelemflowlist',
-        'StEWI @ git+git://github.com/USEPA/standardizedinventories@v0.9.2#egg=StEWI',
+        'StEWI @ git+git://github.com/USEPA/standardizedinventories@v0.9.3#egg=StEWI',
         'numpy>=1.14',
         'pandas>=0.24',
         'olca-ipc>=0.0.6',
