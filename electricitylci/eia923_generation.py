@@ -196,10 +196,7 @@ def eia923_download_extract(
             )
 
         else:
-            print(
-                "Loading data from previously downloaded excel file,",
-                " how did the csv file get deleted?",
-            )
+
             eia923_path, eia923_name = find_file_in_folder(
                 folder_path=expected_923_folder,
                 file_pattern_match=["2_3_4_5", "xlsx"],
@@ -481,10 +478,7 @@ def eia923_generation_and_fuel(year):
                 low_memory=False
             )
         else:
-            print(
-                "Loading data from previously downloaded excel file,",
-                " how did the csv file get deleted?",
-            )
+
             eia923_path, eia923_name = find_file_in_folder(
                 folder_path=expected_923_folder,
                 file_pattern_match=["2_3_4_5", "xlsx"],
@@ -543,10 +537,7 @@ def eia923_boiler_fuel(year):
                 low_memory=False
             )
         else:
-            print(
-                "Loading data from previously downloaded excel file,",
-                " how did the csv file get deleted?",
-            )
+
             eia923_path, eia923_name = find_file_in_folder(
                 folder_path=expected_923_folder,
                 file_pattern_match=["2_3_4_5", "xlsx"],
@@ -605,10 +596,7 @@ def eia923_sched8_aec(year):
                 low_memory=False
             )
         else:
-            print(
-                "Loading data from previously downloaded excel file,",
-                " how did the csv file get deleted?",
-            )
+
             eia923_path, eia923_name = find_file_in_folder(
                 folder_path=expected_923_folder,
                 file_pattern_match=["Schedule_8", "xlsx"],
