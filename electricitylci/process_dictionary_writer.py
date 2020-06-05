@@ -1,6 +1,9 @@
 # Data filtered from stewi and Stewi combo is written ina dictionary in this script.
 # The dictionary is basaed on the OLCA schema
 # This dictionary can be used for writing json files or templates
+
+"""Add docstring."""
+
 import math
 import time
 import pandas as pd
@@ -31,17 +34,18 @@ with open(join(data_dir, "process_metadata.yml")) as f:
     metadata=yaml.safe_load(f)
 
 
-#Wanted to be able to reuse sections of the metadata in other subsections.
-#in order to do this with yaml, we need to be able to process lists of lists.
-#process_metadata makes this happen.
+# Wanted to be able to reuse sections of the metadata in other subsections.
+# in order to do this with yaml, we need to be able to process lists of lists.
+# process_metadata makes this happen.
 def process_metadata(entry):
+    """Add docstring."""
     if isinstance(entry,str):
         return entry
     elif isinstance(entry,list):
         try:
             total_string = ""
             for x in entry:
-                if isinstance(x,str): 
+                if isinstance(x,str):
                     total_string=total_string+x+"\n"
                 elif isinstance(x,list):
                     if len(x)==1:
@@ -52,23 +56,25 @@ def process_metadata(entry):
             return total_string
         except ValueError:
             pass
-        
+
     elif isinstance(entry,dict):
         for key in entry.keys():
             entry[key] = process_metadata(entry[key])
         return entry
 
+
 for key in metadata.keys():
     metadata[key]=process_metadata(metadata[key])
-#metadata = pd.read_csv(join(data_dir, "metadata.csv"))
+# metadata = pd.read_csv(join(data_dir, "metadata.csv"))
 # Use only first row of metadata for all processes for now
-#metadata = metadata.iloc[0,]
+# metadata = metadata.iloc[0,]
 
 # Read in process location uuids
 location_UUID = pd.read_csv(join(data_dir, "location_UUIDs.csv"))
 
 
 def lookup_location_uuid(location):
+    """Add docstring."""
     try:
         uuid = location_UUID.loc[location_UUID["NAME"] == location][
             "REF_ID"
@@ -116,11 +122,13 @@ electricity_at_user_flow = {
 
 
 def exchange(flw, exchanges_list):
+    """Add docstring."""
     exchanges_list.append(flw)
     return exchanges_list
 
 
 def exchange_table_creation_ref(data):
+    """Add docstring."""
     region = data["Subregion"].iloc[0]
     ar = dict()
     ar["internalId"] = ""
@@ -137,7 +145,9 @@ def exchange_table_creation_ref(data):
     ar["unit"] = unit("MWh")
     return ar
 
+
 def exchange_table_creation_ref_cons(data):
+    """Add docstring."""
     ar = dict()
     ar["internalId"] = ""
     ar["@type"] = "Exchange"
@@ -153,7 +163,9 @@ def exchange_table_creation_ref_cons(data):
     ar["unit"] = unit("MWh")
     return ar
 
+
 def gen_process_ref(fuel, reg):
+    """Add docstring."""
     processref = dict()
     processref["name"] = (
         generation_name_parts["Base name"]
@@ -175,6 +187,7 @@ def gen_process_ref(fuel, reg):
 
 
 def con_process_ref(reg, ref_type="generation"):
+    """Add docstring."""
     # If ref is to a consunmption mix (for a distribution process), use consumption mix name
     # If not, if the region is an egrid regions, its a generation mix process; otherwise its a surplus pool process
     if ref_type == "consumption":
@@ -195,6 +208,7 @@ def con_process_ref(reg, ref_type="generation"):
 
 
 def exchange_table_creation_input_genmix(database, fuelname):
+    """Add docstring."""
     region = database["Subregion"].iloc[0]
     ar = dict()
     ar["internalId"] = ""
@@ -238,7 +252,9 @@ def exchange_table_creation_input_con_mix(
     # ar['location'] = location(loc)
     return ar
 
+
 def process_table_creation_gen(fuelname, exchanges_list, region):
+    """Add docstring."""
     ar = dict()
     ar["@type"] = "Process"
     ar["allocationFactors"] = ""
@@ -270,6 +286,7 @@ def process_table_creation_gen(fuelname, exchanges_list, region):
 
 
 def process_table_creation_genmix(region, exchanges_list):
+    """Add docstring."""
     ar = dict()
     ar["@type"] = "Process"
     ar["allocationFactors"] = ""
@@ -303,11 +320,13 @@ def process_table_creation_genmix(region, exchanges_list):
 
 # Will be used later
 def location(region):
+    """Add docstring."""
     ar = dict()
     ar["id"] = lookup_location_uuid(region)
     ar["type"] = "Location"
     ar["name"] = region
     return ar
+
 
 OLCA_TO_METADATA={
         "timeDescription":None,
@@ -355,7 +374,10 @@ VALID_FUEL_CATS=[
         "coal_transport_upstream",
         "construction_upstream"
 ]
+
+
 def process_doc_creation(process_type="default"):
+    """Add docstring."""
     try:
         assert process_type in VALID_FUEL_CATS, f"Invalid process_type ({process_type}), using default"
     except AssertionError:
@@ -396,7 +418,9 @@ def process_doc_creation(process_type="default"):
     ar["dqEntry"] = "(5;5)"
     return ar
 
+
 def process_description_creation(process_type="fossil"):
+    """Add docstring."""
     try:
         assert process_type in VALID_FUEL_CATS, f"Invalid process_type ({process_type}), using default"
     except AssertionError:
@@ -421,13 +445,15 @@ def process_description_creation(process_type="fossil"):
         process_type="default"
         desc_string=metadata[process_type][key]
     return desc_string
-    
+
 
 if __name__=="__main__":
     test=process_doc_creation(process_type="oil_upstream")
     print(test)
 
+
 def exchangeDqsystem():
+    """Add docstring."""
     ar = dict()
     ar["@type"] = "DQSystem"
     ar["@id"] = "d13b2bc4-5e84-4cc8-a6be-9101ebb252ff"
@@ -436,6 +462,7 @@ def exchangeDqsystem():
 
 
 def processDqsystem():
+    """Add docstring."""
     ar = dict()
     ar["@type"] = "DQSystem"
     ar["@id"] = "70bf370f-9912-4ec1-baa3-fbd4eaf85a10"
@@ -444,6 +471,7 @@ def processDqsystem():
 
 
 def exchange_table_creation_input(data):
+    """Add docstring."""
     year = data["Year"].iloc[0]
     ar = dict()
     ar["internalId"] = ""
@@ -471,6 +499,7 @@ def exchange_table_creation_input(data):
 
 
 def unit(unt):
+    """Add docstring."""
     ar = dict()
     ar["internalId"] = ""
     ar["@type"] = "Unit"
@@ -479,6 +508,7 @@ def unit(unt):
 
 
 def exchange_table_creation_output(data):
+    """Add docstring."""
     year = data["Year"].iloc[0]
     source = data["Source"].iloc[0]
     ar = dict()
@@ -521,7 +551,7 @@ def exchange_table_creation_output(data):
 
 
 def uncertainty_table_creation(data):
-
+    """Add docstring."""
     ar = dict()
     #    print(data["GeomMean"].iloc[0] + ' - ' +data["GeomSD"].iloc[0])
     if data["GeomMean"].iloc[0] is not None:
@@ -545,6 +575,7 @@ def uncertainty_table_creation(data):
 
 
 def flow_table_creation(data):
+    """Add docstring."""
     ar = dict()
     flowtype = data["FlowType"].iloc[0]
     ar["flowType"] = flowtype
@@ -583,6 +614,7 @@ def flow_table_creation(data):
 
 
 def ref_exchange_creator(electricity_flow=electricity_at_grid_flow):
+    """Add docstring."""
     ar = dict()
     ar["internalId"] = ""
     ar["@type"] = "Exchange"
@@ -601,6 +633,7 @@ def ref_exchange_creator(electricity_flow=electricity_at_grid_flow):
 
 
 def process_table_creation_con_mix(region, exchanges_list):
+    """Add docstring."""
     ar = dict()
     ar["@type"] = "Process"
     ar["allocationFactors"] = ""
@@ -623,6 +656,7 @@ def process_table_creation_con_mix(region, exchanges_list):
 
 
 def process_table_creation_surplus(region, exchanges_list):
+    """Add docstring."""
     ar = dict()
     ar["@type"] = "Process"
     ar["allocationFactors"] = ""
@@ -641,6 +675,7 @@ def process_table_creation_surplus(region, exchanges_list):
 
 
 def process_table_creation_distribution(region, exchanges_list):
+    """Add docstring."""
     ar = dict()
     ar["@type"] = "Process"
     ar["allocationFactors"] = ""

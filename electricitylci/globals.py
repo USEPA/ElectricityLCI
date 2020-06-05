@@ -2,9 +2,12 @@ import os
 import glob
 
 set_model_name_with_stdin = True
+
+
 def set_dir(directory):
     if not os.path.exists(directory): os.makedirs(directory)
     return directory
+
 
 try: modulepath = os.path.dirname(os.path.realpath(__file__)).replace('\\', '/') + '/'
 except NameError: modulepath = 'electricitylci/'
@@ -24,8 +27,10 @@ def join_with_underscore(items):
 
     return "_".join(items)
 
-electricity_flow_name_generation_and_distribution = 'Electricity, AC, 2300-7650 V'  #ref Table 1.1 NERC report
+
+electricity_flow_name_generation_and_distribution = 'Electricity, AC, 2300-7650 V'  # ref Table 1.1 NERC report
 electricity_flow_name_consumption = 'Electricity, AC, 120 V'
+
 
 def list_model_names_in_config():
     configdir = modulepath + 'modelconfig/'

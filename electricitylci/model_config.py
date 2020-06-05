@@ -27,9 +27,9 @@ if set_model_name_with_stdin and not model_name_exists:
 elif not set_model_name_with_stdin:
     # Set model_name manually here
     model_name = 'ELCI_3'
-#################
 
-#pull in model config vars
+
+# pull in model config vars
 def load_model_specs(model_name):
 
     path = join(modulepath, 'modelconfig', '{}_config.yml'.format(model_name))
@@ -75,20 +75,23 @@ fuel_name_file = model_specs["fuel_name_file"]
 fuel_name = pd.read_csv(join(data_dir, fuel_name_file))
 post_process_generation_emission_factors = model_specs["post_process_generation_emission_factors"]
 gen_mix_from_model_generation_data=False
+
+
 class ConfigurationError(Exception):
     """Exception raised for errors in the configuration file"""
     def __init__(self,message):
         self.message = message
 
+
 def check_model_specs():
-    #Check for consumption matching region selection
+    # Check for consumption matching region selection
     if model_specs["regional_aggregation"] in ["FERC, BA, US"] and model_specs["EPA_eGRID_trading"]:
         raise ConfigurationError(
             "EPA trading method is not compatible with selected regional "
             f"aggregation - {model_specs['regional_aggregation']}"
         )
         raise
-        
+
     if model_specs["regional_aggregation"]!="eGRID" and model_specs["EPA_eGRID_trading"]:
         raise ConfigurationError(
             "EPA trading method is not compatible with selected regional "
@@ -102,4 +105,5 @@ def check_model_specs():
                 f"use eia_gen_year to calculate fuel use. The json-ld file "
                 f"will not import correctly."
         )
+
 check_model_specs()
