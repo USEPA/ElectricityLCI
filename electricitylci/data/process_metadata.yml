@@ -69,8 +69,8 @@ default:
   of the facilities in the stated region/fuel type per MWh. The boundary
   of these emissions are within the boundaries of the electricity generating 
   facilities. For the "mixed" plant category, the emissions can be from any 
-  facility within the region that doesn''t match the treshhold set in the model
-  configuration file (default valut of 90 percent electricity generation from a 
+  facility within the region that doesn't match the treshhold set in the model
+  configuration file (default value of 90 percent electricity generation from a
   specific fuel type).'
 
   Description: 
@@ -99,15 +99,15 @@ default:
   supplied electricity. A full inventory of environmental flows are included
   enabling use of a full range of LCIA impact categories.'
 
-  DatasetOwner: 'US EPA'
+  DatasetOwner: 'NETL'
 
-  DataGenerator: 'US EPA and ERG and NREL and NETL'
+  DataGenerator: 'NETL and US EPA and ERG and NREL'
 
-  DataDocumentor: 'US EPA and ERG and NREL and NETL'
+  DataDocumentor: 'NETL and US EPA and ERG and NREL'
 
   AccessUseRestrictions: 'No Restrictions'
 
-  ProjectDescription: 'This research was conducted as part of the USEPA Air,
+  ProjectDescription: 'US EPA contribution to this research was conducted as part of the USEPA Air,
   Climate, and Energy national research program. Support was provided by the
   National Renewable Energy Laboratory through interagency agreement
   DW-89-92448301-1, by Eastern Research Group (ERG) through USEPA contract
