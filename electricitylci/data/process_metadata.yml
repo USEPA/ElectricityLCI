@@ -1,25 +1,18 @@
 default_boundary_statement: &boundary_statement
   - 'BOUNDARY CONDITIONS 
   
-    All processes are compiled by US
-    region using boundaries based on electricity trading defined as
-    ''subregions'' in the Emissions and Generation Resource Integrated Database
-    (eGRID). Generation processes are also aggregated by fuel or energy source
+    All processes are compiled by US regions. The regions are defined as Balancing Authority Areas. Generation processes are aggregated by fuel or energy source
     and provide the flow of electricity after it has been transformed for
     transmission on average US high voltage transmission lines (230 - 765 kV ).
-    Mix processes are mixes of generation by fuel type representing the average
-    mix of electricity available on the grid within the region either based on
-    production or consumption. Delivery to the final user is targeted toward an
-    average end user without separation between different user types. The time
-    span for all processes is one year, with the goal to represent the current
-    (2018) year.
-    ' 
+    Generation and consumption mix processes are mixes of electricity by fuel type and region representing the average
+    mix of electricity generated or consumed within the region. Delivery to the final user is targeted toward an
+    average end user without separation between different user types and included transmission loses.
+    '
 
 default_datacollection_statement: &datacollection_statement
   - 'DATA COLLECTION 
   
-    All inventories were calculated
-    using secondary data from publicly available datasets.
+    All inventories were calculated using secondary data from publicly available datasets.
     '
 
 default_uncertainty_statement: &uncertainty_statement
@@ -27,7 +20,7 @@ default_uncertainty_statement: &uncertainty_statement
   
     Flow-level data quality scores
     are assigned to each elementary flow exchange and process-level scores to each
-    process using the USEPA LCA Data Quality Assessment guidance . In the
+    process using the USEPA LCA Data Quality Assessment guidance (https://cfpub.epa.gov/si/si_public_record_report.cfm?Lab=NRMRL&dirEntryId=321834). In the
     generation processes, for each emission factor, five data quality scores were
     assigned on flow-level data quality scoring. Process data quality scores draw
     on the process US EPA DQ indicator guidance. Process completeness is
