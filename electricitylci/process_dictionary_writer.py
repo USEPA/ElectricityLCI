@@ -1,14 +1,12 @@
-# Data filtered from stewi and Stewi combo is written ina dictionary in this script.
-# The dictionary is basaed on the OLCA schema
-# This dictionary can be used for writing json files or templates
+"""
+Writes process data and metadata as a dictionary
+The dictionary is based on the openLCA (OLCA) schema
+This dictionary can be used for writing JSON-LD files or templates
+"""
 
-"""Add docstring."""
-
-import math
 import time
 import pandas as pd
 from os.path import join
-import electricitylci
 from electricitylci.globals import (
     data_dir,
     electricity_flow_name_generation_and_distribution,
@@ -16,8 +14,6 @@ from electricitylci.globals import (
 )
 from electricitylci.model_config import (
         egrid_year,
-        regional_aggregation,
-        replace_egrid,
         model_specs,
         electricity_lci_target_year
 )
@@ -345,8 +341,6 @@ OLCA_TO_METADATA={
         "sources":None,
         "restrictionsDescription":"AccessUseRestrictions",
         "copyright":None,
-        "sources":None,
-        "copyright":None,
         "creationDate":None,
         "dataDocumentor":"DataDocumentor",
         "dataGenerator":"DataGenerator",
@@ -377,7 +371,12 @@ VALID_FUEL_CATS=[
 
 
 def process_doc_creation(process_type="default"):
-    """Add docstring."""
+    """
+    Creates a process metadata dictionary specific to a given process type
+    :param process_type: One of process types described in VALID_FUEL_CATS
+    :return: A dictionary with process metadata
+    """
+
     try:
         assert process_type in VALID_FUEL_CATS, f"Invalid process_type ({process_type}), using default"
     except AssertionError:
@@ -446,12 +445,6 @@ def process_description_creation(process_type="fossil"):
         desc_string=metadata[process_type][key]
     return desc_string
 
-
-if __name__=="__main__":
-    test=process_doc_creation(process_type="oil_upstream")
-    print(test)
-
-
 def exchangeDqsystem():
     """Add docstring."""
     ar = dict()
@@ -460,7 +453,6 @@ def exchangeDqsystem():
     ar["name"] = "US EPA - Flow Pedigree Matrix"
     return ar
 
-
 def processDqsystem():
     """Add docstring."""
     ar = dict()
@@ -468,7 +460,6 @@ def processDqsystem():
     ar["@id"] = "70bf370f-9912-4ec1-baa3-fbd4eaf85a10"
     ar["name"] = "US EPA - Process Pedigree Matrix"
     return ar
-
 
 def exchange_table_creation_input(data):
     """Add docstring."""
@@ -696,18 +687,6 @@ def process_table_creation_distribution(region, exchanges_list):
     )
     return ar
 
-
-# def process_table_creation_trade_mix(region,exchanges_list):
-#     ar = dict()
-#     ar['@type'] = 'Process'
-#     ar['allocationFactors']=''
-#     ar['defaultAllocationMethod']=''
-#     ar['exchanges']=exchanges_list;
-#     ar['location']=region
-#     ar['parameters']=''
-#     ar['processDocumentation']=process_doc_creation();
-#     ar['processType']=''
-#     ar['name'] = 'Electricity; at region '+str(region)+'; Trade Mix'
-#     ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution'
-#     ar['description'] = 'Electricity trade mix using power plants in the '+str(region)+' region'
-#     return ar;
+if __name__=="__main__":
+    test=process_doc_creation(process_type="oil_upstream")
+    print(test)
