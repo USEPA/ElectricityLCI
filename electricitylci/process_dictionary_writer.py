@@ -20,6 +20,8 @@ from electricitylci.model_config import (
 from electricitylci.egrid_facilities import egrid_subregions
 import yaml
 import logging
+import pkg_resources  # part of setuptools
+elci_version = pkg_resources.require("ElectricityLCI")[0].version
 
 module_logger = logging.getLogger("process_dictionary_writer.py")
 year = egrid_year
@@ -61,13 +63,9 @@ def process_metadata(entry):
 
 for key in metadata.keys():
     metadata[key]=process_metadata(metadata[key])
-# metadata = pd.read_csv(join(data_dir, "metadata.csv"))
-# Use only first row of metadata for all processes for now
-# metadata = metadata.iloc[0,]
 
 # Read in process location uuids
 location_UUID = pd.read_csv(join(data_dir, "location_UUIDs.csv"))
-
 
 def lookup_location_uuid(location):
     """Add docstring."""
@@ -78,7 +76,6 @@ def lookup_location_uuid(location):
     except IndexError:
         uuid = ""
     return uuid
-
 
 # Read in process name info
 process_name = pd.read_csv(join(data_dir, "processname_1.csv"))
@@ -415,6 +412,7 @@ def process_doc_creation(process_type="default"):
     ar["dqSystem"] = processDqsystem()
     # Temp place holder for process DQ scores
     ar["dqEntry"] = "(5;5)"
+    ar["description"] = process_description_creation(process_type)
     return ar
 
 
@@ -423,26 +421,29 @@ def process_description_creation(process_type="fossil"):
     try:
         assert process_type in VALID_FUEL_CATS, f"Invalid process_type ({process_type}), using default"
     except AssertionError:
-        process_type="default"
+        process_type = "default"
     if model_specs["replace_egrid"] is True:
         subkey = "replace_egrid"
     else:
-        subkey= "use_egrid"
+        subkey = "use_egrid"
     global year
     key = "Description"
     try:
-        desc_string=metadata[process_type][key]
+        desc_string = metadata[process_type][key]
     except KeyError:
         module_logger.debug(f"Failed first key ({key}), trying subkey: {subkey}")
         try:
-            desc_string=metadata[process_type][subkey][key]
-            module_logger.debug("Failed subkey, likely no entry in metadata for {process_type}:{key}")
+            desc_string = metadata[process_type][subkey][key]
+            module_logger.debug(
+                "Failed subkey, likely no entry in metadata for {process_type}:{key}")
         except KeyError:
-            desc_string=metadata["default"][key]
+            desc_string = metadata["default"][key]
     except TypeError:
         module_logger.debug(f"Failed first key, likely no metadata defined for {process_type}")
-        process_type="default"
-        desc_string=metadata[process_type][key]
+        process_type = "default"
+        desc_string = metadata[process_type][key]
+    desc_string = desc_string + " This process was created with ElectricityLCI " \
+                                "(https://github.com/USEPA/ElectricityLCI) version " + elci_version + "."
     return desc_string
 
 def exchangeDqsystem():
@@ -688,5 +689,5 @@ def process_table_creation_distribution(region, exchanges_list):
     return ar
 
 if __name__=="__main__":
-    test=process_doc_creation(process_type="oil_upstream")
+    test=process_doc_creation(process_type="default")
     print(test)
