@@ -15,7 +15,8 @@ from electricitylci.globals import (
 from electricitylci.model_config import (
         egrid_year,
         model_specs,
-        electricity_lci_target_year
+        electricity_lci_target_year,
+        model_name
 )
 from electricitylci.egrid_facilities import egrid_subregions
 import yaml
@@ -443,7 +444,9 @@ def process_description_creation(process_type="fossil"):
         process_type = "default"
         desc_string = metadata[process_type][key]
     desc_string = desc_string + " This process was created with ElectricityLCI " \
-                                "(https://github.com/USEPA/ElectricityLCI) version " + elci_version + "."
+                  "(https://github.com/USEPA/ElectricityLCI) version " + elci_version\
+                  + " using the " + model_name + " model ."
+
     return desc_string
 
 def exchangeDqsystem():
