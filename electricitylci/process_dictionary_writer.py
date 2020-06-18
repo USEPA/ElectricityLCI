@@ -445,7 +445,7 @@ def process_description_creation(process_type="fossil"):
         desc_string = metadata[process_type][key]
     desc_string = desc_string + " This process was created with ElectricityLCI " \
                   "(https://github.com/USEPA/ElectricityLCI) version " + elci_version\
-                  + " using the " + model_name + " model ."
+                  + " using the " + model_name + " model."
 
     return desc_string
 
@@ -692,5 +692,10 @@ def process_table_creation_distribution(region, exchanges_list):
     return ar
 
 if __name__=="__main__":
-    test=process_doc_creation(process_type="default")
-    print(test)
+    """
+    Run for debugging purposes, to evaluate result of metadata from various models
+    """
+    p_docs = []
+    for p in VALID_FUEL_CATS:
+        p_docs.append(process_doc_creation(p))
+    print("View p_docs in logger for debug1")
