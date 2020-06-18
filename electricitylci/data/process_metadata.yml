@@ -68,10 +68,9 @@ default:
   - 'The emissions contained in this process are the reported emissions of all 
   of the facilities in the stated region/fuel type per MWh. The boundary
   of these emissions are within the boundaries of the electricity generating 
-  facilities. For the "mixed" plant category, the emissions can be from any 
-  facility within the region that doesn't match the treshhold set in the model
-  configuration file (default value of 90 percent electricity generation from a
-  specific fuel type).'
+  facilities. For the mixed plant category, the emissions can be from any
+  facility within the region that does not match the threshold set in the model
+  configuration file.'
 
   Description: 
   - *default_techno_intro
