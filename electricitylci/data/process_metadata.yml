@@ -77,8 +77,6 @@ default:
   - *default_techno_process
 
   TechnologyDescription:
-  - *default_techno_intro
-  - *default_techno_process
 
   Start_date: ''
   
@@ -257,8 +255,6 @@ nuclear_upstream:
   - *nuclear_techno_process
 
   TechnologyDescription:
-  - *nuclear_techno_intro
-  - *nuclear_techno_process  
 
   ModelingConstants: 'http://www.netl.doe.gov/energy-analysis/details?id=620'
   
@@ -319,8 +315,6 @@ geothermal:
   - *geothermal_techno_process
 
   TechnologyDescription:
-  - *geothermal_techno_intro
-  - *geothermal_techno_process  
 
   DatasetOwner: 'NETL'
 
@@ -375,8 +369,6 @@ solar:
   - *solar_techno_process
 
   TechnologyDescription:
-  - *solar_techno_intro
-  - *solar_techno_process 
 
   DatasetOwner: 'IEA, NREL, JE Mason, VM Fthenakis, T Hansen, HC Kim'
 
@@ -436,9 +428,6 @@ solarthermal:
   - *solarthermal_techno_process
 
   TechnologyDescription:
-  - *solarthermal_techno_intro
-  - *solarthermal_techno_process 
-
 
   DatasetOwner: 'NREL'
 
@@ -496,8 +485,6 @@ wind:
   - *wind_techno_process
 
   TechnologyDescription:
-  - *wind_techno_intro
-  - *wind_techno_process 
 
   DatasetOwner: 'NREL and Vestas'
 
@@ -559,9 +546,7 @@ consumption_mix:
   - *cons_mix_techno_process
 
   TechnologyDescription:
-  - *cons_mix_techno_intro
-  - *cons_mix_techno_process 
-  
+
   use_egrid:
     DataTreatment: 'FERC Form 714 and international trading data in conjunction
     with the updated generation mixes. There are two different approaches to
@@ -615,8 +600,6 @@ generation_mix:
   - *gen_mix_techno_process
 
   TechnologyDescription:
-  - *gen_mix_techno_intro
-  - *gen_mix_techno_process 
 
   use_egrid:
     DataTreatment: 'FERC Form 714 and international trading data in conjunction
@@ -673,8 +656,6 @@ coal_upstream:
   - *coal_upstream_techno_process
 
   TechnologyDescription:
-  - *coal_upstream_techno_intro
-  - *coal_upstream_techno_process 
 
   Start_date: '1/1/2016'
   
@@ -750,8 +731,6 @@ gas_upstream:
   - *gas_upstream_techno_process
 
   TechnologyDescription:
-  - *gas_upstream_techno_intro
-  - *gas_upstream_techno_process 
 
   Start_date: '1/1/2016'
   
@@ -833,8 +812,6 @@ oil_upstream:
   - *oil_upstream_techno_process
 
   TechnologyDescription:
-  - *oil_upstream_techno_intro
-  - *oil_upstream_techno_process 
 
   Start_date: '1/1/2016'
   
@@ -917,8 +894,6 @@ coal_transport_upstream:
   - *coal_transport_techno_process
 
   TechnologyDescription:
-  - *coal_transport_techno_intro
-  - *coal_transport_techno_process 
 
   Start_date: '1/1/2016'
   
@@ -998,8 +973,6 @@ construction_upstream:
   - *construction_techno_process
 
   TechnologyDescription:
-  - *construction_techno_intro
-  - *construction_techno_process 
 
   DatasetOwner: 'NETL'
 
