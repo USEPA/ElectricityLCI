@@ -104,12 +104,15 @@ default:
 
   AccessUseRestrictions: 'No Restrictions'
 
-  ProjectDescription: 'US EPA contribution to this research was conducted as part of the USEPA Air,
-  Climate, and Energy national research program. Support was provided by the
-  National Renewable Energy Laboratory through interagency agreement
-  DW-89-92448301-1, by Eastern Research Group (ERG) through USEPA contract
-  EP-C-16-015, task order 008, and by the National Energy Technology Laboratory
-  (NETL) through contract number DE-FE0025912'
+  ProjectDescription: 'US EPA contribution to this research was conducted as
+  part of the USEPA Air, Climate, and Energy national research program. US DOE
+  National Energy Technology Laboratory contribution to this research was
+  prepared by MESA for the US DOE NETL, under DOE NETL Contract Number
+  DE-FE0025912. Support was provided by the National Renewable Energy
+  Laboratory through interagency agreement DW-89-92448301-1, by Eastern
+  Research Group (ERG) through USEPA contract EP-C-16-015, task order 008, and
+  by the National Energy Technology Laboratory (NETL) through contract number
+  DE-FE0025912'
 
   LCIMethod: 'Attibutional'
 
