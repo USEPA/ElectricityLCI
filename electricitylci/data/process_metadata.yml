@@ -426,10 +426,10 @@ solar:
   Sources:
     Source1:
 
-      Name: 'Ingwerson, et al. electricitylci: A Python Package for U.S.
+      Name: 'Ingwersen, et al. electricitylci: A Python Package for U.S.
       Regionalized Electricity Life Cycle Inventory Data Creation'
 
-      TextReference: 'Ingwerson, et al. (2020). electricitylci: A Python Package for U.S.
+      TextReference: 'Ingwersen, et al. (2020). electricitylci: A Python Package for U.S.
       Regionalized Electricity Life Cycle Inventory Data Creation. Manuscript in
       preparation.'
 
@@ -499,10 +499,10 @@ solarthermal:
   Sources:
     Source1:
 
-      Name: 'Ingwerson, et al. electricitylci: A Python Package for U.S.
+      Name: 'Ingwersen, et al. electricitylci: A Python Package for U.S.
       Regionalized Electricity Life Cycle Inventory Data Creation'
 
-      TextReference: 'Ingwerson, et al. (2020). electricitylci: A Python Package for U.S.
+      TextReference: 'Ingwersen, et al. (2020). electricitylci: A Python Package for U.S.
       Regionalized Electricity Life Cycle Inventory Data Creation. Manuscript in
       preparation.'
 
@@ -573,10 +573,10 @@ wind:
   Sources:
     Source1:
 
-      Name: 'Ingwerson, et al. electricitylci: A Python Package for U.S.
+      Name: 'Ingwersen, et al. electricitylci: A Python Package for U.S.
       Regionalized Electricity Life Cycle Inventory Data Creation'
 
-      TextReference: 'Ingwerson, et al. (2020). electricitylci: A Python Package for U.S.
+      TextReference: 'Ingwersen, et al. (2020). electricitylci: A Python Package for U.S.
       Regionalized Electricity Life Cycle Inventory Data Creation. Manuscript in
       preparation.'
 
