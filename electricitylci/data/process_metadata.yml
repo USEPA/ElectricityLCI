@@ -208,32 +208,7 @@ default:
   Reviewer: 'NETL and USDA and EPA'
 
   DatasetOtherEvaluation: ''
-
-  Source1: ''
-
-  Source2: ''
-
-  Source3: ''
-
-  Source4: ''
-
-  Source5: ''
-
-  Source6: ''
-
-  Source7: ''
-
-  Source8: ''
-
-  Source9: ''
-
-  Source10: ''
-
-  Source11: ''
-
-  Source12: ''
-
-  Source13: ''
+  Sources: {}
 
 nuclear_upstream:
 
@@ -710,6 +685,26 @@ coal_upstream:
   DataCollectionPeriod: 'Data from 2016 were used to define the amount, type,
   and origin of the coal used by each power plant, as well as year-specific 
   paramaters such as coal mine methane emissions.'
+
+  Sources:
+
+    Source1:
+
+      Name: 'NETL (2020). United States Life Cycle Coal Mining And Delivery Baseline'
+
+      Url: 'netl.doe.gov/LCA'
+
+      Category: 'NETL'
+
+      Year: 2020
+
+      Version: '1.00.00'
+
+      TextReference: 'NETL (2020). United States Life Cycle Coal Mining And Delivery Baseline
+      U.S. Department of Energy National Energy Technology Laboratory, Pittsburgh, PA.
+      netl.doe.gov/LCA'
+
+
 
 gas_upstream:
 
