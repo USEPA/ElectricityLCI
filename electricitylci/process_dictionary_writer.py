@@ -38,7 +38,7 @@ with open(join(data_dir, "process_metadata.yml")) as f:
 # process_metadata makes this happen.
 def process_metadata(entry):
     """Add docstring."""
-    if isinstance(entry,str):
+    if isinstance(entry,str) or isinstance(entry,int):
         return entry
     elif isinstance(entry,list):
         try:
@@ -336,7 +336,7 @@ OLCA_TO_METADATA={
         "modelingConstantsDescription":"ModelingConstants",
         "reviewer":"Reviewer",
         "samplingDescription":"SamplingProcedure",
-        "sources":None,
+        "sources":"Sources",
         "restrictionsDescription":"AccessUseRestrictions",
         "copyright":None,
         "creationDate":None,
@@ -404,7 +404,7 @@ def process_doc_creation(process_type="default"):
     if not ar["validUntil"]:
         ar["validUntil"] = "12/31/"+str(targetyear)
         ar["validFrom"] = "1/1/"+str(targetyear)
-    ar["sources"] = ""
+    ar["sources"] = [x for x in ar["sources"].values()]
     ar["copyright"] = False
     ar["creationDate"] = time.time()
     ar["publication"] = ""
