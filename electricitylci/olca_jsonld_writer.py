@@ -22,6 +22,7 @@ def write(processes: dict, file_path: str):
                 d_vals = processes[p_key]
                 process = olca.Process()
                 process.name = _val(d_vals, 'name')
+                process.version = _val(d_vals, 'version')
                 category_path = _val(d_vals, 'category', default='')
                 location_code = _val(d_vals, 'location', 'name', default='')
                 process.id = _uid(olca.ModelType.PROCESS,

@@ -6,6 +6,10 @@ This dictionary can be used for writing JSON-LD files or templates
 
 import time
 import pandas as pd
+import yaml
+import logging
+import pkg_resources  # part of setuptools
+
 from os.path import join
 from electricitylci.globals import (
     data_dir,
@@ -19,9 +23,8 @@ from electricitylci.model_config import (
         model_name
 )
 from electricitylci.egrid_facilities import egrid_subregions
-import yaml
-import logging
-import pkg_resources  # part of setuptools
+from electricitylci.utils import make_valid_version_num
+
 elci_version = pkg_resources.require("ElectricityLCI")[0].version
 
 module_logger = logging.getLogger("process_dictionary_writer.py")
@@ -414,8 +417,13 @@ def process_doc_creation(process_type="default"):
     # Temp place holder for process DQ scores
     ar["dqEntry"] = "(5;5)"
     ar["description"] = process_description_creation(process_type)
+    try:
+        # Use the software version number as the process version
+        ar["version"] = make_valid_version_num(elci_version)
+    except:
+        #Set to 1 by default
+        ar["version"] = 1
     return ar
-
 
 def process_description_creation(process_type="fossil"):
     """Add docstring."""
