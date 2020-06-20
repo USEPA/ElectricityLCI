@@ -25,7 +25,10 @@ from electricitylci.model_config import (
 from electricitylci.egrid_facilities import egrid_subregions
 from electricitylci.utils import make_valid_version_num
 
-elci_version = pkg_resources.require("ElectricityLCI")[0].version
+try:
+    elci_version = pkg_resources.require("ElectricityLCI")[0].version
+except:
+    elci_version = "0"
 
 module_logger = logging.getLogger("process_dictionary_writer.py")
 year = egrid_year
@@ -279,6 +282,12 @@ def process_table_creation_gen(fuelname, exchanges_list, region):
         + str(region)
         + " region"
     )
+    try:
+        # Use the software version number as the process version
+        ar["version"] = make_valid_version_num(elci_version)
+    except:
+        #Set to 1 by default
+        ar["version"] = 1
     return ar
 
 
@@ -300,6 +309,12 @@ def process_table_creation_genmix(region, exchanges_list):
     ar["description"] = (
         "Electricity generation mix in the " + str(region) + " region"
     )
+    try:
+        # Use the software version number as the process version
+        ar["version"] = make_valid_version_num(elci_version)
+    except:
+        #Set to 1 by default
+        ar["version"] = 1
     return ar
 
 
@@ -417,12 +432,6 @@ def process_doc_creation(process_type="default"):
     # Temp place holder for process DQ scores
     ar["dqEntry"] = "(5;5)"
     ar["description"] = process_description_creation(process_type)
-    try:
-        # Use the software version number as the process version
-        ar["version"] = make_valid_version_num(elci_version)
-    except:
-        #Set to 1 by default
-        ar["version"] = 1
     return ar
 
 def process_description_creation(process_type="fossil"):
@@ -655,6 +664,12 @@ def process_table_creation_con_mix(region, exchanges_list):
         + str(region)
         + " region"
     )
+    try:
+        # Use the software version number as the process version
+        ar["version"] = make_valid_version_num(elci_version)
+    except:
+        #Set to 1 by default
+        ar["version"] = 1
     return ar
 
 
@@ -674,6 +689,12 @@ def process_table_creation_surplus(region, exchanges_list):
         "category"
     ] = "22: Utilities/2211: Electric Power Generation, Transmission and Distribution"
     ar["description"] = "Electricity surplus in the " + str(region) + " region"
+    try:
+        # Use the software version number as the process version
+        ar["version"] = make_valid_version_num(elci_version)
+    except:
+        #Set to 1 by default
+        ar["version"] = 1
     return ar
 
 
@@ -697,6 +718,12 @@ def process_table_creation_distribution(region, exchanges_list):
         + str(region)
         + " region"
     )
+    try:
+        # Use the software version number as the process version
+        ar["version"] = make_valid_version_num(elci_version)
+    except:
+        #Set to 1 by default
+        ar["version"] = 1
     return ar
 
 if __name__=="__main__":
