@@ -9,7 +9,8 @@ from electricitylci.model_config import replace_egrid, use_primaryfuel_for_coal,
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows
 import pandas as pd
 import numpy as np
-from electricitylci.globals import output_dir
+from electricitylci.globals import output_dir, elci_version
+from electricitylci.utils import make_valid_version_num
 from datetime import datetime
 from electricitylci.dqi import lookup_score_with_bound_key
 from scipy.stats import t, norm
@@ -1112,7 +1113,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
             + " - "
             + process_df[region_agg].values
         )
-    #process_df["processDocumentation"]=map(process_doc_creation,list(process_df["FuelCategory"].str.lower()))
+    process_df["version"] = make_valid_version_num(elci_version)
     process_df["processDocumentation"]=[process_doc_creation(x) for x in list(process_df["FuelCategory"].str.lower())]
     process_cols = [
         "@type",
@@ -1124,6 +1125,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         "processDocumentation",
         "processType",
         "name",
+        "version",
         "category",
         "description",
     ]
