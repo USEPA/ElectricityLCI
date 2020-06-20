@@ -8,13 +8,12 @@ import time
 import pandas as pd
 import yaml
 import logging
-import pkg_resources  # part of setuptools
-
 from os.path import join
 from electricitylci.globals import (
     data_dir,
     electricity_flow_name_generation_and_distribution,
     electricity_flow_name_consumption,
+    elci_version
 )
 from electricitylci.model_config import (
         egrid_year,
@@ -22,13 +21,9 @@ from electricitylci.model_config import (
         electricity_lci_target_year,
         model_name
 )
-from electricitylci.egrid_facilities import egrid_subregions
 from electricitylci.utils import make_valid_version_num
+from electricitylci.egrid_facilities import egrid_subregions
 
-try:
-    elci_version = pkg_resources.require("ElectricityLCI")[0].version
-except:
-    elci_version = "1"
 
 module_logger = logging.getLogger("process_dictionary_writer.py")
 year = egrid_year
@@ -619,20 +614,6 @@ def ref_exchange_creator(electricity_flow=electricity_at_grid_flow):
     ar["location"] = ""
     return ar
 
-
-def add_software_version():
-    """
-    Adds software version
-    :return: version as string
-    """
-    try:
-        # Use the software version number as the process version
-        version = make_valid_version_num(elci_version)
-    except:
-        #Set to 1 by default
-        version = 1
-    return version
-
 def process_table_creation_con_mix(region, exchanges_list):
     """Add docstring."""
     ar = dict()
@@ -653,8 +634,9 @@ def process_table_creation_con_mix(region, exchanges_list):
         + str(region)
         + " region"
     )
-    ar["version"] = add_software_version()
+    ar["version"] = make_valid_version_num(elci_version)
     return ar
+
 
 def process_table_creation_genmix(region, exchanges_list):
     """Add docstring."""
@@ -674,7 +656,7 @@ def process_table_creation_genmix(region, exchanges_list):
     ar["description"] = (
         "Electricity generation mix in the " + str(region) + " region"
     )
-    ar["version"] = add_software_version()
+    ar["version"] = make_valid_version_num(elci_version)
     return ar
 
 def process_table_creation_surplus(region, exchanges_list):
@@ -693,7 +675,7 @@ def process_table_creation_surplus(region, exchanges_list):
         "category"
     ] = "22: Utilities/2211: Electric Power Generation, Transmission and Distribution"
     ar["description"] = "Electricity surplus in the " + str(region) + " region"
-    ar["version"] = add_software_version()
+    ar["version"] = make_valid_version_num(elci_version)
     return ar
 
 
@@ -717,7 +699,7 @@ def process_table_creation_distribution(region, exchanges_list):
         + str(region)
         + " region"
     )
-    ar["version"] = add_software_version()
+    ar["version"] = make_valid_version_num(elci_version)
     return ar
 
 if __name__=="__main__":
