@@ -136,6 +136,7 @@ def fill_default_provider_uuids(dict_to_fill, *args):
         module_logger.warning(f"All arguments into function must be dictionaries")
     return dict_to_fill
 
+
 def make_valid_version_num(foo):
     """
     Strips letters from a string to keep only digits and periods to try to make the version
@@ -146,3 +147,20 @@ def make_valid_version_num(foo):
     import re
     result = re.sub('[^0-9,.]','',foo)
     return result
+
+
+def set_dir(directory):
+    if not os.path.exists(directory): os.makedirs(directory)
+    return directory
+
+
+def join_with_underscore(items):
+    type_cast_to_str = False
+    for x in items:
+        if not isinstance(x, str):
+            # raise TypeError("join_with_underscore()  inputs must be string")
+            type_cast_to_str = True
+    if type_cast_to_str:
+        items = [str(x) for x in items]
+    return "_".join(items)
+
