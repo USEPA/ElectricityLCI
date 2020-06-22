@@ -656,6 +656,11 @@ def process_table_creation_genmix(region, exchanges_list):
     ar["description"] = (
         "Electricity generation mix in the " + str(region) + " region"
     )
+    ar["description"]=(ar["description"]
+        + " This process was created with ElectricityLCI " 
+        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
+        + " using the " + model_name + " model."
+    )
     ar["version"] = make_valid_version_num(elci_version)
     return ar
 
@@ -675,6 +680,11 @@ def process_table_creation_surplus(region, exchanges_list):
         "category"
     ] = "22: Utilities/2211: Electric Power Generation, Transmission and Distribution"
     ar["description"] = "Electricity surplus in the " + str(region) + " region"
+    ar["description"]=(ar["description"]
+        + " This process was created with ElectricityLCI " 
+        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
+        + " using the " + model_name + " model."
+    )
     ar["version"] = make_valid_version_num(elci_version)
     return ar
 
@@ -698,6 +708,11 @@ def process_table_creation_distribution(region, exchanges_list):
         "Electricity distribution to end user in the "
         + str(region)
         + " region"
+    )
+    ar["description"]=(ar["description"]
+        + " This process was created with ElectricityLCI " 
+        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
+        + " using the " + model_name + " model."
     )
     ar["version"] = make_valid_version_num(elci_version)
     return ar
