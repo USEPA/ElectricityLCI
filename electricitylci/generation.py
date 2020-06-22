@@ -20,6 +20,7 @@ import logging
 from electricitylci.egrid_facilities import egrid_facilities,egrid_subregions
 from electricitylci.eia923_generation import eia923_primary_fuel
 from electricitylci.eia860_facilities import eia860_balancing_authority
+from electricitylci.model_config import model_name
 
 egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory','NERC','PercentGenerationfromDesignatedFuelCategory','Balancing Authority Name','Balancing Authority Code']]
 
@@ -1094,7 +1095,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         process_df["description"] = (
             "Electricity from "
             + process_df[fuel_agg].values
-            + " produced at generating facilities in the US"
+            + " produced at generating facilities in the US."
         )
         process_df["name"] = (
             "Electricity - " + process_df[fuel_agg].values + " - US"
@@ -1105,7 +1106,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
             + process_df[fuel_agg].values
             + " produced at generating facilities in the "
             + process_df[region_agg].values
-            + " region"
+            + " region."
         )
         process_df["name"] = (
             "Electricity - "
@@ -1113,6 +1114,12 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
             + " - "
             + process_df[region_agg].values
         )
+    process_df["description"]=(
+        process_df["description"]
+        + " This process was created with ElectricityLCI " 
+        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
+        + " using the " + model_name + " configuration."
+    )
     process_df["version"] = make_valid_version_num(elci_version)
     process_df["processDocumentation"]=[process_doc_creation(x) for x in list(process_df["FuelCategory"].str.lower())]
     process_cols = [
