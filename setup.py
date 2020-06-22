@@ -21,7 +21,8 @@ setup(
         'seaborn>=0.9',
         'sympy>=1.2',
         'xlrd>=1.1',
-        'pyyaml>=5.1'
+        'pyyaml>=5.1',
+        'requests>=2.2'
         ],
     long_description=open('README.md').read(),
     classifiers=[

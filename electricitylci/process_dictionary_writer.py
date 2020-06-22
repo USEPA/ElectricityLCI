@@ -6,11 +6,14 @@ This dictionary can be used for writing JSON-LD files or templates
 
 import time
 import pandas as pd
+import yaml
+import logging
 from os.path import join
 from electricitylci.globals import (
     data_dir,
     electricity_flow_name_generation_and_distribution,
     electricity_flow_name_consumption,
+    elci_version
 )
 from electricitylci.model_config import (
         egrid_year,
@@ -18,11 +21,9 @@ from electricitylci.model_config import (
         electricity_lci_target_year,
         model_name
 )
+from electricitylci.utils import make_valid_version_num
 from electricitylci.egrid_facilities import egrid_subregions
-import yaml
-import logging
-import pkg_resources  # part of setuptools
-elci_version = pkg_resources.require("ElectricityLCI")[0].version
+
 
 module_logger = logging.getLogger("process_dictionary_writer.py")
 year = egrid_year
@@ -276,28 +277,16 @@ def process_table_creation_gen(fuelname, exchanges_list, region):
         + str(region)
         + " region"
     )
+    try:
+        # Use the software version number as the process version
+        ar["version"] = make_valid_version_num(elci_version)
+    except:
+        #Set to 1 by default
+        ar["version"] = 1
     return ar
 
 
-def process_table_creation_genmix(region, exchanges_list):
-    """Add docstring."""
-    ar = dict()
-    ar["@type"] = "Process"
-    ar["allocationFactors"] = ""
-    ar["defaultAllocationMethod"] = ""
-    ar["exchanges"] = exchanges_list
-    ar["location"] = location(region)
-    ar["parameters"] = ""
-    ar["processDocumentation"] = process_doc_creation(process_type="generation_mix")
-    ar["processType"] = "UNIT_PROCESS"
-    ar["name"] = generation_mix_name + " - " + str(region)
-    ar[
-        "category"
-    ] = "22: Utilities/2211: Electric Power Generation, Transmission and Distribution"
-    ar["description"] = (
-        "Electricity generation mix in the " + str(region) + " region"
-    )
-    return ar
+
 
 
 # Will be used later
@@ -416,7 +405,6 @@ def process_doc_creation(process_type="default"):
     ar["description"] = process_description_creation(process_type)
     return ar
 
-
 def process_description_creation(process_type="fossil"):
     """Add docstring."""
     try:
@@ -483,7 +471,7 @@ def exchange_table_creation_input(data):
     ar["dqEntry"] = ""
     ar["pedigreeUncertainty"] = ""
     ar["uncertainty"] = uncertainty_table_creation(data)
-    ar["comment"] = "eGRID " + str(year)
+    #ar["comment"] = "eGRID " + str(year)
     # if data['FlowType'].iloc[0] == 'ELEMENTARY_FLOW':
     #   ar['category'] = 'Elementary flows/'+str(data['ElementaryFlowPrimeContext'].iloc[0])+'/'+str(data['Compartment'].iloc[0])
     # elif data['FlowType'].iloc[0] == 'WASTE_FLOW':
@@ -626,7 +614,6 @@ def ref_exchange_creator(electricity_flow=electricity_at_grid_flow):
     ar["location"] = ""
     return ar
 
-
 def process_table_creation_con_mix(region, exchanges_list):
     """Add docstring."""
     ar = dict()
@@ -647,8 +634,30 @@ def process_table_creation_con_mix(region, exchanges_list):
         + str(region)
         + " region"
     )
+    ar["version"] = make_valid_version_num(elci_version)
     return ar
 
+
+def process_table_creation_genmix(region, exchanges_list):
+    """Add docstring."""
+    ar = dict()
+    ar["@type"] = "Process"
+    ar["allocationFactors"] = ""
+    ar["defaultAllocationMethod"] = ""
+    ar["exchanges"] = exchanges_list
+    ar["location"] = location(region)
+    ar["parameters"] = ""
+    ar["processDocumentation"] = process_doc_creation(process_type="generation_mix")
+    ar["processType"] = "UNIT_PROCESS"
+    ar["name"] = generation_mix_name + " - " + str(region)
+    ar[
+        "category"
+    ] = "22: Utilities/2211: Electric Power Generation, Transmission and Distribution"
+    ar["description"] = (
+        "Electricity generation mix in the " + str(region) + " region"
+    )
+    ar["version"] = make_valid_version_num(elci_version)
+    return ar
 
 def process_table_creation_surplus(region, exchanges_list):
     """Add docstring."""
@@ -666,6 +675,7 @@ def process_table_creation_surplus(region, exchanges_list):
         "category"
     ] = "22: Utilities/2211: Electric Power Generation, Transmission and Distribution"
     ar["description"] = "Electricity surplus in the " + str(region) + " region"
+    ar["version"] = make_valid_version_num(elci_version)
     return ar
 
 
@@ -689,6 +699,7 @@ def process_table_creation_distribution(region, exchanges_list):
         + str(region)
         + " region"
     )
+    ar["version"] = make_valid_version_num(elci_version)
     return ar
 
 if __name__=="__main__":
