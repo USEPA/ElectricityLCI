@@ -212,7 +212,20 @@ default:
   Reviewer: 'NETL and USDA and EPA'
 
   DatasetOtherEvaluation: ''
-  Sources: {}
+  Sources:
+    Source1:
+      Name: 'Ingwersen, et al. electricitylci: A Python Package for U.S.
+      Regionalized Electricity Life Cycle Inventory Data Creation'
+
+      TextReference: 'Ingwersen, et al. (2020). electricitylci: A Python Package for U.S.
+      Regionalized Electricity Life Cycle Inventory Data Creation. Manuscript in
+      preparation.'
+
+      Year: 2020
+
+      Version: '1.0.0'
+
+      Category: 'In_Development'
 
 nuclear_upstream:
 
