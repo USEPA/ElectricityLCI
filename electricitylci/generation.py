@@ -9,7 +9,8 @@ from electricitylci.model_config import replace_egrid, use_primaryfuel_for_coal,
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows
 import pandas as pd
 import numpy as np
-from electricitylci.globals import output_dir
+from electricitylci.globals import output_dir, elci_version
+from electricitylci.utils import make_valid_version_num
 from datetime import datetime
 from electricitylci.dqi import lookup_score_with_bound_key
 from scipy.stats import t, norm
@@ -19,6 +20,7 @@ import logging
 from electricitylci.egrid_facilities import egrid_facilities,egrid_subregions
 from electricitylci.eia923_generation import eia923_primary_fuel
 from electricitylci.eia860_facilities import eia860_balancing_authority
+from electricitylci.model_config import model_name
 
 egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory','NERC','PercentGenerationfromDesignatedFuelCategory','Balancing Authority Name','Balancing Authority Code']]
 
@@ -670,7 +672,7 @@ def aggregate_data(total_db, subregion="BA"):
                 try:
                     result = (np.exp(mean), 0, np.exp(upper_interval))
                 except ArithmeticError or ValueError or FloatingPointError:
-                    print("Problem with result")
+                    module_logger.debug("Unable to calculate geometric_mean")
                     return None
                 if result is not None:
                     return result
@@ -1093,7 +1095,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         process_df["description"] = (
             "Electricity from "
             + process_df[fuel_agg].values
-            + " produced at generating facilities in the US"
+            + " produced at generating facilities in the US."
         )
         process_df["name"] = (
             "Electricity - " + process_df[fuel_agg].values + " - US"
@@ -1104,7 +1106,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
             + process_df[fuel_agg].values
             + " produced at generating facilities in the "
             + process_df[region_agg].values
-            + " region"
+            + " region."
         )
         process_df["name"] = (
             "Electricity - "
@@ -1112,7 +1114,13 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
             + " - "
             + process_df[region_agg].values
         )
-    #process_df["processDocumentation"]=map(process_doc_creation,list(process_df["FuelCategory"].str.lower()))
+    process_df["description"]=(
+        process_df["description"]
+        + " This process was created with ElectricityLCI " 
+        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
+        + " using the " + model_name + " configuration."
+    )
+    process_df["version"] = make_valid_version_num(elci_version)
     process_df["processDocumentation"]=[process_doc_creation(x) for x in list(process_df["FuelCategory"].str.lower())]
     process_cols = [
         "@type",
@@ -1124,6 +1132,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         "processDocumentation",
         "processType",
         "name",
+        "version",
         "category",
         "description",
     ]

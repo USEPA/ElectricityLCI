@@ -20,6 +20,6 @@ xlrd>=1.1          # Library for developers to extract data from Microsoft Excel
 pyyaml>=5.1        # YAML parser and emitter for Python.
 pycodestyle>=2.6.0 # Python code tool to check style conventions in PEP 8.
 pydocstyle>=5.0.2  # Python code tool to check style conventions in PEP 257.
-
+requests>=2.2     # Web request handler
 # Note: This file replaces use of setup.py to install Virtual Environment.
 # Either method has been tested and works.
