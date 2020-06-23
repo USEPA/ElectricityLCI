@@ -1,15 +1,17 @@
 default_boundary_statement: &boundary_statement
   - 'BOUNDARY CONDITIONS 
   
-    All processes are compiled by US regions. The regions are defined as
-    Balancing Authority Areas. Generation processes are aggregated by fuel or
-    energy source and provide the flow of electricity after it has been
-    transformed for transmission on average US high voltage transmission lines
-    (230 - 765 kV ). Generation and consumption mix processes are mixes of
-    electricity by fuel type and region representing the average mix of
-    electricity generated or consumed within the region. Delivery to the final
-    user is targeted toward an average end user without separation between
-    different user types and included transmission loses. '
+    All processes are compiled by US regions. The regions are specified by the
+    user via the configuration files or passed parameters - Balancing Authority
+    Areas, Federal Energy Regulatory Commission (FERC) regions, eGRID
+    subregions. Generation processes are aggregated by fuel or energy source
+    and provide the flow of electricity after it has been transformed for
+    transmission on average US high voltage transmission lines (230 - 765 kV ).
+    Generation and consumption mix processes are mixes of electricity by fuel
+    type and region representing the average mix of electricity generated or
+    consumed within the region. Delivery to the final user is targeted toward
+    an average end user without separation between different user types and
+    included transmission loses. '
 
 default_datacollection_statement: &datacollection_statement
   - 'DATA COLLECTION 
@@ -178,12 +180,12 @@ default:
     facilities are gathered from eGRID as well as the USEPA emissions and waste
     inventories, NEI, TRI, and RCRAInfo. Alternative generation data was
     gathered from EIA-923 when the emissions or waste inventories correspond to
-    a non-egrid year. The eGRID subregion identifier in the ‘Plants’ list was
-    used to associate a facility with a region. The fuel and energy types used
-    for the aggregation are the eGRID fuel categories -- oil, natural gas,
-    synthetic gas, nuclear fuel, hydroelectric, biomass, wind, solar,
-    geothermal and other fuel -- except for the coal sources, which are further
-    disaggregated by the eGRID reported primary fuel. The coal fuels are
+    a non-egrid year. The plants are associated with various regions depending
+    on model configuration with region names coming from eGRID and EIA. The
+    fuel and energy types used for the aggregation are the eGRID fuel
+    categories -- oil, natural gas, synthetic gas, nuclear fuel, hydroelectric,
+    biomass, wind, solar, solar thermal, geothermal and other fuel. Coal
+    sources can be further disaggregated by the reported primary fuel:
     bituminous coal, lignite coal, sub-bituminous coal, refined coal, and waste
     coal. Each generation process, defined by fuel type and regions, includes a
     fuel or energy input, linkage to an infrastructure process, and emissions
@@ -605,7 +607,7 @@ consumption_mix:
   techno_intro: &cons_mix_techno_intro
 
   - 'This process provides the electricity inputs from the various balancing
-  authority areas or NERC regions that makes up the consumption mix for the stated
+  authority areas or eGRID subregions that makes up the consumption mix for the stated
   region.'
 
   techno_process: &cons_mix_techno_process
@@ -639,6 +641,20 @@ consumption_mix:
 
     DataSelection: 'FERC Form 714'
 
+    Sources:
+      Source1:
+        Name: 'Hottle, T., et al. (2020) Manuscript in development.'
+
+        TextReference: 'Hottle, T., T.J. Ghosh (2020) Manuscript in development.'
+
+        Year: 2020
+
+        Version: '1.0.0'
+
+        Category: 'In_Development'
+
+
+
   replace_egrid:
     DataTreatment: 'US Energy Information Administration (EIA) Form EIA-930
     electricity trading data is used to inform an input/output model of
@@ -653,6 +669,67 @@ consumption_mix:
     years between are available for generating consumption mixes.'
 
     DataSelection: 'EIA Form 930 and EIA 923'
+
+    Sources:
+      Source1:
+        Name: 'de Chalendar, J. A., et al. (2019). Tracking emissions in the US
+        electricity system'
+
+        TextReference: 'de Chalendar, J. A., Taggart, J., & Benson, S. M.
+        (2019). Tracking emissions in the US electricity system. Proceedings of
+        the National Academy of Sciences, 116(51), 25497-25502. doi:
+        10.1073/pnas.1912950116'
+
+        Year: 2020
+
+        Version: '1.0.0' 
+
+        Category: ''
+
+      Source2:
+        Name: 'Qu, S. et al. (2017). A Quasi-Input-Output model to improve the
+        estimation of emission factors for purchased electricity from
+        interconnected grids.'
+
+        TextReference: 'Qu, S. et al. (2017). A Quasi-Input-Output model to improve the
+        estimation of emission factors for purchased electricity from
+        interconnected grids. Applied Energy, 200, 249-259.'
+
+        Year: 2017
+
+        Version: '1.0.0'
+
+        Category: ''
+
+      Source3:
+
+        Name: 'Qu, S. et al. (2018). Virtual CO2 Emission Flows in the
+        Global Electricity Trade Network'
+
+        TextReference: 'Qu, S. et al. (2018). Virtual CO2 Emission Flows in the
+        Global Electricity Trade Network. Environmental Science & Technology,
+        52(11), 6666-6675.'
+
+        Year: 2018
+
+        Version: '1.0.0'
+
+        Category: ''
+
+      Source4:
+        Name: 'Ingwersen, et al. electricitylci: A Python Package for U.S.
+        Regionalized Electricity Life Cycle Inventory Data Creation'
+
+        TextReference: 'Ingwersen, et al. (2020). electricitylci: A Python Package for U.S.
+        Regionalized Electricity Life Cycle Inventory Data Creation. Manuscript in
+        preparation.'
+
+        Year: 2020
+
+        Version: '1.0.0'
+
+        Category: 'In_Development'
+
 
 generation_mix:
 
