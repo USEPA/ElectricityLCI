@@ -15,7 +15,8 @@ electricity_lci_target_year: 2018
 regional_aggregation: 'eGRID'
 
 # If egrid is not used as a primary data source then set "replace_egrid" to True. This
-# will trigger the use of EPA CEMS and EIA data as substitutes for eGRID.
+# will trigger the use of EPA CEMS and EIA data as substitutes for eGRID. Replacing
+# eGRID will also use EIA generation data to determine the generation mix.
 egrid_year: 2014
 eia_gen_year: 2017
 replace_egrid: False
@@ -51,9 +52,16 @@ egrid_facility_efficiency_filters:
 filter_on_min_plant_percent_generation_from_primary_fuel: True
 min_plant_percent_generation_from_primary_fuel_category: 90
 
+#If the parameter above is set to True, one may still want to keep the plants
+#do not meet the threshhold. This setting will mark those power plants as 
+#MIXED and generate life cycle processes for them. Note that the definition
+#of mixed is purposefully ambiguous and will mean different things depending 
+#on the region of aggregation.
+keep_mixed_plant_category: False
+
 # NEEDS A GOOD DESCRIPTION OF THIS PARAMETER
 filter_non_egrid_emission_on_NAICS: True
-keep_mixed_plant_category: False
+
 
 # TRANSMISSION AND ELECTRICITY TRADING
 # These parameters are used to determine which method of electricity trading is used
@@ -77,7 +85,7 @@ NETL_IO_trading_year: 2016
 
 # OTHER PARAMETERS
 
-fedelemflowlist_version: 1.0
+fedelemflowlist_version: 1.0.3
 post_process_generation_emission_factors: False
 use_primaryfuel_for_coal: False
 fuel_name_file: fuelname_1.csv

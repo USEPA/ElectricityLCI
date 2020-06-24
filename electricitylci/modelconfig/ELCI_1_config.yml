@@ -12,7 +12,7 @@ electricity_lci_target_year: 2018
 # Select a regional aggregation from "eGRID", "NERC", "BA", "US", "FERC", and "EIA"
 # The EPA_eGRID trading method can only be used with "eGRID".
 # The NETL_BA_trading method can only be used with "BA" and "FERC"
-regional_aggregation: 'FERC'
+regional_aggregation: 'BA'
 
 # If egrid is not used as a primary data source then set "replace_egrid" to True. This
 # will trigger the use of EPA CEMS and EIA data as substitutes for eGRID. Replacing
@@ -85,7 +85,7 @@ NETL_IO_trading_year: 2016
 
 # OTHER PARAMETERS
 
-fedelemflowlist_version: 1.0.1
+fedelemflowlist_version: 1.0.3
 post_process_generation_emission_factors: False
 use_primaryfuel_for_coal: False
 fuel_name_file: fuelname_1.csv
