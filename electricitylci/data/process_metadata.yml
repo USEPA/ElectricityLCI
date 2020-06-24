@@ -1,58 +1,57 @@
 default_boundary_statement: &boundary_statement
   - 'BOUNDARY CONDITIONS 
   
-    All processes are compiled by US
-    region using boundaries based on electricity trading defined as
-    ''subregions'' in the Emissions and Generation Resource Integrated Database
-    (eGRID). Generation processes are also aggregated by fuel or energy source
+    All processes are compiled by US regions. The regions are specified by the
+    user via the configuration files or passed parameters - Balancing Authority
+    Areas, Federal Energy Regulatory Commission (FERC) regions, eGRID
+    subregions. Generation processes are aggregated by fuel or energy source
     and provide the flow of electricity after it has been transformed for
     transmission on average US high voltage transmission lines (230 - 765 kV ).
-    Mix processes are mixes of generation by fuel type representing the average
-    mix of electricity available on the grid within the region either based on
-    production or consumption. Delivery to the final user is targeted toward an
-    average end user without separation between different user types. The time
-    span for all processes is one year, with the goal to represent the current
-    (2018) year.
-    ' 
+    Generation and consumption mix processes are mixes of electricity by fuel
+    type and region representing the average mix of electricity generated or
+    consumed within the region. Delivery to the final user is targeted toward
+    an average end user without separation between different user types and
+    included transmission loses. '
 
 default_datacollection_statement: &datacollection_statement
   - 'DATA COLLECTION 
   
-    All inventories were calculated
-    using secondary data from publicly available datasets.
+    All inventories were calculated using secondary data from publicly available datasets.
     '
 
 default_uncertainty_statement: &uncertainty_statement
   - 'UNCERTAINTY ESTIMATION 
   
-    Flow-level data quality scores
-    are assigned to each elementary flow exchange and process-level scores to each
-    process using the USEPA LCA Data Quality Assessment guidance . In the
-    generation processes, for each emission factor, five data quality scores were
-    assigned on flow-level data quality scoring. Process data quality scores draw
-    on the process US EPA DQ indicator guidance. Process completeness is
-    calculated by first creating a list of expected flows for each fuel type. U.S.
-    average profiles for the fuels used in electricity generation are developed for
-    expected flows in the following categories: greenhouse gases (GHG), CAPs, toxic
-    and hazardous air pollutants (HAP), toxic water discharges, toxic soil
-    releases, and hazardous waste. To determine the expected flows in each category
-    the number of flows reported in the underlying data sources NEI, TRI, eGRID,
-    RCRAInfo are summed across eGRID subregions by fuel type. Expected flows by
-    fuel type for other inputs and outputs including intermediate inputs, raw
-    energy demands, and water inputs are determined based on flows reported for the
-    relevant electricity generation fuel type in existing LCI datasets such as
-    ANL''s GREET model, NREL''s USLCI, and ecoinvent. Expected nutrient discharges to
-    water are derived from a sample of electric facilities reporting to USEPA''s
+    Flow-level data quality scores are assigned to each elementary flow
+    exchange and process-level scores to each process using the USEPA LCA Data
+    Quality Assessment guidance
+    (https://cfpub.epa.gov/si/si_public_record_report.cfm?Lab=NRMRL&dirEntryId=321834).
+    In the generation processes, for each emission factor, five data quality
+    scores were assigned on flow-level data quality scoring. Process data
+    quality scores draw on the process US EPA DQ indicator guidance. Process
+    completeness is calculated by first creating a list of expected flows for
+    each fuel type. U.S. average profiles for the fuels used in electricity
+    generation are developed for expected flows in the following categories:
+    greenhouse gases (GHG), CAPs, toxic and hazardous air pollutants (HAP),
+    toxic water discharges, toxic soil releases, and hazardous waste. To
+    determine the expected flows in each category the number of flows reported
+    in the underlying data sources NEI, TRI, eGRID, RCRAInfo are summed across
+    eGRID subregions by fuel type. Expected flows by fuel type for other inputs
+    and outputs including intermediate inputs, raw energy demands, and water
+    inputs are determined based on flows reported for the relevant electricity
+    generation fuel type in existing LCI datasets such as ANL''s GREET model,
+    NREL''s USLCI, and ecoinvent. Expected nutrient discharges to water are
+    derived from a sample of electric facilities reporting to USEPA''s
     Discharge Monitoring Report (DMR). The actual flows evaluated for each fuel
-    type by eGRID subregion can then be documented and compared to the U.S. average
-    electrical fuel generation profiles to determine the overall process
-    completeness according to the method described in USEPA LCA Data Quality
-    Assessment guidance. Air emission flow data collection scores can also draw on
-    these fuel-specific profiles by documenting whether an expected flow is being
-    reported by the fuel type in the relevant eGRID subregion. An expected emission
-    may not be captured if there are discrepancies between the facilities covered
-    in eGRID and those reporting to the USEPA databases TRI, NEI, RCRAInfo.
-    '
+    type by eGRID subregion can then be documented and compared to the U.S.
+    average electrical fuel generation profiles to determine the overall
+    process completeness according to the method described in USEPA LCA Data
+    Quality Assessment guidance. Air emission flow data collection scores can
+    also draw on these fuel-specific profiles by documenting whether an
+    expected flow is being reported by the fuel type in the relevant eGRID
+    subregion. An expected emission may not be captured if there are
+    discrepancies between the facilities covered in eGRID and those reporting
+    to the USEPA databases TRI, NEI, RCRAInfo. '
 
 no_uncertainty_statement: &no_uncertainty
   - 'UNCERTAINTY ESTIMATION 
@@ -75,18 +74,15 @@ default:
   - 'The emissions contained in this process are the reported emissions of all 
   of the facilities in the stated region/fuel type per MWh. The boundary
   of these emissions are within the boundaries of the electricity generating 
-  facilities. For the "mixed" plant category, the emissions can be from any 
-  facility within the region that doesn''t match the treshhold set in the model
-  configuration file (default valut of 90 percent electricity generation from a 
-  specific fuel type).'
+  facilities. For the mixed plant category, the emissions can be from any
+  facility within the region that does not match the threshold set in the model
+  configuration file.'
 
   Description: 
   - *default_techno_intro
   - *default_techno_process
 
   TechnologyDescription:
-  - *default_techno_intro
-  - *default_techno_process
 
   Start_date: ''
   
@@ -106,20 +102,23 @@ default:
   supplied electricity. A full inventory of environmental flows are included
   enabling use of a full range of LCIA impact categories.'
 
-  DatasetOwner: 'US EPA'
+  DatasetOwner: 'NETL'
 
-  DataGenerator: 'US EPA and ERG and NREL and NETL'
+  DataGenerator: 'NETL and US EPA and ERG and NREL'
 
-  DataDocumentor: 'US EPA and ERG and NREL and NETL'
+  DataDocumentor: 'NETL and US EPA and ERG and NREL'
 
   AccessUseRestrictions: 'No Restrictions'
 
-  ProjectDescription: 'This research was conducted as part of the USEPA Air,
-  Climate, and Energy national research program. Support was provided by the
-  National Renewable Energy Laboratory through interagency agreement
-  DW-89-92448301-1, by Eastern Research Group (ERG) through USEPA contract
-  EP-C-16-015, task order 008, and by the National Energy Technology Laboratory
-  (NETL) through contract number DE-FE0025912'
+  ProjectDescription: 'US EPA contribution to this research was conducted as
+  part of the USEPA Air, Climate, and Energy national research program. US DOE
+  National Energy Technology Laboratory contribution to this research was
+  prepared by MESA for the US DOE NETL, under DOE NETL Contract Number
+  DE-FE0025912. Support was provided by the National Renewable Energy
+  Laboratory through interagency agreement DW-89-92448301-1, by Eastern
+  Research Group (ERG) through USEPA contract EP-C-16-015, task order 008, and
+  by the National Energy Technology Laboratory (NETL) through contract number
+  DE-FE0025912'
 
   LCIMethod: 'Attibutional'
 
@@ -181,12 +180,12 @@ default:
     facilities are gathered from eGRID as well as the USEPA emissions and waste
     inventories, NEI, TRI, and RCRAInfo. Alternative generation data was
     gathered from EIA-923 when the emissions or waste inventories correspond to
-    a non-egrid year. The eGRID subregion identifier in the ‘Plants’ list was
-    used to associate a facility with a region. The fuel and energy types used
-    for the aggregation are the eGRID fuel categories -- oil, natural gas,
-    synthetic gas, nuclear fuel, hydroelectric, biomass, wind, solar,
-    geothermal and other fuel -- except for the coal sources, which are further
-    disaggregated by the eGRID reported primary fuel. The coal fuels are
+    a non-egrid year. The plants are associated with various regions depending
+    on model configuration with region names coming from eGRID and EIA. The
+    fuel and energy types used for the aggregation are the eGRID fuel
+    categories -- oil, natural gas, synthetic gas, nuclear fuel, hydroelectric,
+    biomass, wind, solar, solar thermal, geothermal and other fuel. Coal
+    sources can be further disaggregated by the reported primary fuel:
     bituminous coal, lignite coal, sub-bituminous coal, refined coal, and waste
     coal. Each generation process, defined by fuel type and regions, includes a
     fuel or energy input, linkage to an infrastructure process, and emissions
@@ -215,32 +214,20 @@ default:
   Reviewer: 'NETL and USDA and EPA'
 
   DatasetOtherEvaluation: ''
+  Sources:
+    Source1:
+      Name: 'Ingwersen, et al. electricitylci: A Python Package for U.S.
+      Regionalized Electricity Life Cycle Inventory Data Creation'
 
-  Source1: ''
+      TextReference: 'Ingwersen, et al. (2020). electricitylci: A Python Package for U.S.
+      Regionalized Electricity Life Cycle Inventory Data Creation. Manuscript in
+      preparation.'
 
-  Source2: ''
+      Year: 2020
 
-  Source3: ''
+      Version: '1.0.0'
 
-  Source4: ''
-
-  Source5: ''
-
-  Source6: ''
-
-  Source7: ''
-
-  Source8: ''
-
-  Source9: ''
-
-  Source10: ''
-
-  Source11: ''
-
-  Source12: ''
-
-  Source13: ''
+      Category: 'In_Development'
 
 nuclear_upstream:
 
@@ -265,8 +252,6 @@ nuclear_upstream:
   - *nuclear_techno_process
 
   TechnologyDescription:
-  - *nuclear_techno_intro
-  - *nuclear_techno_process  
 
   ModelingConstants: 'http://www.netl.doe.gov/energy-analysis/details?id=620'
   
@@ -306,6 +291,23 @@ nuclear_upstream:
   DataCollectionPeriod: '2011 to present. Secondary/tertiary material inputs
   provided via thinkstep data are from service pack 34 - 2016'
   
+  Sources:
+    Source1:
+      Name: 'Role of Alternative Energy Sources: Nuclear Technology Assessment'
+
+      Year: 2012
+
+      TextReference: 'NETL. (2012). Role of Alternative Energy Sources: Nuclear
+      Technology Assessment. Document Number: NETL/DOE-2011/1502 National
+      Energy Technology Laboratory, from
+      https://www.netl.doe.gov/energy-analysis/details?id=620 Pittsburgh, PA.'
+
+      Version: '1.0.0'
+
+      Url: 'netl.doe.gov/energy-analysis/details?id=620'
+
+      Category: 'NETL'
+
 geothermal:
 
   techno_intro: &geothermal_techno_intro
@@ -327,8 +329,6 @@ geothermal:
   - *geothermal_techno_process
 
   TechnologyDescription:
-  - *geothermal_techno_intro
-  - *geothermal_techno_process  
 
   DatasetOwner: 'NETL'
 
@@ -363,6 +363,24 @@ geothermal:
 
   DataCollectionPeriod: '2016-2018'
 
+  Sources:
+
+    Source1:
+      Name: 'Role of Alternative Energy Sources: Geothermal Technology Assessment'
+
+      Year: 2012
+
+      TextReference: 'NETL. (2012). Role of Alternative Energy Sources:
+      Geothermal Technology Assessment. Document Number: National Energy
+      Technology Laboratory, from netl.doe.gov/energy-analysis/details?id=591
+      Pittsburgh, PA.'
+
+      Version: '1.0.0'
+
+      Url: 'netl.doe.gov/energy-analysis/details?id=591'
+
+      Category: 'NETL'
+
 solar:
 
   techno_intro: &solar_techno_intro
@@ -383,8 +401,6 @@ solar:
   - *solar_techno_process
 
   TechnologyDescription:
-  - *solar_techno_intro
-  - *solar_techno_process 
 
   DatasetOwner: 'IEA, NREL, JE Mason, VM Fthenakis, T Hansen, HC Kim'
 
@@ -422,6 +438,21 @@ solar:
 
     - *no_uncertainty
 
+  Sources:
+    Source1:
+
+      Name: 'Ingwersen, et al. electricitylci: A Python Package for U.S.
+      Regionalized Electricity Life Cycle Inventory Data Creation'
+
+      TextReference: 'Ingwersen, et al. (2020). electricitylci: A Python Package for U.S.
+      Regionalized Electricity Life Cycle Inventory Data Creation. Manuscript in
+      preparation.'
+
+      Year: 2020
+
+      Version: '1.0.0'
+
+      Category: 'In_Development'
 
 solarthermal:
 
@@ -444,9 +475,6 @@ solarthermal:
   - *solarthermal_techno_process
 
   TechnologyDescription:
-  - *solarthermal_techno_intro
-  - *solarthermal_techno_process 
-
 
   DatasetOwner: 'NREL'
 
@@ -483,6 +511,22 @@ solarthermal:
 
     - *no_uncertainty
 
+  Sources:
+    Source1:
+
+      Name: 'Ingwersen, et al. electricitylci: A Python Package for U.S.
+      Regionalized Electricity Life Cycle Inventory Data Creation'
+
+      TextReference: 'Ingwersen, et al. (2020). electricitylci: A Python Package for U.S.
+      Regionalized Electricity Life Cycle Inventory Data Creation. Manuscript in
+      preparation.'
+
+      Year: 2020
+
+      Version: '1.0.0'
+
+      Category: 'In_Development'
+
 wind:
 
   techno_intro: &wind_techno_intro
@@ -504,8 +548,6 @@ wind:
   - *wind_techno_process
 
   TechnologyDescription:
-  - *wind_techno_intro
-  - *wind_techno_process 
 
   DatasetOwner: 'NREL and Vestas'
 
@@ -543,16 +585,29 @@ wind:
 
     - *no_uncertainty
 
-    - 'FURTHER DOCUMENTATION
-    
-      https://www.netl.doe.gov/energy-analysis/details?id=620'
+  Sources:
+    Source1:
+
+      Name: 'Ingwersen, et al. electricitylci: A Python Package for U.S.
+      Regionalized Electricity Life Cycle Inventory Data Creation'
+
+      TextReference: 'Ingwersen, et al. (2020). electricitylci: A Python Package for U.S.
+      Regionalized Electricity Life Cycle Inventory Data Creation. Manuscript in
+      preparation.'
+
+      Year: 2020
+
+      Version: '1.0.0'
+
+      Category: 'In_Development'
+
 
 consumption_mix:
 
   techno_intro: &cons_mix_techno_intro
 
   - 'This process provides the electricity inputs from the various balancing
-  authority areas or NERC regions that makes up the consumption mix for the stated
+  authority areas or eGRID subregions that makes up the consumption mix for the stated
   region.'
 
   techno_process: &cons_mix_techno_process
@@ -567,9 +622,7 @@ consumption_mix:
   - *cons_mix_techno_process
 
   TechnologyDescription:
-  - *cons_mix_techno_intro
-  - *cons_mix_techno_process 
-  
+
   use_egrid:
     DataTreatment: 'FERC Form 714 and international trading data in conjunction
     with the updated generation mixes. There are two different approaches to
@@ -588,6 +641,20 @@ consumption_mix:
 
     DataSelection: 'FERC Form 714'
 
+    Sources:
+      Source1:
+        Name: 'Hottle, T., et al. (2020) Manuscript in development.'
+
+        TextReference: 'Hottle, T., T.J. Ghosh (2020) Manuscript in development.'
+
+        Year: 2020
+
+        Version: '1.0.0'
+
+        Category: 'In_Development'
+
+
+
   replace_egrid:
     DataTreatment: 'US Energy Information Administration (EIA) Form EIA-930
     electricity trading data is used to inform an input/output model of
@@ -602,6 +669,67 @@ consumption_mix:
     years between are available for generating consumption mixes.'
 
     DataSelection: 'EIA Form 930 and EIA 923'
+
+    Sources:
+      Source1:
+        Name: 'de Chalendar, J. A., et al. (2019). Tracking emissions in the US
+        electricity system'
+
+        TextReference: 'de Chalendar, J. A., Taggart, J., & Benson, S. M.
+        (2019). Tracking emissions in the US electricity system. Proceedings of
+        the National Academy of Sciences, 116(51), 25497-25502. doi:
+        10.1073/pnas.1912950116'
+
+        Year: 2020
+
+        Version: '1.0.0' 
+
+        Category: ''
+
+      Source2:
+        Name: 'Qu, S. et al. (2017). A Quasi-Input-Output model to improve the
+        estimation of emission factors for purchased electricity from
+        interconnected grids.'
+
+        TextReference: 'Qu, S. et al. (2017). A Quasi-Input-Output model to improve the
+        estimation of emission factors for purchased electricity from
+        interconnected grids. Applied Energy, 200, 249-259.'
+
+        Year: 2017
+
+        Version: '1.0.0'
+
+        Category: ''
+
+      Source3:
+
+        Name: 'Qu, S. et al. (2018). Virtual CO2 Emission Flows in the
+        Global Electricity Trade Network'
+
+        TextReference: 'Qu, S. et al. (2018). Virtual CO2 Emission Flows in the
+        Global Electricity Trade Network. Environmental Science & Technology,
+        52(11), 6666-6675.'
+
+        Year: 2018
+
+        Version: '1.0.0'
+
+        Category: ''
+
+      Source4:
+        Name: 'Ingwersen, et al. electricitylci: A Python Package for U.S.
+        Regionalized Electricity Life Cycle Inventory Data Creation'
+
+        TextReference: 'Ingwersen, et al. (2020). electricitylci: A Python Package for U.S.
+        Regionalized Electricity Life Cycle Inventory Data Creation. Manuscript in
+        preparation.'
+
+        Year: 2020
+
+        Version: '1.0.0'
+
+        Category: 'In_Development'
+
 
 generation_mix:
 
@@ -623,8 +751,6 @@ generation_mix:
   - *gen_mix_techno_process
 
   TechnologyDescription:
-  - *gen_mix_techno_intro
-  - *gen_mix_techno_process 
 
   use_egrid:
     DataTreatment: 'FERC Form 714 and international trading data in conjunction
@@ -681,8 +807,6 @@ coal_upstream:
   - *coal_upstream_techno_process
 
   TechnologyDescription:
-  - *coal_upstream_techno_intro
-  - *coal_upstream_techno_process 
 
   Start_date: '1/1/2016'
   
@@ -735,6 +859,26 @@ coal_upstream:
   and origin of the coal used by each power plant, as well as year-specific 
   paramaters such as coal mine methane emissions.'
 
+  Sources:
+
+    Source1:
+
+      Name: 'NETL (2020). United States Life Cycle Coal Mining And Delivery Baseline'
+
+      Url: 'netl.doe.gov/LCA'
+
+      Category: 'NETL'
+
+      Year: 2020
+
+      Version: '1.00.00'
+
+      TextReference: 'NETL (2020). United States Life Cycle Coal Mining And Delivery Baseline
+      U.S. Department of Energy National Energy Technology Laboratory, Pittsburgh, PA. Report 
+      in prepartion. netl.doe.gov/LCA'
+
+
+
 gas_upstream:
 
   techno_intro: &gas_upstream_techno_intro
@@ -758,8 +902,6 @@ gas_upstream:
   - *gas_upstream_techno_process
 
   TechnologyDescription:
-  - *gas_upstream_techno_intro
-  - *gas_upstream_techno_process 
 
   Start_date: '1/1/2016'
   
@@ -812,6 +954,24 @@ gas_upstream:
       More information on the inventory is available at
       https://www.netl.doe.gov/energy-analysis/details?id=3198
     '
+  Sources:
+
+    Source1:
+      
+      Name: 'NETL (2019). Life Cycle Analysis of Natural Gas Extraction and Power Generation'
+
+      Url: 'netl.doe.gov/energy-analysis/details?id=3198'
+
+      Version: '1.0.0'
+
+      Year: 2019
+
+      TextReference: 'NETL. (2019). Life Cycle Analysis of Natural Gas Extraction 
+      and Power Generation. DOE/NETL-2019/2039. U.S. DOE National Energ Technology 
+      Laboratory. netl.doe.gov/energy-analysis/details?id=3198 Pittsburgh, PA'
+
+      Category: 'NETL'
+
 oil_upstream:
 
   techno_intro: &oil_upstream_techno_intro
@@ -841,8 +1001,6 @@ oil_upstream:
   - *oil_upstream_techno_process
 
   TechnologyDescription:
-  - *oil_upstream_techno_intro
-  - *oil_upstream_techno_process 
 
   Start_date: '1/1/2016'
   
@@ -901,6 +1059,26 @@ oil_upstream:
   DataCollectionPeriod: 'Data from 2016 was used to define the mix of crudes
   and petroleum refinery types.'
 
+  Sources:
+    Source1:
+      Name: 'Cooney et al. (2016). Updating the U.S. Life Cycle GHG
+      Petroleum Baseline to 2014 with Projections to 2040 Using Open-Source
+      Engineering-Based Models.'
+
+      TextReference: 'Cooney, G., Jamieson, M., Marriott, J., Bergerson, J.,
+      Brandt, A., & Skone, T. (2016). Updating the U.S. Life Cycle GHG
+      Petroleum Baseline to 2014 with Projections to 2040 Using Open-Source
+      Engineering-Based Models. Environmental Science & Technology.
+      pubs.acs.org/doi/abs/10.1021/acs.est.6b02819'
+
+      Year: 2016
+
+      Version: '1.0.0'
+
+      Url: 'pubs.acs.org/doi/abs/10.1021/acs.est.6b02819'
+
+      Category: ''
+
 coal_transport_upstream:
 
   techno_intro: &coal_transport_techno_intro
@@ -925,8 +1103,6 @@ coal_transport_upstream:
   - *coal_transport_techno_process
 
   TechnologyDescription:
-  - *coal_transport_techno_intro
-  - *coal_transport_techno_process 
 
   Start_date: '1/1/2016'
   
@@ -981,6 +1157,24 @@ coal_transport_upstream:
   and origin of the coal used by each power plant, as well as year-specific 
   paramaters such as coal mine methane emissions.'
 
+  Sources:
+
+    Source1:
+
+      Name: 'NETL (2020). United States Life Cycle Coal Mining And Delivery Baseline'
+
+      Url: 'netl.doe.gov/LCA'
+
+      Category: 'NETL'
+
+      Year: 2020
+
+      Version: '1.00.00'
+
+      TextReference: 'NETL (2020). United States Life Cycle Coal Mining And Delivery Baseline
+      U.S. Department of Energy National Energy Technology Laboratory, Pittsburgh, PA. Report 
+      in prepartion. netl.doe.gov/LCA'
+
 construction_upstream:
 
   techno_intro: &construction_techno_intro
@@ -1006,8 +1200,6 @@ construction_upstream:
   - *construction_techno_process
 
   TechnologyDescription:
-  - *construction_techno_intro
-  - *construction_techno_process 
 
   DatasetOwner: 'NETL'
 
@@ -1046,3 +1238,40 @@ construction_upstream:
   
   DataCollectionPeriod: 'Data from a 2015 techo-economics analysis were used to
   define the construction costs for each type of power plant.'
+
+  Sources:
+
+    Source1: 
+    
+      Name: 'Yang et al. (2017) USEEIO: A new and transparent United States
+      environmentally-extended input-output model' 
+      
+      Url: 'doi.org/10.1016/j.jclepro.2017.04.150' 
+      
+      TextReference: 'Yang, Y.,
+      Ingwersen, W. W., Hawkins, T. R., Srocka, M., & Meyer, D. E. (2017).
+      USEEIO: A new and transparent United States environmentally-extended
+      input-output model. Journal of Cleaner Production, 158, 308-318. doi:
+      https://doi.org/10.1016/j.jclepro.2017.04.150'
+
+      Year: 2017
+
+      Version: '1.0.0'
+
+
+    Source2: 
+      Name: 'NETL. (2015). Cost and Performance Baseline for Fossil
+      Energy Plants Volume 1a: Bituminous Coal (PC) and Natural Gas to
+      Electricity Revision 3.'
+
+      TextReference: 'NETL. (2015). Cost and Performance Baseline for Fossil
+      Energy Plants Volume 1a: Bituminous Coal (PC) and Natural Gas to
+      Electricity Revision 3. Document Number: National Energy Technology
+      Laboratory, from netl.doe.gov/energy-analysis/details?id=729 Pittsburgh,
+      PA.'
+
+      Year: 2015
+
+      Version: '1.0.0'
+
+      Category: 'NETL'

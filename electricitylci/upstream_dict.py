@@ -19,6 +19,9 @@ from electricitylci.process_dictionary_writer import (
         process_doc_creation,
         process_description_creation
 )
+from electricitylci.utils import make_valid_version_num
+from electricitylci.globals import elci_version
+
 module_logger=logging.getLogger("upstream_dict.py")
 # with open(f"{data_dir}/upstream_metadata.yaml", 'r') as f:
 #    metadata = yaml.safe_load(f)
@@ -59,6 +62,7 @@ def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
     else:
         ar["category"] = fuel_category_dict[fuel_type]
     ar["description"] = process_description_creation(f"{fuel_type.lower()}_upstream")
+    ar["version"]=make_valid_version_num(elci_version)
     return ar
 
 

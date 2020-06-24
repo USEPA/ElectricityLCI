@@ -22,6 +22,7 @@ def write(processes: dict, file_path: str):
                 d_vals = processes[p_key]
                 process = olca.Process()
                 process.name = _val(d_vals, 'name')
+                process.version = _val(d_vals, 'version')
                 category_path = _val(d_vals, 'category', default='')
                 location_code = _val(d_vals, 'location', 'name', default='')
                 process.id = _uid(olca.ModelType.PROCESS,
@@ -285,7 +286,7 @@ def _process_doc(dict_d: dict, writer: pack.Writer,
         'restrictionsDescription',
         'copyright',
         'intendedApplication',
-        'projectDescription'
+        'projectDescription',
     ]
     doc.from_json({field: _val(dict_d, field) for field in copy_fields})
     doc.valid_from = _format_date(_val(dict_d, 'validFrom'))
@@ -295,6 +296,7 @@ def _process_doc(dict_d: dict, writer: pack.Writer,
     doc.data_generator = _actor(_val(dict_d, 'dataGenerator'), writer, created_ids)
     doc.data_set_owner = _actor(_val(dict_d, 'dataSetOwner'), writer, created_ids)
     doc.publication = _source(_val(dict_d, 'publication'), writer, created_ids)
+    doc.sources = [_source(x, writer, created_ids) for x in dict_d["sources"]]
     return doc
 
 
@@ -313,19 +315,47 @@ def _actor(name: str, writer: pack.Writer,
     return olca.ref(olca.Actor, uid, name)
 
 
-def _source(name: str, writer: pack.Writer,
+def _source(src_data: dict, writer: pack.Writer,
             created_ids: set) -> Optional[olca.Ref]:
-    if not isinstance(name, str) or name == '':
+    if not isinstance(src_data, dict) or src_data["Name"] == '':
         return None
-    uid = _uid(olca.ModelType.SOURCE, name)
+    try:
+        if isinstance(src_data["Category"],list):
+            category=src_data["Category"]
+        elif isinstance(src_data["Category"],str):
+            category=src_data["Category"]
+        else:
+            category=''
+    except KeyError:
+        category=''
+    uid = _uid(olca.ModelType.SOURCE, category, src_data["Name"])
     if uid in created_ids:
-        return olca.ref(olca.Source, uid, name)
+        return olca.ref(olca.Source, uid, src_data["Name"])
     source = olca.Source()
     source.id = uid
-    source.name = name
+    source.name = src_data["Name"]
+    try:
+        source.url = src_data["Url"]
+    except KeyError:
+        source.url = ''
+    try:
+        source.version=src_data["Version"]
+    except KeyError:
+        source.version = '1.0.0'
+    try:
+        source.text_reference = src_data["TextReference"]
+    except KeyError:
+        source.text_reference = src_data["Name"]
+    try:
+        source.year = src_data["Year"]
+    except TypeError:
+        source.year=int(src_data["Year"])
+    except KeyError:
+        source.year=datetime.datetime.now(pytz.utc).year
+    source.category=_category(category,olca.ModelType.SOURCE,writer,created_ids)
     writer.write(source)
     created_ids.add(uid)
-    return olca.ref(olca.Source, uid, name)
+    return olca.ref(olca.Source, uid, src_data["Name"])
 
 
 def _val(dict_d: dict, *path, **kvargs):
