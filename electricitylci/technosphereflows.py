@@ -1,9 +1,11 @@
+"""Add docstring."""
 
 import pandas as pd
 from electricitylci.model_config import fuel_name
 
 
 def map_heat_inputs_to_fuel_names(generation_df):
+    """Add docstring."""
     fuel_info_tech_flows = fuel_name[fuel_name["ElementaryFlowInput"]==0]
     fuel_info_tech_flows = fuel_info_tech_flows.rename(columns={"Fuelname":"FuelName","FuelList":"FuelCategory"})
     fuel_cols_to_use = ["FuelCategory","FuelName","Heatcontent","Category","Subcategory"]
@@ -18,7 +20,7 @@ def map_heat_inputs_to_fuel_names(generation_df):
     generation_df.loc[(generation_df['FlowName'] == 'Heat')&(generation_df['Heatcontent'].notnull()), 'Maximum'] = generation_df['Maximum']/generation_df['Heatcontent']
     generation_df.loc[(generation_df['FlowName'] == 'Heat')&(generation_df['Heatcontent'].notnull()), 'Unit'] = 'kg'
 
-    #Finally use fuel name for flowname
+    # Finally use fuel name for flowname
     generation_df.loc[generation_df['FlowName'] == 'Heat', 'FlowName'] = generation_df['FuelName']
     fuel_cols_to_drop = ["FuelName", "Heatcontent", "Category", "Subcategory"]
     generation_df = generation_df.drop(columns=fuel_cols_to_drop)

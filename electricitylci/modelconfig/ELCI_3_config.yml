@@ -18,18 +18,18 @@ regional_aggregation: 'eGRID'
 # will trigger the use of EPA CEMS and EIA data as substitutes for eGRID. Replacing
 # eGRID will also use EIA generation data to determine the generation mix.
 egrid_year: 2016
-eia_gen_year: 2017
+eia_gen_year: 2016
 replace_egrid: False
 
 #NETL has developed profiles for renewable generation to capture construction
 #impacts (e.g., solar PV menufacturing).
-include_renewable_generation: False
+include_renewable_generation: True
 
 #NETL has developed profiles for power plant water use.
 include_netl_water: True
 
 # Upstream data from NETL can be included in the outputs.
-include_upstream_processes: False
+include_upstream_processes: True
 
 inventories_of_interest:
   eGRID: 2016
@@ -57,7 +57,7 @@ min_plant_percent_generation_from_primary_fuel_category: 90
 #MIXED and generate life cycle processes for them. Note that the definition
 #of mixed is purposefully ambiguous and will mean different things depending 
 #on the region of aggregation.
-keep_mixed_plant_category: False
+keep_mixed_plant_category: True
 
 # NEEDS A GOOD DESCRIPTION OF THIS PARAMETER
 filter_non_egrid_emission_on_NAICS: True
@@ -85,7 +85,7 @@ NETL_IO_trading_year: 2016
 
 # OTHER PARAMETERS
 
-fedelemflowlist_version: 1.0
+fedelemflowlist_version: 1.0.2
 post_process_generation_emission_factors: False
 use_primaryfuel_for_coal: False
 fuel_name_file: fuelname_1.csv

@@ -7,11 +7,12 @@ import electricitylci.PhysicalQuantities as pq
 from electricitylci.eia923_generation import eia923_download_extract
 from electricitylci.eia860_facilities import eia860_balancing_authority
 
+
 def generate_hydro_emissions():
     """
     This generates a dataframe of hydro power plant emissions using data
-    from an analysis performed at NETL that estimates biogenic reservoir 
-    emissions. The reservoir emissions are allocated among all uses for 
+    from an analysis performed at NETL that estimates biogenic reservoir
+    emissions. The reservoir emissions are allocated among all uses for
     the reservoir (e.g., boating, fishing, etc.) using market-based
     allocation. The year for the inventory is fixed to 2016.
 
@@ -28,7 +29,7 @@ def generate_hydro_emissions():
     hydro_df = pd.read_csv(
             f"{data_dir}/{DATA_FILE}", index_col=0, low_memory=False
         )
-    
+
     hydro_df.rename(columns={"Plant Id":"FacilityID","Annual Net Generation (MWh)":"Electricity"},inplace=True)
     FLOW_DICTIONARY={
             "co2 (kg)":{"FlowName":"Carbon dioxide","FlowUUID":"b6f010fb-a764-3063-af2d-bcb8309a97b7","Compartment_path":"emission/air","Compartment":"air"},
@@ -45,7 +46,7 @@ def generate_hydro_emissions():
     hydro_df = pd.concat(
             [hydro_df, hydro_df["FlowDict"].apply(pd.Series)], axis=1
         )
-    
+
     hydro_df["Year"]=2016
     hydro_df["Source"]="netl"
     eia860_df=eia860_balancing_authority(2016)

@@ -1,7 +1,4 @@
-"""
-Small utility functions for use throughout the repository
-
-"""
+"""Small utility functions for use throughout the repository."""
 
 import io
 import zipfile
@@ -15,9 +12,10 @@ import logging
 
 module_logger = logging.getLogger("utils.py")
 
+
 def download_unzip(url, unzip_path):
     """
-    Download a zip file from url and extract contents to a given path
+    Download a zip file from url and extract contents to a given path.
 
     Parameters
     ----------
@@ -38,7 +36,7 @@ def download_unzip(url, unzip_path):
 
 
 def find_file_in_folder(folder_path, file_pattern_match, return_name=True):
-
+    """Add docstring."""
     files = os.listdir(folder_path)
 
     # would be more elegent with glob but this works to identify the
@@ -88,11 +86,15 @@ def create_ba_region_map(
         map_series = region_match[region_col]
     return map_series
 
+
 def fill_default_provider_uuids(dict_to_fill, *args):
-    """Fills in UUIDs for default providers in the specified dictionary
-    (dict_to_fill) using any number of other dictionaries given in args
-    to find the matching process and provide the UUID. This is to
-    ensure all the required data for providers is available for openLCA
+    """
+    Fills in UUIDs.
+    
+    For default providers in the specified dictionary (dict_to_fill) using any
+    number of other dictionaries given in args to find the matching process and
+    provide the UUID. This is to ensure all the required data for providers is
+    available for openLCA.
 
     Parameters
     ----------
@@ -133,3 +135,32 @@ def fill_default_provider_uuids(dict_to_fill, *args):
     else:
         module_logger.warning(f"All arguments into function must be dictionaries")
     return dict_to_fill
+
+
+def make_valid_version_num(foo):
+    """
+    Strips letters from a string to keep only digits and periods to try to make the version
+    number valid to work for version in http://greendelta.github.io/olca-schema/html/Process.html
+    :param str: A string of the software version
+    :return: str with only numbers and periods
+    """
+    import re
+    result = re.sub('[^0-9,.]','',foo)
+    return result
+
+
+def set_dir(directory):
+    if not os.path.exists(directory): os.makedirs(directory)
+    return directory
+
+
+def join_with_underscore(items):
+    type_cast_to_str = False
+    for x in items:
+        if not isinstance(x, str):
+            # raise TypeError("join_with_underscore()  inputs must be string")
+            type_cast_to_str = True
+    if type_cast_to_str:
+        items = [str(x) for x in items]
+    return "_".join(items)
+

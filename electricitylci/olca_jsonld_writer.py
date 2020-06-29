@@ -1,3 +1,5 @@
+"""Add docstring."""
+
 import datetime
 import pytz
 import logging as log
@@ -11,17 +13,16 @@ import olca.pack as pack
 
 
 def write(processes: dict, file_path: str):
-    """ Write the given process dictionary to a olca-schema zip file with the
-        given path.
-    """
+    """Write the given process dictionary to a olca-schema zip file with the given path."""
     with pack.Writer(file_path) as writer:
         list_of_dicts=list()
         created_ids = set()
-        #for d_vals in processes.values():
+        # for d_vals in processes.values():
         for p_key in processes.keys():
                 d_vals = processes[p_key]
                 process = olca.Process()
                 process.name = _val(d_vals, 'name')
+                process.version = _val(d_vals, 'version')
                 category_path = _val(d_vals, 'category', default='')
                 location_code = _val(d_vals, 'location', 'name', default='')
                 process.id = _uid(olca.ModelType.PROCESS,
@@ -54,6 +55,7 @@ def write(processes: dict, file_path: str):
                 writer.write(process)
                 processes[p_key]['uuid']=process.id
     return processes
+
 
 def _process_dq(dict_d: dict, process: olca.Process):
     process.dq_entry = _format_dq_entry(
@@ -113,7 +115,7 @@ def _exchange(dict_d: dict, writer: pack.Writer,
 
 
 def _unit(unit_name: str) -> Optional[olca.Ref]:
-    """ Get the ID of the openLCA reference unit with the given name. """
+    """Get the ID of the openLCA reference unit with the given name."""
     ref_id = None
     if isinstance(unit_name,dict):
         try:
@@ -150,9 +152,7 @@ def _unit(unit_name: str) -> Optional[olca.Ref]:
 
 
 def _flow_property(unit_name: str) -> Optional[olca.Ref]:
-    """ Get the ID of the openLCA reference flow property for the unit with
-        the given name.
-    """
+    """Get the ID of the openLCA reference flow property for the unit with the given name."""
     if isinstance(unit_name,dict):
         try:
             unit_name=unit_name["name"]
@@ -203,10 +203,10 @@ def _flow(dict_d: dict, flowprop: olca.Ref, writer: pack.Writer,
     uid = _val(dict_d, 'id')
     name = _val(dict_d, 'name')
     orig_uid=None
-    #Checking for technosphere or third party flows that were mapped in 
-    #an openLCA model, but these flows must be created in the json-ld here.
-    if (isinstance(uid,str) 
-        and uid !='' 
+    # Checking for technosphere or third party flows that were mapped in
+    # an openLCA model, but these flows must be created in the json-ld here.
+    if (isinstance(uid,str)
+        and uid !=''
         and (
                 "technosphere" in _val(dict_d,'category').lower()
                 or "third party" in _val(dict_d,'category').lower()
@@ -215,7 +215,7 @@ def _flow(dict_d: dict, flowprop: olca.Ref, writer: pack.Writer,
         ):
             orig_uid=uid
             uid=''
-        
+
     if isinstance(uid, str) and uid != '':
         return olca.ref(olca.Flow, uid, name)
     category_path = _val(dict_d, 'category', default='')
@@ -229,8 +229,8 @@ def _flow(dict_d: dict, flowprop: olca.Ref, writer: pack.Writer,
         flow.name = name
         flow.flow_type = olca.FlowType[_val(
             dict_d, 'flowType', default='ELEMENTARY_FLOW')]
-        #Do not assign flows a location
-        #flow.location = _location(_val(dict_d, 'location'),
+        # Do not assign flows a location
+        # flow.location = _location(_val(dict_d, 'location'),
         #                          writer, created_ids)
         flow.category = _category(category_path, olca.ModelType.FLOW,
                                   writer, created_ids)
@@ -242,6 +242,7 @@ def _flow(dict_d: dict, flowprop: olca.Ref, writer: pack.Writer,
         writer.write(flow)
         created_ids.add(uid)
     return olca.ref(olca.Flow, uid, name)
+
 
 def _location(dict_d: dict, writer: pack.Writer,
               created_ids: set) -> Optional[olca.Ref]:
@@ -285,7 +286,7 @@ def _process_doc(dict_d: dict, writer: pack.Writer,
         'restrictionsDescription',
         'copyright',
         'intendedApplication',
-        'projectDescription'
+        'projectDescription',
     ]
     doc.from_json({field: _val(dict_d, field) for field in copy_fields})
     doc.valid_from = _format_date(_val(dict_d, 'validFrom'))
@@ -295,6 +296,7 @@ def _process_doc(dict_d: dict, writer: pack.Writer,
     doc.data_generator = _actor(_val(dict_d, 'dataGenerator'), writer, created_ids)
     doc.data_set_owner = _actor(_val(dict_d, 'dataSetOwner'), writer, created_ids)
     doc.publication = _source(_val(dict_d, 'publication'), writer, created_ids)
+    doc.sources = [_source(x, writer, created_ids) for x in dict_d["sources"]]
     return doc
 
 
@@ -313,19 +315,47 @@ def _actor(name: str, writer: pack.Writer,
     return olca.ref(olca.Actor, uid, name)
 
 
-def _source(name: str, writer: pack.Writer,
+def _source(src_data: dict, writer: pack.Writer,
             created_ids: set) -> Optional[olca.Ref]:
-    if not isinstance(name, str) or name == '':
+    if not isinstance(src_data, dict) or src_data["Name"] == '':
         return None
-    uid = _uid(olca.ModelType.SOURCE, name)
+    try:
+        if isinstance(src_data["Category"],list):
+            category=src_data["Category"]
+        elif isinstance(src_data["Category"],str):
+            category=src_data["Category"]
+        else:
+            category=''
+    except KeyError:
+        category=''
+    uid = _uid(olca.ModelType.SOURCE, category, src_data["Name"])
     if uid in created_ids:
-        return olca.ref(olca.Source, uid, name)
+        return olca.ref(olca.Source, uid, src_data["Name"])
     source = olca.Source()
     source.id = uid
-    source.name = name
+    source.name = src_data["Name"]
+    try:
+        source.url = src_data["Url"]
+    except KeyError:
+        source.url = ''
+    try:
+        source.version=src_data["Version"]
+    except KeyError:
+        source.version = '1.0.0'
+    try:
+        source.text_reference = src_data["TextReference"]
+    except KeyError:
+        source.text_reference = src_data["Name"]
+    try:
+        source.year = src_data["Year"]
+    except TypeError:
+        source.year=int(src_data["Year"])
+    except KeyError:
+        source.year=datetime.datetime.now(pytz.utc).year
+    source.category=_category(category,olca.ModelType.SOURCE,writer,created_ids)
     writer.write(source)
     created_ids.add(uid)
-    return olca.ref(olca.Source, uid, name)
+    return olca.ref(olca.Source, uid, src_data["Name"])
 
 
 def _val(dict_d: dict, *path, **kvargs):
@@ -393,8 +423,12 @@ def _isnum(n) -> bool:
 
 
 def _format_dq_entry(entry: str) -> Optional[str]:
-    """ The data quality entries may contain floating point numbers which are
-        converted to integer numbers in this function."""
+    """
+    Data quality entries.
+    
+    May contain floating point numbers which are converted to integer numbers in
+    this function.
+    """
     if not isinstance(entry, str):
         return None
     e = entry.strip()
@@ -410,8 +444,11 @@ def _format_dq_entry(entry: str) -> Optional[str]:
 
 
 def _format_date(entry: str) -> Optional[str]:
-    """ Date entries currently have the format `month/day/year`. This function
-        converts such entries into the ISO format year-month-day. """
+    """
+    Date entries currently have the format `month/day/year`.
+    
+    This function converts such entries into the ISO format year-month-day.
+    """
     if not isinstance(entry, str):
         return None
     parts = entry.split('/')

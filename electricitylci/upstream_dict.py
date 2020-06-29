@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+"""Add docstring."""
+
 import pandas as pd
 from electricitylci.globals import output_dir, data_dir
 from electricitylci.coal_upstream import (
@@ -12,14 +14,18 @@ import logging
 import yaml
 import time
 from electricitylci.process_dictionary_writer import (
-        exchangeDqsystem, 
-        processDqsystem, 
+        exchangeDqsystem,
+        processDqsystem,
         process_doc_creation,
         process_description_creation
 )
+from electricitylci.utils import make_valid_version_num
+from electricitylci.globals import elci_version
+
 module_logger=logging.getLogger("upstream_dict.py")
-#with open(f"{data_dir}/upstream_metadata.yaml", 'r') as f:
+# with open(f"{data_dir}/upstream_metadata.yaml", 'r') as f:
 #    metadata = yaml.safe_load(f)
+
 
 def _unit(unt):
     ar = dict()
@@ -56,6 +62,7 @@ def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
     else:
         ar["category"] = fuel_category_dict[fuel_type]
     ar["description"] = process_description_creation(f"{fuel_type.lower()}_upstream")
+    ar["version"]=make_valid_version_num(elci_version)
     return ar
 
 
@@ -245,19 +252,20 @@ def _exchange_table_creation_output(data):
 
 def olcaschema_genupstream_processes(merged):
     """
-    Generate olca-schema dictionaries for upstream processes for the inventory
-    provided in the given dataframe.
+    Generate olca-schema dictionaries.
     
+    For upstream processes for the inventory provided in the given dataframe.
+
     Parameters
     ----------
     merged: dataframe
         Dataframe containing the inventory for upstream processes used by
         eletricity generation.
-    
+
     Returns
     ----------
     dictionary
-        Dictionary containing all of the unit processes to be written to 
+        Dictionary containing all of the unit processes to be written to
         JSON-LD for import to openLCA
     """
     #    mapped_column_dict={

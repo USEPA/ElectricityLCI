@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+"""Add docstring."""
+
 import pandas as pd
 from electricitylci.globals import output_dir, data_dir
 import electricitylci.PhysicalQuantities as pq
@@ -9,11 +11,13 @@ from electricitylci.eia923_generation import eia923_download_extract
 
 def generate_plant_water_use(year):
     """
-    Uses data from an NETL water use analysis to generate water withdrawal and
-    discharge flows for power plants. The underlying data represents an analysis
-    of water use in 2016. The water intensities are used to generate annual
-    amounts of water use using generation data from the given year.
+    Uses data from an NETL.
     
+    Water use analysis to generate water withdrawal and discharge flows for
+    power plants. The underlying data represents an analysis of water use in
+    2016. The water intensities are used to generate annual amounts of water use
+    using generation data from the given year.
+
     Parameters
     ----------
     year : int
@@ -26,8 +30,8 @@ def generate_plant_water_use(year):
         federal elementary flow name and uuids for the different water flows.
     """
     DATA_FILE = "NETL-EIA_powerplants_water_withdraw_consume_data_2016.csv"
-    #For better or worse the flow names and UUIDs are hard-coded based
-    #on the federal elementary flows list release - 0.2
+    # For better or worse the flow names and UUIDs are hard-coded based
+    # on the federal elementary flows list release - 0.2
     WATER_FLOW_RESOURCE_DICT = {
         "Fresh": {
             "FlowName": "Water, fresh",
@@ -93,7 +97,7 @@ def generate_plant_water_use(year):
         * water_df["Total net generation (MWh)"]
         * pq.convert(1, "galUS", "l")
     )
-    #The water use analysis is monthly at the boiler level
+    # The water use analysis is monthly at the boiler level
     water_df_group = water_df.groupby(
         by=[
             "Plant Code",
@@ -113,10 +117,10 @@ def generate_plant_water_use(year):
         inplace=True,
     )
     water_df_group["Plant Id"] = water_df_group["Plant Id"].astype(int)
-    
-    #While the analysis includes water intensities, these intensities are
-    #at the boiler level, on a monthly basis, so we calculate new ones based 
-    #on the annual withdrawal and electricity generated.
+
+    # While the analysis includes water intensities, these intensities are
+    # at the boiler level, on a monthly basis, so we calculate new ones based
+    # on the annual withdrawal and electricity generated.
     water_df_group["withdrawal_intensity"] = (
         water_df_group["annual_withdrawal"]
         / water_df_group["net_generation_water"]

@@ -14,14 +14,14 @@ import copy
 
 def generate_upstream_nuc(year):
     """
-    Generate the annual uranium extraction, processing and transportation 
+    Generate the annual uranium extraction, processing and transportation
     emissions (in kg) for each plant in EIA923.
-    
+
     Parameters
     ----------
     year: int
         Year of EIA-923 fuel data to use.
-    
+
     Returns
     ----------
     dataframe

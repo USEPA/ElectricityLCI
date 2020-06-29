@@ -1,22 +1,27 @@
 # -*- coding: utf-8 -*-
+
+"""Add docstring."""
+
 import pandas as pd
 from electricitylci.globals import output_dir, data_dir
 import numpy as np
 from electricitylci.eia923_generation import eia923_download_extract
 
+
 def generate_upstream_solarthermal(year):
     """
-    Generate the annual emissions for solar thermal plant construction for each 
-    plant in EIA923. The emissions inventory file has already allocated the
-    total emissions to construct the entire power plant over its assumed 30 year 
-    life. So the emissions returned below represent 1/30th of the total site 
-    construction emissions.
+    Generate the annual emissions.
     
+    For solar thermal plant construction for each plant in EIA923. The emissions
+    inventory file has already allocated the total emissions to construct the
+    entire power plant over its assumed 30 year life. So the emissions returned
+    below represent 1/30th of the total site construction emissions.
+
     Parameters
     ----------
     year: int
         Year of EIA-923 fuel data to use.
-    
+
     Returns
     ----------
     dataframe
@@ -68,8 +73,8 @@ def generate_upstream_solarthermal(year):
             'State',
             'Plant Name',
             ],inplace=True)
-    #These emissions will later be aggregated with any inventory power plant
-    #emissions because each facility has its own construction impacts.
+    # These emissions will later be aggregated with any inventory power plant
+    # emissions because each facility has its own construction impacts.
     solarthermal_upstream['stage_code']="Power plant"
     solarthermal_upstream['fuel_type']='SOLARTHERMAL'
     compartment_map={
@@ -78,10 +83,11 @@ def generate_upstream_solarthermal(year):
             'Energy':'input'
     }
     solarthermal_upstream['Compartment']=solarthermal_upstream['Compartment'].map(compartment_map)
-    #solarthermal_upstream['Compartment']=solarthermal_upstream['Compartment'].str.lower()
+    # solarthermal_upstream['Compartment']=solarthermal_upstream['Compartment'].str.lower()
     solarthermal_upstream["Unit"]="kg"
     solarthermal_upstream["input"]=False
     return solarthermal_upstream
+
 
 if __name__=='__main__':
     year=2016

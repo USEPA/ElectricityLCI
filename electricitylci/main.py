@@ -5,16 +5,17 @@ from electricitylci.globals import output_dir
 from electricitylci.model_config import model_name, model_specs
 from electricitylci.utils import fill_default_provider_uuids
 
+
 def main():
     """This function will generate an openLCA-schema JSON-LD zip file containing
-    life cycle inventory for US power plants based on the settings in the 
+    life cycle inventory for US power plants based on the settings in the
     user-specified configuration file.
     """
     logger = logging.getLogger("main")
-    #There are essentially two paths - with and without upstream (i.e., fuel)
-    #processes.
+    # There are essentially two paths - with and without upstream (i.e., fuel)
+    # processes.
     if model_specs['include_upstream_processes'] is True:
-        # Create dataframe with all generation process data. This will also 
+        # Create dataframe with all generation process data. This will also
         # include upstream and Canadian data.
         print("get generation process")
         upstream_df = electricitylci.get_upstream_process_df()
@@ -30,7 +31,7 @@ def main():
             upstream_df=upstream_df, upstream_dict=upstream_dict
         )
     else:
-        # Create dataframe with all generation process data. This will also 
+        # Create dataframe with all generation process data. This will also
         # include upstream and Canadian data.
         upstream_dict={}
         upstream_df=None
@@ -49,9 +50,9 @@ def main():
     generation_process_dict = electricitylci.write_process_dicts_to_jsonld(
         generation_process_dict
     )
-    #We force the generation of BA aggregation if we're doing FERC, US, or BA
-    #regions. This is because the consumption mixes are based on imports from
-    #balancing authority areas.
+    # We force the generation of BA aggregation if we're doing FERC, US, or BA
+    # regions. This is because the consumption mixes are based on imports from
+    # balancing authority areas.
     print("get gen mix process")
     if model_specs["regional_aggregation"] in ["FERC","US"]:
         generation_mix_df = electricitylci.get_generation_mix_process_df("BA")
@@ -72,7 +73,7 @@ def main():
         print("write consumption mix to dict")
         cons_mix_dicts={}
         for subreg in cons_mix_df_dict.keys():
-            #####NEED TO FIND A WAY TO SPECIFY REGION HERE
+            # NEED TO FIND A WAY TO SPECIFY REGION HERE
             cons_mix_dicts[subreg] = electricitylci.write_consumption_mix_to_dict(
                 cons_mix_df_dict[subreg], generation_mix_dict,subregion=subreg
             )
@@ -93,9 +94,9 @@ def main():
         for subreg in dist_mix_dicts.keys():
             dist_mix_dicts[subreg] = electricitylci.write_process_dicts_to_jsonld(dist_mix_dicts[subreg])
     else:
-        #Get surplus and consumption mix dictionary
+        # Get surplus and consumption mix dictionary
         sur_con_mix_dict = electricitylci.write_surplus_pool_and_consumption_mix_dict()
-        #Get dist dictionary
+        # Get dist dictionary
         dist_dict = electricitylci.write_distribution_dict()
         generation_mix_dict = electricitylci.write_process_dicts_to_jsonld(
             generation_mix_dict

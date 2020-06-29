@@ -1,7 +1,7 @@
 # Electricity Life Cycle Inventory
 
 A python package that uses standardized facility release and generation data to create regionalized life cycle inventory (LCI) models for the generation,
- mix of generation, mix of consumption, and distribution of electricity to end users for the US. The LCI models can be exported
+ mix of generation, mix of consumption, and distribution of electricity to end users for the US, with embedded system processes of upstream fuel production and infrastructure. Pre-configured model specifications are included or users can specify their own models. The created LCI models can be exported
  for use in standard life cycle assessment software.
 
 See the [wiki](http://github.com/USEPA/ElectricityLCI/wiki) for installation and use instructions, descriptions of files, and a list of contributors.
@@ -16,5 +16,3 @@ has responsibility to protect the integrity, confidentiality, or availability of
 Any reference to specific commercial products, processes, or services by service mark, trademark, manufacturer,
 or otherwise, does not constitute or imply their endorsement, recommendation or favoring by EPA or NETL.
 
-The EPA or NETL seal and logo shall not be used in any manner to imply endorsement of any commercial product or activity
-by EPA, NETL or the United States Government.
