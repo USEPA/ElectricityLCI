@@ -29,7 +29,7 @@ include_renewable_generation: True
 include_netl_water: True
 
 # Upstream data from NETL can be included in the outputs.
-include_upstream_processes: False
+include_upstream_processes: True
 
 inventories_of_interest:
   eGRID: 2014
