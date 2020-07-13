@@ -1,0 +1,19 @@
+#This file is intended to be used to create a conda
+#environment so that most dependencies are fetched
+#using conda rather than pip when installing 
+#the electricityLCI.
+name: elecricitylci_environment
+
+dependencies:
+    - numpy>=1.1         # NumPy is the fundamental package for array computing with Python.
+    - pandas>=0.24       # Powerful Python data analysis toolkit.
+    - openpyxl>=2.5      # Python library to read/write Excel 2010 xlsx/xlsm/xltx/xltm files.
+    - matplotlib>=2.2    # Python plotting package.
+    - seaborn>=0.9       # Statistical data visualization.
+    - sympy>=1.2         # Computer algebra system (CAS) in Python.
+    - xlrd>=1.1          # Library for developers to extract data from Microsoft Excel legacy spreadsheet files (xls).
+    - pyyaml>=5.1        # YAML parser and emitter for Python.
+    - pycodestyle>=2.6.0 # Python code tool to check style conventions in PEP 8.
+    - pydocstyle>=5.0.2  # Python code tool to check style conventions in PEP 257.
+    - requests>=2.2     # Web request handler
+    
