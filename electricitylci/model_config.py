@@ -1,11 +1,14 @@
 import json
 import pandas as pd
 from os.path import join
+import datetime
 import yaml
 
-from electricitylci.globals import modulepath, data_dir, set_model_name_with_stdin, list_model_names_in_config
+from electricitylci.globals import (modulepath, data_dir, set_model_name_with_stdin, 
+                                    list_model_names_in_config, output_dir)
 
 #################
+
 model_name_exists = False
 try:
     model_name
@@ -28,21 +31,23 @@ elif not set_model_name_with_stdin:
     # Set model_name manually here
     model_name = 'ELCI_3'
 
+namestr = (
+    f"{output_dir}/{model_name}_jsonld_"
+    f"{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
+)
 
 # pull in model config vars
 def load_model_specs(model_name):
 
+    print('Loading model specs')
     path = join(modulepath, 'modelconfig', '{}_config.yml'.format(model_name))
     with open(path, 'r') as f:
         specs = yaml.safe_load(f)
 
     return specs
 
-
 try:
     model_specs = load_model_specs(model_name)
-    # with open(modulepath +'modelconfig/' + model_name + "_config.yml") as cfg:
-    #     model_specs = yaml.safe_load(cfg)
 except FileNotFoundError:
     print("Model specs not found. Create a model specs file for the model of interest.")
 
@@ -52,10 +57,6 @@ egrid_year = model_specs["egrid_year"]
 # use 923 and cems rather than egrid, but still use the egrid_year
 # parameter to determine the data year
 replace_egrid = model_specs["replace_egrid"]
-# try:
-#     region_column_name = model_specs["region_column_name"]
-# except:
-#     region_column_name = False
 regional_aggregation = model_specs["regional_aggregation"]
 eia_gen_year = model_specs["eia_gen_year"]
 inventories_of_interest = model_specs["inventories_of_interest"]

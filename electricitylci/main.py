@@ -2,7 +2,7 @@ import electricitylci
 import logging
 
 from electricitylci.globals import output_dir
-from electricitylci.model_config import model_name, model_specs
+from electricitylci.model_config import model_name, model_specs, namestr
 from electricitylci.utils import fill_default_provider_uuids
 
 
@@ -114,7 +114,7 @@ def main():
 
     logger.info(
         f'JSON-LD files have been saved in the "output" folder with the full path '
-        f'{electricitylci.namestr}'
+        f'{namestr}'
     )
 
 
