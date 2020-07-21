@@ -21,6 +21,9 @@ from electricitylci.eia923_generation import eia923_primary_fuel
 from electricitylci.eia860_facilities import eia860_balancing_authority
 from electricitylci.model_config import model_specs
 
+
+egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory','NERC','PercentGenerationfromDesignatedFuelCategory','Balancing Authority Name','Balancing Authority Code']]
+
 module_logger = logging.getLogger("generation.py")
 
 
