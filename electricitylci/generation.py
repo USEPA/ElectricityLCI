@@ -446,7 +446,10 @@ def create_generation_process_df():
     dataframe
         Datafrane includes all facility-level emissions
     """
-    from electricitylci.eia923_generation import build_generation_data
+    from electricitylci.eia923_generation import (
+        build_generation_data,
+        eia923_primary_fuel
+    )
     from electricitylci.egrid_filter import (
         egrid_facilities_to_include,
         emissions_and_waste_for_selected_egrid_facilities,
@@ -513,23 +516,35 @@ def create_generation_process_df():
         how="left",
         suffixes=["", "_right"],
     )
-    key_df = (
-        final_database[["eGRID_ID", "FuelCategory"]]
-        .dropna()
-        .drop_duplicates(subset="eGRID_ID")
-        .set_index("eGRID_ID")
-    )
-    final_database.loc[
-        final_database["FuelCategory"].isnull(), "FuelCategory"
-    ] = final_database.loc[
-        final_database["FuelCategory"].isnull(), "eGRID_ID"
-    ].map(
-        key_df["FuelCategory"]
-    )
     if replace_egrid:
-        final_database["FuelCategory"].fillna(
-            final_database["FuelCategory_right"], inplace=True
+        primary_fuel_df=eia923_primary_fuel(year=eia_gen_year)
+        primary_fuel_df.rename(columns={'Plant Id':"eGRID_ID"},inplace=True)
+        primary_fuel_df["eGRID_ID"]=primary_fuel_df["eGRID_ID"].astype(int)
+        key_df = (
+            primary_fuel_df[["eGRID_ID", "FuelCategory"]]
+            .dropna()
+            .drop_duplicates(subset="eGRID_ID")
+            .set_index("eGRID_ID")
         )
+        final_database["FuelCategory"]=final_database["eGRID_ID"].map(key_df["FuelCategory"])
+    else:
+        key_df = (
+            final_database[["eGRID_ID", "FuelCategory"]]
+            .dropna()
+            .drop_duplicates(subset="eGRID_ID")
+            .set_index("eGRID_ID")
+        )
+        final_database.loc[
+            final_database["FuelCategory"].isnull(), "FuelCategory"
+        ] = final_database.loc[
+            final_database["FuelCategory"].isnull(), "eGRID_ID"
+        ].map(
+            key_df["FuelCategory"]
+        )
+    # if replace_egrid:
+    #     final_database["FuelCategory"].fillna(
+    #         final_database["FuelCategory_right"], inplace=True
+    #     )
     final_database["Final_fuel_agg"] = final_database["FuelCategory"]
     if use_primaryfuel_for_coal:
         final_database.loc[
@@ -537,7 +552,6 @@ def create_generation_process_df():
         ] = final_database.loc[
             final_database["FuelCategory"] == "COAL", "PrimaryFuel"
         ]
-
     try:
         year_filter = final_database["Year_x"] == final_database["Year_y"]
         final_database = final_database.loc[year_filter, :]
