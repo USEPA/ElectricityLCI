@@ -2,7 +2,7 @@ import electricitylci
 import logging
 
 from electricitylci.globals import output_dir
-import electricitylci.model_config as model_config
+import electricitylci.model_config as config
 from electricitylci.utils import fill_default_provider_uuids
 
 
@@ -11,17 +11,15 @@ def main():
     life cycle inventory for US power plants based on the settings in the
     user-specified configuration file.
     """
-    model_config.model_specs = electricitylci.model_config.build_model_class()
     logger = logging.getLogger("main")
-    print('in main, ',model_config.model_specs.model_name)
+    config.model_specs = config.build_model_class()
     # There are essentially two paths - with and without upstream (i.e., fuel)
     # processes.
-    if model_config.model_specs.include_upstream_processes is True:
+    if config.model_specs.include_upstream_processes is True:
         # Create dataframe with all generation process data. This will also
         # include upstream and Canadian data.
-        print("in adding upstream")
         print("get generation process")
-        upstream_df = electricitylci.get_upstream_process_df(model_config.model_specs.eia_gen_year)
+        upstream_df = electricitylci.get_upstream_process_df(config.model_specs.eia_gen_year)
         print("write generation process to dict")
         upstream_dict = electricitylci.write_upstream_process_database_to_dict(
             upstream_df
@@ -42,7 +40,7 @@ def main():
             upstream_df=upstream_df
         )
     print("write gen process to jsonld")
-    if model_config.model_specs.regional_aggregation in ["FERC","US"]:
+    if config.model_specs.regional_aggregation in ["FERC","US"]:
         generation_process_dict = electricitylci.write_gen_fuel_database_to_dict(
             generation_process_df, upstream_dict, subregion="BA"
         )
@@ -57,7 +55,7 @@ def main():
     # regions. This is because the consumption mixes are based on imports from
     # balancing authority areas.
     print("get gen mix process")
-    if model_config.model_specs.regional_aggregation in ["FERC","US"]:
+    if config.model_specs.regional_aggregation in ["FERC","US"]:
         generation_mix_df = electricitylci.get_generation_mix_process_df("BA")
     else:
         generation_mix_df = electricitylci.get_generation_mix_process_df()
@@ -70,7 +68,7 @@ def main():
     )
     # At this point the two methods diverge from underlying functions enough that
     # it's just easier to split here.
-    if model_config.model_specs.EPA_eGRID_trading is False:
+    if config.model_specs.EPA_eGRID_trading is False:
         print("using alt gen method for consumption mix")
         cons_mix_df_dict = electricitylci.get_consumption_mix_df()
         print("write consumption mix to dict")
@@ -120,7 +118,7 @@ def main():
 
     logger.info(
         f'JSON-LD files have been saved in the "output" folder with the full path '
-        f'{model_config.model_specs.namestr}'
+        f'{config.model_specs.namestr}'
     )
 
 

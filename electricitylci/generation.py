@@ -474,8 +474,8 @@ def create_generation_process_df():
             cems_df, get_emissions_and_waste_for_selected_egrid_facilities(get_egrid_facilities_to_include())
         )
     else:
-        from electricitylci.egrid_filter import electricity_for_selected_egrid_facilities
-        generation_data=electricity_for_selected_egrid_facilities
+        from electricitylci.egrid_filter import get_electricity_for_selected_egrid_facilities
+        generation_data=get_electricity_for_selected_egrid_facilities(get_egrid_facilities_to_include())
         generation_data["Year"]=model_specs.egrid_year
         generation_data["FacilityID"]=generation_data["FacilityID"].astype(int)
 #        generation_data = build_generation_data(

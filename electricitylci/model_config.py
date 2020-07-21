@@ -22,6 +22,7 @@ def assign_model_name():
 
 # pull in model config vars
 def load_model_specs(model_name):
+    print('Loading model specs')
     try:
         path = join(modulepath, 'modelconfig', '{}_config.yml'.format(model_name))
         with open(path, 'r') as f:
@@ -35,13 +36,15 @@ class ConfigurationError(Exception):
     def __init__(self,message):
         self.message = message
 
-def build_model_class():
-    model_name = assign_model_name()
-    print('Loading model specs')
+def build_model_class(model_name=None):
+    if not model_name:
+        model_name = assign_model_name()
     specs = load_model_specs(model_name)
     check_model_specs(specs)
     model_specs = ModelSpecs(specs, model_name)
+    print(f'Model Specs for {model_specs.model_name}')
     return model_specs
+
 
 def check_model_specs(model_specs):
     # Check for consumption matching region selection
@@ -103,4 +106,4 @@ class ModelSpecs:
             f"{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
             )
         
-#model_specs = ModelSpecs(load_model_specs('ELCI_1'),'default')
+#model_specs = build_model_class('ELCI_1')
