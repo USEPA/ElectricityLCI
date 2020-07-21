@@ -6,11 +6,12 @@ import electricitylci.cems_data as cems
 import electricitylci.eia923_generation as eia923
 import electricitylci.eia860_facilities as eia860
 import fedelemflowlist
+from electricitylci.model_config import model_specs
 
 import logging
 
 
-def generate_plant_emissions(year, model_specs):
+def generate_plant_emissions(year):
     """
     Reads data from EPA air markets program data and fuel use from EIA 923 Page 1
     or Page 5 data (generator vs boiler-level data). Emissions factors from AP42

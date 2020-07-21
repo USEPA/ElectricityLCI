@@ -13,10 +13,7 @@ import logging
 
 from electricitylci.globals import data_dir, output_dir
 from electricitylci.bulk_eia_data import download_EBA, row_to_df, ba_exchange_to_df
-# from electricitylci.bulk_eia_data import (
-#    REGION_NAMES,
-#    REGION_ACRONYMS
-#    )
+from electricitylci.model_config import model_specs
 import electricitylci.eia923_generation as eia923
 import electricitylci.eia860_facilities as eia860
 
@@ -54,7 +51,7 @@ from electricitylci.process_dictionary_writer import *
 """
 
 
-def ba_io_trading_model(model_specs, year=None, subregion=None):
+def ba_io_trading_model(year=None, subregion=None):
     REGION_NAMES = [
         'California', 'Carolinas', 'Central',
         'Electric Reliability Council of Texas, Inc.', 'Florida',

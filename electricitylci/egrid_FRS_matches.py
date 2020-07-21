@@ -1,11 +1,12 @@
 import pandas as pd
 import facilitymatcher
 from electricitylci.egrid_facilities import get_egrid_facilities
+from electricitylci.model_config import model_specs
 
 
 
 
-def list_FRS_ids_filtered_for_NAICS(model_specs):
+def list_FRS_ids_filtered_for_NAICS():
     # get egrid program matches from FRS from facility matcher
     egrid_FRS_matches = facilitymatcher.get_matches_for_inventories(["eGRID"])
     egrid_FRS_matches.head()

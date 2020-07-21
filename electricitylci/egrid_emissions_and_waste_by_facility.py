@@ -2,8 +2,9 @@ import pandas as pd
 import stewicombo
 import os
 from electricitylci.globals import data_dir
+from electricitylci.model_config import model_specs
 
-def get_emissions_and_wastes_by_facility(model_specs):
+def get_emissions_and_wastes_by_facility():
     # Check to see if the stewicombo output of interest is stored as a csv
     stewicombooutputfile = ''
     for k, v in model_specs.inventories_of_interest.items():

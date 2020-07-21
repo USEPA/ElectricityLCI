@@ -17,6 +17,7 @@ from electricitylci.globals import (
 )
 from electricitylci.utils import make_valid_version_num
 from electricitylci.egrid_facilities import get_egrid_subregions
+from electricitylci.model_config import model_specs
 
 
 module_logger = logging.getLogger("process_dictionary_writer.py")
@@ -217,7 +218,7 @@ def exchange_table_creation_input_genmix(database, fuelname):
     return ar
 
 
-def exchange_table_creation_input_con_mix(model_specs,
+def exchange_table_creation_input_con_mix(
     generation, loc, ref_to_consumption=False
 ):
     ar = dict()
@@ -350,7 +351,7 @@ VALID_FUEL_CATS=[
 ]
 
 
-def process_doc_creation(model_specs, process_type="default"):
+def process_doc_creation(process_type="default"):
     """
     Creates a process metadata dictionary specific to a given process type
     :param process_type: One of process types described in VALID_FUEL_CATS
@@ -395,10 +396,10 @@ def process_doc_creation(model_specs, process_type="default"):
     ar["dqSystem"] = processDqsystem()
     # Temp place holder for process DQ scores
     ar["dqEntry"] = "(5;5)"
-    ar["description"] = process_description_creation(model_specs, process_type)
+    ar["description"] = process_description_creation(process_type)
     return ar
 
-def process_description_creation(model_specs, process_type="fossil"):
+def process_description_creation(process_type="fossil"):
     """Add docstring."""
     try:
         assert process_type in VALID_FUEL_CATS, f"Invalid process_type ({process_type}), using default"
@@ -607,7 +608,7 @@ def ref_exchange_creator(electricity_flow=electricity_at_grid_flow):
     ar["location"] = ""
     return ar
 
-def process_table_creation_con_mix(model_specs, region, exchanges_list):
+def process_table_creation_con_mix(region, exchanges_list):
     """Add docstring."""
     ar = dict()
     ar["@type"] = "Process"
@@ -636,7 +637,7 @@ def process_table_creation_con_mix(model_specs, region, exchanges_list):
     return ar
 
 
-def process_table_creation_genmix(model_specs, region, exchanges_list):
+def process_table_creation_genmix(region, exchanges_list):
     """Add docstring."""
     ar = dict()
     ar["@type"] = "Process"
@@ -662,7 +663,7 @@ def process_table_creation_genmix(model_specs, region, exchanges_list):
     ar["version"] = make_valid_version_num(elci_version)
     return ar
 
-def process_table_creation_surplus(model_specs, region, exchanges_list):
+def process_table_creation_surplus(region, exchanges_list):
     """Add docstring."""
     ar = dict()
     ar["@type"] = "Process"
@@ -687,7 +688,7 @@ def process_table_creation_surplus(model_specs, region, exchanges_list):
     return ar
 
 
-def process_table_creation_distribution(model_specs, region, exchanges_list):
+def process_table_creation_distribution(region, exchanges_list):
     """Add docstring."""
     ar = dict()
     ar["@type"] = "Process"

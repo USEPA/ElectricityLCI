@@ -19,6 +19,7 @@ import logging
 from electricitylci.egrid_facilities import get_egrid_facilities
 from electricitylci.eia923_generation import eia923_primary_fuel
 from electricitylci.eia860_facilities import eia860_balancing_authority
+from electricitylci.model_config import model_specs
 
 module_logger = logging.getLogger("generation.py")
 
@@ -426,7 +427,7 @@ def calculate_electricity_by_source(db, subregion="BA"):
     return db, elec_sums
 
 
-def create_generation_process_df(model_specs):
+def create_generation_process_df():
     """
     Reads emissions and generation data from different sources to provide
     facility-level emissions. Most important inputs to this process come
@@ -466,11 +467,11 @@ def create_generation_process_df(model_specs):
         "ground": "ground",
     }
     if model_specs.replace_egrid:
-        generation_data = build_generation_data(model_specs).drop_duplicates()
-        cems_df = ampd.generate_plant_emissions(model_specs.eia_gen_year, model_specs)
+        generation_data = build_generation_data().drop_duplicates()
+        cems_df = ampd.generate_plant_emissions(model_specs.eia_gen_year)
         cems_df.drop(columns=["FlowUUID"], inplace=True)
         emissions_and_waste_for_selected_egrid_facilities = em_other.integrate_replace_emissions(
-            cems_df, get_emissions_and_waste_for_selected_egrid_facilities(model_specs,get_egrid_facilities_to_include(model_specs))
+            cems_df, get_emissions_and_waste_for_selected_egrid_facilities(get_egrid_facilities_to_include())
         )
     else:
         from electricitylci.egrid_filter import electricity_for_selected_egrid_facilities
@@ -902,7 +903,7 @@ def aggregate_data(total_db, subregion="BA"):
     return database_f3
 
 
-def olcaschema_genprocess(model_specs, database, upstream_dict={}, subregion="BA"):
+def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     """Turns the give database containing generator facility emissions
     into dictionaries that contain the required data for insertion into
     an openLCA-compatible json-ld. Additionally, default providers
@@ -1115,7 +1116,7 @@ def olcaschema_genprocess(model_specs, database, upstream_dict={}, subregion="BA
         + " using the " + model_specs.model_name + " configuration."
     )
     process_df["version"] = make_valid_version_num(elci_version)
-    process_df["processDocumentation"]=[process_doc_creation(model_specs, x) for x in list(process_df["FuelCategory"].str.lower())]
+    process_df["processDocumentation"]=[process_doc_creation(x) for x in list(process_df["FuelCategory"].str.lower())]
     process_cols = [
         "@type",
         "allocationFactors",

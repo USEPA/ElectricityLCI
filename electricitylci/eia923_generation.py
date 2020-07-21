@@ -6,6 +6,7 @@ from os.path import join
 import requests
 from electricitylci.globals import data_dir, EIA923_BASE_URL, FUEL_CAT_CODES
 from electricitylci.utils import download_unzip, find_file_in_folder
+from electricitylci.model_config import model_specs
 
 from electricitylci.eia860_facilities import eia860_balancing_authority
 from functools import lru_cache
@@ -344,7 +345,7 @@ def efficiency_filter(df, egrid_facility_efficiency_filters):
     return df
 
 
-def build_generation_data(model_specs,
+def build_generation_data(
     egrid_facilities_to_include=None, generation_years=None,
     ):
     """

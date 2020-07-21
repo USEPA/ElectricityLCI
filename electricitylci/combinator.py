@@ -3,6 +3,7 @@ import pandas as pd
 from electricitylci.globals import output_dir, data_dir
 import electricitylci.generation as gen
 import electricitylci.import_impacts as import_impacts
+from electricitylci.model_config import model_specs
 
 import logging
 
@@ -308,7 +309,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     return upstream_mapped_df
 
 
-def concat_clean_upstream_and_plant(pl_df, up_df, model_specs):
+def concat_clean_upstream_and_plant(pl_df, up_df):
     """
     Combined the upstream and the generator (power plant) databases followed
     by some database cleanup

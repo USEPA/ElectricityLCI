@@ -8,8 +8,9 @@ from electricitylci.egrid_facilities import get_egrid_facilities, list_facilitie
 from electricitylci.egrid_energy import list_egrid_facilities_with_positive_generation, list_egrid_facilities_in_efficiency_range, get_egrid_net_generation
 from electricitylci.egrid_emissions_and_waste_by_facility import get_emissions_and_wastes_by_facility
 from electricitylci.egrid_FRS_matches import list_FRS_ids_filtered_for_NAICS
+from electricitylci.model_config import model_specs
 
-def get_egrid_facilities_to_include(model_specs):
+def get_egrid_facilities_to_include():
     # Get lists of egrid facilities
     egrid_facilities = get_egrid_facilities(model_specs.egrid_year)
     all_egrid_facility_ids = list(egrid_facilities['FacilityID'])
@@ -50,7 +51,7 @@ def get_egrid_facilities_to_include(model_specs):
     # ELCI_1:7001
     return egrid_facilities_to_include
 
-def get_emissions_and_waste_for_selected_egrid_facilities(model_specs,egrid_facilities_to_include):
+def get_emissions_and_waste_for_selected_egrid_facilities(egrid_facilities_to_include):
     # Get the generation data for these facilities only
     egrid_net_generation = get_egrid_net_generation(model_specs.egrid_year)
     electricity_for_selected_egrid_facilities = egrid_net_generation[egrid_net_generation['FacilityID'].isin(egrid_facilities_to_include)]
@@ -58,7 +59,7 @@ def get_emissions_and_waste_for_selected_egrid_facilities(model_specs,egrid_faci
     
     # Emissions and wastes filtering
     # Start with all emissions and wastes; these are in this file
-    emissions_and_wastes_by_facility = get_emissions_and_wastes_by_facility(model_specs)
+    emissions_and_wastes_by_facility = get_emissions_and_wastes_by_facility()
     emissions_and_waste_for_selected_egrid_facilities = emissions_and_wastes_by_facility[emissions_and_wastes_by_facility['eGRID_ID'].isin(egrid_facilities_to_include)]
     
     len(pd.unique(emissions_and_wastes_by_facility['eGRID_ID']))
@@ -78,7 +79,7 @@ def get_emissions_and_waste_for_selected_egrid_facilities(model_specs,egrid_faci
     # includes only the non_egrid_emissions for facilities not filtered out with NAICS
     if model_specs.filter_non_egrid_emission_on_NAICS:
         # Get list of facilities meeting NAICS criteria
-        frs_ids_meeting_NAICS_criteria = list_FRS_ids_filtered_for_NAICS(model_specs)
+        frs_ids_meeting_NAICS_criteria = list_FRS_ids_filtered_for_NAICS()
         nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities = nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities[nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities['FRS_ID'].isin(frs_ids_meeting_NAICS_criteria)]
     
     # Join the datasets back together
@@ -89,7 +90,7 @@ def get_emissions_and_waste_for_selected_egrid_facilities(model_specs,egrid_faci
 
 if __name__ == "__main__":
     import electricitylci
-    from electricitylci.model_config import assign_model_name, load_model_specs
+    from electricitylci.model_config import assign_model_name, load_model_specs, model_specs
     model_name = electricitylci.model_config.assign_model_name()
     model_specs = electricitylci.model_config.load_model_specs(model_name)
-    get_egrid_facilities_to_include(model_specs)
+    get_egrid_facilities_to_include()

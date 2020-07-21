@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 from electricitylci.process_dictionary_writer import *
 from electricitylci.egrid_facilities import egrid_facilities, egrid_subregions
+from electricitylci.model_config import model_specs
 from electricitylci.generation import eia_facility_fuel_region
 import logging
 
@@ -46,7 +47,7 @@ ref_egrid_subregion_generation_by_fuelcategory_with_NERC = ref_egrid_subregion_g
 )
 
 
-def create_generation_mix_process_df_from_model_generation_data(model_specs,
+def create_generation_mix_process_df_from_model_generation_data(
     generation_data, subregion=None
 ):
     """
@@ -226,7 +227,7 @@ def create_generation_mix_process_df_from_model_generation_data(model_specs,
 
 # Creates gen mix from reference data
 # Only possible for a subregion, NERC region, or total US
-def create_generation_mix_process_df_from_egrid_ref_data(model_specs, subregion=None):
+def create_generation_mix_process_df_from_egrid_ref_data(subregion=None):
     """
     Creates fuel generation mix by subregion using egrid reference data.
 
@@ -302,7 +303,7 @@ def create_generation_mix_process_df_from_egrid_ref_data(model_specs, subregion=
     # return generation_mix_dict
 
 
-def olcaschema_genmix(model_specs, database, gen_dict, subregion=None):
+def olcaschema_genmix(database, gen_dict, subregion=None):
     if subregion is None:
         subregion = model_specs.regional_aggregation
     generation_mix_dict = {}
