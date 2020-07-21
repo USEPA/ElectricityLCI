@@ -1,11 +1,10 @@
-import json
 import pandas as pd
 from os.path import join
 import datetime
 import yaml
 
-from electricitylci.globals import (modulepath,list_model_names_in_config)
-from electricitylci.globals import data_dir, output_dir
+from electricitylci.globals import (modulepath,list_model_names_in_config,
+                                    data_dir, output_dir)
 #################
 
 def assign_model_name():
@@ -104,4 +103,4 @@ class ModelSpecs:
             f"{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
             )
         
-model_specs = ModelSpecs(load_model_specs('ELCI_1'),'default')
+#model_specs = ModelSpecs(load_model_specs('ELCI_1'),'default')
