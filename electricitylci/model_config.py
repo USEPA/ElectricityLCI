@@ -94,6 +94,7 @@ class ModelSpecs:
         self.keep_mixed_plant_category = model_specs['keep_mixed_plant_category']
         self.filter_non_egrid_emission_on_NAICS = model_specs["filter_non_egrid_emission_on_NAICS"]
         self.efficiency_of_distribution_grid = model_specs["efficiency_of_distribution_grid"]
+        self.EPA_eGRID_trading = model_specs["EPA_eGRID_trading"]
         self.net_trading = model_specs["net_trading"]
         self.fedelemflowlist_version = model_specs["fedelemflowlist_version"]
         self.use_primaryfuel_for_coal = model_specs["use_primaryfuel_for_coal"]
