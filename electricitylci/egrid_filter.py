@@ -52,11 +52,6 @@ def get_egrid_facilities_to_include():
     return egrid_facilities_to_include
 
 def get_emissions_and_waste_for_selected_egrid_facilities(egrid_facilities_to_include):
-    # Get the generation data for these facilities only
-    egrid_net_generation = get_egrid_net_generation(model_specs.egrid_year)
-    electricity_for_selected_egrid_facilities = egrid_net_generation[egrid_net_generation['FacilityID'].isin(egrid_facilities_to_include)]
-    len(electricity_for_selected_egrid_facilities)
-    
     # Emissions and wastes filtering
     # Start with all emissions and wastes; these are in this file
     emissions_and_wastes_by_facility = get_emissions_and_wastes_by_facility()
@@ -87,6 +82,13 @@ def get_emissions_and_waste_for_selected_egrid_facilities(egrid_facilities_to_in
     len(emissions_and_waste_for_selected_egrid_facilities)
     # for egrid 2016,TRI 2016,NEI 2016,RCRAInfo 2015: 90792
     return emissions_and_waste_for_selected_egrid_facilities
+
+def get_electricity_for_selected_egrid_facilities(egrid_facilities_to_include):
+    # Get the generation data for these facilities only
+    egrid_net_generation = get_egrid_net_generation(model_specs.egrid_year)
+    electricity_for_selected_egrid_facilities = egrid_net_generation[egrid_net_generation['FacilityID'].isin(egrid_facilities_to_include)]
+    len(electricity_for_selected_egrid_facilities)
+    return electricity_for_selected_egrid_facilities
 
 if __name__ == "__main__":
     import electricitylci
