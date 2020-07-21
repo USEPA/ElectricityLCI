@@ -16,7 +16,7 @@ from electricitylci.globals import (
     elci_version
 )
 from electricitylci.utils import make_valid_version_num
-from electricitylci.egrid_facilities import get_egrid_subregions
+from electricitylci.egrid_facilities import egrid_subregions
 from electricitylci.model_config import model_specs
 
 
@@ -178,7 +178,6 @@ def con_process_ref(reg, ref_type="generation"):
     """Add docstring."""
     # If ref is to a consunmption mix (for a distribution process), use consumption mix name
     # If not, if the region is an egrid regions, its a generation mix process; otherwise its a surplus pool process
-    egrid_subregions = get_egrid_subregions()
     if ref_type == "consumption":
         name = consumption_mix_name +" - "+reg
     elif reg in egrid_subregions:

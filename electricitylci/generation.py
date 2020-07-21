@@ -16,7 +16,7 @@ from scipy.stats import t, norm
 from scipy.special import erfinv
 import ast
 import logging
-from electricitylci.egrid_facilities import get_egrid_facilities
+from electricitylci.egrid_facilities import egrid_facilities
 from electricitylci.eia923_generation import eia923_primary_fuel
 from electricitylci.eia860_facilities import eia860_balancing_authority
 from electricitylci.model_config import model_specs
@@ -444,10 +444,11 @@ def create_generation_process_df():
     """
     from electricitylci.eia923_generation import build_generation_data
     from electricitylci.egrid_filter import (
-        get_egrid_facilities_to_include,
-        get_emissions_and_waste_for_selected_egrid_facilities,
+        egrid_facilities_to_include,
+        emissions_and_waste_for_selected_egrid_facilities,
     )
     from electricitylci.generation import (
+        egrid_facilities_w_fuel_region,
         add_technological_correlation_score,
         add_temporal_correlation_score,
     )
@@ -471,11 +472,11 @@ def create_generation_process_df():
         cems_df = ampd.generate_plant_emissions(model_specs.eia_gen_year)
         cems_df.drop(columns=["FlowUUID"], inplace=True)
         emissions_and_waste_for_selected_egrid_facilities = em_other.integrate_replace_emissions(
-            cems_df, get_emissions_and_waste_for_selected_egrid_facilities(get_egrid_facilities_to_include())
+            cems_df, emissions_and_waste_for_selected_egrid_facilities
         )
     else:
-        from electricitylci.egrid_filter import get_electricity_for_selected_egrid_facilities
-        generation_data=get_electricity_for_selected_egrid_facilities(get_egrid_facilities_to_include())
+        from electricitylci.egrid_filter import electricity_for_selected_egrid_facilities
+        generation_data=electricity_for_selected_egrid_facilities
         generation_data["Year"]=model_specs.egrid_year
         generation_data["FacilityID"]=generation_data["FacilityID"].astype(int)
 #        generation_data = build_generation_data(
@@ -496,7 +497,6 @@ def create_generation_process_df():
         left_on=["eGRID_ID", "Year"],
         how="left",
     )
-    egrid_facilities_w_fuel_region = get_egrid_facilities(model_specs.egrid_year)[['FacilityID','Subregion','PrimaryFuel','FuelCategory','NERC','PercentGenerationfromDesignatedFuelCategory','Balancing Authority Name','Balancing Authority Code']]
     egrid_facilities_w_fuel_region[
         "FacilityID"
     ] = egrid_facilities_w_fuel_region["FacilityID"].astype(int)
