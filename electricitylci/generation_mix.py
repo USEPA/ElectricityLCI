@@ -6,13 +6,12 @@ The functions in this script calculate the fraction of each generating source
 import numpy as np
 import pandas as pd
 from electricitylci.process_dictionary_writer import *
-from electricitylci.egrid_facilities import get_egrid_facilities, get_egrid_subregions
+from electricitylci.egrid_facilities import egrid_facilities, egrid_subregions
 from electricitylci.model_config import model_specs
 from electricitylci.generation import eia_facility_fuel_region
 import logging
 
 # Get a subset of the egrid_facilities dataset
-egrid_facilities = get_egrid_facilities(model_specs.egrid_year)
 egrid_facilities_w_fuel_region = egrid_facilities[
     [
         "FacilityID",
@@ -28,7 +27,7 @@ egrid_facilities_w_fuel_region = egrid_facilities[
 
 # Get reference regional generation data by fuel type, add in NERC
 from electricitylci.egrid_energy import (
-    get_ref_egrid_subregion_generation_by_fuelcategory,
+    ref_egrid_subregion_generation_by_fuelcategory,
 )
 
 egrid_subregions_NERC = egrid_facilities[["Subregion", "FuelCategory", "NERC"]]
@@ -37,7 +36,6 @@ len(egrid_subregions_NERC)
 egrid_subregions_NERC = egrid_subregions_NERC[
     egrid_subregions_NERC["NERC"].notnull()
 ]
-ref_egrid_subregion_generation_by_fuelcategory = get_ref_egrid_subregion_generation_by_fuelcategory(model_specs.egrid_year)
 ref_egrid_subregion_generation_by_fuelcategory_with_NERC = pd.merge(
     ref_egrid_subregion_generation_by_fuelcategory,
     egrid_subregions_NERC,
@@ -250,7 +248,6 @@ def create_generation_mix_process_df_from_egrid_ref_data(subregion=None):
         subregion = model_specs.regional_aggregation
     # Converting to numeric for better stability and merging
     if subregion == "eGRID":
-        egrid_subregions = get_egrid_subregions()
         regions = egrid_subregions
     elif subregion == "NERC":
         regions = list(

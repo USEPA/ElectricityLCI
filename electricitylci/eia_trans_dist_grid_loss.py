@@ -9,7 +9,7 @@ from electricitylci.globals import output_dir, data_dir
 import logging
 from xlrd import XLRDError
 from functools import lru_cache
-from electricitylci.model_config import model_specs
+
 # %%
 # Set working directory, files downloaded from EIA will be saved to this location
 # os.chdir = 'N:/eLCI/Transmission and Distribution'
@@ -184,7 +184,7 @@ def generate_regional_grid_loss(final_database, year, subregion="all"):
     print("Generating factors for transmission and distribution losses")
     from electricitylci.eia923_generation import build_generation_data
     from electricitylci.combinator import ba_codes
-    from electricitylci.egrid_facilities import get_egrid_facilities
+    from electricitylci.egrid_facilities import egrid_facilities
     td_calc_columns = [
         "State",
         "NERC",
@@ -199,7 +199,6 @@ def generate_regional_grid_loss(final_database, year, subregion="all"):
         "eGRID_ID",
     ]
 #    plant_generation = final_database[td_calc_columns].drop_duplicates()
-    egrid_facilities = get_egrid_facilities(model_specs.egrid_year)
     egrid_facilities_w_fuel_region = egrid_facilities[
         [
         "FacilityID",
