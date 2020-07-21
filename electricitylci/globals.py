@@ -2,7 +2,7 @@ import os
 import glob
 import pkg_resources  # part of setuptools
 
-set_model_name_with_stdin = True
+set_model_name_with_stdin = False
 
 try: modulepath = os.path.dirname(os.path.realpath(__file__)).replace('\\', '/') + '/'
 except NameError: modulepath = 'electricitylci/'

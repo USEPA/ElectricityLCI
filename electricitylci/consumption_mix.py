@@ -2,7 +2,6 @@ import openpyxl
 import pandas as pd
 import numpy as np
 
-# from electricitylci.egrid_facilities import egrid_subregions
 from electricitylci.globals import data_dir
 from electricitylci.model_config import net_trading, replace_egrid
 from electricitylci.process_dictionary_writer import (

@@ -7,16 +7,6 @@ import numpy as np
 import pandas as pd
 from electricitylci.process_dictionary_writer import *
 from electricitylci.egrid_facilities import egrid_facilities, egrid_subregions
-from electricitylci.model_config import (
-    use_primaryfuel_for_coal,
-    fuel_name,
-    replace_egrid,
-    eia_gen_year,
-    keep_mixed_plant_category,
-    min_plant_percent_generation_from_primary_fuel_category,
-    # region_column_name,
-    regional_aggregation
-)
 from electricitylci.generation import eia_facility_fuel_region
 import logging
 
@@ -56,7 +46,7 @@ ref_egrid_subregion_generation_by_fuelcategory_with_NERC = ref_egrid_subregion_g
 )
 
 
-def create_generation_mix_process_df_from_model_generation_data(
+def create_generation_mix_process_df_from_model_generation_data(model_specs,
     generation_data, subregion=None
 ):
     """
@@ -80,13 +70,13 @@ def create_generation_mix_process_df_from_model_generation_data(
     """
     from electricitylci.combinator import ba_codes
     if subregion is None:
-        subregion = regional_aggregation
+        subregion = model_specs.regional_aggregation
 
     # Converting to numeric for better stability and merging
     generation_data["FacilityID"] = generation_data["FacilityID"].astype(int)
 
-    if replace_egrid:
-        year = eia_gen_year
+    if model_specs.replace_egrid:
+        year = model_specs.eia_gen_year
         # This will only add BA labels, not eGRID subregions
         fuel_region = eia_facility_fuel_region(year)
         fuel_region["FacilityID"] = fuel_region["FacilityID"].astype(int)
@@ -129,16 +119,16 @@ def create_generation_mix_process_df_from_model_generation_data(
     elif subregion == "FERC":
         database_for_genmix_final["Subregion"] = database_for_genmix_final["FERC_Region"]
 
-    if use_primaryfuel_for_coal:
+    if model_specs.use_primaryfuel_for_coal:
         database_for_genmix_final.loc[
             database_for_genmix_final["FuelCategory"] == "COAL", "FuelCategory"
         ] = database_for_genmix_final.loc[
             database_for_genmix_final["FuelCategory"] == "COAL", "PrimaryFuel"
         ]
-    if keep_mixed_plant_category:
+    if model_specs.keep_mixed_plant_category:
         mixed_criteria = (
                 database_for_genmix_final["PercentGenerationfromDesignatedFuelCategory"]
-                < min_plant_percent_generation_from_primary_fuel_category/100)
+                < model_specs.min_plant_percent_generation_from_primary_fuel_category/100)
         database_for_genmix_final.loc[mixed_criteria,"FuelCategory"]="MIXED"
     if subregion == "US":
         group_cols = ["FuelCategory"]
@@ -236,7 +226,7 @@ def create_generation_mix_process_df_from_model_generation_data(
 
 # Creates gen mix from reference data
 # Only possible for a subregion, NERC region, or total US
-def create_generation_mix_process_df_from_egrid_ref_data(subregion=None):
+def create_generation_mix_process_df_from_egrid_ref_data(model_specs, subregion=None):
     """
     Creates fuel generation mix by subregion using egrid reference data.
 
@@ -254,7 +244,7 @@ def create_generation_mix_process_df_from_egrid_ref_data(subregion=None):
         to produce 1 MWh of electricity.
     """
     if subregion is None:
-        subregion = regional_aggregation
+        subregion = model_specs.regional_aggregation
     # Converting to numeric for better stability and merging
     if subregion == "eGRID":
         regions = egrid_subregions
@@ -312,9 +302,9 @@ def create_generation_mix_process_df_from_egrid_ref_data(subregion=None):
     # return generation_mix_dict
 
 
-def olcaschema_genmix(database, gen_dict, subregion=None):
+def olcaschema_genmix(model_specs, database, gen_dict, subregion=None):
     if subregion is None:
-        subregion = regional_aggregation
+        subregion = model_specs.regional_aggregation
     generation_mix_dict = {}
 
     if "Subregion" in database.columns:
