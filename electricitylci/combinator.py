@@ -462,7 +462,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     )
     fuel_df.dropna(subset=["Electricity"], inplace=True)
     fuel_df["Source"] = "eia"
-    fuel_df = add_temporal_correlation_score(fuel_df)
+    fuel_df = add_temporal_correlation_score(fuel_df, model_specs.electricity_lci_target_year)
     fuel_df["DataCollection"] = 5
     fuel_df["GeographicalCorrelation"] = 1
     fuel_df["TechnologicalCorrelation"] = 1
@@ -477,7 +477,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
         fuel_cat_key["FuelCategory"]
     )
     gen_plus_up_df = pd.concat([gen_df, fuel_df], ignore_index=True)
-    gen_plus_up_df = fill_nans(gen_plus_up_df)
+    gen_plus_up_df = fill_nans(gen_plus_up_df, model_specs.eia_gen_year)
     # Taking out anything with New Brunswick System Operator so that
     # these fuel inputs (for a very small US portion of NBSO) don't get mapped
     # to the Canadian import rollup (i.e., double-counted)
