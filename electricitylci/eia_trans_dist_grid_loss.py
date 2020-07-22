@@ -309,9 +309,9 @@ def olca_schema_distribution_mix(td_by_region, cons_mix_dict, subregion="BA"):
                 "category": matching_dict["category"].split("/"),
             }
             # Writing final file
-        final = process_table_creation_distribution(reg, exchanges_list)
-        final["name"] = "Electricity; at user; consumption mix - " + reg
-        distribution_mix_dict[reg] = final
+            final = process_table_creation_distribution(reg, exchanges_list)
+            final["name"] = "Electricity; at user; consumption mix - " + reg
+            distribution_mix_dict[reg] = final
     return distribution_mix_dict
 
 
