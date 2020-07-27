@@ -20,30 +20,32 @@ def assign_model_name():
         print('You must select the menu number for an existing model')
     return model_name
 
-# pull in model config vars
-def load_model_specs(model_name):
-    print('Loading model specs')
-    try:
-        path = join(modulepath, 'modelconfig', '{}_config.yml'.format(model_name))
-        with open(path, 'r') as f:
-            specs = yaml.safe_load(f)
-    except FileNotFoundError:
-        print("Model specs not found. Create a model specs file for the model of interest.")
-    return specs
-
 class ConfigurationError(Exception):
     """Exception raised for errors in the configuration file"""
     def __init__(self,message):
         self.message = message
 
 def build_model_class(model_name=None):
+    
+    # pull in model config vars
+    def _load_model_specs(model_name):
+        print('Loading model specs')
+        try:
+            path = join(modulepath, 'modelconfig', '{}_config.yml'.format(model_name))
+            with open(path, 'r') as f:
+                specs = yaml.safe_load(f)
+        except FileNotFoundError:
+            print("Model specs not found. Create a model specs file for the model of interest.")
+        return specs
+    
     if not model_name:
         model_name = assign_model_name()
-    specs = load_model_specs(model_name)
+    specs = _load_model_specs(model_name)
     check_model_specs(specs)
-    model_specs = ModelSpecs(specs, model_name)
-    print(f'Model Specs for {model_specs.model_name}')
-    return model_specs
+    model_class = ModelSpecs(specs, model_name)
+    print(f'Model Specs for {model_class.model_name}')
+        
+    return model_class
 
 
 def check_model_specs(model_specs):
