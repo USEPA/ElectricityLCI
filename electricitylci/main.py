@@ -4,7 +4,7 @@ import logging
 from electricitylci.globals import output_dir
 import electricitylci.model_config as config
 from electricitylci.utils import fill_default_provider_uuids
-
+import argparse
 
 def main():
     """This function will generate an openLCA-schema JSON-LD zip file containing
@@ -12,7 +12,8 @@ def main():
     user-specified configuration file.
     """
     logger = logging.getLogger("main")
-    config.model_specs = config.build_model_class()
+    if config.model_specs is None:
+        config.model_specs = config.build_model_class()
     # There are essentially two paths - with and without upstream (i.e., fuel)
     # processes.
     if config.model_specs.include_upstream_processes is True:
@@ -124,4 +125,11 @@ def main():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--model_config", help="specify model configuration", default="")
+    args=parser.parse_args()
+    if args.model_config != "":
+        config.model_specs=config.build_model_class(args.model_config)
+    else:
+        config.model_specs=None
     main()
