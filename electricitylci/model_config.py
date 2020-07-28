@@ -35,7 +35,7 @@ def build_model_class(model_name=None):
             with open(path, 'r') as f:
                 specs = yaml.safe_load(f)
         except FileNotFoundError:
-            print("Model specs not found. Create a model specs file for the model of interest.")
+            raise ConfigurationError("Model specs not found. Create a model specs file for the model of interest.")
         return specs
     
     if not model_name:
