@@ -45,14 +45,14 @@ def remove(data, edit_dict):
             for filt in edit_dict["filters"].keys():
                 # logging.info(f"Filters are {edit_dict['filters'][filt]}")
                 if combined_filter is None:
-                    combined_filter=~data[filt].isin(edit_dict["filters"][filt])
+                    combined_filter=data[filt].isin(edit_dict["filters"][filt])
                 else:
                     combined_filter=(
                         combined_filter &
-                        ~data[filt].isin(edit_dict["filters"][filt])
+                        data[filt].isin(edit_dict["filters"][filt])
                     )
                 # logging.info(f"{combined_filter}")
-            data = data.loc[combined_filter,:]
+            data = data.loc[~combined_filter,:]
         return data
     except KeyError:
         module_logger.warning("Problem found with manual edit - remove")
