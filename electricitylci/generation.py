@@ -446,7 +446,10 @@ def create_generation_process_df():
     dataframe
         Datafrane includes all facility-level emissions
     """
-    from electricitylci.eia923_generation import build_generation_data
+    from electricitylci.eia923_generation import (
+        build_generation_data,
+        eia923_primary_fuel
+    )
     from electricitylci.egrid_filter import (
         egrid_facilities_to_include,
         emissions_and_waste_for_selected_egrid_facilities,
@@ -513,23 +516,35 @@ def create_generation_process_df():
         how="left",
         suffixes=["", "_right"],
     )
-    key_df = (
-        final_database[["eGRID_ID", "FuelCategory"]]
-        .dropna()
-        .drop_duplicates(subset="eGRID_ID")
-        .set_index("eGRID_ID")
-    )
-    final_database.loc[
-        final_database["FuelCategory"].isnull(), "FuelCategory"
-    ] = final_database.loc[
-        final_database["FuelCategory"].isnull(), "eGRID_ID"
-    ].map(
-        key_df["FuelCategory"]
-    )
     if replace_egrid:
-        final_database["FuelCategory"].fillna(
-            final_database["FuelCategory_right"], inplace=True
+        primary_fuel_df=eia923_primary_fuel(year=eia_gen_year)
+        primary_fuel_df.rename(columns={'Plant Id':"eGRID_ID"},inplace=True)
+        primary_fuel_df["eGRID_ID"]=primary_fuel_df["eGRID_ID"].astype(int)
+        key_df = (
+            primary_fuel_df[["eGRID_ID", "FuelCategory"]]
+            .dropna()
+            .drop_duplicates(subset="eGRID_ID")
+            .set_index("eGRID_ID")
         )
+        final_database["FuelCategory"]=final_database["eGRID_ID"].map(key_df["FuelCategory"])
+    else:
+        key_df = (
+            final_database[["eGRID_ID", "FuelCategory"]]
+            .dropna()
+            .drop_duplicates(subset="eGRID_ID")
+            .set_index("eGRID_ID")
+        )
+        final_database.loc[
+            final_database["FuelCategory"].isnull(), "FuelCategory"
+        ] = final_database.loc[
+            final_database["FuelCategory"].isnull(), "eGRID_ID"
+        ].map(
+            key_df["FuelCategory"]
+        )
+    # if replace_egrid:
+    #     final_database["FuelCategory"].fillna(
+    #         final_database["FuelCategory_right"], inplace=True
+    #     )
     final_database["Final_fuel_agg"] = final_database["FuelCategory"]
     if use_primaryfuel_for_coal:
         final_database.loc[
@@ -537,7 +552,6 @@ def create_generation_process_df():
         ] = final_database.loc[
             final_database["FuelCategory"] == "COAL", "PrimaryFuel"
         ]
-
     try:
         year_filter = final_database["Year_x"] == final_database["Year_y"]
         final_database = final_database.loc[year_filter, :]
@@ -616,7 +630,7 @@ def aggregate_data(total_db, subregion="BA"):
         uncertainty distributions.
     """
     from electricitylci.aggregation_selector import subregion_col
-
+    from electricitylci.model_config import eia_gen_year
     def geometric_mean(p_series, df, cols):
         # Alternatively we can use scipy.stats.lognorm to fit a distribution
         # and provide the parameters
@@ -771,6 +785,17 @@ def aggregate_data(total_db, subregion="BA"):
             "Unit"
         ]
         elec_df_groupby_cols = fuel_agg + ["Year", "source_string"]
+    if replace_egrid:
+        primary_fuel_df=eia923_primary_fuel(year=eia_gen_year)
+        primary_fuel_df.rename(columns={'Plant Id':"eGRID_ID"},inplace=True)
+        primary_fuel_df["eGRID_ID"]=primary_fuel_df["eGRID_ID"].astype(int)
+        key_df = (
+            primary_fuel_df[["eGRID_ID", "FuelCategory"]]
+            .dropna()
+            .drop_duplicates(subset="eGRID_ID")
+            .set_index("eGRID_ID")
+        )
+        total_db.loc[total_db["FuelCategory"]!="ALL","FuelCategory"]=total_db["eGRID_ID"].map(key_df["FuelCategory"])
     total_db["FlowUUID"] = total_db["FlowUUID"].fillna(value="dummy-uuid")
     total_db = aggregate_facility_flows(total_db)
     total_db, electricity_df = calculate_electricity_by_source(

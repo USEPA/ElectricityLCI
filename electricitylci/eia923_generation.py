@@ -192,7 +192,7 @@ def eia923_download_extract(
             eia = pd.read_csv(
                 csv_path,
                 dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
-                low_memory=False
+                low_memory=False,
             )
 
         else:
@@ -304,9 +304,14 @@ def eia923_primary_fuel(
         / primary_fuel["total_gen"]
         * 100
     )
-
+    primary_fuel["primary fuel percent gen"].fillna(value=0, inplace=True)
     primary_fuel["FuelCategory"] = group_fuel_categories(primary_fuel)
-
+    if keep_mixed_plant_category:
+        primary_fuel.loc[
+            primary_fuel["primary fuel percent gen"]
+            < min_plant_percent_generation_from_primary_fuel_category,
+            "FuelCategory",
+        ] = "MIXED"
     primary_fuel.rename(
         columns={"Reported Fuel Type Code": "PrimaryFuel"}, inplace=True
     )
@@ -402,7 +407,10 @@ def build_generation_data(
                 ]
             if filter_on_efficiency:
                 final_gen_df = efficiency_filter(final_gen_df)
-            if filter_on_min_plant_percent_generation_from_primary_fuel and not keep_mixed_plant_category:
+            if (
+                filter_on_min_plant_percent_generation_from_primary_fuel
+                and not keep_mixed_plant_category
+            ):
                 final_gen_df = final_gen_df.loc[
                     final_gen_df["primary fuel percent gen"]
                     >= min_plant_percent_generation_from_primary_fuel_category,
@@ -475,7 +483,7 @@ def eia923_generation_and_fuel(year):
             eia = pd.read_csv(
                 csv_path,
                 dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
-                low_memory=False
+                low_memory=False,
             )
         else:
 
@@ -534,7 +542,7 @@ def eia923_boiler_fuel(year):
             eia = pd.read_csv(
                 csv_path,
                 dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
-                low_memory=False
+                low_memory=False,
             )
         else:
 
@@ -593,7 +601,7 @@ def eia923_sched8_aec(year):
             eia = pd.read_csv(
                 csv_path,
                 dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
-                low_memory=False
+                low_memory=False,
             )
         else:
 
