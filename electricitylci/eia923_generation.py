@@ -297,10 +297,10 @@ def eia923_primary_fuel(
     )
     primary_fuel["primary fuel percent gen"].fillna(value=0, inplace=True)
     primary_fuel["FuelCategory"] = group_fuel_categories(primary_fuel)
-    if keep_mixed_plant_category:
+    if model_specs.keep_mixed_plant_category:
         primary_fuel.loc[
             primary_fuel["primary fuel percent gen"]
-            < min_plant_percent_generation_from_primary_fuel_category,
+            < model_specs.min_plant_percent_generation_from_primary_fuel_category,
             "FuelCategory",
         ] = "MIXED"
     primary_fuel.rename(
@@ -397,7 +397,7 @@ def build_generation_data(
                     final_gen_df["Net Generation (Megawatthours)"] >= 0, :
                 ]
             if model_specs.filter_on_efficiency:
-                final_gen_df = efficiency_filter(final_gen_df)
+                final_gen_df = efficiency_filter(final_gen_df, model_specs.egrid_facility_efficiency_filters)
             if (
                 model_specs.filter_on_min_plant_percent_generation_from_primary_fuel
                 and not model_specs.keep_mixed_plant_category
