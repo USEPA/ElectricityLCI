@@ -62,7 +62,7 @@ from electricitylci.process_dictionary_writer import *
 """
 
 
-def ba_io_trading_model(year=None, subregion=None):
+def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     REGION_NAMES = [
         'California', 'Carolinas', 'Central',
         'Electric Reliability Council of Texas, Inc.', 'Florida',
@@ -453,9 +453,21 @@ def ba_io_trading_model(year=None, subregion=None):
 
     df_final_trade_out_filt = df_final_trade_out.copy()
     col_list = df_final_trade_out.columns.tolist()
-
+    #Adding in a filter for balancing authorities that are not associated
+    #with any specific plants in EIA860 - there won't be any data for them in
+    #the emissions dataframes. We'll set their quantities to 0 so that the
+    #consumption mixes are made up of the rest of the incoming balancing
+    #authority areas.
+    eia860_bas=sorted(
+        list(eia860_df["Balancing Authority Code"].dropna().unique())
+        +list(df_CA_Imports_Cols.columns)
+        )
+    keep_rows = [x for x in df_final_trade_out_filt.index if x in eia860_bas]
+    keep_cols = [x for x in df_final_trade_out_filt.columns if x in eia860_bas]
+    df_final_trade_out_filt=df_final_trade_out_filt.loc[keep_rows,keep_cols]
+    col_list = df_final_trade_out_filt.columns.tolist()
     for i in col_list:
-        df_final_trade_out_filt[i] = np.where(df_final_trade_out[i].abs()/df_final_trade_out[i].sum() < 0.00001, 0, df_final_trade_out[i].abs())
+        df_final_trade_out_filt[i] = np.where(df_final_trade_out_filt[i].abs()/df_final_trade_out_filt[i].sum() < 0.00001, 0, df_final_trade_out_filt[i].abs())
 
     df_final_trade_out_filt = df_final_trade_out_filt.reset_index()
     df_final_trade_out_filt = df_final_trade_out_filt.rename(columns = {'index':'Source BAA'})
@@ -471,6 +483,10 @@ def ba_io_trading_model(year=None, subregion=None):
 
     # Merge to bring in export region name matched with BAA
     df_final_trade_out_filt_melted_merge = df_final_trade_out_filt_melted_merge.merge(df_BA_NA, left_on = 'export BAA', right_on = 'BA_Acronym')
+    if regions_to_keep is not None:
+        # module_logger.info(f"{regions_to_keep}")
+        # module_logger.info(f"{df_final_trade_out_filt_melted_merge['BA_Name'].unique()}")
+        df_final_trade_out_filt_melted_merge=df_final_trade_out_filt_melted_merge.loc[df_final_trade_out_filt_melted_merge["BA_Name"].isin(regions_to_keep),:]
     df_final_trade_out_filt_melted_merge.rename(columns={'FERC_Region': 'export ferc region', 'FERC_Region_Abbr':'export ferc region abbr'}, inplace=True)
     df_final_trade_out_filt_melted_merge.drop(columns = ['BA_Acronym', 'BA_Name', 'NCR ID#', 'EIA_Region', 'EIA_Region_Abbr'], inplace = True)
 #    if subregion == 'BA':
@@ -484,7 +500,7 @@ def ba_io_trading_model(year=None, subregion=None):
     BAA_final_trade = BAA_final_trade.fillna(value = 0)
     BAA_final_trade = BAA_final_trade.drop(columns = ['value', 'total'])
     # Remove Canadian BAs in import list
-    BAA_filt = BAA_final_trade['import BAA'].isin(US_BA_acronyms)
+    BAA_filt = BAA_final_trade['import BAA'].isin(eia860_bas)
     BAA_final_trade = BAA_final_trade[BAA_filt]
     # There are some BAs that will have 0 trade. Some of these are legitimate
     # Alcoa Yadkin has no demand (i.e., all power generation is exported) others
@@ -503,6 +519,8 @@ def ba_io_trading_model(year=None, subregion=None):
         BAA_final_trade.at[(BAA_final_trade["import BAA"]==baa)&(BAA_final_trade["export BAA"]==baa),"fraction"]=1
     for baa in list(set(BAA_zero_trade)-set(BAAs_from_zero_trade_with_demand)):
         BAA_final_trade.at[(BAA_final_trade["import BAA"]==baa)&(BAA_final_trade["export BAA"]==baa),"fraction"]=1E-15
+        #Was later decided to not create consumption mixes for BAs that don't have imports.
+        BAA_final_trade.drop(BAA_final_trade[BAA_final_trade["import BAA"]==baa].index,inplace=True)
     BAA_final_trade.to_csv(output_dir + '/BAA_final_trade_{}.csv'.format(year))
     BAA_final_trade["export_name"]=BAA_final_trade["export BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
     BAA_final_trade["import_name"]=BAA_final_trade["import BAA"].map(df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
@@ -540,7 +558,7 @@ def ba_io_trading_model(year=None, subregion=None):
 if __name__=='__main__':
     year=2016
     subregion = 'BA'
-    df = ba_io_trading_model(year, subregion)
+    mix_df_dict = ba_io_trading_model(year, subregion)
 
 
 def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
