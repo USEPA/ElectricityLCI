@@ -518,14 +518,14 @@ def write_distribution_mix_to_dict(dist_mix_df, gen_mix_dict, subregion=None):
     return dist_mix_dict
 
 
-def get_consumption_mix_df(subregion=None, regions_to_keep=[]):
+def get_consumption_mix_df(subregion=None, regions_to_keep=None):
     import electricitylci.eia_io_trading as trade
     from electricitylci.model_config import eia_gen_year
     if subregion is None:
         subregion = model_specs['regional_aggregation']
 
     io_trade_df = trade.ba_io_trading_model(
-        year=eia_gen_year, subregion=subregion, regions_to_keep
+        year=eia_gen_year, subregion=subregion, regions_to_keep=regions_to_keep
     )
     return io_trade_df
 
