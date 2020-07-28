@@ -3,14 +3,6 @@ Integration of emissions from data sources that were not included in stewi
 """
 
 import pandas as pd
-# from electricitylci.coal_upstream import generate_upstream_coal
-from electricitylci.model_config import eia_gen_year
-
-# Import functions for other upstream fuels and include them in this list
-# with the appropriate input parameters.
-# UPSTREAM_EMISSION_GENERATORS = []
-#     generate_upstream_coal(eia_gen_year),
-# ]
 
 
 def integrate_replace_emissions(new_emissions, stewi_emissions):

@@ -5,7 +5,6 @@ Created on Tue Jun  4 12:07:46 2019
 
 @author: jamiesom
 """
-from electricitylci.model_config import replace_egrid, use_primaryfuel_for_coal, model_specs
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows
 import pandas as pd
 import numpy as np
@@ -17,10 +16,11 @@ from scipy.stats import t, norm
 from scipy.special import erfinv
 import ast
 import logging
-from electricitylci.egrid_facilities import egrid_facilities,egrid_subregions
+from electricitylci.egrid_facilities import egrid_facilities
 from electricitylci.eia923_generation import eia923_primary_fuel
 from electricitylci.eia860_facilities import eia860_balancing_authority
-from electricitylci.model_config import model_name
+from electricitylci.model_config import model_specs
+
 
 
 egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory','NERC','PercentGenerationfromDesignatedFuelCategory','Balancing Authority Name','Balancing Authority Code']]
@@ -69,11 +69,10 @@ def add_flow_representativeness_data_quality_scores(db,total_gen):
     return db
 
 
-def add_temporal_correlation_score(db):
+def add_temporal_correlation_score(db, electricity_lci_target_year):
     # db['TemporalCorrelation'] = 5
     from electricitylci.dqi import temporal_correlation_lower_bound_to_dqi
-    from electricitylci.model_config import electricity_lci_target_year
-
+    
     # Could be more precise here with year
     db['Age'] =  electricity_lci_target_year - pd.to_numeric(db['Year'])
     db['TemporalCorrelation'] = db['Age'].apply(
@@ -455,14 +454,13 @@ def create_generation_process_df():
         egrid_facilities_to_include,
         emissions_and_waste_for_selected_egrid_facilities,
     )
-    from electricitylci.generation import egrid_facilities_w_fuel_region
     from electricitylci.generation import (
+        egrid_facilities_w_fuel_region,
         add_technological_correlation_score,
         add_temporal_correlation_score,
     )
     import electricitylci.emissions_other_sources as em_other
     import electricitylci.ampd_plant_emissions as ampd
-    from electricitylci.model_config import eia_gen_year
     from electricitylci.combinator import ba_codes
     import electricitylci.manual_edits as edits
 
@@ -477,9 +475,9 @@ def create_generation_process_df():
         "water": "water",
         "ground": "ground",
     }
-    if replace_egrid:
+    if model_specs.replace_egrid:
         generation_data = build_generation_data().drop_duplicates()
-        cems_df = ampd.generate_plant_emissions(eia_gen_year)
+        cems_df = ampd.generate_plant_emissions(model_specs.eia_gen_year)
         cems_df.drop(columns=["FlowUUID"], inplace=True)
         emissions_and_waste_for_selected_egrid_facilities = em_other.integrate_replace_emissions(
             cems_df, emissions_and_waste_for_selected_egrid_facilities
@@ -487,7 +485,7 @@ def create_generation_process_df():
     else:
         from electricitylci.egrid_filter import electricity_for_selected_egrid_facilities
         generation_data=electricity_for_selected_egrid_facilities
-        generation_data["Year"]=model_specs["egrid_year"]
+        generation_data["Year"]=model_specs.egrid_year
         generation_data["FacilityID"]=generation_data["FacilityID"].astype(int)
 #        generation_data = build_generation_data(
 #            egrid_facilities_to_include=egrid_facilities_to_include
@@ -518,8 +516,8 @@ def create_generation_process_df():
         how="left",
         suffixes=["", "_right"],
     )
-    if replace_egrid:
-        primary_fuel_df=eia923_primary_fuel(year=eia_gen_year)
+    if model_specs.replace_egrid:
+        primary_fuel_df=eia923_primary_fuel(year=model_specs.eia_gen_year)
         primary_fuel_df.rename(columns={'Plant Id':"eGRID_ID"},inplace=True)
         primary_fuel_df["eGRID_ID"]=primary_fuel_df["eGRID_ID"].astype(int)
         key_df = (
@@ -548,7 +546,7 @@ def create_generation_process_df():
     #         final_database["FuelCategory_right"], inplace=True
     #     )
     final_database["Final_fuel_agg"] = final_database["FuelCategory"]
-    if use_primaryfuel_for_coal:
+    if model_specs.use_primaryfuel_for_coal:
         final_database.loc[
             final_database["FuelCategory"] == "COAL", ["Final_fuel_agg"]
         ] = final_database.loc[
@@ -583,7 +581,7 @@ def create_generation_process_df():
         },
         inplace=True,
     )
-    final_database = add_temporal_correlation_score(final_database)
+    final_database = add_temporal_correlation_score(final_database, model_specs.electricity_lci_target_year)
     final_database = add_technological_correlation_score(final_database)
     final_database["DataCollection"] = 5
     final_database["GeographicalCorrelation"] = 1
@@ -1146,7 +1144,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         process_df["description"]
         + " This process was created with ElectricityLCI " 
         + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
-        + " using the " + model_name + " configuration."
+        + " using the " + model_specs.model_name + " configuration."
     )
     process_df["version"] = make_valid_version_num(elci_version)
     process_df["processDocumentation"]=[process_doc_creation(x) for x in list(process_df["FuelCategory"].str.lower())]

@@ -9,6 +9,7 @@ from electricitylci.globals import output_dir, data_dir
 import logging
 from xlrd import XLRDError
 from functools import lru_cache
+
 # %%
 # Set working directory, files downloaded from EIA will be saved to this location
 # os.chdir = 'N:/eLCI/Transmission and Distribution'

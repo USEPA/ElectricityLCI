@@ -2,18 +2,18 @@ import pandas as pd
 import stewicombo
 import os
 from electricitylci.globals import data_dir
-from electricitylci.model_config import inventories_of_interest
+from electricitylci.model_config import model_specs
 
 # Check to see if the stewicombo output of interest is stored as a csv
 stewicombooutputfile = ''
-for k, v in inventories_of_interest.items():
+for k, v in model_specs.inventories_of_interest.items():
     stewicombooutputfile = stewicombooutputfile+"{}_{}_".format(k, v)
 stewicombooutputfile = stewicombooutputfile + 'fromstewicombo.csv'
 
 if os.path.exists(data_dir+"/"+stewicombooutputfile):
     emissions_and_wastes_by_facility = pd.read_csv(data_dir+"/"+stewicombooutputfile, header=0, dtype={"FacilityID": "str", "Year": "int", "eGRID_ID": "str"})
 else:
-    emissions_and_wastes_by_facility = stewicombo.combineInventoriesforFacilitiesinOneInventory("eGRID", inventories_of_interest, filter_for_LCI=True)
+    emissions_and_wastes_by_facility = stewicombo.combineInventoriesforFacilitiesinOneInventory("eGRID", model_specs.inventories_of_interest, filter_for_LCI=True)
     # drop SRS fields
     emissions_and_wastes_by_facility = emissions_and_wastes_by_facility.drop(columns=['SRS_ID', 'SRS_CAS'])
     # drop 'Electricity' flow

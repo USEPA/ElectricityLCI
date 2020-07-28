@@ -6,10 +6,8 @@ import electricitylci.cems_data as cems
 import electricitylci.eia923_generation as eia923
 import electricitylci.eia860_facilities as eia860
 import fedelemflowlist
-from electricitylci.model_config import use_primaryfuel_for_coal
-from electricitylci.model_config import (min_plant_percent_generation_from_primary_fuel_category,
-                          filter_on_min_plant_percent_generation_from_primary_fuel,
-                          keep_mixed_plant_category)
+from electricitylci.model_config import model_specs
+
 import logging
 
 
@@ -778,7 +776,7 @@ def generate_plant_emissions(year):
         return sulfur_content_agg
 
     def eia_primary_fuel(row):
-        if row["Primary Fuel %"] < min_plant_percent_generation_from_primary_fuel_category/100:
+        if row["Primary Fuel %"] < model_specs.min_plant_percent_generation_from_primary_fuel_category/100:
             return "Mixed Fuel Type"
         else:
             return row["Primary Fuel"]
@@ -1204,7 +1202,7 @@ def generate_plant_emissions(year):
             eia_primary_fuel, axis=1
         )
     )
-    if not keep_mixed_plant_category:
+    if not model_specs.keep_mixed_plant_category:
         eia_gen_fuel_net_gen_output = eia_gen_fuel_net_gen_output.loc[
                 eia_gen_fuel_net_gen_output["Primary_Fuel"]!="Mixed Fuel Type", :
                 ]
@@ -1488,7 +1486,7 @@ def generate_plant_emissions(year):
     netl_harmonized_melt["FuelCategory"] = netl_harmonized_melt[
         "PrimaryFuel"
     ].map(FUELCAT_MAP)
-    if use_primaryfuel_for_coal:
+    if model_specs.use_primaryfuel_for_coal:
         netl_harmonized_melt.loc[
             netl_harmonized_melt["FuelCategory"] == "COAL", "FuelCategory"
         ] = netl_harmonized_melt.loc[

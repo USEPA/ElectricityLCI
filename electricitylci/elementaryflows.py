@@ -1,6 +1,5 @@
 import pandas as pd
 import fedelemflowlist
-from electricitylci.model_config import inventories, fedelemflowlist_version
 
 # flowlist = fedelemflowlist.get_flowlist()
 mapping_to_fedelemflows = fedelemflowlist.get_flowmapping()

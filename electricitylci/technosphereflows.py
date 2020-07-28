@@ -1,12 +1,12 @@
 """Add docstring."""
 
 import pandas as pd
-from electricitylci.model_config import fuel_name
+from electricitylci.model_config import model_specs
 
 
 def map_heat_inputs_to_fuel_names(generation_df):
     """Add docstring."""
-    fuel_info_tech_flows = fuel_name[fuel_name["ElementaryFlowInput"]==0]
+    fuel_info_tech_flows = model_specs.fuel_name[model_specs.fuel_name["ElementaryFlowInput"]==0]
     fuel_info_tech_flows = fuel_info_tech_flows.rename(columns={"Fuelname":"FuelName","FuelList":"FuelCategory"})
     fuel_cols_to_use = ["FuelCategory","FuelName","Heatcontent","Category","Subcategory"]
     fuel_info_tech_flows = fuel_info_tech_flows[fuel_cols_to_use]

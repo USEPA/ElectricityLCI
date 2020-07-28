@@ -13,21 +13,10 @@ import logging
 
 from electricitylci.globals import data_dir, output_dir
 from electricitylci.bulk_eia_data import download_EBA, row_to_df, ba_exchange_to_df
-# from electricitylci.bulk_eia_data import (
-#    REGION_NAMES,
-#    REGION_ACRONYMS
-#    )
+from electricitylci.model_config import model_specs
 import electricitylci.eia923_generation as eia923
 import electricitylci.eia860_facilities as eia860
 
-from electricitylci.model_config import (
-    use_primaryfuel_for_coal,
-    fuel_name,
-    replace_egrid,
-    eia_gen_year,
-    # region_column_name,
-    model_specs
-)
 from electricitylci.process_dictionary_writer import *
 """
     Merge generation and emissions data. Add region designations using either
@@ -76,9 +65,9 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
         'MIDW', 'ISNE', 'NYIS', 'NW', 'SE', 'SW',
     ]
     if year is None:
-        year = model_specs['NETL_IO_trading_year']
+        year = model_specs.NETL_IO_trading_year
     if subregion is None:
-        subregion = model_specs['regional_aggregation']
+        subregion = model_specs.regional_aggregation
     if subregion not in ['BA', 'FERC','US']:
         raise ValueError(
             f'subregion or regional_aggregation must have a value of "BA" or "FERC" '
@@ -565,13 +554,6 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
     import numpy as np
     import pandas as pd
 
-    from electricitylci.model_config import (
-        use_primaryfuel_for_coal,
-        fuel_name,
-        replace_egrid,
-        eia_gen_year,
-        # region_column_name,
-    )
     from electricitylci.generation import eia_facility_fuel_region
     from electricitylci.globals import data_dir, output_dir
     from electricitylci.process_dictionary_writer import (
