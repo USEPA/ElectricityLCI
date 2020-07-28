@@ -631,7 +631,7 @@ def aggregate_data(total_db, subregion="BA"):
         uncertainty distributions.
     """
     from electricitylci.aggregation_selector import subregion_col
-    from electricitylci.model_config import eia_gen_year
+
     def geometric_mean(p_series, df, cols):
         # Alternatively we can use scipy.stats.lognorm to fit a distribution
         # and provide the parameters
@@ -645,29 +645,29 @@ def aggregate_data(total_db, subregion="BA"):
             with np.errstate(all='raise'):
                 try:
                     data = p_series.to_numpy()
-                except ArithmeticError or ValueError or FloatingPointError:
+                except (ArithmeticError, ValueError, FloatingPointError):
                     module_logger.debug("Problem with input data")
                     return None
                 try:
                     log_data = np.log(data)
-                except ArithmeticError or ValueError or FloatingPointError:
+                except (ArithmeticError, ValueError, FloatingPointError):
                     module_logger.debug("Problem with log function")
                     return None
                 try:
                     mean = np.mean(log_data)
-                except ArithmeticError or ValueError or FloatingPointError:
+                except (ArithmeticError, ValueError, FloatingPointError):
                     module_logger.debug("Problem with mean function")
                     return None
                 l = len(data)
                 try:
                     sd = np.std(log_data)/np.sqrt(l)
                     sd2 = sd ** 2
-                except ArithmeticError or ValueError or FloatingPointError:
+                except (ArithmeticError, ValueError, FloatingPointError):
                     module_logger.debug("Problem with std function")
                     return None
                 try:
                     pi1, pi2 = t.interval(alpha=0.90, df=l - 2, loc=mean, scale=sd)
-                except ArithmeticError or ValueError or FloatingPointError:
+                except (ArithmeticError, ValueError, FloatingPointError):
                     module_logger.debug("Problem with t function")
                     return None
                 try:
@@ -686,7 +686,7 @@ def aggregate_data(total_db, subregion="BA"):
                     return None
                 try:
                     result = (np.exp(mean), 0, np.exp(upper_interval))
-                except ArithmeticError or ValueError or FloatingPointError:
+                except (ArithmeticError, ValueError, FloatingPointError):
                     module_logger.debug("Unable to calculate geometric_mean")
                     return None
                 if result is not None:
@@ -786,8 +786,8 @@ def aggregate_data(total_db, subregion="BA"):
             "Unit"
         ]
         elec_df_groupby_cols = fuel_agg + ["Year", "source_string"]
-    if replace_egrid:
-        primary_fuel_df=eia923_primary_fuel(year=eia_gen_year)
+    if model_specs.replace_egrid:
+        primary_fuel_df=eia923_primary_fuel(year=model_specs.eia_gen_year)
         primary_fuel_df.rename(columns={'Plant Id':"eGRID_ID"},inplace=True)
         primary_fuel_df["eGRID_ID"]=primary_fuel_df["eGRID_ID"].astype(int)
         key_df = (
