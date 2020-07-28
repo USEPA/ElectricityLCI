@@ -301,7 +301,10 @@ def olca_schema_distribution_mix(td_by_region, cons_mix_dict, subregion="BA"):
                 matching_dict = cons_mix_dict[cons_mix]
                 break
         if matching_dict is None:
-            logging.warning(f"Trouble matching dictionary for {reg}")
+            logging.warning(
+                f"Trouble matching dictionary for {reg}. "
+                f"Consumption mix at user will not be created."
+                )
         else:
             exchanges_list[1]["provider"] = {
                 "name": matching_dict["name"],
@@ -309,9 +312,9 @@ def olca_schema_distribution_mix(td_by_region, cons_mix_dict, subregion="BA"):
                 "category": matching_dict["category"].split("/"),
             }
             # Writing final file
-        final = process_table_creation_distribution(reg, exchanges_list)
-        final["name"] = "Electricity; at user; consumption mix - " + reg
-        distribution_mix_dict[reg] = final
+            final = process_table_creation_distribution(reg, exchanges_list)
+            final["name"] = "Electricity; at user; consumption mix - " + reg
+            distribution_mix_dict[reg] = final
     return distribution_mix_dict
 
 
