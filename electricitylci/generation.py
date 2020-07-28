@@ -22,6 +22,7 @@ from electricitylci.eia923_generation import eia923_primary_fuel
 from electricitylci.eia860_facilities import eia860_balancing_authority
 from electricitylci.model_config import model_name
 
+
 egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory','NERC','PercentGenerationfromDesignatedFuelCategory','Balancing Authority Name','Balancing Authority Code']]
 
 module_logger = logging.getLogger("generation.py")
@@ -463,6 +464,7 @@ def create_generation_process_df():
     import electricitylci.ampd_plant_emissions as ampd
     from electricitylci.model_config import eia_gen_year
     from electricitylci.combinator import ba_codes
+    import electricitylci.manual_edits as edits
 
     COMPARTMENT_DICT = {
         "emission/air": "air",
@@ -603,6 +605,7 @@ def create_generation_process_df():
     final_database["FERC_Region"] = final_database["Balancing Authority Code"].map(
         ba_codes["FERC_Region"]
     )
+    final_database=edits.check_for_edits(final_database,"generation.py","create_generation_process_df")
     return final_database
 
 
