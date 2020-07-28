@@ -24,6 +24,7 @@ ElectricityLCI.pyproj
 electricitylci/data/**/*.*
 !electricitylci/data/petroleum_inventory/*.*
 !electricitylci/data/EFs/*.*
+!electricitylci/data/*.yml
 .spyproject/codestyle.ini
 .spyproject/encoding.ini
 .spyproject/vcs.ini
