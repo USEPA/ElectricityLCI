@@ -68,6 +68,7 @@ FUEL_CAT_CODES = {
     'PC': 'OIL',
     'SGP': 'OIL',
     'MSB': 'BIOMASS',
+    'MSN': 'OTHF',
     'LFG': 'BIOMASS',
     'WOC': 'COAL',
     'WH': 'OTHF',
@@ -83,6 +84,7 @@ FUEL_CAT_CODES = {
     'OBS': 'BIOMASS',
     'OG': 'OFSL',
     'BFG': 'OFSL',
+    'WC': 'COAL'
 }
 
 STATE_ABBREV = {

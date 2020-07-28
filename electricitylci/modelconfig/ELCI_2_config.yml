@@ -18,7 +18,7 @@ regional_aggregation: 'eGRID'
 # will trigger the use of EPA CEMS and EIA data as substitutes for eGRID. Replacing
 # eGRID will also use EIA generation data to determine the generation mix.
 egrid_year: 2014
-eia_gen_year: 2017
+eia_gen_year: 2014
 replace_egrid: False
 
 #NETL has developed profiles for renewable generation to capture construction
@@ -29,7 +29,7 @@ include_renewable_generation: True
 include_netl_water: True
 
 # Upstream data from NETL can be included in the outputs.
-include_upstream_processes: False
+include_upstream_processes: True
 
 inventories_of_interest:
   eGRID: 2014

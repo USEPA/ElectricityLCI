@@ -70,7 +70,8 @@ def main():
     # it's just easier to split here.
     if config.model_specs.EPA_eGRID_trading is False:
         print("using alt gen method for consumption mix")
-        cons_mix_df_dict = electricitylci.get_consumption_mix_df()
+        regions_to_keep=list(generation_process_df["Balancing Authority Name"].unique())
+        cons_mix_df_dict = electricitylci.get_consumption_mix_df(regions_to_keep=regions_to_keep)
         print("write consumption mix to dict")
         cons_mix_dicts={}
         for subreg in cons_mix_df_dict.keys():

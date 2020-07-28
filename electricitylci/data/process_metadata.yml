@@ -128,9 +128,9 @@ default:
 
   use_egrid:
     DataTreatment: 'Electricity generation processes are primarily based on
-    facility-reported data. All the facilities defined in the eGRID ‘Plants’
+    facility-reported data. All the facilities defined in the eGRID ''Plants''
     list are the electricity generators used as the pool for creating the LCI.
-    The net generation quantity reported in the ‘Plants’ list was used for
+    The net generation quantity reported in the ''Plants'' list was used for
     generation amount. The annual heat input was used to estimate the energy in
     the fuel or directly captured energy. The heat input to the plant is
     converted to a physical flow by using information about the fuel source
@@ -139,7 +139,7 @@ default:
     as well as the USEPA emissions and waste inventories, NEI, TRI, and
     RCRAInfo. Alternative generation data was gathered from EIA-923 when the
     emissions or waste inventories correspond to a non-egrid year. The eGRID
-    subregion identifier in the ‘Plants’ list was used to associate a facility
+    subregion identifier in the ''Plants'' list was used to associate a facility
     with a region. The fuel and energy types used for the aggregation are the
     eGRID fuel categories -- oil, natural gas, synthetic gas, nuclear fuel,
     hydroelectric, biomass, wind, solar, geothermal and other fuel -- except
@@ -157,7 +157,7 @@ default:
     United States. eGRID is a primary source along with other USEPA maintained
     national emission and waste inventories for modeling generation. These
     inventories include the Toxic Release Inventory (TRI), the National
-    Emissions Inventory (NEI), and Resources Conservation and Recycling Acts’
+    Emissions Inventory (NEI), and Resources Conservation and Recycling Acts''
     Biennial Report, which is stored in system called RCRAInfo. The Energy
     Information Administration (EIA) compiles generation and fuel use data in
     EIA-923 report used for generation data for odd years when eGRID generation
@@ -168,11 +168,11 @@ default:
     These data are used for modeling electricity trade across regions.'
   replace_egrid:
     DataTreatment: 'Electricity generation processes are primarily based on
-    facility-reported data. All the facilities defined in the eGRID ‘Plants’
+    facility-reported data. All the facilities defined in the eGRID ''Plants''
     list are the electricity generators used as the pool for creating the LCI
     or if the configuration parameter replace_egrid is True then all facilities
     reported in EIA 923 data are used. The net generation quantity reported in
-    the ‘Plants’ list was used for generation amount. The annual heat input was
+    the ''Plants'' list was used for generation amount. The annual heat input was
     used to estimate the energy in the fuel or directly captured energy. The
     heat input to the plant is converted to a physical flow by using
     information about the fuel source being used and the EIA data for heat
@@ -198,7 +198,7 @@ default:
     United States. eGRID is a primary source along with other USEPA maintained
     national emission and waste inventories for modeling generation. These
     inventories include the Toxic Release Inventory (TRI), the National
-    Emissions Inventory (NEI), and Resources Conservation and Recycling Acts’
+    Emissions Inventory (NEI), and Resources Conservation and Recycling Acts''
     Biennial Report, which is stored in system called RCRAInfo. The Energy
     Information Administration (EIA) compiles generation and fuel use data in
     EIA-923 report used for generation data for odd years when eGRID generation
