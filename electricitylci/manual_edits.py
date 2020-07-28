@@ -36,7 +36,27 @@ def reassign(data, edit_dict):
         module_logger.warning("Problem found with manual edit - reassign")
         return data
 
-
+def remove(data, edit_dict):
+    try:
+        if edit_dict["data_source"]=="yaml":
+            logging.info("Removin using data from yaml")
+            combined_filter=None
+            # logging.info(f"{combined_filter}")
+            for filt in edit_dict["filters"].keys():
+                # logging.info(f"Filters are {edit_dict['filters'][filt]}")
+                if combined_filter is None:
+                    combined_filter=~data[filt].isin(edit_dict["filters"][filt])
+                else:
+                    combined_filter=(
+                        combined_filter &
+                        ~data[filt].isin(edit_dict["filters"][filt])
+                    )
+                # logging.info(f"{combined_filter}")
+            data = data.loc[combined_filter,:]
+        return data
+    except KeyError:
+        module_logger.warning("Problem found with manual edit - remove")
+        return data
 
 def check_for_edits(data, calling_module, calling_function):
     try:
@@ -45,8 +65,8 @@ def check_for_edits(data, calling_module, calling_function):
             module_logger.info(f"Edits found for {calling_module}.{calling_function}")
             if edits_to_make[ed]["edit_type"]=="reassign":
                 data=reassign(data,edits_to_make[ed])
-            elif edits_to_make[ed]["edit_type"]=="delete":
-                data=delete_data(data,edits_to_make[ed])
+            elif edits_to_make[ed]["edit_type"]=="remove":
+                data=remove(data,edits_to_make[ed])
             else:
                 logging.info("Edit found but no handler for function")
         return data
