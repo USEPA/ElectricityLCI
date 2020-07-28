@@ -39,7 +39,7 @@ def reassign(data, edit_dict):
 def remove(data, edit_dict):
     try:
         if edit_dict["data_source"]=="yaml":
-            logging.info("Removin using data from yaml")
+            logging.info("Removing using data from yaml")
             combined_filter=None
             # logging.info(f"{combined_filter}")
             for filt in edit_dict["filters"].keys():
