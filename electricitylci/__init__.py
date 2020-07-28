@@ -525,7 +525,7 @@ def get_consumption_mix_df(subregion=None, regions_to_keep=None):
         subregion = model_specs['regional_aggregation']
 
     io_trade_df = trade.ba_io_trading_model(
-        year=eia_gen_year, subregion=subregion, regions_to_keep=regions_to_keep
+        year=config.model_specs.eia_gen_year, subregion=subregion, regions_to_keep=regions_to_keep
     )
     return io_trade_df
 

@@ -484,7 +484,9 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     # Merge to bring in export region name matched with BAA
     df_final_trade_out_filt_melted_merge = df_final_trade_out_filt_melted_merge.merge(df_BA_NA, left_on = 'export BAA', right_on = 'BA_Acronym')
     if regions_to_keep is not None:
-        df_final_trade_out_filt_melted_merge=df_final_trade_out_filt_melted_merge.loc[df_final_trade_out_filt_melted_merge["export BAA"].isin(regions_to_keep),:]
+        # module_logger.info(f"{regions_to_keep}")
+        # module_logger.info(f"{df_final_trade_out_filt_melted_merge['BA_Name'].unique()}")
+        df_final_trade_out_filt_melted_merge=df_final_trade_out_filt_melted_merge.loc[df_final_trade_out_filt_melted_merge["BA_Name"].isin(regions_to_keep),:]
     df_final_trade_out_filt_melted_merge.rename(columns={'FERC_Region': 'export ferc region', 'FERC_Region_Abbr':'export ferc region abbr'}, inplace=True)
     df_final_trade_out_filt_melted_merge.drop(columns = ['BA_Acronym', 'BA_Name', 'NCR ID#', 'EIA_Region', 'EIA_Region_Abbr'], inplace = True)
 #    if subregion == 'BA':
