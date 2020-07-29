@@ -99,7 +99,7 @@ class ModelSpecs:
         self.EPA_eGRID_trading = model_specs["EPA_eGRID_trading"]
         self.net_trading = model_specs["net_trading"]
         self.fedelemflowlist_version = model_specs["fedelemflowlist_version"]
-        self.use_primaryfuel_for_coal = model_specs["use_primaryfuel_for_coal"]
+        # self.use_primaryfuel_for_coal = model_specs["use_primaryfuel_for_coal"]
         self.fuel_name_file = model_specs["fuel_name_file"]
         self.fuel_name = pd.read_csv(join(data_dir, self.fuel_name_file))
         self.post_process_generation_emission_factors = model_specs["post_process_generation_emission_factors"]

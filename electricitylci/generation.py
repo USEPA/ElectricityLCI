@@ -546,12 +546,12 @@ def create_generation_process_df():
     #         final_database["FuelCategory_right"], inplace=True
     #     )
     final_database["Final_fuel_agg"] = final_database["FuelCategory"]
-    if model_specs.use_primaryfuel_for_coal:
-        final_database.loc[
-            final_database["FuelCategory"] == "COAL", ["Final_fuel_agg"]
-        ] = final_database.loc[
-            final_database["FuelCategory"] == "COAL", "PrimaryFuel"
-        ]
+    # if model_specs.use_primaryfuel_for_coal:
+    #     final_database.loc[
+    #         final_database["FuelCategory"] == "COAL", ["Final_fuel_agg"]
+    #     ] = final_database.loc[
+    #         final_database["FuelCategory"] == "COAL", "PrimaryFuel"
+    #     ]
     try:
         year_filter = final_database["Year_x"] == final_database["Year_y"]
         final_database = final_database.loc[year_filter, :]

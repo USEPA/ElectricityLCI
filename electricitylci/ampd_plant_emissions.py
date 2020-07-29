@@ -1486,12 +1486,12 @@ def generate_plant_emissions(year):
     netl_harmonized_melt["FuelCategory"] = netl_harmonized_melt[
         "PrimaryFuel"
     ].map(FUELCAT_MAP)
-    if model_specs.use_primaryfuel_for_coal:
-        netl_harmonized_melt.loc[
-            netl_harmonized_melt["FuelCategory"] == "COAL", "FuelCategory"
-        ] = netl_harmonized_melt.loc[
-            netl_harmonized_melt["FuelCategory"] == "COAL", "PrimaryFuel"
-        ]
+    # if model_specs.use_primaryfuel_for_coal:
+    #     netl_harmonized_melt.loc[
+    #         netl_harmonized_melt["FuelCategory"] == "COAL", "FuelCategory"
+    #     ] = netl_harmonized_melt.loc[
+    #         netl_harmonized_melt["FuelCategory"] == "COAL", "PrimaryFuel"
+    #     ]
     netl_harmonized_melt["DataCollection"] = 5
     netl_harmonized_melt["GeographicalCorrelation"] = 1
     netl_harmonized_melt["TechnologicalCorrelation"] = 1

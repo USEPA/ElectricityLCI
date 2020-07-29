@@ -120,12 +120,12 @@ def create_generation_mix_process_df_from_model_generation_data(
     elif subregion == "FERC":
         database_for_genmix_final["Subregion"] = database_for_genmix_final["FERC_Region"]
 
-    if model_specs.use_primaryfuel_for_coal:
-        database_for_genmix_final.loc[
-            database_for_genmix_final["FuelCategory"] == "COAL", "FuelCategory"
-        ] = database_for_genmix_final.loc[
-            database_for_genmix_final["FuelCategory"] == "COAL", "PrimaryFuel"
-        ]
+    # if model_specs.use_primaryfuel_for_coal:
+    #     database_for_genmix_final.loc[
+    #         database_for_genmix_final["FuelCategory"] == "COAL", "FuelCategory"
+    #     ] = database_for_genmix_final.loc[
+    #         database_for_genmix_final["FuelCategory"] == "COAL", "PrimaryFuel"
+    #     ]
     if model_specs.keep_mixed_plant_category:
         mixed_criteria = (
                 database_for_genmix_final["PercentGenerationfromDesignatedFuelCategory"]
