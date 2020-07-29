@@ -47,7 +47,7 @@ def generate_petroleum_upstream(year):
     petroleum_fuel=eia_gen_fuel.loc[petroleum_criteria,:]
     #replacing PC with RFO as a proxy for Coke. In the future
     #we should add a profile for coke.
-    petroleum_fuel.loc[petroleum_fuel["reported_fuel_type_code"]=="PC",:]="RFO"
+    petroleum_fuel.loc[petroleum_fuel["reported_fuel_type_code"]=="PC","reported_fuel_type_code"]="RFO"
     # Sum all fuel use by plant, plant state, and DFO/RFO
     eia_fuel_receipts_df=eia_fuel_receipts_df.groupby(
             ['plant_id','plant_state','energy_source'],
