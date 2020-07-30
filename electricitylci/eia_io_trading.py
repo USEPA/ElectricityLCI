@@ -634,7 +634,7 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
                 exchange(ra, exchanges_list)
                    # Writing final file
         final = process_table_creation_con_mix(reg, exchanges_list)
-        final["name"] = "Electricity; at grid; consumption mix - " + reg
-        consumption_mix_dict[reg] = final
+        final["name"] = f"Electricity; at grid; consumption mix - {reg} - {subregion}"
+        consumption_mix_dict[f"{reg} - {subregion}"] = final
 
     return consumption_mix_dict

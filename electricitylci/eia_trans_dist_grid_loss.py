@@ -297,7 +297,7 @@ def olca_schema_distribution_mix(td_by_region, cons_mix_dict, subregion="BA"):
         for cons_mix in cons_mix_dict:
             if (
                 cons_mix_dict[cons_mix]["name"]
-                == "Electricity; at grid; consumption mix - " + reg
+                == f"Electricity; at grid; consumption mix - {reg} - {subregion}"
             ):
                 matching_dict = cons_mix_dict[cons_mix]
                 break
@@ -314,8 +314,8 @@ def olca_schema_distribution_mix(td_by_region, cons_mix_dict, subregion="BA"):
             }
             # Writing final file
             final = process_table_creation_distribution(reg, exchanges_list)
-            final["name"] = "Electricity; at user; consumption mix - " + reg
-            distribution_mix_dict[reg] = final
+            final["name"] = f"Electricity; at user; consumption mix - {reg} - {subregion}"
+            distribution_mix_dict[f"{reg} - {subregion}"] = final
     return distribution_mix_dict
 
 
