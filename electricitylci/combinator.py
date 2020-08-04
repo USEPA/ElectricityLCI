@@ -3,11 +3,8 @@ import pandas as pd
 from electricitylci.globals import output_dir, data_dir
 import electricitylci.generation as gen
 import electricitylci.import_impacts as import_impacts
-from electricitylci.model_config import (
-    eia_gen_year,
-    keep_mixed_plant_category,
-    min_plant_percent_generation_from_primary_fuel_category,
-)
+from electricitylci.model_config import model_specs
+
 import logging
 
 # I added this section to populate a ba_codes variable that could be used
@@ -37,7 +34,7 @@ ba_codes.rename(
 ba_codes.set_index("BA_Acronym", inplace=True)
 
 
-def fill_nans(df, key_column="FacilityID", target_columns=[], dropna=True):
+def fill_nans(df, eia_gen_year, key_column="FacilityID", target_columns=[], dropna=True):
     """Fills nan values for the specified target columns by using the data from
     other rows, using the key_column for matches. There is an extra step
     to fill remaining nans for the state column because the module to calculate
@@ -83,9 +80,9 @@ def fill_nans(df, key_column="FacilityID", target_columns=[], dropna=True):
         if x in df.columns:
             confirmed_target.append(x)
         else:
-            module_logger.warning(f"Column {x} is not in the dataframe")
+            module_logger.debug(f"Column {x} is not in the dataframe")
     if key_column not in df.columns:
-        module_logger.warning(
+        module_logger.debug(
             f"Key column '{key_column}' is not in the dataframe"
         )
         raise KeyError
@@ -118,7 +115,7 @@ def fill_nans(df, key_column="FacilityID", target_columns=[], dropna=True):
     return df
 
 
-def concat_map_upstream_databases(*arg, **kwargs):
+def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     import fedelemflowlist as fedefl
 
     """
@@ -363,7 +360,7 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
         try:
             combined_df.drop(columns=[x], inplace=True)
         except KeyError:
-            module_logger.warning(f"Error deleting column {x}")
+            module_logger.debug(f"Error deleting column {x}")
     combined_df["FacilityID"] = combined_df["eGRID_ID"]
     # I think without the following, given the way the data is created for fuels,
     # there are too many instances where fuel demand can be created when no emissions
@@ -377,15 +374,15 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
     combined_df.loc[
         combined_df["FuelCategory"] == "CONSTRUCTION", "FuelCategory"
     ] = float("nan")
-    combined_df = fill_nans(combined_df)
+    combined_df = fill_nans(combined_df, model_specs.eia_gen_year)
     # The hard-coded cutoff is a workaround for now. Changing the parameter
     # to 0 in the config file allowed the inventory to be kept for generators
     # that are now being tagged as mixed.
     generation_filter = (
         combined_df["PercentGenerationfromDesignatedFuelCategory"]
-        < min_plant_percent_generation_from_primary_fuel_category / 100
+        < model_specs.min_plant_percent_generation_from_primary_fuel_category / 100
     )
-    if keep_mixed_plant_category:
+    if model_specs.keep_mixed_plant_category:
         combined_df.loc[generation_filter, "FuelCategory"] = "MIXED"
         combined_df.loc[generation_filter, "PrimaryFuel"] = "Mixed Fuel Type"
     else:
@@ -465,7 +462,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     )
     fuel_df.dropna(subset=["Electricity"], inplace=True)
     fuel_df["Source"] = "eia"
-    fuel_df = add_temporal_correlation_score(fuel_df)
+    fuel_df = add_temporal_correlation_score(fuel_df, model_specs.electricity_lci_target_year)
     fuel_df["DataCollection"] = 5
     fuel_df["GeographicalCorrelation"] = 1
     fuel_df["TechnologicalCorrelation"] = 1
@@ -480,7 +477,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
         fuel_cat_key["FuelCategory"]
     )
     gen_plus_up_df = pd.concat([gen_df, fuel_df], ignore_index=True)
-    gen_plus_up_df = fill_nans(gen_plus_up_df)
+    gen_plus_up_df = fill_nans(gen_plus_up_df, model_specs.eia_gen_year)
     # Taking out anything with New Brunswick System Operator so that
     # these fuel inputs (for a very small US portion of NBSO) don't get mapped
     # to the Canadian import rollup (i.e., double-counted)

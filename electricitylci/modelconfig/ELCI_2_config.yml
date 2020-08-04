@@ -87,5 +87,4 @@ NETL_IO_trading_year: 2016
 
 fedelemflowlist_version: 1.0.2
 post_process_generation_emission_factors: False
-use_primaryfuel_for_coal: False
 fuel_name_file: fuelname_1.csv

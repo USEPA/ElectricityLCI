@@ -15,19 +15,12 @@ from electricitylci.globals import (
     electricity_flow_name_consumption,
     elci_version
 )
-from electricitylci.model_config import (
-        egrid_year,
-        model_specs,
-        electricity_lci_target_year,
-        model_name
-)
 from electricitylci.utils import make_valid_version_num
 from electricitylci.egrid_facilities import egrid_subregions
+from electricitylci.model_config import model_specs
 
 
 module_logger = logging.getLogger("process_dictionary_writer.py")
-year = egrid_year
-targetyear=electricity_lci_target_year
 
 # Read in general metadata to be used by all processes
 with open(join(data_dir, "process_metadata.yml")) as f:
@@ -243,7 +236,7 @@ def exchange_table_creation_input_con_mix(
     ar["unit"] = unit("MWh")
     ar["pedigreeUncertainty"] = ""
     ar["uncertainty"] = ""
-    ar["comment"] = "eGRID " + str(year) + ". From " + loc
+    ar["comment"] = "eGRID " + str(model_specs.egrid_year) + ". From " + loc
     # ar['location'] = location(loc)
     return ar
 
@@ -368,7 +361,7 @@ def process_doc_creation(process_type="default"):
         assert process_type in VALID_FUEL_CATS, f"Invalid process_type ({process_type}), using default"
     except AssertionError:
         process_type="default"
-    if model_specs["replace_egrid"] is True:
+    if model_specs.replace_egrid is True:
         subkey = "replace_egrid"
     else:
         subkey= "use_egrid"
@@ -391,8 +384,8 @@ def process_doc_creation(process_type="default"):
                 ar[key]=metadata[process_type][OLCA_TO_METADATA[key]]
     ar["timeDescription"] = ""
     if not ar["validUntil"]:
-        ar["validUntil"] = "12/31/"+str(targetyear)
-        ar["validFrom"] = "1/1/"+str(targetyear)
+        ar["validUntil"] = "12/31/"+str(model_specs.electricity_lci_target_year)
+        ar["validFrom"] = "1/1/"+str(model_specs.electricity_lci_target_year)
     ar["sources"] = [x for x in ar["sources"].values()]
     ar["copyright"] = False
     ar["creationDate"] = time.time()
@@ -411,7 +404,7 @@ def process_description_creation(process_type="fossil"):
         assert process_type in VALID_FUEL_CATS, f"Invalid process_type ({process_type}), using default"
     except AssertionError:
         process_type = "default"
-    if model_specs["replace_egrid"] is True:
+    if model_specs.replace_egrid is True:
         subkey = "replace_egrid"
     else:
         subkey = "use_egrid"
@@ -433,7 +426,7 @@ def process_description_creation(process_type="fossil"):
         desc_string = metadata[process_type][key]
     desc_string = desc_string + " This process was created with ElectricityLCI " \
                   "(https://github.com/USEPA/ElectricityLCI) version " + elci_version\
-                  + " using the " + model_name + " configuration."
+                  + " using the " + model_specs.model_name + " configuration."
 
     return desc_string
 
@@ -637,7 +630,7 @@ def process_table_creation_con_mix(region, exchanges_list):
     ar["description"]=(ar["description"]
         + " This process was created with ElectricityLCI " 
         + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
-        + " using the " + model_name + " configuration."
+        + " using the " + model_specs.model_name + " configuration."
     )
     ar["version"] = make_valid_version_num(elci_version)
     return ar
@@ -664,7 +657,7 @@ def process_table_creation_genmix(region, exchanges_list):
     ar["description"]=(ar["description"]
         + " This process was created with ElectricityLCI " 
         + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
-        + " using the " + model_name + " configuration."
+        + " using the " + model_specs.model_name + " configuration."
     )
     ar["version"] = make_valid_version_num(elci_version)
     return ar
@@ -688,7 +681,7 @@ def process_table_creation_surplus(region, exchanges_list):
     ar["description"]=(ar["description"]
         + " This process was created with ElectricityLCI " 
         + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
-        + " using the " + model_name + " configuration."
+        + " using the " + model_specs.model_name + " configuration."
     )
     ar["version"] = make_valid_version_num(elci_version)
     return ar
@@ -717,7 +710,7 @@ def process_table_creation_distribution(region, exchanges_list):
     ar["description"]=(ar["description"]
         + " This process was created with ElectricityLCI " 
         + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
-        + " using the " + model_name + " configuration."
+        + " using the " + model_specs.model_name + " configuration."
     )
     ar["version"] = make_valid_version_num(elci_version)
     return ar

@@ -2,13 +2,10 @@ import pandas as pd
 import stewi
 from os.path import join
 from electricitylci.globals import data_dir
-from electricitylci.model_config import (
-    egrid_year,
-    min_plant_percent_generation_from_primary_fuel_category
-)
+from electricitylci.model_config import model_specs
 
 # get egrid facility file from stewi
-egrid_facilities = stewi.getInventoryFacilities("eGRID", egrid_year)
+egrid_facilities = stewi.getInventoryFacilities("eGRID", model_specs.egrid_year)
 egrid_facilities.rename(columns={'Plant primary coal/oil/gas/ other fossil fuel category': 'FuelCategory', 'Plant primary fuel': 'PrimaryFuel', 'eGRID subregion acronym': 'Subregion', 'NERC region acronym': 'NERC'}, inplace=True)
 
 # Remove NERC from original egrid output in stewi because there are mismatches in the original data with more than 1 NERC per egrid subregion
@@ -58,7 +55,7 @@ def add_percent_generation_from_primary_fuel_category_col(x):
 
 
 def list_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min():
-    passing_facilties = egrid_facilities_fuel_cat_per_gen[egrid_facilities_fuel_cat_per_gen['PercentGenerationfromDesignatedFuelCategory'] > min_plant_percent_generation_from_primary_fuel_category]
+    passing_facilties = egrid_facilities_fuel_cat_per_gen[egrid_facilities_fuel_cat_per_gen['PercentGenerationfromDesignatedFuelCategory'] > model_specs.min_plant_percent_generation_from_primary_fuel_category]
     # Delete duplicates by creating a set
     facility_ids_passing = list(set(passing_facilties['FacilityID']))
     return facility_ids_passing
