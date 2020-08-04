@@ -225,7 +225,7 @@ default:
 
       Year: 2020
 
-      Version: '1.0.0'
+      Version: '1.0.1'
 
       Category: 'In_Development'
 
@@ -302,7 +302,7 @@ nuclear_upstream:
       Energy Technology Laboratory, from
       https://www.netl.doe.gov/energy-analysis/details?id=620 Pittsburgh, PA.'
 
-      Version: '1.0.0'
+      Version: '1.0.1'
 
       Url: 'netl.doe.gov/energy-analysis/details?id=620'
 
@@ -375,7 +375,7 @@ geothermal:
       Technology Laboratory, from netl.doe.gov/energy-analysis/details?id=591
       Pittsburgh, PA.'
 
-      Version: '1.0.0'
+      Version: '1.0.1'
 
       Url: 'netl.doe.gov/energy-analysis/details?id=591'
 
@@ -450,7 +450,7 @@ solar:
 
       Year: 2020
 
-      Version: '1.0.0'
+      Version: '1.0.1'
 
       Category: 'In_Development'
 
@@ -523,7 +523,7 @@ solarthermal:
 
       Year: 2020
 
-      Version: '1.0.0'
+      Version: '1.0.1'
 
       Category: 'In_Development'
 
@@ -597,7 +597,7 @@ wind:
 
       Year: 2020
 
-      Version: '1.0.0'
+      Version: '1.0.1'
 
       Category: 'In_Development'
 
@@ -649,7 +649,7 @@ consumption_mix:
 
         Year: 2020
 
-        Version: '1.0.0'
+        Version: '1.0.1'
 
         Category: 'In_Development'
 
@@ -682,7 +682,7 @@ consumption_mix:
 
         Year: 2020
 
-        Version: '1.0.0' 
+        Version: '1.0.1' 
 
         Category: ''
 
@@ -697,7 +697,7 @@ consumption_mix:
 
         Year: 2017
 
-        Version: '1.0.0'
+        Version: '1.0.1'
 
         Category: ''
 
@@ -712,7 +712,7 @@ consumption_mix:
 
         Year: 2018
 
-        Version: '1.0.0'
+        Version: '1.0.1'
 
         Category: ''
 
@@ -726,7 +726,7 @@ consumption_mix:
 
         Year: 2020
 
-        Version: '1.0.0'
+        Version: '1.0.1'
 
         Category: 'In_Development'
 
@@ -962,7 +962,7 @@ gas_upstream:
 
       Url: 'netl.doe.gov/energy-analysis/details?id=3198'
 
-      Version: '1.0.0'
+      Version: '1.0.1'
 
       Year: 2019
 
@@ -1073,7 +1073,7 @@ oil_upstream:
 
       Year: 2016
 
-      Version: '1.0.0'
+      Version: '1.0.1'
 
       Url: 'pubs.acs.org/doi/abs/10.1021/acs.est.6b02819'
 
@@ -1256,7 +1256,7 @@ construction_upstream:
 
       Year: 2017
 
-      Version: '1.0.0'
+      Version: '1.0.1'
 
 
     Source2: 
@@ -1272,6 +1272,6 @@ construction_upstream:
 
       Year: 2015
 
-      Version: '1.0.0'
+      Version: '1.0.1'
 
       Category: 'NETL'

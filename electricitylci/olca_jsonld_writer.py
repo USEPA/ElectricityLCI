@@ -345,7 +345,7 @@ def _source(src_data: dict, writer: pack.Writer,
     try:
         source.version=src_data["Version"]
     except KeyError:
-        source.version = '1.0.0'
+        source.version = '1.0.1'
     try:
         source.text_reference = src_data["TextReference"]
     except KeyError:
