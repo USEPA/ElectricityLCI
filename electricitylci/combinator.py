@@ -80,9 +80,9 @@ def fill_nans(df, eia_gen_year, key_column="FacilityID", target_columns=[], drop
         if x in df.columns:
             confirmed_target.append(x)
         else:
-            module_logger.warning(f"Column {x} is not in the dataframe")
+            module_logger.debug(f"Column {x} is not in the dataframe")
     if key_column not in df.columns:
-        module_logger.warning(
+        module_logger.debug(
             f"Key column '{key_column}' is not in the dataframe"
         )
         raise KeyError
@@ -360,7 +360,7 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
         try:
             combined_df.drop(columns=[x], inplace=True)
         except KeyError:
-            module_logger.warning(f"Error deleting column {x}")
+            module_logger.debug(f"Error deleting column {x}")
     combined_df["FacilityID"] = combined_df["eGRID_ID"]
     # I think without the following, given the way the data is created for fuels,
     # there are too many instances where fuel demand can be created when no emissions
