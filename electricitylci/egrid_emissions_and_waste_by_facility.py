@@ -19,7 +19,7 @@ else:
     # drop 'Electricity' flow
     emissions_and_wastes_by_facility = emissions_and_wastes_by_facility[emissions_and_wastes_by_facility['FlowName'] != 'Electricity']
     # Save it to a csv for the next call
-    emissions_and_wastes_by_facility.to_csv(data_dir+stewicombooutputfile, index=False)
+    emissions_and_wastes_by_facility.to_csv(data_dir+"/"+stewicombooutputfile, index=False)
 
 len(emissions_and_wastes_by_facility)
 # with egrid 2016, tri 2016, nei 2016, rcrainfo 2015: 106284
