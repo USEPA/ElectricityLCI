@@ -1,0 +1,108 @@
+# A file that contains manual fixes for various
+# modules in the eLCI.
+
+generation.py:
+    create_generation_process_df:
+# The following entries are to issue #121. Please see that entry for more details
+# https://github.com/USEPA/ElectricityLCI/issues/121
+        entry_1:
+          edit_type: "reassign"
+          data_source: "yaml"
+          column_to_reassign: "FuelCategory"
+          incoming_value: "SOLAR"
+          outgoing_value: "GAS"
+          filters:
+              FacilityID: 
+                - 56938
+              Source:
+                - "NEI"
+              Year:
+                - 2016
+        entry_2:
+          year: 2016
+          edit_type: "reassign"
+          data_source: "yaml"
+          column_to_reassign: "FuelCategory"
+          incoming_value: "SOLAR"
+          outgoing_value: "GAS"
+          filters:
+              FacilityID: 
+                  - 58697
+              Source:
+                - "NEI"
+                - "eGRID"
+                - "RCRA"
+                - "TRI"
+              Year:
+                  - 2016
+        entry_3:
+          year: 2016
+          edit_type: "reassign"
+          data_source: "yaml"
+          column_to_reassign: "eGRID_ID"
+          incoming_value: 56938
+          outgoing_value: 58697
+          filters:
+              Source: 
+                - "NEI"
+              Year:
+                - 2016
+        entry_4:
+          year: 2016
+          edit_type: "reassign"
+          data_source: "yaml"
+          column_to_reassign: "eGRID_ID"
+          incoming_value: 56944
+          outgoing_value: 55077
+          filters:
+              Source:
+                - "NEI"
+                - "eGRID"
+                - "RCRA"
+                - "TRI"
+              Year:
+                - 2016
+                - 2015
+        entry_5:
+          year: 2016
+          edit_type: "reassign"
+          data_source: "yaml"
+          column_to_reassign: "FacilityID"
+          incoming_value: 56938
+          outgoing_value: 58697
+          filters:
+              Source: 
+                - "NEI"
+              Year:
+                - 2016
+        entry_6:
+          year: 2016
+          edit_type: "reassign"
+          data_source: "yaml"
+          column_to_reassign: "FacilityID"
+          incoming_value: 56944
+          outgoing_value: 55077
+          filters:
+              Source:
+                - "NEI"
+                - "eGRID"
+                - "RCRA"
+                - "TRI"
+              Year:
+                - 2016
+                - 2015
+#This is in response to issue #77. This plant had 0 generation 
+#in 2016 which is causing issues. See 
+#https://github.com/USEPA/ElectricityLCI/issues/77 for more info.
+        entry_7:
+          edit_type: "remove"
+          data_source: "yaml"
+          filters:
+            FacilityID:
+              - 60880
+            Year:
+              - 2016
+
+
+
+

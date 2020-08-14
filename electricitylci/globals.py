@@ -2,8 +2,6 @@ import os
 import glob
 import pkg_resources  # part of setuptools
 
-set_model_name_with_stdin = True
-
 try: modulepath = os.path.dirname(os.path.realpath(__file__)).replace('\\', '/') + '/'
 except NameError: modulepath = 'electricitylci/'
 output_dir = os.path.join(modulepath, 'output')
@@ -70,6 +68,7 @@ FUEL_CAT_CODES = {
     'PC': 'OIL',
     'SGP': 'OIL',
     'MSB': 'BIOMASS',
+    'MSN': 'OTHF',
     'LFG': 'BIOMASS',
     'WOC': 'COAL',
     'WH': 'OTHF',
@@ -85,6 +84,7 @@ FUEL_CAT_CODES = {
     'OBS': 'BIOMASS',
     'OG': 'OFSL',
     'BFG': 'OFSL',
+    'WC': 'COAL'
 }
 
 STATE_ABBREV = {

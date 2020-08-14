@@ -9,6 +9,7 @@ from electricitylci.globals import output_dir, data_dir
 import logging
 from xlrd import XLRDError
 from functools import lru_cache
+
 # %%
 # Set working directory, files downloaded from EIA will be saved to this location
 # os.chdir = 'N:/eLCI/Transmission and Distribution'
@@ -296,12 +297,15 @@ def olca_schema_distribution_mix(td_by_region, cons_mix_dict, subregion="BA"):
         for cons_mix in cons_mix_dict:
             if (
                 cons_mix_dict[cons_mix]["name"]
-                == "Electricity; at grid; consumption mix - " + reg
+                == f"Electricity; at grid; consumption mix - {reg} - {subregion}"
             ):
                 matching_dict = cons_mix_dict[cons_mix]
                 break
         if matching_dict is None:
-            logging.warning(f"Trouble matching dictionary for {reg}")
+            logging.warning(
+                f"Trouble matching dictionary for {reg}. "
+                f"Consumption mix at user will not be created."
+                )
         else:
             exchanges_list[1]["provider"] = {
                 "name": matching_dict["name"],
@@ -309,9 +313,9 @@ def olca_schema_distribution_mix(td_by_region, cons_mix_dict, subregion="BA"):
                 "category": matching_dict["category"].split("/"),
             }
             # Writing final file
-        final = process_table_creation_distribution(reg, exchanges_list)
-        final["name"] = "Electricity; at user; consumption mix - " + reg
-        distribution_mix_dict[reg] = final
+            final = process_table_creation_distribution(reg, exchanges_list)
+            final["name"] = f"Electricity; at user; consumption mix - {reg} - {subregion}"
+            distribution_mix_dict[f"{reg} - {subregion}"] = final
     return distribution_mix_dict
 
 

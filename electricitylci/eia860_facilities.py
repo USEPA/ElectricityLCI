@@ -18,7 +18,6 @@ from electricitylci.utils import (
     find_file_in_folder,
     create_ba_region_map,
 )
-from electricitylci.model_config import regional_aggregation
 
 
 def _clean_columns(df):
@@ -75,7 +74,7 @@ def load_eia860_excel(eia860_path, sheet="Plant", header=1):
     return eia
 
 
-def eia860_balancing_authority(year):
+def eia860_balancing_authority(year, regional_aggregation=None):
 
     expected_860_folder = join(data_dir, "eia860_{}".format(year))
 

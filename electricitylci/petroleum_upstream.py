@@ -31,7 +31,10 @@ def generate_petroleum_upstream(year):
     dataframe
     """
     eia_fuel_receipts_df=read_eia923_fuel_receipts(year)
-    petroleum_criteria = eia_fuel_receipts_df['fuel_group']=='Petroleum'
+    petroleum_criteria = (
+        (eia_fuel_receipts_df['fuel_group']=='Petroleum')
+        | (eia_fuel_receipts_df['fuel_group']=="Petroleum Coke")
+    )
     eia_fuel_receipts_df=eia_fuel_receipts_df.loc[petroleum_criteria,:]
 
     eia_fuel_receipts_df['heat_input']=(
@@ -40,8 +43,11 @@ def generate_petroleum_upstream(year):
             pq.convert(10**6,'Btu','MJ'))
 
     eia_gen_fuel=eia923.eia923_generation_and_fuel(year)
-    petroleum_criteria=eia_gen_fuel["reported_fuel_type_code"].isin(["DFO","RFO"])
+    petroleum_criteria=eia_gen_fuel["reported_fuel_type_code"].isin(["DFO","RFO","PC"])
     petroleum_fuel=eia_gen_fuel.loc[petroleum_criteria,:]
+    #replacing PC with RFO as a proxy for Coke. In the future
+    #we should add a profile for coke.
+    petroleum_fuel.loc[petroleum_fuel["reported_fuel_type_code"]=="PC","reported_fuel_type_code"]="RFO"
     # Sum all fuel use by plant, plant state, and DFO/RFO
     eia_fuel_receipts_df=eia_fuel_receipts_df.groupby(
             ['plant_id','plant_state','energy_source'],

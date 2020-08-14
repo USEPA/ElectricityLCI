@@ -229,6 +229,10 @@ def _flow(dict_d: dict, flowprop: olca.Ref, writer: pack.Writer,
         flow.name = name
         flow.flow_type = olca.FlowType[_val(
             dict_d, 'flowType', default='ELEMENTARY_FLOW')]
+        if "waste" in _val(dict_d,'category').lower():
+            dict_d['flowType']="WASTE_FLOW"
+            flow.flow_type=olca.FlowType[_val(
+                dict_d, 'flowType', default='WASTE_FLOW')]
         # Do not assign flows a location
         # flow.location = _location(_val(dict_d, 'location'),
         #                          writer, created_ids)
@@ -341,7 +345,7 @@ def _source(src_data: dict, writer: pack.Writer,
     try:
         source.version=src_data["Version"]
     except KeyError:
-        source.version = '1.0.0'
+        source.version = '1.0.1'
     try:
         source.text_reference = src_data["TextReference"]
     except KeyError:

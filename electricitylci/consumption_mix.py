@@ -2,9 +2,8 @@ import openpyxl
 import pandas as pd
 import numpy as np
 
-# from electricitylci.egrid_facilities import egrid_subregions
 from electricitylci.globals import data_dir
-from electricitylci.model_config import net_trading, replace_egrid
+from electricitylci.model_config import model_specs
 from electricitylci.process_dictionary_writer import (
     exchange,
     exchange_table_creation_input_con_mix,
@@ -13,11 +12,11 @@ from electricitylci.process_dictionary_writer import (
     process_table_creation_surplus
 )
 
-if not replace_egrid:
+if not model_specs.replace_egrid:
     wb2 = openpyxl.load_workbook(data_dir+'/eGRID_Consumption_Mix_new.xlsx', data_only=True)
     data = wb2['ConsumptionMixContributions']
 
-    if net_trading == True:
+    if model_specs.net_trading == True:
         nerc_region = data['A4:A29']
         surplus_pool_trade_in = data['F4':'F29']
         trade_matrix = data['I3':'AP13']
@@ -203,7 +202,7 @@ def consumption_flows(fuels_mix, flows):
     return results
 
 
-if not replace_egrid:
+if not model_specs.replace_egrid:
     # Creating Surplus Pool dictionary
     surplus_dict = surplus_pool_dictionary(nerc_region, surplus_pool_trade_in, trade_matrix, generation_quantity, egrid_regions, nerc_region2)
     # del surplus_dict['']

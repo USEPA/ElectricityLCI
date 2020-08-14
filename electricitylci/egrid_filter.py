@@ -4,7 +4,7 @@ import warnings
 import pandas as pd
 warnings.filterwarnings("ignore")
 
-from electricitylci.model_config import *
+from electricitylci.model_config import model_specs
 from electricitylci.egrid_facilities import egrid_facilities, list_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min
 from electricitylci.egrid_energy import list_egrid_facilities_with_positive_generation, list_egrid_facilities_in_efficiency_range, egrid_net_generation
 from electricitylci.egrid_emissions_and_waste_by_facility import emissions_and_wastes_by_facility
@@ -19,7 +19,7 @@ len(all_egrid_facility_ids)
 # Start with facilities with a not null generation value
 egrid_facilities_selected_on_generation = list(egrid_net_generation['FacilityID'])
 # Replace this list with just net positive generators if true
-if include_only_egrid_facilities_with_positive_generation:
+if model_specs.include_only_egrid_facilities_with_positive_generation:
     egrid_facilities_selected_on_generation = list_egrid_facilities_with_positive_generation()
 len(egrid_facilities_selected_on_generation)
 # ELCI_1: 7538
@@ -27,15 +27,15 @@ len(egrid_facilities_selected_on_generation)
 # Get facilities in efficiency range
 
 egrid_facilities_in_desired_efficiency_range = all_egrid_facility_ids
-if filter_on_efficiency:
-    egrid_facilities_in_desired_efficiency_range = list_egrid_facilities_in_efficiency_range(egrid_facility_efficiency_filters['lower_efficiency'],
-                                          egrid_facility_efficiency_filters['upper_efficiency'])
+if model_specs.filter_on_efficiency:
+    egrid_facilities_in_desired_efficiency_range = list_egrid_facilities_in_efficiency_range(model_specs.egrid_facility_efficiency_filters['lower_efficiency'],
+                                          model_specs.egrid_facility_efficiency_filters['upper_efficiency'])
 len(egrid_facilities_in_desired_efficiency_range)
 # ELCI_1: 7407
 
 # Get facilities with percent generation over threshold from the fuel category they are assigned to
 egrid_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min = all_egrid_facility_ids
-if filter_on_min_plant_percent_generation_from_primary_fuel and not keep_mixed_plant_category:
+if model_specs.filter_on_min_plant_percent_generation_from_primary_fuel and not model_specs.keep_mixed_plant_category:
     egrid_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min = list_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min()
 len(egrid_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min)
 # ELCI_1: 7095
@@ -70,7 +70,7 @@ egrid_emissions_for_selected_egrid_facilities = emissions_and_waste_for_selected
 nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities = emissions_and_waste_for_selected_egrid_facilities[emissions_and_waste_for_selected_egrid_facilities['Source'] != 'eGRID']
 
 # includes only the non_egrid_emissions for facilities not filtered out with NAICS
-if filter_non_egrid_emission_on_NAICS:
+if model_specs.filter_non_egrid_emission_on_NAICS:
     # Get list of facilities meeting NAICS criteria
     frs_ids_meeting_NAICS_criteria = list_FRS_ids_filtered_for_NAICS()
     nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities = nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities[nonegrid_emissions_and_waste_by_facility_for_selected_egrid_facilities['FRS_ID'].isin(frs_ids_meeting_NAICS_criteria)]

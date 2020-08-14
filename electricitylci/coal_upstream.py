@@ -1,5 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+if __name__=='__main__':
+    import electricitylci.model_config as config
+    config.model_specs = config.build_model_class()
+
 import pandas as pd
 from electricitylci.globals import data_dir, output_dir
 from electricitylci.eia923_generation import eia923_download
@@ -13,7 +17,8 @@ import numpy as np
 coal_type_codes={'BIT': 'B',
                  'LIG': 'L',
                  'SUB': 'S',
-                 'WC': 'W'}
+                 'WC': 'W',
+                 'RC' : 'RC'}
 mine_type_codes={'Surface': 'S',
                  'Underground': 'U',
                  'Facility': 'F',
@@ -113,7 +118,7 @@ def _coal_code(row):
             f'{basin_codes[row["netl_basin"]]}-'
             f'{coal_type_codes[row["energy_source"]]}-'
             f'{row["coalmine_type"]}'
-    )
+    ).upper()
     return coal_code_str
 
 
@@ -124,6 +129,7 @@ def _transport_code(row):
 
 def generate_upstream_coal_map(year):
     from electricitylci.globals import STATE_ABBREV
+    from electricitylci.eia923_generation import eia923_generation_and_fuel
     eia_fuel_receipts_df=read_eia923_fuel_receipts(year)
     expected_7a_folder=join(data_dir, 'f7a_{}'.format(year))
     if not os.path.exists(expected_7a_folder):
@@ -180,7 +186,7 @@ def generate_upstream_coal_map(year):
     eia_fuel_receipts_made_good=eia_fuel_receipts_na.loc[~eia_fuel_receipts_na["eia_coal_supply_region"].isnull(), :].reset_index(drop=True)
     eia_fuel_receipts_na=eia_fuel_receipts_na.loc[eia_fuel_receipts_na["eia_coal_supply_region"].isnull(), :].reset_index(drop=True)
     eia_fuel_receipts_made_good.drop(columns=["mine_state_abv", "county_fips_code", "coal_supply_region"], inplace=True)
-    eia_fuel_receipts_good=pd.concat([eia_fuel_receipts_good, eia_fuel_receipts_made_good], ignore_index=True)
+    eia_fuel_receipts_good=pd.concat([eia_fuel_receipts_good, eia_fuel_receipts_made_good], ignore_index=True,sort=False)
     eia_netl_basin = pd.read_csv(data_dir+'/eia_to_netl_basin.csv')
     eia_fuel_receipts_good = eia_fuel_receipts_good.merge(
             eia_netl_basin,
@@ -203,7 +209,7 @@ def generate_upstream_coal_map(year):
                          how='left')
     minimerge.drop(columns=["mine_state_abv", "county_fips_code", "coal_supply_region", "basin1", "basin2", "netl_basin_x", "eia_basin"], inplace=True)
     minimerge.rename(columns={"netl_basin_y": "netl_basin"}, inplace=True)
-    eia_fuel_receipts_good=pd.concat([eia_fuel_receipts_good, minimerge], ignore_index=True)
+    eia_fuel_receipts_good=pd.concat([eia_fuel_receipts_good, minimerge], ignore_index=True,sort=False)
 
     gulf_lignite = (
             (eia_fuel_receipts_good['energy_source']=='LIG') &
@@ -222,9 +228,34 @@ def generate_upstream_coal_map(year):
             _coal_code, axis=1)
     eia_fuel_receipts_good['heat_input']=eia_fuel_receipts_good['quantity']*eia_fuel_receipts_good['average_heat_content']
     eia_fuel_receipts_good.drop_duplicates(inplace=True)
+    eia_fuel_receipts_good["coal_type"]=eia_fuel_receipts_good["energy_source"].map(coal_type_codes)
     final_df=eia_fuel_receipts_good.groupby(
-            ['plant_id', 'coal_source_code'],
-            as_index=False)['quantity', 'heat_input'].sum()
+            ['plant_id', 'coal_type','coal_source_code'],
+            )[['quantity', 'heat_input']].sum()
+    final_df["mass_fraction"]=final_df[["quantity"]].div(final_df[["quantity"]].groupby(level=[0,1]).transform('sum'))
+    final_df["energy_fraction"]=final_df[["heat_input"]].div(final_df[["heat_input"]].groupby(level=[0,1]).transform('sum'))
+    final_df["mass_fraction_total"]=final_df[["quantity"]].div(final_df[["quantity"]].groupby(level=[0]).transform('sum'))
+    final_df["energy_fraction_total"]=final_df[["heat_input"]].div(final_df[["heat_input"]].groupby(level=[0]).transform('sum'))
+    eia_923_gen_fuel=eia923_generation_and_fuel(year)
+    eia_923_gen_fuel=eia_923_gen_fuel[["plant_id","reported_fuel_type_code","electric_fuel_consumption_quantity","elec_fuel_consumption_mmbtu"]]
+    eia_923_gen_fuel["coal_type"]=eia_923_gen_fuel["reported_fuel_type_code"].map(coal_type_codes)
+    eia_923_gen_fuel["plant_id"]=eia_923_gen_fuel["plant_id"].astype(int)
+    eia_923_grouped=eia_923_gen_fuel.groupby(by=["plant_id","coal_type"])[["electric_fuel_consumption_quantity","elec_fuel_consumption_mmbtu"]].sum()
+    final_df.reset_index(inplace=True)
+    eia_923_grouped.reset_index(inplace=True)
+    final_df=final_df.merge(eia_923_grouped, on=["plant_id","coal_type"],how="left")
+    rc_coal=eia_923_grouped.loc[eia_923_grouped["coal_type"]=="RC",:].set_index("plant_id")
+    final_df["rc_coal_quantity"]=final_df["plant_id"].map(rc_coal["electric_fuel_consumption_quantity"])
+    final_df["rc_coal_mmbtu"]=final_df["plant_id"].map(rc_coal["elec_fuel_consumption_mmbtu"])
+    final_df["new_quantity"]=final_df["mass_fraction"]*final_df["electric_fuel_consumption_quantity"]
+    final_df["new_heat_input"]=final_df["energy_fraction"]*final_df["elec_fuel_consumption_mmbtu"]
+    final_df.loc[~final_df["rc_coal_quantity"].isna(),"new_quantity"]=final_df["new_quantity"]+final_df["mass_fraction_total"]*final_df["rc_coal_quantity"]
+    final_df.loc[~final_df["rc_coal_mmbtu"].isna(),"new_heat_input"]=final_df["new_heat_input"]+final_df["energy_fraction"]*final_df["rc_coal_mmbtu"]
+    final_df=final_df[["plant_id","coal_source_code","new_quantity","new_heat_input"]]
+    final_df=final_df.rename(columns={
+        "new_quantity":"quantity",
+        "new_heat_input":"heat_input"
+    })
     return final_df
 
 
