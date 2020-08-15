@@ -213,15 +213,15 @@ def write_generation_mix_database_to_dict(
 def write_fuel_mix_database_to_dict(
     genmix_database, gen_dict, regions=None
 ):
-    from electricitylci.generation_mix import olcaschema_genmix_international
+    from electricitylci.generation_mix import olcaschema_fuelmix
     if regions is None:
         regions = config.model_specs.regional_aggregation
     if regions in ["FERC","US","BA"]:
-        fuelmix_dict = olcaschema_genmix_international(
+        fuelmix_dict = olcaschema_fuelmix(
                 genmix_database, gen_dict, subregion="BA"
         )
     else:
-        fuelmix_dict = olcaschema_genmix_international(
+        fuelmix_dict = olcaschema_fuelmix(
             genmix_database, gen_dict, subregion=regions
         )
     return fuelmix_dict

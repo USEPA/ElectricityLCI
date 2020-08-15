@@ -338,7 +338,7 @@ def olcaschema_genmix(database, gen_dict, subregion=None):
                         break
                 if matching_dict is None:
                     logging.warning(
-                        f"Trouble matching dictionary for generation mix {fuelname} - {reg}"
+                        f"Trouble matching dictionary for generation mix {fuelname} - {reg}. Skipping this flow for now"
                     )
                 else:
                     ra = exchange_table_creation_input_genmix(
@@ -360,7 +360,7 @@ def olcaschema_genmix(database, gen_dict, subregion=None):
     return generation_mix_dict
 
 
-def olcaschema_genmix_international(database, gen_dict, subregion=None):
+def olcaschema_fuelmix(database, gen_dict, subregion=None):
     if subregion is None:
         subregion = model_specs.regional_aggregation
     generation_mix_dict = {}
@@ -392,10 +392,6 @@ def olcaschema_genmix_international(database, gen_dict, subregion=None):
                 database_reg["Subregion"] == reg
             ]
             if database_f1.empty != True:
-                ra = exchange_table_creation_input_fuelmix(
-                    database_f1, fuel
-                )
-                ra["quantitativeReference"] = False
                 matching_dict = None
                 for generator in gen_dict:
                     if (
@@ -406,20 +402,23 @@ def olcaschema_genmix_international(database, gen_dict, subregion=None):
                         break
                 if matching_dict is None:
                     logging.warning(
-                        f"Trouble matching dictionary for creating fuel mix {fuel} - {reg}"
+                        f"Trouble matching dictionary for creating fuel mix {fuel} - {reg}.Skipping this flow for now"
                     )
                 else:
+                    ra = exchange_table_creation_input_fuelmix(
+                        database_f1, fuel
+                    )
+                    ra["quantitativeReference"] = False                    
                     ra["provider"] = {
                         "name": matching_dict["name"],
                         "@id": matching_dict["uuid"],
                         "category": matching_dict["category"].split("/"),
                     }
-                exchange(ra, exchanges_list)
-                # Writing final file
+                    exchange(ra, exchanges_list)
+                    # Writing final file
 
         final = process_table_creation_fuelmix(fuel, exchanges_list)
         # print(reg +' Process Created')
         generation_mix_dict[fuel] = final 
 
     return generation_mix_dict
-
