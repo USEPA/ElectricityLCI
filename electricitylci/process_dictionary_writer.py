@@ -88,6 +88,8 @@ generation_mix_name = (
     + "; "
     + generation_mix_name_parts["Mix type"]
 )
+
+fuel_mix_name = 'Electricity; at grid; fuelmix'
 surplus_pool_name = "Electricity; at grid; surplus pool"
 consumption_mix_name = "Electricity; at grid; consumption mix"
 distribution_to_end_user_name = "Electricity; at user; consumption mix"
@@ -196,6 +198,28 @@ def con_process_ref(reg, ref_type="generation"):
 
 
 def exchange_table_creation_input_genmix(database, fuelname):
+    """Add docstring."""
+    region = database["Subregion"].iloc[0]
+    ar = dict()
+    ar["internalId"] = ""
+    ar["@type"] = "Exchange"
+    ar["avoidedProduct"] = False
+    ar["flow"] = electricity_at_grid_flow
+    ar["flowProperty"] = ""
+    ar["input"] = True
+    ar["quantitativeReference"] = "True"
+    ar["baseUncertainty"] = ""
+    ar["provider"] = gen_process_ref(fuelname, region)
+    ar["amount"] = database["Generation_Ratio"].iloc[0]
+    ar["unit"] = unit("MWh")
+    ar["pedigreeUncertainty"] = ""
+    # ar['category']='22: Utilities/2211: Electric Power Generation, Transmission and Distribution'+fuelname
+    ar["comment"] = "from " + fuelname +" - "+ region
+    ar["uncertainty"] = ""
+    return ar
+
+
+def exchange_table_creation_input_fuelmix(database, fuelname):
     """Add docstring."""
     region = database["Subregion"].iloc[0]
     ar = dict()
@@ -661,6 +685,34 @@ def process_table_creation_genmix(region, exchanges_list):
     )
     ar["version"] = make_valid_version_num(elci_version)
     return ar
+
+
+def process_table_creation_fuelmix(fuel, exchanges_list):
+    """Add docstring."""
+    ar = dict()
+    ar["@type"] = "Process"
+    ar["allocationFactors"] = ""
+    ar["defaultAllocationMethod"] = ""
+    ar["exchanges"] = exchanges_list
+    ar["location"] = location('US')
+    ar["parameters"] = ""
+    ar["processDocumentation"] = process_doc_creation(process_type="fuel_mix")
+    ar["processType"] = "UNIT_PROCESS"
+    ar["name"] = fuel_mix_name + " - " + str(fuel)
+    ar[
+        "category"
+    ] = "22: Utilities/2211: Electric Power Generation, Transmission and Distribution"
+    ar["description"] = (
+        "Electricity fuel mix for the " + str(fuel) + " fuel."
+    )
+    ar["description"]=(ar["description"]
+        + " This process was created with ElectricityLCI " 
+        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
+        + " using the " + model_specs.model_name + " configuration."
+    )
+    ar["version"] = make_valid_version_num(elci_version)
+    return ar
+
 
 def process_table_creation_surplus(region, exchanges_list):
     """Add docstring."""

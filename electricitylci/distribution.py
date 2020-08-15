@@ -10,6 +10,5 @@ def distribution_mix_dictionary():
         exchange(ref_exchange_creator(electricity_at_user_flow), exchanges_list)
         exchange(exchange_table_creation_input_con_mix(1/model_specs.efficiency_of_distribution_grid, reg, ref_to_consumption=True), exchanges_list)
         final = process_table_creation_distribution(reg, exchanges_list)
-        print(reg+' Distribution Process Created')
         distribution_dict['Distribution'+reg] = final;
     return distribution_dict

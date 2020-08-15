@@ -2,7 +2,6 @@
 # Comopilation based on weight factor
 
 import math
-import sys
 import numpy as np
 from scipy.stats import t
 from sympy import var,solve

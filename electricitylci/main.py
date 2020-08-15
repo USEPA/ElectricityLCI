@@ -63,10 +63,16 @@ def main():
     print("write gen mix to dict")
     generation_mix_dict = electricitylci.write_generation_mix_database_to_dict(
         generation_mix_df, generation_process_dict)
+    
+    fuel_mix_dict = electricitylci.write_fuel_mix_database_to_dict(
+    generation_mix_df, generation_process_dict)
     print("write gen mix to jsonld")
     generation_mix_dict = electricitylci.write_process_dicts_to_jsonld(
         generation_mix_dict
     )
+    fuel_mix_dict = electricitylci.write_process_dicts_to_jsonld(
+        fuel_mix_dict
+    )    
     # At this point the two methods diverge from underlying functions enough that
     # it's just easier to split here.
     if config.model_specs.EPA_eGRID_trading is False:
