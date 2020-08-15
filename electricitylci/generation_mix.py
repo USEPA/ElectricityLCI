@@ -328,10 +328,6 @@ def olcaschema_genmix(database, gen_dict, subregion=None):
                 database_reg["FuelCategory"] == fuelname
             ]
             if database_f1.empty != True:
-                ra = exchange_table_creation_input_genmix(
-                    database_f1, fuelname
-                )
-                ra["quantitativeReference"] = False
                 matching_dict = None
                 for generator in gen_dict:
                     if (
@@ -345,16 +341,20 @@ def olcaschema_genmix(database, gen_dict, subregion=None):
                         f"Trouble matching dictionary for generation mix {fuelname} - {reg}"
                     )
                 else:
+                    ra = exchange_table_creation_input_genmix(
+                    database_f1, fuelname
+                    )
+                    ra["quantitativeReference"] = False                    
                     ra["provider"] = {
-                        "name": matching_dict["name"],
-                        "@id": matching_dict["uuid"],
-                        "category": matching_dict["category"].split("/"),
+                       "name": matching_dict["name"],
+                       "@id": matching_dict["uuid"],
+                       "category": matching_dict["category"].split("/"),
                     }
-                exchange(ra, exchanges_list)
-                # Writing final file
+                    #if matching_dict is None:
+                    exchange(ra, exchanges_list)
+                    # Writing final file
 
         final = process_table_creation_genmix(reg, exchanges_list)
-
         # print(reg +' Process Created')
         generation_mix_dict[reg] = final
     return generation_mix_dict
