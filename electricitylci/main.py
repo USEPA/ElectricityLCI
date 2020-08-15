@@ -113,9 +113,11 @@ def main():
         generation_mix_dict = electricitylci.write_process_dicts_to_jsonld(
             generation_mix_dict
         )
+        print('Filling up UUID of surplus pool consumption mix')
         sur_con_mix_dict = fill_default_provider_uuids(
             sur_con_mix_dict, generation_mix_dict
         )
+        print('wrtie surplus pool consumption mix to jsonld')
         sur_con_mix_dict = electricitylci.write_process_dicts_to_jsonld(sur_con_mix_dict)
         sur_con_mix_dict = fill_default_provider_uuids(
             sur_con_mix_dict, sur_con_mix_dict, generation_mix_dict
