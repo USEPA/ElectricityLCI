@@ -63,16 +63,24 @@ def main():
     print("write gen mix to dict")
     generation_mix_dict = electricitylci.write_generation_mix_database_to_dict(
         generation_mix_df, generation_process_dict)
-    
-    fuel_mix_dict = electricitylci.write_fuel_mix_database_to_dict(
-    generation_mix_df, generation_process_dict)
     print("write gen mix to jsonld")
     generation_mix_dict = electricitylci.write_process_dicts_to_jsonld(
         generation_mix_dict
     )
-    fuel_mix_dict = electricitylci.write_process_dicts_to_jsonld(
-        fuel_mix_dict
+    print("us average mix to dict")
+    usavegfuel_mix_dict = electricitylci.write_fuel_mix_database_to_dict(
+    generation_mix_df, generation_process_dict)
+    print("write us average mix to jsonld")
+    usavegfuel_mix_dict = electricitylci.write_process_dicts_to_jsonld(
+        usavegfuel_mix_dict
     )    
+    print("international average mix to dict")
+    international_mix_dict = electricitylci.write_international_mix_database_to_dict(
+    generation_mix_df, usavegfuel_mix_dict)
+    international_mix_dict = electricitylci.write_process_dicts_to_jsonld(
+    international_mix_dict
+    ) 
+       
     # At this point the two methods diverge from underlying functions enough that
     # it's just easier to split here.
     if config.model_specs.EPA_eGRID_trading is False:
@@ -115,17 +123,17 @@ def main():
         )
         print('Filling up UUID of surplus pool consumption mix')
         sur_con_mix_dict = fill_default_provider_uuids(
-            sur_con_mix_dict, generation_mix_dict
+            sur_con_mix_dict, generation_mix_dict, international_mix_dict
         )
-        print('wrtie surplus pool consumption mix to jsonld')
+        print('write surplus pool consumption mix to jsonld')
         sur_con_mix_dict = electricitylci.write_process_dicts_to_jsonld(sur_con_mix_dict)
+        print('Filling up UUID of surplus pool consumption mix')
         sur_con_mix_dict = fill_default_provider_uuids(
-            sur_con_mix_dict, sur_con_mix_dict, generation_mix_dict
+            sur_con_mix_dict, sur_con_mix_dict, generation_mix_dict, international_mix_dict
         )
         sur_con_mix_dict = electricitylci.write_process_dicts_to_jsonld(sur_con_mix_dict)
         dist_dict = fill_default_provider_uuids(dist_dict, sur_con_mix_dict)
         dist_dict = electricitylci.write_process_dicts_to_jsonld(dist_dict)
-
     logger.info(
         f'JSON-LD files have been saved in the "output" folder with the full path '
         f'{config.model_specs.namestr}'
@@ -140,4 +148,4 @@ if __name__ == "__main__":
         config.model_specs=config.build_model_class(args.model_config)
     else:
         config.model_specs=None
-    main()
+        main()

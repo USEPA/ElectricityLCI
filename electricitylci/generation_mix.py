@@ -5,6 +5,7 @@ The functions in this script calculate the fraction of each generating source
 
 import numpy as np
 import pandas as pd
+from electricitylci.globals import data_dir
 from electricitylci.process_dictionary_writer import *
 from electricitylci.egrid_facilities import egrid_facilities, egrid_subregions
 from electricitylci.model_config import model_specs
@@ -360,12 +361,14 @@ def olcaschema_genmix(database, gen_dict, subregion=None):
     return generation_mix_dict
 
 
-def olcaschema_fuelmix(database, gen_dict, subregion=None):
+def olcaschema_usaverage(database, gen_dict, subregion=None):
     if subregion is None:
         subregion = model_specs.regional_aggregation
     generation_mix_dict = {}
 
     us_database = create_generation_mix_process_df_from_egrid_ref_data(subregion='US')
+    #Not choosing the Hawaiian and Alaskan regions. 
+    us_database = us_database[(us_database['Subregion'] != 'HIMS') &  (us_database['Subregion'] != 'HIOA') & (us_database['Subregion'] != 'AKGD') & (us_database['Subregion'] != 'AKMS')]
     df2 = us_database.groupby(['FuelCategory'])['Electricity'].agg('sum').reset_index()
     df2['Electricity_fuel_total'] = df2['Electricity']
     del df2['Electricity']
@@ -373,7 +376,6 @@ def olcaschema_fuelmix(database, gen_dict, subregion=None):
     df3['Generation_Ratio'] = df3['Electricity']/df3['Electricity_fuel_total']
     del df3['Electricity_fuel_total']
     us_database = df3
-
     if "FuelCategory" in us_database.columns:
         fuels = list(pd.unique(us_database["FuelCategory"]))
 
@@ -388,37 +390,99 @@ def olcaschema_fuelmix(database, gen_dict, subregion=None):
             # Reading complete fuel name and heat content information
             # fuelname = row['Fuelname']
             # croppping the database according to the current fuel being considered
+            #Not choosing the Hawaiian and Alaskan regions. 
+            if reg == 'HIMS' or reg == 'HIOA' or reg == 'AKGD' or reg == 'AKMS':
+                    continue
+            else:
+                    database_f1 = database_reg[
+                        database_reg["Subregion"] == reg
+                    ]
+                    if database_f1.empty != True:
+                        matching_dict = None
+                        for generator in gen_dict:
+                            if (
+                                gen_dict[generator]["name"]
+                                == "Electricity - " + fuel + " - " + reg
+                            ):
+                                matching_dict = gen_dict[generator]
+                                break
+                        if matching_dict is None:
+                            logging.warning(
+                                f"Trouble matching dictionary for creating fuel mix {fuel} - {reg}.Skipping this flow for now"
+                            )
+                        else:
+                            ra = exchange_table_creation_input_usaverage(
+                                database_f1, fuel
+                            )
+                            ra["quantitativeReference"] = False                    
+                            ra["provider"] = {
+                                "name": matching_dict["name"],
+                                "@id": matching_dict["uuid"],
+                                "category": matching_dict["category"].split("/"),
+                            }
+                            exchange(ra, exchanges_list)
+                            # Writing final file
+
+        final = process_table_creation_usaverage(fuel, exchanges_list)
+        # print(reg +' Process Created')
+        generation_mix_dict[fuel] = final 
+
+    return generation_mix_dict
+
+def olcaschema_international(database, gen_dict, subregion=None):
+    
+    intl_database = pd.read_csv(data_dir+'/International_Electricity_Mix.csv')
+    database = intl_database
+    generation_mix_dict = {}
+    if "Subregion" in database.columns:
+        region = list(pd.unique(database["Subregion"]))
+    else:
+        region = ["US"]
+        database["Subregion"] = "US"
+    for reg in region:
+
+        database_reg = database[database["Subregion"] == reg]
+        exchanges_list = []
+
+        # Creating the reference output
+        exchange(exchange_table_creation_ref(database_reg), exchanges_list)
+        for fuelname in list(database["FuelCategory"].unique()):
+            # Reading complete fuel name and heat content information
+            # fuelname = row['Fuelname']
+            # croppping the database according to the current fuel being considered
             database_f1 = database_reg[
-                database_reg["Subregion"] == reg
+                database_reg["FuelCategory"] == fuelname
             ]
             if database_f1.empty != True:
                 matching_dict = None
                 for generator in gen_dict:
                     if (
                         gen_dict[generator]["name"]
-                        == "Electricity - " + fuel + " - " + reg
-                    ):
+                        == "Electricity; at grid; USaverage - " + fuelname
+                       ):
                         matching_dict = gen_dict[generator]
                         break
                 if matching_dict is None:
                     logging.warning(
-                        f"Trouble matching dictionary for creating fuel mix {fuel} - {reg}.Skipping this flow for now"
+                        f"Trouble matching dictionary for us average mix {fuelname} - USaverage. Skipping this flow for now"
                     )
                 else:
-                    ra = exchange_table_creation_input_fuelmix(
-                        database_f1, fuel
+                    ra = exchange_table_creation_input_international_mix(
+                    database_f1, fuelname
                     )
                     ra["quantitativeReference"] = False                    
                     ra["provider"] = {
-                        "name": matching_dict["name"],
-                        "@id": matching_dict["uuid"],
-                        "category": matching_dict["category"].split("/"),
+                       "name": matching_dict["name"],
+                       "@id": matching_dict["uuid"],
+                       "category": matching_dict["category"].split("/"),
                     }
+                    #if matching_dict is None:
                     exchange(ra, exchanges_list)
                     # Writing final file
 
-        final = process_table_creation_fuelmix(fuel, exchanges_list)
+        final = process_table_creation_genmix(reg, exchanges_list)
         # print(reg +' Process Created')
-        generation_mix_dict[fuel] = final 
-
+        generation_mix_dict[reg] = final
     return generation_mix_dict
+
+

@@ -16,7 +16,7 @@ from electricitylci.globals import (
     elci_version
 )
 from electricitylci.utils import make_valid_version_num
-from electricitylci.egrid_facilities import egrid_subregions
+from electricitylci.egrid_facilities import egrid_subregions,international_reg
 from electricitylci.model_config import model_specs
 
 
@@ -89,7 +89,7 @@ generation_mix_name = (
     + generation_mix_name_parts["Mix type"]
 )
 
-fuel_mix_name = 'Electricity; at grid; fuelmix'
+fuel_mix_name = 'Electricity; at grid; USaverage'
 surplus_pool_name = "Electricity; at grid; surplus pool"
 consumption_mix_name = "Electricity; at grid; consumption mix"
 distribution_to_end_user_name = "Electricity; at user; consumption mix"
@@ -184,11 +184,18 @@ def con_process_ref(reg, ref_type="generation"):
         name = consumption_mix_name +" - "+reg
     elif reg in egrid_subregions:
         name = generation_mix_name +" - "+reg
+    elif reg in international_reg:
+        name = generation_mix_name +" - "+reg  
+    elif ref_type == "generation_international":
+        name = fuel_mix_name + " - " + reg
     else:
         name = surplus_pool_name + " - "+reg
     processref = dict()
     processref["name"] = name
-    processref["location"] = reg
+    if ref_type == "generation_international":
+       processref["location"] = 'US' 
+    else:
+       processref["location"] = reg
     processref["processType"] = "UNIT_PROCESS"
     processref["categoryPath"] = [
         "22: Utilities",
@@ -219,7 +226,7 @@ def exchange_table_creation_input_genmix(database, fuelname):
     return ar
 
 
-def exchange_table_creation_input_fuelmix(database, fuelname):
+def exchange_table_creation_input_usaverage(database, fuelname):
     """Add docstring."""
     region = database["Subregion"].iloc[0]
     ar = dict()
@@ -240,6 +247,28 @@ def exchange_table_creation_input_fuelmix(database, fuelname):
     ar["uncertainty"] = ""
     return ar
 
+
+def exchange_table_creation_input_international_mix(
+    database, ref_to_consumption=False
+):
+    region = database["Subregion"].iloc[0]
+    fuelname = database["FuelCategory"].iloc[0]
+    ar = dict()
+    ar["internalId"] = ""
+    ar["@type"] = "Exchange"
+    ar["avoidedProduct"] = False
+    ar["flow"] = electricity_at_grid_flow
+    ar["flowProperty"] = ""
+    ar["input"] = True
+    ar["baseUncertainty"] = ""
+    ar["provider"] = con_process_ref(fuelname, "generation_international")
+    ar["amount"] = database["Generation_Ratio"].iloc[0]
+    ar["unit"] = unit("MWh")
+    ar["pedigreeUncertainty"] = ""
+    ar["uncertainty"] = ""
+    ar["comment"] = "eGRID " + str(model_specs.egrid_year) + ". From US Average - " + fuelname
+    # ar['location'] = location(loc)
+    return ar
 
 def exchange_table_creation_input_con_mix(
     generation, loc, ref_to_consumption=False
@@ -687,7 +716,7 @@ def process_table_creation_genmix(region, exchanges_list):
     return ar
 
 
-def process_table_creation_fuelmix(fuel, exchanges_list):
+def process_table_creation_usaverage(fuel, exchanges_list):
     """Add docstring."""
     ar = dict()
     ar["@type"] = "Process"
@@ -703,7 +732,7 @@ def process_table_creation_fuelmix(fuel, exchanges_list):
         "category"
     ] = "22: Utilities/2211: Electric Power Generation, Transmission and Distribution"
     ar["description"] = (
-        "Electricity fuel mix for the " + str(fuel) + " fuel."
+        "Electricity fuel US Average mix for the " + str(fuel) + " fuel."
     )
     ar["description"]=(ar["description"]
         + " This process was created with ElectricityLCI " 
