@@ -67,20 +67,7 @@ def main():
     generation_mix_dict = electricitylci.write_process_dicts_to_jsonld(
         generation_mix_dict
     )
-    print("us average mix to dict")
-    usavegfuel_mix_dict = electricitylci.write_fuel_mix_database_to_dict(
-    generation_mix_df, generation_process_dict)
-    print("write us average mix to jsonld")
-    usavegfuel_mix_dict = electricitylci.write_process_dicts_to_jsonld(
-        usavegfuel_mix_dict
-    )    
-    print("international average mix to dict")
-    international_mix_dict = electricitylci.write_international_mix_database_to_dict(
-    generation_mix_df, usavegfuel_mix_dict)
-    international_mix_dict = electricitylci.write_process_dicts_to_jsonld(
-    international_mix_dict
-    ) 
-       
+
     # At this point the two methods diverge from underlying functions enough that
     # it's just easier to split here.
     if config.model_specs.EPA_eGRID_trading is False:
@@ -114,6 +101,19 @@ def main():
             dist_mix_dicts[subreg] = electricitylci.write_process_dicts_to_jsonld(
                 dist_mix_dicts[subreg])
     else:
+        print("us average mix to dict")
+        usavegfuel_mix_dict = electricitylci.write_fuel_mix_database_to_dict(
+        generation_mix_df, generation_process_dict)
+        print("write us average mix to jsonld")
+        usavegfuel_mix_dict = electricitylci.write_process_dicts_to_jsonld(
+            usavegfuel_mix_dict
+        )    
+        print("international average mix to dict")
+        international_mix_dict = electricitylci.write_international_mix_database_to_dict(
+        generation_mix_df, usavegfuel_mix_dict)
+        international_mix_dict = electricitylci.write_process_dicts_to_jsonld(
+        international_mix_dict
+        ) 
         # Get surplus and consumption mix dictionary
         sur_con_mix_dict = electricitylci.write_surplus_pool_and_consumption_mix_dict()
         # Get dist dictionary
@@ -144,4 +144,4 @@ if __name__ == "__main__":
         config.model_specs=config.build_model_class(args.model_config)
     else:
         config.model_specs=None
-        main()
+    main()
