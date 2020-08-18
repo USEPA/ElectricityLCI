@@ -365,10 +365,12 @@ def olcaschema_usaverage(database, gen_dict, subregion=None):
     if subregion is None:
         subregion = model_specs.regional_aggregation
     generation_mix_dict = {}
-
+    # croppping the database according to the current fuel being considered
+    #Not choosing the Hawaiian and Alaskan regions.   
     us_database = create_generation_mix_process_df_from_egrid_ref_data(subregion='US')
     #Not choosing the Hawaiian and Alaskan regions. 
-    us_database = us_database[(us_database['Subregion'] != 'HIMS') &  (us_database['Subregion'] != 'HIOA') & (us_database['Subregion'] != 'AKGD') & (us_database['Subregion'] != 'AKMS')]
+    excluded_regions = ['HIMS','HIOA','AKGD','AKMS']
+    us_database=us_database.loc[~us_database["Subregion"].isin(excluded_regions),:]
     df2 = us_database.groupby(['FuelCategory'])['Electricity'].agg('sum').reset_index()
     df2['Electricity_fuel_total'] = df2['Electricity']
     del df2['Electricity']
@@ -391,7 +393,7 @@ def olcaschema_usaverage(database, gen_dict, subregion=None):
             # fuelname = row['Fuelname']
             # croppping the database according to the current fuel being considered
             #Not choosing the Hawaiian and Alaskan regions. 
-            if reg == 'HIMS' or reg == 'HIOA' or reg == 'AKGD' or reg == 'AKMS':
+            if reg in excluded_regions:
                     continue
             else:
                     database_f1 = database_reg[
