@@ -347,9 +347,9 @@ def olcaschema_genmix(database, gen_dict, subregion=None):
                     )
                     ra["quantitativeReference"] = False                    
                     ra["provider"] = {
-                       "name": matching_dict["name"],
-                       "@id": matching_dict["uuid"],
-                       "category": matching_dict["category"].split("/"),
+                        "name": matching_dict["name"],
+                        "@id": matching_dict["uuid"],
+                        "category": matching_dict["category"].split("/"),
                     }
                     #if matching_dict is None:
                     exchange(ra, exchanges_list)
