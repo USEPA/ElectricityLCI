@@ -1,0 +1,8 @@
+#Ignore everything in this directory
+*
+# Except this file
+!.gitignore
+#Part of the purpose of this file is to force the output
+#folder to be created, since empty folders aren't tracked
+#in git. If this file doesn't exist, then main.py will 
+#error when trying to create the json-ld output.

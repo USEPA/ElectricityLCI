@@ -1108,7 +1108,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     process_df["@type"] = "Process"
     process_df["allocationFactors"] = ""
     process_df["defaultAllocationMethod"] = ""
-    process_df["location"] = ""
+    process_df["location"] = process_df[region_agg].values
     process_df["parameters"] = ""
 #    process_doc_dict = process_doc_creation(process_type)
 #    process_df["processDocumentation"] = [process_doc_dict]*len(process_df)

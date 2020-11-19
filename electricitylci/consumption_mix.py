@@ -55,7 +55,6 @@ def surplus_pool_dictionary(nerc_region, surplus_pool_trade_in, trade_matrix, ge
                 # chk = 1;
 
         final = process_table_creation_surplus(region, exchanges_list)
-        print(region+' NERC Surplus Process Created')
         surplus_dict['SurplusPool'+region] = final;
     return surplus_dict
 
@@ -84,7 +83,6 @@ def consumption_mix_dictionary(nerc_region, surplus_pool_trade_in, trade_matrix,
                         # name = surplus_dict[nerc_region[reg][0].value]['name']
 
                         if trade_matrix[nerc+1][j].value != None and trade_matrix[nerc+1][j].value !=0:
-                            print(nerc_region[reg][0].value)
                             exchange(exchange_table_creation_input_con_mix(surplus_pool_trade_in[reg][0].value, nerc_region[reg][0].value), exchanges_list)
                             chk=1;
                             break;
@@ -96,7 +94,6 @@ def consumption_mix_dictionary(nerc_region, surplus_pool_trade_in, trade_matrix,
             exchange(exchange_table_creation_input_con_mix(1, region), exchanges_list)
 
         final = process_table_creation_con_mix(region, exchanges_list)
-        print(region+' Consumption Mix Process Created')
         consumption_dict['Consumption'+region] = final;
     return consumption_dict
 

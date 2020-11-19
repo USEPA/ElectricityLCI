@@ -210,6 +210,40 @@ def write_generation_mix_database_to_dict(
     return genmix_dict
 
 
+def write_fuel_mix_database_to_dict(
+    genmix_database, gen_dict, regions=None
+):
+    from electricitylci.generation_mix import olcaschema_usaverage
+    if regions is None:
+        regions = config.model_specs.regional_aggregation
+    if regions in ["FERC","US","BA"]:
+        usaverage_dict = olcaschema_usaverage(
+                genmix_database, gen_dict, subregion="BA"
+        )
+    else:
+        usaverage_dict = olcaschema_usaverage(
+            genmix_database, gen_dict, subregion=regions
+        )
+    return usaverage_dict
+
+
+def write_international_mix_database_to_dict(
+    genmix_database, usfuelmix_dict, regions=None
+):
+    from electricitylci.generation_mix import olcaschema_international;
+    if regions is None:
+        regions = config.model_specs.regional_aggregation
+    if regions in ["FERC","US","BA"]:
+        international_dict = olcaschema_international(
+                genmix_database, usfuelmix_dict, subregion="BA"
+        )
+    else:
+        international_dict = olcaschema_international(
+            genmix_database, usfuelmix_dict, subregion=regions
+        )
+    return international_dict
+
+
 def write_surplus_pool_and_consumption_mix_dict():
     """
     Create olca formatted dictionaries for the consumption mix as calculated by
