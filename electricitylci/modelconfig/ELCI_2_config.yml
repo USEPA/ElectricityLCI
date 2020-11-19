@@ -57,7 +57,7 @@ min_plant_percent_generation_from_primary_fuel_category: 90
 #MIXED and generate life cycle processes for them. Note that the definition
 #of mixed is purposefully ambiguous and will mean different things depending 
 #on the region of aggregation.
-keep_mixed_plant_category: False
+keep_mixed_plant_category: True
 
 # NEEDS A GOOD DESCRIPTION OF THIS PARAMETER
 filter_non_egrid_emission_on_NAICS: True
