@@ -85,6 +85,6 @@ NETL_IO_trading_year: 2016
 
 # OTHER PARAMETERS
 
-fedelemflowlist_version: 1.0.2
+fedelemflowlist_version: 1.0.3
 post_process_generation_emission_factors: False
 fuel_name_file: fuelname_1.csv
