@@ -32,7 +32,7 @@ fuel_cat_to_per_gen = {'BIOMASS': 'Plant biomass generation percent (resource mi
                        'COAL': 'Plant coal generation percent (resource mix)',
                        'GAS': 'Plant gas generation percent (resource mix)',
                        'GEOTHERMAL': 'Plant geothermal generation percent (resource mix)',
-                       'HYDRO': 'Plant  hydro generation percent (resource mix)',
+                       'HYDRO': 'Plant hydro generation percent (resource mix)',
                        'NUCLEAR': 'Plant nuclear generation percent (resource mix)',
                        'OFSL': 'Plant other fossil generation percent (resource mix)',
                        'OIL': 'Plant oil generation percent (resource mix)',
