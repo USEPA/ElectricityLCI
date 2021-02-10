@@ -478,8 +478,7 @@ def create_generation_process_df():
     if model_specs.replace_egrid:
         generation_data = build_generation_data().drop_duplicates()
         cems_df = ampd.generate_plant_emissions(model_specs.eia_gen_year)
-        cems_df.drop(columns=["FlowUUID"], inplace=True)
-        emissions_and_waste_for_selected_egrid_facilities = em_other.integrate_replace_emissions(
+        emissions_df = em_other.integrate_replace_emissions(
             cems_df, emissions_and_waste_for_selected_egrid_facilities
         )
     else:
@@ -487,32 +486,25 @@ def create_generation_process_df():
         generation_data=electricity_for_selected_egrid_facilities
         generation_data["Year"]=model_specs.egrid_year
         generation_data["FacilityID"]=generation_data["FacilityID"].astype(int)
+        emissions_df = emissions_and_waste_for_selected_egrid_facilities
 #        generation_data = build_generation_data(
 #            egrid_facilities_to_include=egrid_facilities_to_include
 #        )
-    emissions_and_waste_for_selected_egrid_facilities.drop(
-        columns=["FacilityID"]
-    )
-    emissions_and_waste_for_selected_egrid_facilities[
-        "eGRID_ID"
-    ] = emissions_and_waste_for_selected_egrid_facilities["eGRID_ID"].astype(
-        int
-    )
+    emissions_df["eGRID_ID"] = emissions_df["eGRID_ID"].astype(int)
+    generation_data.rename(columns={'FacilityID':'eGRID_ID'}, inplace=True)
     final_database = pd.merge(
-        left=emissions_and_waste_for_selected_egrid_facilities,
+        left=emissions_df,
         right=generation_data,
-        right_on=["FacilityID", "Year"],
-        left_on=["eGRID_ID", "Year"],
+        on=["eGRID_ID", "Year"],
         how="left",
     )
-    egrid_facilities_w_fuel_region[
-        "FacilityID"
-    ] = egrid_facilities_w_fuel_region["FacilityID"].astype(int)
+    egrid_facilities_w_fuel_region["FacilityID"] = \
+        egrid_facilities_w_fuel_region["FacilityID"].astype(int)
+    egrid_facilities_w_fuel_region.rename(columns={'FacilityID':'eGRID_ID'}, inplace=True)
     final_database = pd.merge(
         left=final_database,
         right=egrid_facilities_w_fuel_region,
-        left_on="eGRID_ID",
-        right_on="FacilityID",
+        on="eGRID_ID",
         how="left",
         suffixes=["", "_right"],
     )
@@ -552,35 +544,38 @@ def create_generation_process_df():
     #     ] = final_database.loc[
     #         final_database["FuelCategory"] == "COAL", "PrimaryFuel"
     #     ]
-    try:
+    if 'Year_x' in final_database.columns:
         year_filter = final_database["Year_x"] == final_database["Year_y"]
         final_database = final_database.loc[year_filter, :]
         final_database.drop(columns="Year_y", inplace=True)
-    except KeyError:
-        pass
-    final_database.rename(columns={"Year_x": "Year"}, inplace=True)
+        final_database.rename(columns={"Year_x": "Year"}, inplace=True)
     final_database = map_emissions_to_fedelemflows(final_database)
     dup_cols_check = [
-        "FacilityID",
+        "eGRID_ID",
         "FuelCategory",
         "FlowName",
         "FlowAmount",
         "Compartment",
     ]
+    
+    
     final_database = final_database.loc[
         :, ~final_database.columns.duplicated()
     ]
     final_database = final_database.drop_duplicates(subset=dup_cols_check)
-    final_database.drop(
-        columns=["FuelCategory", "FacilityID_x", "FacilityID_y"], inplace=True
-    )
+    drop_columns = ['PrimaryFuel_right', 'FuelCategory',
+                    'FuelCategory_right'
+                    ]
+    drop_columns = [c for c in drop_columns 
+                    if c in final_database.columns.values.tolist()]
+    final_database.drop(columns=drop_columns, inplace=True)
     final_database.rename(
         columns={
             "Final_fuel_agg": "FuelCategory",
-            "TargetFlowUUID": "FlowUUID",
         },
         inplace=True,
     )
+    
     final_database = add_temporal_correlation_score(final_database, model_specs.electricity_lci_target_year)
     final_database = add_technological_correlation_score(final_database)
     final_database["DataCollection"] = 5
