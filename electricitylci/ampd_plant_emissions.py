@@ -1419,55 +1419,16 @@ def generate_plant_emissions(year):
     netl_harmonized_melt.drop(
         columns=["CO2_Source", "SO2_Source", "NOx_Source"], inplace=True
     )
-    flowlist = fedelemflowlist.get_flows()
-    co2_flow = flowlist.loc[
-        (
-            (flowlist["Flowable"] == "Carbon dioxide")
-            & (flowlist["Context"] == "emission/air")
-        ),
-        :,
-    ]
-    so2_flow = flowlist.loc[
-        (
-            (flowlist["Flowable"] == "Sulfur dioxide")
-            & (flowlist["Context"] == "emission/air")
-        ),
-        :,
-    ]
-    nox_flow = flowlist.loc[
-        (
-            (flowlist["Flowable"] == "Nitrogen oxides")
-            & (flowlist["Context"] == "emission/air")
-        ),
-        :,
-    ]
-    n2o_flow = flowlist.loc[
-        (
-            (flowlist["Flowable"] == "Nitrous oxide")
-            & (flowlist["Context"] == "emission/air")
-        ),
-        :,
-    ]
-    ch4_flow = flowlist.loc[
-        (
-            (flowlist["Flowable"] == "Methane")
-            & (flowlist["Context"] == "emission/air")
-        ),
-        :,
-    ]
-    flow_df = pd.concat([co2_flow, ch4_flow, n2o_flow, so2_flow, nox_flow])
-    flow_df["Flow"] = [
-        "CO2 (Tons)",
-        "CH4 (lbs)",
-        "N2O (lbs)",
-        "SO2 (lbs)",
-        "NOx (lbs)",
-    ]
-    netl_harmonized_melt = netl_harmonized_melt.merge(
-        flow_df[["Flow", "Flowable", "Context", "Flow UUID"]],
-        on=["Flow"],
-        how="left",
-    )
+    # Dictionary applied based on FEDEFL flow names
+    flow_dict = {
+        "CO2 (Tons)":"Carbon dioxide",
+        "CH4 (lbs)":"Methane",
+        "N2O (lbs)":"Nitrous oxide",
+        "SO2 (lbs)":"Sulfur dioxide",
+        "NOx (lbs)":"Nitrogen oxides",
+        }
+    netl_harmonized_melt['Flowable'] = netl_harmonized_melt['Flow'].map(flow_dict)
+    netl_harmonized_melt['Context'] = "emission/air"
     netl_harmonized_melt.drop(columns=["Flow"], inplace=True)
     netl_harmonized_melt.rename(
         columns={
@@ -1475,7 +1436,6 @@ def generate_plant_emissions(year):
             "Flowable": "FlowName",
             "plant_id": "eGRID_ID",
             "Context": "Compartment_path",
-            "Flow UUID": "FlowUUID",
             "Primary_Fuel": "PrimaryFuel",
         },
         inplace=True,
