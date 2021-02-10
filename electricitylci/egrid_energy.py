@@ -14,7 +14,7 @@ egrid_net_generation = egrid_flowbyfacility[egrid_flowbyfacility['FlowName'] == 
 # Convert flow amount to MWh
 egrid_net_generation.loc[:, 'Electricity'] = egrid_net_generation['FlowAmount']*0.00027778
 # drop unneeded columns
-egrid_net_generation = egrid_net_generation.drop(columns=['ReliabilityScore', 'FlowName', 'FlowAmount', 'Compartment', 'Unit'])
+egrid_net_generation = egrid_net_generation.drop(columns=['DataReliability', 'FlowName', 'FlowAmount', 'Compartment', 'Unit'])
 # Now just has 'FacilityID' and 'Electricity' in MWh
 
 # Get length

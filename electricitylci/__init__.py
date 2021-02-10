@@ -412,7 +412,7 @@ def get_gen_plus_netl():
     netl_gen["DataCollection"] = 5
     netl_gen["GeographicalCorrelation"] = 1
     netl_gen["TechnologicalCorrelation"] = 1
-    netl_gen["ReliabilityScore"] = 1
+    netl_gen["DataReliability"] = 1
     netl_gen=pd.concat([netl_gen,hydro_df[netl_gen.columns]],ignore_index=True,sort=False)
     print("Getting reported emissions for generators...")
     gen_df = gen.create_generation_process_df()

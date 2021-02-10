@@ -148,7 +148,7 @@ def aggregate_facility_flows(df):
         .groupby(groupby_cols, as_index=False).agg(
                 {
                         "FlowAmount":"sum",
-                        "ReliabilityScore":wm
+                        "DataReliability":wm
                 }
         )
     )
@@ -160,7 +160,7 @@ def aggregate_facility_flows(df):
         suffixes=("", "_right"),
     )
     try:
-        delete_cols = ["FlowAmount_right","ReliabilityScore_right"]
+        delete_cols = ["FlowAmount_right","DataReliability_right"]
         group_db_merge.drop(columns=delete_cols, inplace=True)
     except KeyError:
         pass
@@ -842,7 +842,7 @@ def aggregate_data(total_db, subregion="BA"):
             "TechnologicalCorrelation": wm,
             "GeographicalCorrelation": wm,
             "DataCollection": wm,
-            "ReliabilityScore": wm,
+            "DataReliability": wm,
             "facility_emission_factor": ["min", "max", geo_mean],
         }
     )
@@ -855,7 +855,7 @@ def aggregate_data(total_db, subregion="BA"):
         "TechnologicalCorrelation",
         "GeographicalCorrelation",
         "DataCollection",
-        "ReliabilityScore",
+        "DataReliability",
         "uncertaintyMin",
         "uncertaintyMax",
         "uncertaintyLognormParams",
@@ -986,7 +986,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         "TechnologicalCorrelation",
         "GeographicalCorrelation",
         "DataCollection",
-        "ReliabilityScore",
+        "DataReliability",
         "uncertaintyMin",
         "uncertaintyMax",
         "uncertaintyLognormParams",
@@ -1077,7 +1077,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         data["quantitativeReference"] = False
         data["dqEntry"] = (
             "("
-            + str(round(data["ReliabilityScore"].iloc[0], 1))
+            + str(round(data["DataReliability"].iloc[0], 1))
             + ";"
             + str(round(data["TemporalCorrelation"].iloc[0], 1))
             + ";"

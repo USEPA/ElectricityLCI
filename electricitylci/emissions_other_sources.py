@@ -24,7 +24,7 @@ def integrate_replace_emissions(new_emissions, stewi_emissions):
         Total annual emissions from a facility. Columns must include:
         FlowAmount          float64
         FlowName             object
-        ReliabilityScore    float64
+        DataReliability    float64
         Source               object
         Unit                 object
         Year                  int64
@@ -36,7 +36,7 @@ def integrate_replace_emissions(new_emissions, stewi_emissions):
         FacilityID           object
         FlowAmount          float64
         FlowName             object
-        ReliabilityScore    float64
+        DataReliability    float64
         Source               object
         Unit                 object
         Year                  int64
@@ -51,7 +51,7 @@ def integrate_replace_emissions(new_emissions, stewi_emissions):
         'Compartment',
         'FlowAmount',
         'FlowName',
-        'ReliabilityScore',
+        'DataReliability',
         'Source',
         'Unit',
         'Year',

@@ -1495,7 +1495,7 @@ def generate_plant_emissions(year):
     netl_harmonized_melt["DataCollection"] = 5
     netl_harmonized_melt["GeographicalCorrelation"] = 1
     netl_harmonized_melt["TechnologicalCorrelation"] = 1
-    netl_harmonized_melt["ReliabilityScore"] = 1
+    netl_harmonized_melt["DataReliability"] = 1
     netl_harmonized_melt.sort_values(by=["eGRID_ID", "FlowName"], inplace=True)
     netl_harmonized_melt["eGRID_ID"] = netl_harmonized_melt["eGRID_ID"].astype(
         int
