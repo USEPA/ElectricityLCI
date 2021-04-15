@@ -116,7 +116,7 @@ def aggregate_facility_flows(df):
         "Electricity",
         "FlowName",
         "Source",
-        "Compartment_path",
+        "Compartment",
         "stage_code"
     ]
 
