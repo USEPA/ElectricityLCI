@@ -466,7 +466,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     fuel_df["DataCollection"] = 5
     fuel_df["GeographicalCorrelation"] = 1
     fuel_df["TechnologicalCorrelation"] = 1
-    fuel_df["ReliabilityScore"] = 1
+    fuel_df["DataReliability"] = 1
     fuel_df["ElementaryFlowPrimeContext"] = "input"
     fuel_cat_key = (
         gen_df[["FacilityID", "FuelCategory"]]

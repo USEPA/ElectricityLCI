@@ -24,7 +24,7 @@ def integrate_replace_emissions(new_emissions, stewi_emissions):
         Total annual emissions from a facility. Columns must include:
         FlowAmount          float64
         FlowName             object
-        ReliabilityScore    float64
+        DataReliability    float64
         Source               object
         Unit                 object
         Year                  int64
@@ -36,7 +36,7 @@ def integrate_replace_emissions(new_emissions, stewi_emissions):
         FacilityID           object
         FlowAmount          float64
         FlowName             object
-        ReliabilityScore    float64
+        DataReliability    float64
         Source               object
         Unit                 object
         Year                  int64
@@ -51,7 +51,7 @@ def integrate_replace_emissions(new_emissions, stewi_emissions):
         'Compartment',
         'FlowAmount',
         'FlowName',
-        'ReliabilityScore',
+        'DataReliability',
         'Source',
         'Unit',
         'Year',
@@ -59,15 +59,44 @@ def integrate_replace_emissions(new_emissions, stewi_emissions):
     ]
     assert set(required_cols).issubset(set(new_emissions.columns))
     stewi_emissions["eGRID_ID"]=stewi_emissions["eGRID_ID"].astype(int)
+
+    # NEI data sourced from StEWI has different capitalization than eGRID, 
+    # while these are handled in stewicombo, here this issue persists due to 
+    # mapping on flow name. Temporarily remap those names, but then
+    # reverse for NEI flows only after dropping duplicates
+    flow_list = [
+        "Carbon Dioxide",
+        "Nitrous Oxide",
+        "Sulfur Dioxide",
+        "Nitrogen Oxides",
+        ]
+    stewi_emissions.loc[stewi_emissions['FlowName'].isin(flow_list),
+                        'FlowName'] = stewi_emissions['FlowName'].str.capitalize()
+
     updated_emissions = pd.concat([stewi_emissions, new_emissions])
 
     subset_cols = [
         'Compartment', 'FlowName',
-        'Unit', 'Year', 'eGRID_ID'
+        'Unit', 'eGRID_ID'
     ]
+    # Remove Year from this list, otherwise results in duplciate emissions 
+    # by facility if years dont match in specs
+    
     updated_emissions.drop_duplicates(subset=subset_cols, keep='last',
                                       inplace=True)
-
+    
+    # Convert NEI flows back to original case for later flow mapping
+    updated_emissions.loc[(updated_emissions['Source']=='NEI') & 
+                          (updated_emissions['FlowName'].isin([x.capitalize() for x in flow_list])),
+                          'FlowName'] = updated_emissions['FlowName'].str.title()
+    
+    drop_columns = ['operator_name', 'net_generation_megawatthours',
+                    'Total Fuel Consumption (MMBtu)', 'Net Efficiency',
+                    'Compartment_path', 
+                    ]
+    drop_columns = [c for c in drop_columns 
+                    if c in updated_emissions.columns.values.tolist()]
+    updated_emissions.drop(columns=drop_columns, inplace=True)
     return updated_emissions
 
 
