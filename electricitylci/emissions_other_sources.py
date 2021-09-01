@@ -84,9 +84,10 @@ def integrate_replace_emissions(new_emissions, stewi_emissions):
     
     updated_emissions.drop_duplicates(subset=subset_cols, keep='last',
                                       inplace=True)
+    updated_emissions.reset_index(drop=True, inplace=True)
     
     # Convert NEI flows back to original case for later flow mapping
-    updated_emissions.loc[(updated_emissions['Source']=='NEI') & 
+    updated_emissions.loc[(updated_emissions['Source']=='NEI') &
                           (updated_emissions['FlowName'].isin([x.capitalize() for x in flow_list])),
                           'FlowName'] = updated_emissions['FlowName'].str.title()
     
