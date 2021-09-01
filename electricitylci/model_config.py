@@ -3,8 +3,8 @@ from os.path import join
 import datetime
 import yaml
 
-from electricitylci.globals import (modulepath,list_model_names_in_config,
-                                    data_dir, output_dir)
+from electricitylci.globals import modulepath,list_model_names_in_config,\
+                                    data_dir, output_dir
 #################
 
 def assign_model_name():
@@ -88,6 +88,10 @@ class ModelSpecs:
         self.include_upstream_processes = model_specs["include_upstream_processes"]
         self.inventories_of_interest = model_specs["inventories_of_interest"]
         self.inventories = list(model_specs["inventories_of_interest"])
+        if "stewicombo_file" in model_specs:
+            self.stewicombo_file = model_specs["stewicombo_file"]
+        else:
+            self.stewicombo_file = None
         self.include_only_egrid_facilities_with_positive_generation = model_specs["include_only_egrid_facilities_with_positive_generation"]
         self.filter_on_efficiency = model_specs['filter_on_efficiency']
         self.egrid_facility_efficiency_filters = model_specs["egrid_facility_efficiency_filters"]
