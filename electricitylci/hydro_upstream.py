@@ -63,7 +63,7 @@ def generate_hydro_emissions():
     hydro_df["GeographicalCorrelation"] = 1
     hydro_df["TemporalCorrelation"] = 1
     hydro_df["DataCollection"] = 5
-    hydro_df["ReliabilityScore"] = 1
+    hydro_df["DataReliability"] = 1
     hydro_df["eGRID_ID"]=hydro_df["FacilityID"]
     hydro_df["FuelCategory"]="HYDRO"
     hydro_df["PrimaryFuel"]="WAT"

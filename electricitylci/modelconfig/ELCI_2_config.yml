@@ -12,14 +12,14 @@ electricity_lci_target_year: 2018
 # Select a regional aggregation from "eGRID", "NERC", "BA", "US", "FERC", and "EIA"
 # The EPA_eGRID trading method can only be used with "eGRID".
 # The NETL_BA_trading method can only be used with "BA" and "FERC"
-regional_aggregation: 'eGRID'
+regional_aggregation: 'BA'
 
 # If egrid is not used as a primary data source then set "replace_egrid" to True. This
 # will trigger the use of EPA CEMS and EIA data as substitutes for eGRID. Replacing
 # eGRID will also use EIA generation data to determine the generation mix.
-egrid_year: 2014
-eia_gen_year: 2014
-replace_egrid: False
+egrid_year: 2018
+eia_gen_year: 2017
+replace_egrid: True
 
 #NETL has developed profiles for renewable generation to capture construction
 #impacts (e.g., solar PV menufacturing).
@@ -32,10 +32,10 @@ include_netl_water: True
 include_upstream_processes: True
 
 inventories_of_interest:
-  eGRID: 2014
-  TRI: 2014
-  NEI: 2014
-  RCRAInfo: 2013
+  eGRID: 2018
+  TRI: 2017
+  NEI: 2017
+  RCRAInfo: 2017
 
 
 # GENERATOR FILTERS
@@ -57,7 +57,7 @@ min_plant_percent_generation_from_primary_fuel_category: 90
 #MIXED and generate life cycle processes for them. Note that the definition
 #of mixed is purposefully ambiguous and will mean different things depending 
 #on the region of aggregation.
-keep_mixed_plant_category: False
+keep_mixed_plant_category: True
 
 # NEEDS A GOOD DESCRIPTION OF THIS PARAMETER
 filter_non_egrid_emission_on_NAICS: True
@@ -75,7 +75,7 @@ efficiency_of_distribution_grid: 0.95
 # uses an input-output approach using exchange data between balancing authorities
 # from EIA.
 
-EPA_eGRID_trading: True
+EPA_eGRID_trading: False
 net_trading: False
 
 
@@ -85,6 +85,6 @@ NETL_IO_trading_year: 2016
 
 # OTHER PARAMETERS
 
-fedelemflowlist_version: 1.0.2
+fedelemflowlist_version: 1.0.3
 post_process_generation_emission_factors: False
 fuel_name_file: fuelname_1.csv
