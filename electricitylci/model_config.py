@@ -102,6 +102,7 @@ class ModelSpecs:
         self.efficiency_of_distribution_grid = model_specs["efficiency_of_distribution_grid"]
         self.EPA_eGRID_trading = model_specs["EPA_eGRID_trading"]
         self.net_trading = model_specs["net_trading"]
+        self.NETL_IO_trading_year = model_specs["NETL_IO_trading_year"]
         self.fedelemflowlist_version = model_specs["fedelemflowlist_version"]
         # self.use_primaryfuel_for_coal = model_specs["use_primaryfuel_for_coal"]
         self.fuel_name_file = model_specs["fuel_name_file"]
