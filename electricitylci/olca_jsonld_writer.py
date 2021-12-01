@@ -62,10 +62,10 @@ def _process_dq(dict_d: dict, process: olca.Process):
         _val(dict_d, 'processDocumentation', 'dqEntry'))
     pdq_uid = _val(dict_d, 'processDocumentation', 'dqSystem', '@id')
     if isinstance(pdq_uid, str):
-        process.dq_system = olca.ref(olca.DqSystem, pdq_uid)
+        process.dq_system = olca.ref(olca.DQSystem, pdq_uid)
     edq_uid = _val(dict_d, 'processDocumentation', 'exchangeDqSystem', '@id')
     if isinstance(edq_uid, str):
-        process.exchange_dq_system = olca.ref(olca.DqSystem, edq_uid)
+        process.exchange_dq_system = olca.ref(olca.DQSystem, edq_uid)
 
 
 def _category(path: str, mtype: olca.ModelType, writer: pack.Writer,
