@@ -100,11 +100,11 @@ def read_eia923_fuel_receipts(year):
         else:
             eia923_path, eia923_name = find_file_in_folder(
                     folder_path=expected_923_folder,
-                    file_pattern_match=['2_3_4_5'],
+                    file_pattern_match=['2_3_4_5','xlsx'],
                     return_name=True)
             eia_fuel_receipts_df = pd.read_excel(
                 eia923_path, sheet_name='Page 5 Fuel Receipts and Costs',
-                skiprows=4, usecols="A:E,H:M,P:Q")
+                skiprows=4, usecols="A:E,H:M,P:Q", engine="openpyxl")
             csv_fn = eia923_name.split('.')[0] + '_page_5_reduced.csv'
             csv_path = join(expected_923_folder, csv_fn)
             eia_fuel_receipts_df.to_csv(csv_path, index=False)
