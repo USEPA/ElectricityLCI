@@ -1125,7 +1125,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
             + ")"
         )
         data["pedigreeUncertainty"] = ""
-        data["comment"] = data["source_string"].str.replace("_",",") + data["Year"].astype(str)#f"{datasources} - {year}"
+        data["comment"] = data["source_string"].str.replace("_",",") + ", " + data["Year"].astype(str)#f"{datasources} - {year}"
         data_for_dict = data[cols_for_exchange_dict]
         data_for_dict = data_for_dict.append(
             ref_exchange_creator(), ignore_index=True
