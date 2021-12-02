@@ -449,6 +449,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
         "NERC",
         "Subregion",
     ]
+    merge_cols = [x for x in merge_cols if x in fuel_df.columns]
     fuel_df.drop(columns=merge_cols, inplace=True)
     gen_df_reduced = gen_df[merge_cols + ["eGRID_ID"]].drop_duplicates(
         subset=["eGRID_ID"]
