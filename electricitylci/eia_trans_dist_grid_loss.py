@@ -9,7 +9,7 @@ from electricitylci.globals import output_dir, data_dir
 import logging
 from xlrd import XLRDError
 from functools import lru_cache
-
+from zipfile import BadZipFile
 # %%
 # Set working directory, files downloaded from EIA will be saved to this location
 # os.chdir = 'N:/eLCI/Transmission and Distribution'
@@ -117,8 +117,9 @@ def eia_trans_dist_download_extract(year):
                     sheet_name="10. Source-Disposition",
                     header=3,
                     index_col=0,
+                    engine="openpyxl"
                 )
-            except XLRDError:
+            except (XLRDError, BadZipFile):
                 # The most current year has a different url - no "archive/year"
                 url = (
                     "https://www.eia.gov/electricity/state/"
@@ -132,6 +133,7 @@ def eia_trans_dist_download_extract(year):
                     sheet_name="10. Source-Disposition",
                     header=3,
                     index_col=0,
+                    engine="openpyxl"
                 )
         else:
             logging.info(
@@ -142,6 +144,7 @@ def eia_trans_dist_download_extract(year):
                 sheet_name="10. Source-Disposition",
                 header=3,
                 index_col=0,
+                engine="openpyxl"
             )
 
         df.columns = df.columns.str.replace("Year\n", "")
