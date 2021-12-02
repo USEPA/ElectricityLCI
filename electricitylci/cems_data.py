@@ -24,7 +24,7 @@ from electricitylci.globals import data_dir, output_dir
 import logging
 
 data_years = {
-    'epacems': tuple(range(1995, 2019)),
+    'epacems': tuple(range(1995, 2021)),
 }
 
 epacems_columns_to_ignore = {
