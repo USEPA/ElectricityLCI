@@ -5,10 +5,11 @@ Created on Tue Jun  4 12:07:46 2019
 
 @author: jamiesom
 """
+from scipy.stats.stats import mode
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows
 import pandas as pd
 import numpy as np
-from electricitylci.globals import output_dir, elci_version
+from electricitylci.globals import output_dir, elci_version, data_dir
 from electricitylci.utils import make_valid_version_num
 from datetime import datetime
 from electricitylci.dqi import lookup_score_with_bound_key
@@ -485,14 +486,25 @@ def create_generation_process_df():
             id_column = "RCRAInfo_ID"
         #Other columns in the emissions_and_wastes_by_Facility
         #FacilityID and FRS_ID (in addition to those above)
-        import facilitymatcher.globals as fmglob
-        file = fmglob.FRS_config['FRS_bridge_file']
-        file_path = fmglob.FRSpath + '/' + file
-        col_dict = {'REGISTRY_ID': "str",
-            'PGM_SYS_ACRNM': "str",
-            'PGM_SYS_ID': "str"}
-        FRS_bridge = fmglob.read_FRS_file(file, col_dict)
-        eia860_FRS = fmglob.filter_by_program_list(df=FRS_bridge,program_list=["EIA-860"])
+        inventories_of_interest_list=sorted([f"{x}_{model_specs.inventories_of_interest[x]}" for x in model_specs.inventories_of_interest.keys()])
+        inventories_of_interet_string="_".join(inventories_of_interest_list)
+        try:
+            eia860_FRS=pd.read_csv(f"{data_dir}/FRS_bridges/{inventories_of_interet_string}.csv")
+            module_logger.info("Got EIA860 to FRS ID matches from existing file")
+            eia860_FRS["REGISTRY_ID"]=eia860_FRS["REGISTRY_ID"].astype(str)
+        except FileNotFoundError:
+            module_logger.info("Will need to load EIA860 to FRS matches using stewi facility matcher - it may take a while to download and read the required data")
+            import facilitymatcher.globals as fmglob
+            from utils import set_dir
+            file = fmglob.FRS_config['FRS_bridge_file']
+            file_path = fmglob.FRSpath + '/' + file
+            col_dict = {'REGISTRY_ID': "str",
+                'PGM_SYS_ACRNM': "str",
+                'PGM_SYS_ID': "str"}
+            FRS_bridge = fmglob.read_FRS_file(file, col_dict)
+            eia860_FRS = fmglob.filter_by_program_list(df=FRS_bridge,program_list=["EIA-860"])
+            set_dir(f"{data_dir}/FRS_bridges")
+            eia860_FRS.to_csv(f"{data_dir}/FRS_bridges/{inventories_of_interet_string}.csv",encoding="utf-8-sig",index=False)
         emissions_and_wastes_by_facility=pd.merge(
             left=emissions_and_wastes_by_facility,
             right=eia860_FRS,
