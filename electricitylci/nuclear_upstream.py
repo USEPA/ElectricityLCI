@@ -50,7 +50,7 @@ def generate_upstream_nuc(year):
     )
 
     # Read the nuclear LCI excel file
-    nuc_lci = pd.read_csv(data_dir + "/nuclear_LCI.csv", index_col=0,low_memory=False)
+    nuc_lci = pd.read_csv(data_dir + "/nuclear_lci.csv", index_col=0,low_memory=False)
     nuc_lci.dropna(subset=["compartment"],inplace=True)
     # There is no column to merge the inventory and generation data on,
     # so we iterate through the plants and make a new column in the lci
