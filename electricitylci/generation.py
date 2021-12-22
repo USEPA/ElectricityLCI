@@ -495,7 +495,7 @@ def create_generation_process_df():
         except FileNotFoundError:
             module_logger.info("Will need to load EIA860 to FRS matches using stewi facility matcher - it may take a while to download and read the required data")
             import facilitymatcher.globals as fmglob
-            from utils import set_dir
+            from electricitylci.utils import set_dir
             file = fmglob.FRS_config['FRS_bridge_file']
             file_path = fmglob.FRSpath + '/' + file
             col_dict = {'REGISTRY_ID': "str",
