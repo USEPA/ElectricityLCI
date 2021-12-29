@@ -56,7 +56,7 @@ def add_technological_correlation_score(db):
     # db['TechnologicalCorrelation'] = 5
     from electricitylci.dqi import technological_correlation_lower_bound_to_dqi
     # convert PercentGen to fraction
-    db['PercentGenerationfromDesignatedFuelCategory'] = db['PercentGenerationfromDesignatedFuelCategory']/100
+    #db['PercentGenerationfromDesignatedFuelCategory'] = db['PercentGenerationfromDesignatedFuelCategory']/100
     db['TechnologicalCorrelation'] = db['PercentGenerationfromDesignatedFuelCategory'].apply(lambda x: lookup_score_with_bound_key(x,technological_correlation_lower_bound_to_dqi))
     # db = db.drop(columns='PercentGenerationfromDesignatedFuelCategory')
     return db
