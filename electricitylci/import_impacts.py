@@ -70,6 +70,7 @@ def generate_canadian_mixes(us_inventory):
         },
         errors="ignore",
     )
+    canadian_mix=canadian_mix.drop(columns=["Electricity"],errors="ignore")
     canadian_mix=canadian_mix.dropna(subset=["Code"])
     if "input" in us_inventory.columns:
         us_inventory.loc[us_inventory["input"].isna(), "input"] = us_inventory[
@@ -146,6 +147,7 @@ def generate_canadian_mixes(us_inventory):
             left_on="FuelCategory",
             right_on="FuelCategory",
             how="left",
+            suffixes=["","ca_elec"]
         )
         ca_inventory.dropna(subset=["FuelCategory_fraction"], inplace=True)
         ca_mix_list.append(ca_inventory)
