@@ -49,3 +49,731 @@ New Brunswick,SOLAR,,0,2016
 New Brunswick,WIND,,0.064537647,2016
 New Brunswick,HYDRO,,0.24472609,2016
 Mexico,WIND,,1,2016
+Newfoundland and Labrador,BIOMASS,,0,2016
+Newfoundland and Labrador,COAL,,0,2016
+Newfoundland and Labrador,HYDRO,,0.943485942,2016
+Newfoundland and Labrador,GAS,,0.006349588,2016
+Newfoundland and Labrador,OIL,,0.045624227,2016
+Newfoundland and Labrador,SOLAR,,0,2016
+Newfoundland and Labrador,NUCLEAR,,0,2016
+Newfoundland and Labrador,WIND,,0.004540242,2016
+British Columbia,BIOMASS,,0.043606701,2005
+British Columbia,COAL,,0,2005
+British Columbia,HYDRO,,0.918717271,2005
+British Columbia,GAS,,0.03628934,2005
+British Columbia,OIL,,0.001386688,2005
+British Columbia,SOLAR,,0,2005
+British Columbia,NUCLEAR,,0,2005
+British Columbia,WIND,,0,2005
+Manitoba,BIOMASS,,0.000738978,2005
+Manitoba,COAL,,0.01117409,2005
+Manitoba,HYDRO,,0.985303458,2005
+Manitoba,GAS,,0.00112619,2005
+Manitoba,OIL,,0.000224213,2005
+Manitoba,SOLAR,,0,2005
+Manitoba,NUCLEAR,,0,2005
+Manitoba,WIND,,0.00143307,2005
+New Brunswick,BIOMASS,,0.034724563,2005
+New Brunswick,COAL,,0.176528975,2005
+New Brunswick,HYDRO,,0.220586361,2005
+New Brunswick,GAS,,0.112712515,2005
+New Brunswick,OIL,,0.206227692,2005
+New Brunswick,SOLAR,,0,2005
+New Brunswick,NUCLEAR,,0.249219894,2005
+New Brunswick,WIND,,0,2005
+Newfoundland and Labrador,BIOMASS,,0,2005
+Newfoundland and Labrador,COAL,,0,2005
+Newfoundland and Labrador,HYDRO,,0.962819398,2005
+Newfoundland and Labrador,GAS,,0.006311546,2005
+Newfoundland and Labrador,OIL,,0.030869055,2005
+Newfoundland and Labrador,SOLAR,,0,2005
+Newfoundland and Labrador,NUCLEAR,,0,2005
+Newfoundland and Labrador,WIND,,0,2005
+Ontario,BIOMASS,,0.005156331,2005
+Ontario,COAL,,0.183476388,2005
+Ontario,HYDRO,,0.226551268,2005
+Ontario,GAS,,0.08481363,2005
+Ontario,OIL,,0.001979099,2005
+Ontario,SOLAR,,0,2005
+Ontario,NUCLEAR,,0.497857266,2005
+Ontario,WIND,,0.000166018,2005
+Quebec,BIOMASS,,0.003610039,2005
+Quebec,COAL,,0,2005
+Quebec,HYDRO,,0.967404393,2005
+Quebec,GAS,,0.001503252,2005
+Quebec,OIL,,0.001007335,2005
+Quebec,SOLAR,,0,2005
+Quebec,NUCLEAR,,0.02415025,2005
+Quebec,WIND,,0.002324731,2005
+British Columbia,BIOMASS,,0.049745502,2006
+British Columbia,COAL,,0,2006
+British Columbia,HYDRO,,0.90935792,2006
+British Columbia,GAS,,0.040296738,2006
+British Columbia,OIL,,0.00059984,2006
+British Columbia,SOLAR,,0,2006
+British Columbia,NUCLEAR,,0,2006
+British Columbia,WIND,,0,2006
+Manitoba,BIOMASS,,0.000929608,2006
+Manitoba,COAL,,0.009208476,2006
+Manitoba,HYDRO,,0.977570294,2006
+Manitoba,GAS,,0.002636741,2006
+Manitoba,OIL,,0.000213546,2006
+Manitoba,SOLAR,,0,2006
+Manitoba,NUCLEAR,,0,2006
+Manitoba,WIND,,0.009441334,2006
+New Brunswick,BIOMASS,,0.034328066,2006
+New Brunswick,COAL,,0.174900259,2006
+New Brunswick,HYDRO,,0.209963959,2006
+New Brunswick,GAS,,0.131234509,2006
+New Brunswick,OIL,,0.203874295,2006
+New Brunswick,SOLAR,,0,2006
+New Brunswick,NUCLEAR,,0.245698913,2006
+New Brunswick,WIND,,0,2006
+Newfoundland and Labrador,BIOMASS,,0,2006
+Newfoundland and Labrador,COAL,,0,2006
+Newfoundland and Labrador,HYDRO,,0.974430288,2006
+Newfoundland and Labrador,GAS,,0.006452881,2006
+Newfoundland and Labrador,OIL,,0.019116831,2006
+Newfoundland and Labrador,SOLAR,,0,2006
+Newfoundland and Labrador,NUCLEAR,,0,2006
+Newfoundland and Labrador,WIND,,0,2006
+Ontario,BIOMASS,,0.004693135,2006
+Ontario,COAL,,0.152329576,2006
+Ontario,HYDRO,,0.230540966,2006
+Ontario,GAS,,0.075548383,2006
+Ontario,OIL,,0.001983099,2006
+Ontario,SOLAR,,0,2006
+Ontario,NUCLEAR,,0.533977097,2006
+Ontario,WIND,,0.000927743,2006
+Quebec,BIOMASS,,0.003600366,2006
+Quebec,COAL,,0,2006
+Quebec,HYDRO,,0.960548672,2006
+Quebec,GAS,,0.007390225,2006
+Quebec,OIL,,0.002039975,2006
+Quebec,SOLAR,,0,2006
+Quebec,NUCLEAR,,0.02408554,2006
+Quebec,WIND,,0.002335222,2006
+British Columbia,BIOMASS,,0.042461194,2007
+British Columbia,COAL,,0,2007
+British Columbia,HYDRO,,0.921824393,2007
+British Columbia,GAS,,0.034396011,2007
+British Columbia,OIL,,0.001318402,2007
+British Columbia,SOLAR,,0,2007
+British Columbia,NUCLEAR,,0,2007
+British Columbia,WIND,,0,2007
+Manitoba,BIOMASS,,0.000784218,2007
+Manitoba,COAL,,0.011065317,2007
+Manitoba,HYDRO,,0.973388865,2007
+Manitoba,GAS,,0.005012916,2007
+Manitoba,OIL,,0.000309023,2007
+Manitoba,SOLAR,,0,2007
+Manitoba,NUCLEAR,,0,2007
+Manitoba,WIND,,0.009439662,2007
+New Brunswick,BIOMASS,,0.034977489,2007
+New Brunswick,COAL,,0.192561473,2007
+New Brunswick,HYDRO,,0.173876772,2007
+New Brunswick,GAS,,0.116757598,2007
+New Brunswick,OIL,,0.225470299,2007
+New Brunswick,SOLAR,,0,2007
+New Brunswick,NUCLEAR,,0.256356368,2007
+New Brunswick,WIND,,0,2007
+Newfoundland and Labrador,BIOMASS,,0,2007
+Newfoundland and Labrador,COAL,,0,2007
+Newfoundland and Labrador,HYDRO,,0.963132938,2007
+Newfoundland and Labrador,GAS,,0.005659715,2007
+Newfoundland and Labrador,OIL,,0.031207348,2007
+Newfoundland and Labrador,SOLAR,,0,2007
+Newfoundland and Labrador,NUCLEAR,,0,2007
+Newfoundland and Labrador,WIND,,0,2007
+Ontario,BIOMASS,,0.003827965,2007
+Ontario,COAL,,0.175555517,2007
+Ontario,HYDRO,,0.219310822,2007
+Ontario,GAS,,0.086476849,2007
+Ontario,OIL,,0.001980892,2007
+Ontario,SOLAR,,0,2007
+Ontario,NUCLEAR,,0.509690749,2007
+Ontario,WIND,,0.003157207,2007
+Quebec,BIOMASS,,0.003381225,2007
+Quebec,COAL,,0,2007
+Quebec,HYDRO,,0.946620596,2007
+Quebec,GAS,,0.020648504,2007
+Quebec,OIL,,0.003500693,2007
+Quebec,SOLAR,,0,2007
+Quebec,NUCLEAR,,0.022619544,2007
+Quebec,WIND,,0.003229437,2007
+British Columbia,BIOMASS,,0.038720625,2008
+British Columbia,COAL,,0,2008
+British Columbia,HYDRO,,0.918442321,2008
+British Columbia,GAS,,0.041352999,2008
+British Columbia,OIL,,0.001484055,2008
+British Columbia,SOLAR,,0,2008
+British Columbia,NUCLEAR,,0,2008
+British Columbia,WIND,,0,2008
+Manitoba,BIOMASS,,0.001068577,2008
+Manitoba,COAL,,0.010690973,2008
+Manitoba,HYDRO,,0.972630359,2008
+Manitoba,GAS,,0.003758648,2008
+Manitoba,OIL,,0.000265814,2008
+Manitoba,SOLAR,,0,2008
+Manitoba,NUCLEAR,,0,2008
+Manitoba,WIND,,0.011585628,2008
+New Brunswick,BIOMASS,,0.048776958,2008
+New Brunswick,COAL,,0.235772362,2008
+New Brunswick,HYDRO,,0.266584096,2008
+New Brunswick,GAS,,0.111802518,2008
+New Brunswick,OIL,,0.251949403,2008
+New Brunswick,SOLAR,,0,2008
+New Brunswick,NUCLEAR,,0.085114662,2008
+New Brunswick,WIND,,0,2008
+Newfoundland and Labrador,BIOMASS,,0,2008
+Newfoundland and Labrador,COAL,,0,2008
+Newfoundland and Labrador,HYDRO,,0.96330464,2008
+Newfoundland and Labrador,GAS,,0.010505945,2008
+Newfoundland and Labrador,OIL,,0.026189415,2008
+Newfoundland and Labrador,SOLAR,,0,2008
+Newfoundland and Labrador,NUCLEAR,,0,2008
+Newfoundland and Labrador,WIND,,0,2008
+Ontario,BIOMASS,,0.00299966,2008
+Ontario,COAL,,0.140290988,2008
+Ontario,HYDRO,,0.245497594,2008
+Ontario,GAS,,0.069496008,2008
+Ontario,OIL,,0.001131337,2008
+Ontario,SOLAR,,0,2008
+Ontario,NUCLEAR,,0.531908489,2008
+Ontario,WIND,,0.008675924,2008
+Quebec,BIOMASS,,0.002272575,2008
+Quebec,COAL,,0,2008
+Quebec,HYDRO,,0.972102064,2008
+Quebec,GAS,,0.00118029,2008
+Quebec,OIL,,0.002758642,2008
+Quebec,SOLAR,,0,2008
+Quebec,NUCLEAR,,0.018761589,2008
+Quebec,WIND,,0.002924841,2008
+British Columbia,BIOMASS,,0.035902451,2009
+British Columbia,COAL,,0,2009
+British Columbia,HYDRO,,0.934536699,2009
+British Columbia,GAS,,0.027152034,2009
+British Columbia,OIL,,0.001844426,2009
+British Columbia,SOLAR,,0,2009
+British Columbia,NUCLEAR,,0,2009
+British Columbia,WIND,,0.00056439,2009
+Manitoba,BIOMASS,,0,2009
+Manitoba,COAL,,0.004030466,2009
+Manitoba,HYDRO,,0.981369512,2009
+Manitoba,GAS,,0.003785435,2009
+Manitoba,OIL,,0.000137671,2009
+Manitoba,SOLAR,,0,2009
+Manitoba,NUCLEAR,,0,2009
+Manitoba,WIND,,0.010676917,2009
+New Brunswick,BIOMASS,,0.043941523,2009
+New Brunswick,COAL,,0.23827146,2009
+New Brunswick,HYDRO,,0.22613414,2009
+New Brunswick,GAS,,0.150591262,2009
+New Brunswick,OIL,,0.320464026,2009
+New Brunswick,SOLAR,,0,2009
+New Brunswick,NUCLEAR,,0,2009
+New Brunswick,WIND,,0.020597589,2009
+Newfoundland and Labrador,BIOMASS,,0,2009
+Newfoundland and Labrador,COAL,,0,2009
+Newfoundland and Labrador,HYDRO,,0.956477854,2009
+Newfoundland and Labrador,GAS,,0.011657069,2009
+Newfoundland and Labrador,OIL,,0.029208773,2009
+Newfoundland and Labrador,SOLAR,,0,2009
+Newfoundland and Labrador,NUCLEAR,,0,2009
+Newfoundland and Labrador,WIND,,0.002656304,2009
+Ontario,BIOMASS,,0.004620295,2009
+Ontario,COAL,,0.07356111,2009
+Ontario,HYDRO,,0.279058552,2009
+Ontario,GAS,,0.052674765,2009
+Ontario,OIL,,0.001513567,2009
+Ontario,SOLAR,,3.51592E-05,2009
+Ontario,NUCLEAR,,0.572363326,2009
+Ontario,WIND,,0.016173227,2009
+Quebec,BIOMASS,,0.002812617,2009
+Quebec,COAL,,0,2009
+Quebec,HYDRO,,0.968680744,2009
+Quebec,GAS,,0.001350056,2009
+Quebec,OIL,,0.002005243,2009
+Quebec,SOLAR,,0,2009
+Quebec,NUCLEAR,,0.01839083,2009
+Quebec,WIND,,0.006760509,2009
+British Columbia,BIOMASS,,0.063405812,2010
+British Columbia,COAL,,0,2010
+British Columbia,HYDRO,,0.898007197,2010
+British Columbia,GAS,,0.034758352,2010
+British Columbia,OIL,,0.001782075,2010
+British Columbia,SOLAR,,0,2010
+British Columbia,NUCLEAR,,0,2010
+British Columbia,WIND,,0.002046564,2010
+Manitoba,BIOMASS,,0,2010
+Manitoba,COAL,,0.001290791,2010
+Manitoba,HYDRO,,0.985546659,2010
+Manitoba,GAS,,0.002931336,2010
+Manitoba,OIL,,7.03293E-05,2010
+Manitoba,SOLAR,,0,2010
+Manitoba,NUCLEAR,,0,2010
+Manitoba,WIND,,0.010160886,2010
+New Brunswick,BIOMASS,,0.052286068,2010
+New Brunswick,COAL,,0.206292223,2010
+New Brunswick,HYDRO,,0.29721269,2010
+New Brunswick,GAS,,0.181884014,2010
+New Brunswick,OIL,,0.227557003,2010
+New Brunswick,SOLAR,,0,2010
+New Brunswick,NUCLEAR,,0,2010
+New Brunswick,WIND,,0.034768001,2010
+Newfoundland and Labrador,BIOMASS,,0,2010
+Newfoundland and Labrador,COAL,,0,2010
+Newfoundland and Labrador,HYDRO,,0.960535999,2010
+Newfoundland and Labrador,GAS,,0.010847623,2010
+Newfoundland and Labrador,OIL,,0.02425321,2010
+Newfoundland and Labrador,SOLAR,,0,2010
+Newfoundland and Labrador,NUCLEAR,,0,2010
+Newfoundland and Labrador,WIND,,0.004363168,2010
+Ontario,BIOMASS,,0.005052773,2010
+Ontario,COAL,,0.071050008,2010
+Ontario,HYDRO,,0.223770732,2010
+Ontario,GAS,,0.116064802,2010
+Ontario,OIL,,0.000505009,2010
+Ontario,SOLAR,,0.000845455,2010
+Ontario,NUCLEAR,,0.563465082,2010
+Ontario,WIND,,0.019246139,2010
+Quebec,BIOMASS,,0.004582978,2010
+Quebec,COAL,,0,2010
+Quebec,HYDRO,,0.963403456,2010
+Quebec,GAS,,0.001207769,2010
+Quebec,OIL,,0.003181707,2010
+Quebec,SOLAR,,0,2010
+Quebec,NUCLEAR,,0.019287315,2010
+Quebec,WIND,,0.008336774,2010
+British Columbia,BIOMASS,,0.059862311,2011
+British Columbia,COAL,,0,2011
+British Columbia,HYDRO,,0.884932481,2011
+British Columbia,GAS,,0.046813212,2011
+British Columbia,OIL,,0.001335464,2011
+British Columbia,SOLAR,,0,2011
+British Columbia,NUCLEAR,,0,2011
+British Columbia,WIND,,0.007056532,2011
+Manitoba,BIOMASS,,0,2011
+Manitoba,COAL,,0.001389006,2011
+Manitoba,HYDRO,,0.97412472,2011
+Manitoba,GAS,,0.003112569,2011
+Manitoba,OIL,,0.000100502,2011
+Manitoba,SOLAR,,0,2011
+Manitoba,NUCLEAR,,0,2011
+Manitoba,WIND,,0.021273203,2011
+New Brunswick,BIOMASS,,0.047877818,2011
+New Brunswick,COAL,,0.219922467,2011
+New Brunswick,HYDRO,,0.329951962,2011
+New Brunswick,GAS,,0.183181037,2011
+New Brunswick,OIL,,0.160755067,2011
+New Brunswick,SOLAR,,0,2011
+New Brunswick,NUCLEAR,,0,2011
+New Brunswick,WIND,,0.058311649,2011
+Newfoundland and Labrador,BIOMASS,,0,2011
+Newfoundland and Labrador,COAL,,0,2011
+Newfoundland and Labrador,HYDRO,,0.959572126,2011
+Newfoundland and Labrador,GAS,,0.010769189,2011
+Newfoundland and Labrador,OIL,,0.024912763,2011
+Newfoundland and Labrador,SOLAR,,0,2011
+Newfoundland and Labrador,NUCLEAR,,0,2011
+Newfoundland and Labrador,WIND,,0.004745923,2011
+Ontario,BIOMASS,,0.003967005,2011
+Ontario,COAL,,0.028252849,2011
+Ontario,HYDRO,,0.227799718,2011
+Ontario,GAS,,0.158459317,2011
+Ontario,OIL,,0.000298035,2011
+Ontario,SOLAR,,0.00259731,2011
+Ontario,NUCLEAR,,0.553174748,2011
+Ontario,WIND,,0.025451018,2011
+Quebec,BIOMASS,,0.005543776,2011
+Quebec,COAL,,0,2011
+Quebec,HYDRO,,0.965742762,2011
+Quebec,GAS,,0.000887155,2011
+Quebec,OIL,,0.002780907,2011
+Quebec,SOLAR,,0,2011
+Quebec,NUCLEAR,,0.017948813,2011
+Quebec,WIND,,0.007096587,2011
+British Columbia,BIOMASS,,0.056323789,2012
+British Columbia,COAL,,0,2012
+British Columbia,HYDRO,,0.900225399,2012
+British Columbia,GAS,,0.035713587,2012
+British Columbia,OIL,,0.000644819,2012
+British Columbia,SOLAR,,0,2012
+British Columbia,NUCLEAR,,0,2012
+British Columbia,WIND,,0.007092407,2012
+Manitoba,BIOMASS,,0.001174172,2012
+Manitoba,COAL,,0.001521631,2012
+Manitoba,HYDRO,,0.968993208,2012
+Manitoba,GAS,,0.001827364,2012
+Manitoba,OIL,,7.98016E-05,2012
+Manitoba,SOLAR,,0,2012
+Manitoba,NUCLEAR,,0,2012
+Manitoba,WIND,,0.026403823,2012
+New Brunswick,BIOMASS,,0.055754586,2012
+New Brunswick,COAL,,0.203202159,2012
+New Brunswick,HYDRO,,0.284770304,2012
+New Brunswick,GAS,,0.189411553,2012
+New Brunswick,OIL,,0.156892921,2012
+New Brunswick,SOLAR,,0,2012
+New Brunswick,NUCLEAR,,0.039384507,2012
+New Brunswick,WIND,,0.07058397,2012
+Newfoundland and Labrador,BIOMASS,,0,2012
+Newfoundland and Labrador,COAL,,0,2012
+Newfoundland and Labrador,HYDRO,,0.963192491,2012
+Newfoundland and Labrador,GAS,,0.009558423,2012
+Newfoundland and Labrador,OIL,,0.02279858,2012
+Newfoundland and Labrador,SOLAR,,0,2012
+Newfoundland and Labrador,NUCLEAR,,0,2012
+Newfoundland and Labrador,WIND,,0.004450505,2012
+Ontario,BIOMASS,,0.004429301,2012
+Ontario,COAL,,0.023676657,2012
+Ontario,HYDRO,,0.223072002,2012
+Ontario,GAS,,0.153907767,2012
+Ontario,OIL,,0.000433015,2012
+Ontario,SOLAR,,0.005542734,2012
+Ontario,NUCLEAR,,0.558657554,2012
+Ontario,WIND,,0.030280969,2012
+Quebec,BIOMASS,,0.006152501,2012
+Quebec,COAL,,0,2012
+Quebec,HYDRO,,0.957944551,2012
+Quebec,GAS,,0.000923266,2012
+Quebec,OIL,,0.002588278,2012
+Quebec,SOLAR,,0,2012
+Quebec,NUCLEAR,,0.021022875,2012
+Quebec,WIND,,0.011368528,2012
+British Columbia,BIOMASS,,0.058656343,2013
+British Columbia,COAL,,0,2013
+British Columbia,HYDRO,,0.900376242,2013
+British Columbia,GAS,,0.023328487,2013
+British Columbia,OIL,,0.004440142,2013
+British Columbia,SOLAR,,0,2013
+British Columbia,NUCLEAR,,0,2013
+British Columbia,WIND,,0.013198786,2013
+Manitoba,BIOMASS,,0.001155636,2013
+Manitoba,COAL,,0.001765978,2013
+Manitoba,HYDRO,,0.972302966,2013
+Manitoba,GAS,,0.000839033,2013
+Manitoba,OIL,,5.32336E-05,2013
+Manitoba,SOLAR,,0,2013
+Manitoba,NUCLEAR,,0,2013
+Manitoba,WIND,,0.023883153,2013
+New Brunswick,BIOMASS,,0.036987417,2013
+New Brunswick,COAL,,0.173172433,2013
+New Brunswick,HYDRO,,0.226054893,2013
+New Brunswick,GAS,,0.130317672,2013
+New Brunswick,OIL,,0.087721412,2013
+New Brunswick,SOLAR,,0,2013
+New Brunswick,NUCLEAR,,0.296893618,2013
+New Brunswick,WIND,,0.048852556,2013
+Newfoundland and Labrador,BIOMASS,,0,2013
+Newfoundland and Labrador,COAL,,0,2013
+Newfoundland and Labrador,HYDRO,,0.958017272,2013
+Newfoundland and Labrador,GAS,,0.01027246,2013
+Newfoundland and Labrador,OIL,,0.027271757,2013
+Newfoundland and Labrador,SOLAR,,0,2013
+Newfoundland and Labrador,NUCLEAR,,0,2013
+Newfoundland and Labrador,WIND,,0.00443851,2013
+Ontario,BIOMASS,,0.003677513,2013
+Ontario,COAL,,0.017199336,2013
+Ontario,HYDRO,,0.237934431,2013
+Ontario,GAS,,0.11699254,2013
+Ontario,OIL,,0.000283193,2013
+Ontario,SOLAR,,0.007357051,2013
+Ontario,NUCLEAR,,0.583941558,2013
+Ontario,WIND,,0.032614378,2013
+Quebec,BIOMASS,,0.007705779,2013
+Quebec,COAL,,0,2013
+Quebec,HYDRO,,0.96696012,2013
+Quebec,GAS,,0.000538808,2013
+Quebec,OIL,,0.002268348,2013
+Quebec,SOLAR,,0,2013
+Quebec,NUCLEAR,,0,2013
+Quebec,WIND,,0.022526945,2013
+British Columbia,BIOMASS,,0.08773638,2014
+British Columbia,COAL,,0,2014
+British Columbia,HYDRO,,0.862563417,2014
+British Columbia,GAS,,0.025307835,2014
+British Columbia,OIL,,0.008344439,2014
+British Columbia,SOLAR,,0,2014
+British Columbia,NUCLEAR,,0,2014
+British Columbia,WIND,,0.016047929,2014
+Manitoba,BIOMASS,,0.001810153,2014
+Manitoba,COAL,,0.001900571,2014
+Manitoba,HYDRO,,0.969581022,2014
+Manitoba,GAS,,0.000902007,2014
+Manitoba,OIL,,0.000190921,2014
+Manitoba,SOLAR,,0,2014
+Manitoba,NUCLEAR,,0,2014
+Manitoba,WIND,,0.025615326,2014
+New Brunswick,BIOMASS,,0.029771304,2014
+New Brunswick,COAL,,0.194432579,2014
+New Brunswick,HYDRO,,0.185834775,2014
+New Brunswick,GAS,,0.126448079,2014
+New Brunswick,OIL,,0.099881276,2014
+New Brunswick,SOLAR,,0,2014
+New Brunswick,NUCLEAR,,0.314346588,2014
+New Brunswick,WIND,,0.0492854,2014
+Newfoundland and Labrador,BIOMASS,,0,2014
+Newfoundland and Labrador,COAL,,0,2014
+Newfoundland and Labrador,HYDRO,,0.946920895,2014
+Newfoundland and Labrador,GAS,,0.01010452,2014
+Newfoundland and Labrador,OIL,,0.038683182,2014
+Newfoundland and Labrador,SOLAR,,0,2014
+Newfoundland and Labrador,NUCLEAR,,0,2014
+Newfoundland and Labrador,WIND,,0.004291403,2014
+Ontario,BIOMASS,,0.005616587,2014
+Ontario,COAL,,0.000588323,2014
+Ontario,HYDRO,,0.243240141,2014
+Ontario,GAS,,0.097551574,2014
+Ontario,OIL,,0.002364975,2014
+Ontario,SOLAR,,0.010906902,2014
+Ontario,NUCLEAR,,0.596911717,2014
+Ontario,WIND,,0.042819781,2014
+Quebec,BIOMASS,,0.00460412,2014
+Quebec,COAL,,0,2014
+Quebec,HYDRO,,0.962323199,2014
+Quebec,GAS,,0.000763863,2014
+Quebec,OIL,,0.002423699,2014
+Quebec,SOLAR,,0,2014
+Quebec,NUCLEAR,,0,2014
+Quebec,WIND,,0.029885119,2014
+British Columbia,BIOMASS,,0.051223952,2015
+British Columbia,COAL,,0,2015
+British Columbia,HYDRO,,0.91004403,2015
+British Columbia,GAS,,0.024754639,2015
+British Columbia,OIL,,0.001824606,2015
+British Columbia,SOLAR,,0,2015
+British Columbia,NUCLEAR,,0,2015
+British Columbia,WIND,,0.012152773,2015
+Manitoba,BIOMASS,,0.0022812,2015
+Manitoba,COAL,,0.001719988,2015
+Manitoba,HYDRO,,0.967395538,2015
+Manitoba,GAS,,0.003320381,2015
+Manitoba,OIL,,0.000161879,2015
+Manitoba,SOLAR,,0,2015
+Manitoba,NUCLEAR,,0,2015
+Manitoba,WIND,,0.025121015,2015
+New Brunswick,BIOMASS,,0.022166427,2015
+New Brunswick,COAL,,0.12440847,2015
+New Brunswick,HYDRO,,0.187589667,2015
+New Brunswick,GAS,,0.225466281,2015
+New Brunswick,OIL,,0.076739317,2015
+New Brunswick,SOLAR,,0,2015
+New Brunswick,NUCLEAR,,0.306814917,2015
+New Brunswick,WIND,,0.05681492,2015
+Newfoundland and Labrador,BIOMASS,,0,2015
+Newfoundland and Labrador,COAL,,0,2015
+Newfoundland and Labrador,HYDRO,,0.950494566,2015
+Newfoundland and Labrador,GAS,,0.005394051,2015
+Newfoundland and Labrador,OIL,,0.039991919,2015
+Newfoundland and Labrador,SOLAR,,0,2015
+Newfoundland and Labrador,NUCLEAR,,0,2015
+Newfoundland and Labrador,WIND,,0.004119464,2015
+Ontario,BIOMASS,,0.005951972,2015
+Ontario,COAL,,0,2015
+Ontario,HYDRO,,0.222570925,2015
+Ontario,GAS,,0.103009829,2015
+Ontario,OIL,,0.004175926,2015
+Ontario,SOLAR,,0.009050725,2015
+Ontario,NUCLEAR,,0.582860226,2015
+Ontario,WIND,,0.072380396,2015
+Quebec,BIOMASS,,0.004570909,2015
+Quebec,COAL,,0,2015
+Quebec,HYDRO,,0.960378384,2015
+Quebec,GAS,,0.000698571,2015
+Quebec,OIL,,0.002628226,2015
+Quebec,SOLAR,,4.93988E-06,2015
+Quebec,NUCLEAR,,0,2015
+Quebec,WIND,,0.03171897,2015
+British Columbia,BIOMASS,,0.025078749,2017
+British Columbia,COAL,,0,2017
+British Columbia,HYDRO,,0.897608174,2017
+British Columbia,GAS,,0.050768761,2017
+British Columbia,OIL,,0.004530294,2017
+British Columbia,SOLAR,,0,2017
+British Columbia,NUCLEAR,,0,2017
+British Columbia,WIND,,0.022014022,2017
+Manitoba,BIOMASS,,0.00151037,2017
+Manitoba,COAL,,0.000794058,2017
+Manitoba,HYDRO,,0.970709604,2017
+Manitoba,GAS,,0.001907414,2017
+Manitoba,OIL,,7.65299E-05,2017
+Manitoba,SOLAR,,0,2017
+Manitoba,NUCLEAR,,0,2017
+Manitoba,WIND,,0.025002023,2017
+New Brunswick,BIOMASS,,0.020051987,2017
+New Brunswick,COAL,,0.156458924,2017
+New Brunswick,HYDRO,,0.192870406,2017
+New Brunswick,GAS,,0.173561086,2017
+New Brunswick,OIL,,0.018810279,2017
+New Brunswick,SOLAR,,0,2017
+New Brunswick,NUCLEAR,,0.380245083,2017
+New Brunswick,WIND,,0.058002236,2017
+Newfoundland and Labrador,BIOMASS,,0,2017
+Newfoundland and Labrador,COAL,,0,2017
+Newfoundland and Labrador,HYDRO,,0.939440677,2017
+Newfoundland and Labrador,GAS,,0.010054694,2017
+Newfoundland and Labrador,OIL,,0.04572363,2017
+Newfoundland and Labrador,SOLAR,,0,2017
+Newfoundland and Labrador,NUCLEAR,,0,2017
+Newfoundland and Labrador,WIND,,0.004780999,2017
+Ontario,BIOMASS,,0.006302678,2017
+Ontario,COAL,,0,2017
+Ontario,HYDRO,,0.262156565,2017
+Ontario,GAS,,0.054890753,2017
+Ontario,OIL,,0.002476202,2017
+Ontario,SOLAR,,0.013089481,2017
+Ontario,NUCLEAR,,0.592531602,2017
+Ontario,WIND,,0.068552719,2017
+Quebec,BIOMASS,,0.007974482,2017
+Quebec,COAL,,0,2017
+Quebec,HYDRO,,0.942865181,2017
+Quebec,GAS,,0.000880096,2017
+Quebec,OIL,,0.001968587,2017
+Quebec,SOLAR,,4.67511E-06,2017
+Quebec,NUCLEAR,,0,2017
+Quebec,WIND,,0.04630698,2017
+British Columbia,BIOMASS,,0.04794578,2018
+British Columbia,COAL,,0,2018
+British Columbia,HYDRO,,0.892474353,2018
+British Columbia,GAS,,0.030652799,2018
+British Columbia,OIL,,0.003997698,2018
+British Columbia,SOLAR,,2.88869E-05,2018
+British Columbia,NUCLEAR,,0,2018
+British Columbia,WIND,,0.024900484,2018
+Manitoba,BIOMASS,,0.001450692,2018
+Manitoba,COAL,,0.000154748,2018
+Manitoba,HYDRO,,0.969188558,2018
+Manitoba,GAS,,0.001622817,2018
+Manitoba,OIL,,5.1569E-05,2018
+Manitoba,SOLAR,,0,2018
+Manitoba,NUCLEAR,,0,2018
+Manitoba,WIND,,0.027531616,2018
+New Brunswick,BIOMASS,,0.037504613,2018
+New Brunswick,COAL,,0.173622009,2018
+New Brunswick,HYDRO,,0.187153924,2018
+New Brunswick,GAS,,0.152454775,2018
+New Brunswick,OIL,,0.028519032,2018
+New Brunswick,SOLAR,,0,2018
+New Brunswick,NUCLEAR,,0.359837565,2018
+New Brunswick,WIND,,0.060908082,2018
+Newfoundland and Labrador,BIOMASS,,0,2018
+Newfoundland and Labrador,COAL,,0,2018
+Newfoundland and Labrador,HYDRO,,0.958679012,2018
+Newfoundland and Labrador,GAS,,0.002595973,2018
+Newfoundland and Labrador,OIL,,0.034003926,2018
+Newfoundland and Labrador,SOLAR,,0,2018
+Newfoundland and Labrador,NUCLEAR,,0,2018
+Newfoundland and Labrador,WIND,,0.004721089,2018
+Ontario,BIOMASS,,0.008395794,2018
+Ontario,COAL,,0,2018
+Ontario,HYDRO,,0.245198114,2018
+Ontario,GAS,,0.075781552,2018
+Ontario,OIL,,0.002944411,2018
+Ontario,SOLAR,,0.013854488,2018
+Ontario,NUCLEAR,,0.577462559,2018
+Ontario,WIND,,0.076363082,2018
+Quebec,BIOMASS,,0.007645883,2018
+Quebec,COAL,,0,2018
+Quebec,HYDRO,,0.938779996,2018
+Quebec,GAS,,0.000797532,2018
+Quebec,OIL,,0.002786206,2018
+Quebec,SOLAR,,4.6979E-06,2018
+Quebec,NUCLEAR,,0,2018
+Quebec,WIND,,0.049985684,2018
+British Columbia,BIOMASS,,0.050908703,2019
+British Columbia,COAL,,0,2019
+British Columbia,HYDRO,,0.872138406,2019
+British Columbia,GAS,,0.045832756,2019
+British Columbia,OIL,,0.004773182,2019
+British Columbia,SOLAR,,3.10879E-05,2019
+British Columbia,NUCLEAR,,0,2019
+British Columbia,WIND,,0.026315866,2019
+Manitoba,BIOMASS,,0.002415886,2019
+Manitoba,COAL,,0,2019
+Manitoba,HYDRO,,0.970331745,2019
+Manitoba,GAS,,0.001175532,2019
+Manitoba,OIL,,3.24082E-05,2019
+Manitoba,SOLAR,,0,2019
+Manitoba,NUCLEAR,,0,2019
+Manitoba,WIND,,0.026044429,2019
+New Brunswick,BIOMASS,,0.037799401,2019
+New Brunswick,COAL,,0.137062441,2019
+New Brunswick,HYDRO,,0.224101798,2019
+New Brunswick,GAS,,0.145284432,2019
+New Brunswick,OIL,,0.013835756,2019
+New Brunswick,SOLAR,,0,2019
+New Brunswick,NUCLEAR,,0.375449105,2019
+New Brunswick,WIND,,0.066467066,2019
+Newfoundland and Labrador,BIOMASS,,0,2019
+Newfoundland and Labrador,COAL,,0,2019
+Newfoundland and Labrador,HYDRO,,0.95559095,2019
+Newfoundland and Labrador,GAS,,0.006167358,2019
+Newfoundland and Labrador,OIL,,0.033978798,2019
+Newfoundland and Labrador,SOLAR,,0,2019
+Newfoundland and Labrador,NUCLEAR,,0,2019
+Newfoundland and Labrador,WIND,,0.004262894,2019
+Ontario,BIOMASS,,0.008168536,2019
+Ontario,COAL,,0,2019
+Ontario,HYDRO,,0.236741441,2019
+Ontario,GAS,,0.075214368,2019
+Ontario,OIL,,0.002675208,2019
+Ontario,SOLAR,,0.014174404,2019
+Ontario,NUCLEAR,,0.591389077,2019
+Ontario,WIND,,0.071636966,2019
+Quebec,BIOMASS,,0.007098453,2019
+Quebec,COAL,,0,2019
+Quebec,HYDRO,,0.937647337,2019
+Quebec,GAS,,0.000765997,2019
+Quebec,OIL,,0.002353841,2019
+Quebec,SOLAR,,4.69764E-06,2019
+Quebec,NUCLEAR,,0,2019
+Quebec,WIND,,0.052129674,2019
+British Columbia,BIOMASS,,0.052388547,2020
+British Columbia,COAL,,0,2020
+British Columbia,HYDRO,,0.897795393,2020
+British Columbia,GAS,,0.020711195,2020
+British Columbia,OIL,,0.001711546,2020
+British Columbia,SOLAR,,0.000312497,2020
+British Columbia,NUCLEAR,,0,2020
+British Columbia,WIND,,0.027080823,2020
+Manitoba,BIOMASS,,0.002415425,2020
+Manitoba,COAL,,0,2020
+Manitoba,HYDRO,,0.970147108,2020
+Manitoba,GAS,,0.001228143,2020
+Manitoba,OIL,,1.50581E-05,2020
+Manitoba,SOLAR,,0.000154823,2020
+Manitoba,NUCLEAR,,0,2020
+Manitoba,WIND,,0.026039442,2020
+New Brunswick,BIOMASS,,0.034629078,2020
+New Brunswick,COAL,,0.16051169,2020
+New Brunswick,HYDRO,,0.205306794,2020
+New Brunswick,GAS,,0.078984338,2020
+New Brunswick,OIL,,0.120884056,2020
+New Brunswick,SOLAR,,0,2020
+New Brunswick,NUCLEAR,,0.338791429,2020
+New Brunswick,WIND,,0.060892614,2020
+Newfoundland and Labrador,BIOMASS,,0,2020
+Newfoundland and Labrador,COAL,,0,2020
+Newfoundland and Labrador,HYDRO,,0.966962654,2020
+Newfoundland and Labrador,GAS,,0.008654498,2020
+Newfoundland and Labrador,OIL,,0.020408411,2020
+Newfoundland and Labrador,SOLAR,,0,2020
+Newfoundland and Labrador,NUCLEAR,,0,2020
+Newfoundland and Labrador,WIND,,0.003974437,2020
+Ontario,BIOMASS,,0.005184975,2020
+Ontario,COAL,,0,2020
+Ontario,HYDRO,,0.247923002,2020
+Ontario,GAS,,0.083131333,2020
+Ontario,OIL,,0.000561423,2020
+Ontario,SOLAR,,0.014867708,2020
+Ontario,NUCLEAR,,0.549326754,2020
+Ontario,WIND,,0.099004806,2020
+Quebec,BIOMASS,,0.005486172,2020
+Quebec,COAL,,0,2020
+Quebec,HYDRO,,0.941421202,2020
+Quebec,GAS,,0.000770819,2020
+Quebec,OIL,,0.002364078,2020
+Quebec,SOLAR,,1.2277E-06,2020
+Quebec,NUCLEAR,,0,2020
+Quebec,WIND,,0.049956501,2020

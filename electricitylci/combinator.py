@@ -332,9 +332,9 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
         "Balancing Authority Name",
         "Subregion",
     ]
-
+    existing_region_cols=[x for x in pl_df.columns if x in region_cols]
     up_df = up_df.drop(columns=["eGRID_ID"], errors="ignore").merge(
-        right=pl_df[["eGRID_ID"] + region_cols].drop_duplicates(),
+        right=pl_df[["eGRID_ID"] + existing_region_cols].drop_duplicates(),
         left_on="plant_id",
         right_on="eGRID_ID",
         how="left",
@@ -449,6 +449,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
         "NERC",
         "Subregion",
     ]
+    merge_cols = [x for x in merge_cols if x in fuel_df.columns]
     fuel_df.drop(columns=merge_cols, inplace=True)
     gen_df_reduced = gen_df[merge_cols + ["eGRID_ID"]].drop_duplicates(
         subset=["eGRID_ID"]

@@ -125,12 +125,9 @@ def get_generation_mix_process_df(regions=None):
         90       AKGD        HYDRO  5.477350e+05  ASCC          0.114605
         114      AKGD      BIOMASS  5.616577e+04  ASCC          0.011752
     """
-    from electricitylci.egrid_filter import (
-        electricity_for_selected_egrid_facilities,
-    )
+
     from electricitylci.generation_mix import (
         create_generation_mix_process_df_from_model_generation_data,
-        create_generation_mix_process_df_from_egrid_ref_data,
     )
     from electricitylci.eia923_generation import build_generation_data
     
@@ -155,6 +152,12 @@ def get_generation_mix_process_df(regions=None):
             generation_data, regions
         )
     else:
+        from electricitylci.egrid_filter import (
+            electricity_for_selected_egrid_facilities,
+        )
+        from electricitylci.generation_mix import (
+            create_generation_mix_process_df_from_egrid_ref_data,
+        )
         if config.model_specs.gen_mix_from_model_generation_data:
             generation_mix_process_df = create_generation_mix_process_df_from_model_generation_data(
                 electricity_for_selected_egrid_facilities, regions

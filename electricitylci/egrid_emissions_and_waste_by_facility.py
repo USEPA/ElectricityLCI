@@ -5,9 +5,24 @@ from electricitylci.model_config import model_specs
 emissions_and_wastes_by_facility = None
 if model_specs.stewicombo_file is not None:
     emissions_and_wastes_by_facility = stewicombo.getInventory(model_specs.stewicombo_file)
-
+    if "eGRID_ID" in emissions_and_wastes_by_facility.columns:
+        base_inventory = "eGRID"
+    elif "NEI_ID" in model_specs.inventories_of_interest.keys():
+        base_inventory = "NEI"
+    elif "TRI" in model_specs.inventories_of_interest.keys():
+        base_inventory = "TRI"
+    elif "RCRAInfo" in model_specs.inventories_of_interest.keys():
+        base_inventory = "RCRAInfo"
 if emissions_and_wastes_by_facility is None:
-    emissions_and_wastes_by_facility = stewicombo.combineInventoriesforFacilitiesinBaseInventory("eGRID", model_specs.inventories_of_interest, filter_for_LCI=True)
+    if "eGRID" in model_specs.inventories_of_interest.keys():
+        base_inventory = "eGRID"
+    elif "NEI" in model_specs.inventories_of_interest.keys():
+        base_inventory = "NEI"
+    elif "TRI" in model_specs.inventories_of_interest.keys():
+        base_inventory = "TRI"
+    elif "RCRAInfo" in model_specs.inventories_of_interest.keys():
+        base_inventory = "RCRAInfo"
+    emissions_and_wastes_by_facility = stewicombo.combineInventoriesforFacilitiesinBaseInventory(base_inventory, model_specs.inventories_of_interest, filter_for_LCI=True)
     # drop SRS fields
     emissions_and_wastes_by_facility = emissions_and_wastes_by_facility.drop(columns=['SRS_ID', 'SRS_CAS'])
     # drop 'Electricity' flow
