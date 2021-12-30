@@ -196,6 +196,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     ]
     upstream_df["Unit"].fillna("<blank>", inplace=True)
     module_logger.info("Grouping upstream database")
+    upstream_df["FlowAmount"]=upstream_df["FlowAmount"].astype(float)
     if "Electricity" in upstream_df.columns:
         upstream_df_grp = upstream_df.groupby(
             groupby_cols, as_index=False
