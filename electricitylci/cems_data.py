@@ -559,7 +559,7 @@ def _download_FTP(src_urls, tmp_files, allow_retry=True):
             try:
                 ftp.retrbinary(f"RETR {path}", f.write)
             except ftplib.all_errors as e:
-                error_messages.append(e)
+                error_messages.append(str(e))
                 url_to_retry.append(src_url)
                 tmp_to_retry.append(tmp_file)
     # Now retry failures recursively
