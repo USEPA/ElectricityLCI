@@ -7,45 +7,46 @@ import numpy as np
 import pandas as pd
 from electricitylci.globals import data_dir
 from electricitylci.process_dictionary_writer import *
-from electricitylci.egrid_facilities import egrid_facilities, egrid_subregions
 from electricitylci.model_config import model_specs
 from electricitylci.generation import eia_facility_fuel_region
 import logging
 
 # Get a subset of the egrid_facilities dataset
-egrid_facilities_w_fuel_region = egrid_facilities[
-    [
-        "FacilityID",
-        "Subregion",
-        "PrimaryFuel",
-        "FuelCategory",
-        "NERC",
-        "PercentGenerationfromDesignatedFuelCategory",
-        "Balancing Authority Name",
-        "Balancing Authority Code",
+if not model_specs.replace_egrid:
+    from electricitylci.egrid_facilities import egrid_facilities, egrid_subregions
+    egrid_facilities_w_fuel_region = egrid_facilities[
+        [
+            "FacilityID",
+            "Subregion",
+            "PrimaryFuel",
+            "FuelCategory",
+            "NERC",
+            "PercentGenerationfromDesignatedFuelCategory",
+            "Balancing Authority Name",
+            "Balancing Authority Code",
+        ]
     ]
-]
 
-# Get reference regional generation data by fuel type, add in NERC
-from electricitylci.egrid_energy import (
-    ref_egrid_subregion_generation_by_fuelcategory,
-)
+    # Get reference regional generation data by fuel type, add in NERC
+    from electricitylci.egrid_energy import (
+        ref_egrid_subregion_generation_by_fuelcategory,
+    )
 
-egrid_subregions_NERC = egrid_facilities[["Subregion", "FuelCategory", "NERC"]]
-egrid_subregions_NERC = egrid_subregions_NERC.drop_duplicates()
-len(egrid_subregions_NERC)
-egrid_subregions_NERC = egrid_subregions_NERC[
-    egrid_subregions_NERC["NERC"].notnull()
-]
-ref_egrid_subregion_generation_by_fuelcategory_with_NERC = pd.merge(
-    ref_egrid_subregion_generation_by_fuelcategory,
-    egrid_subregions_NERC,
-    on=["Subregion", "FuelCategory"],
-)
+    egrid_subregions_NERC = egrid_facilities[["Subregion", "FuelCategory", "NERC"]]
+    egrid_subregions_NERC = egrid_subregions_NERC.drop_duplicates()
+    len(egrid_subregions_NERC)
+    egrid_subregions_NERC = egrid_subregions_NERC[
+        egrid_subregions_NERC["NERC"].notnull()
+    ]
+    ref_egrid_subregion_generation_by_fuelcategory_with_NERC = pd.merge(
+        ref_egrid_subregion_generation_by_fuelcategory,
+        egrid_subregions_NERC,
+        on=["Subregion", "FuelCategory"],
+    )
 
-ref_egrid_subregion_generation_by_fuelcategory_with_NERC = ref_egrid_subregion_generation_by_fuelcategory_with_NERC.rename(
-    columns={"Ref_Electricity_Subregion_FuelCategory": "Electricity"}
-)
+    ref_egrid_subregion_generation_by_fuelcategory_with_NERC = ref_egrid_subregion_generation_by_fuelcategory_with_NERC.rename(
+        columns={"Ref_Electricity_Subregion_FuelCategory": "Electricity"}
+    )
 
 
 def create_generation_mix_process_df_from_model_generation_data(

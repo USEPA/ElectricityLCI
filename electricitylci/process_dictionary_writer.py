@@ -16,8 +16,15 @@ from electricitylci.globals import (
     elci_version
 )
 from electricitylci.utils import make_valid_version_num
-from electricitylci.egrid_facilities import egrid_subregions,international_reg
 from electricitylci.model_config import model_specs
+if not model_specs.replace_egrid:
+    from electricitylci.egrid_facilities import egrid_subregions
+else:
+    egrid_subregions=[]
+from electricitylci.globals import data_dir
+
+international = pd.read_csv(data_dir+'/International_Electricity_Mix.csv')
+international_reg = list(pd.unique(international['Subregion']))
 
 
 module_logger = logging.getLogger("process_dictionary_writer.py")

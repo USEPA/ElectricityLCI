@@ -5,10 +5,11 @@ Created on Tue Jun  4 12:07:46 2019
 
 @author: jamiesom
 """
+from scipy.stats.stats import mode
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows
 import pandas as pd
 import numpy as np
-from electricitylci.globals import output_dir, elci_version
+from electricitylci.globals import output_dir, elci_version, data_dir
 from electricitylci.utils import make_valid_version_num
 from datetime import datetime
 from electricitylci.dqi import lookup_score_with_bound_key
@@ -16,14 +17,13 @@ from scipy.stats import t, norm
 from scipy.special import erfinv
 import ast
 import logging
-from electricitylci.egrid_facilities import egrid_facilities
 from electricitylci.eia923_generation import eia923_primary_fuel
 from electricitylci.eia860_facilities import eia860_balancing_authority
 from electricitylci.model_config import model_specs
 
 
 
-egrid_facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory','NERC','PercentGenerationfromDesignatedFuelCategory','Balancing Authority Name','Balancing Authority Code']]
+
 
 module_logger = logging.getLogger("generation.py")
 
@@ -56,7 +56,7 @@ def add_technological_correlation_score(db):
     # db['TechnologicalCorrelation'] = 5
     from electricitylci.dqi import technological_correlation_lower_bound_to_dqi
     # convert PercentGen to fraction
-    db['PercentGenerationfromDesignatedFuelCategory'] = db['PercentGenerationfromDesignatedFuelCategory']/100
+    #db['PercentGenerationfromDesignatedFuelCategory'] = db['PercentGenerationfromDesignatedFuelCategory']/100
     db['TechnologicalCorrelation'] = db['PercentGenerationfromDesignatedFuelCategory'].apply(lambda x: lookup_score_with_bound_key(x,technological_correlation_lower_bound_to_dqi))
     # db = db.drop(columns='PercentGenerationfromDesignatedFuelCategory')
     return db
@@ -450,20 +450,14 @@ def create_generation_process_df():
         build_generation_data,
         eia923_primary_fuel
     )
-    from electricitylci.egrid_filter import (
-        egrid_facilities_to_include,
-        emissions_and_waste_for_selected_egrid_facilities,
-    )
-    from electricitylci.generation import (
-        egrid_facilities_w_fuel_region,
-        add_technological_correlation_score,
-        add_temporal_correlation_score,
-    )
     import electricitylci.emissions_other_sources as em_other
     import electricitylci.ampd_plant_emissions as ampd
     from electricitylci.combinator import ba_codes
     import electricitylci.manual_edits as edits
-
+    from electricitylci.generation import (
+            add_technological_correlation_score,
+            add_temporal_correlation_score,
+        )
     COMPARTMENT_DICT = {
         "emission/air": "air",
         "emission/water": "water",
@@ -477,12 +471,73 @@ def create_generation_process_df():
     }
     if model_specs.replace_egrid:
         generation_data = build_generation_data().drop_duplicates()
+        from electricitylci.egrid_emissions_and_waste_by_facility import (
+            emissions_and_wastes_by_facility,
+            base_inventory,
+        ) 
+        eia_facilities_to_include=generation_data["FacilityID"].unique()
+        if base_inventory == "eGRID":
+            id_column="eGRID_ID"
+        elif "NEI" in model_specs.inventories_of_interest.keys():
+            id_column = "NEI_ID"
+        elif "TRI" in model_specs.inventories_of_interest.keys():
+            id_column = "TRI_ID"
+        elif "RCRAInfo" in model_specs.inventories_of_interest.keys():
+            id_column = "RCRAInfo_ID"
+        #Other columns in the emissions_and_wastes_by_Facility
+        #FacilityID and FRS_ID (in addition to those above)
+        inventories_of_interest_list=sorted([f"{x}_{model_specs.inventories_of_interest[x]}" for x in model_specs.inventories_of_interest.keys()])
+        inventories_of_interet_string="_".join(inventories_of_interest_list)
+        try:
+            eia860_FRS=pd.read_csv(f"{data_dir}/FRS_bridges/{inventories_of_interet_string}.csv")
+            module_logger.info("Got EIA860 to FRS ID matches from existing file")
+            eia860_FRS["REGISTRY_ID"]=eia860_FRS["REGISTRY_ID"].astype(str)
+        except FileNotFoundError:
+            module_logger.info("Will need to load EIA860 to FRS matches using stewi facility matcher - it may take a while to download and read the required data")
+            import facilitymatcher.globals as fmglob
+            from electricitylci.utils import set_dir
+            file = fmglob.FRS_config['FRS_bridge_file']
+            file_path = fmglob.FRSpath + '/' + file
+            col_dict = {'REGISTRY_ID': "str",
+                'PGM_SYS_ACRNM': "str",
+                'PGM_SYS_ID': "str"}
+            FRS_bridge = fmglob.read_FRS_file(file, col_dict)
+            eia860_FRS = fmglob.filter_by_program_list(df=FRS_bridge,program_list=["EIA-860"])
+            set_dir(f"{data_dir}/FRS_bridges")
+            eia860_FRS.to_csv(f"{data_dir}/FRS_bridges/{inventories_of_interet_string}.csv",encoding="utf-8-sig",index=False)
+        emissions_and_wastes_by_facility=pd.merge(
+            left=emissions_and_wastes_by_facility,
+            right=eia860_FRS,
+            left_on="FRS_ID",
+            right_on="REGISTRY_ID",
+            how="left",
+        )
+        emissions_and_wastes_by_facility.dropna(subset=["PGM_SYS_ID"],inplace=True)
+        emissions_and_wastes_by_facility.drop(columns=["NEI_ID","FRS_ID","TRI_ID","RCRAInfo_ID","PGM_SYS_ACRNM","REGISTRY_ID"],errors="ignore",inplace=True)
+        emissions_and_wastes_by_facility["FacilityID"]=emissions_and_wastes_by_facility["PGM_SYS_ID"].astype(int)
+        emissions_and_waste_for_selected_eia_facilities = emissions_and_wastes_by_facility[emissions_and_wastes_by_facility["FacilityID"].isin(eia_facilities_to_include)]
+        emissions_and_waste_for_selected_eia_facilities.rename(columns={"FacilityID":"eGRID_ID"},inplace=True)
         cems_df = ampd.generate_plant_emissions(model_specs.eia_gen_year)
         emissions_df = em_other.integrate_replace_emissions(
-            cems_df, emissions_and_waste_for_selected_egrid_facilities
+            cems_df, emissions_and_waste_for_selected_eia_facilities
         )
+        emissions_df.rename(columns={"FacilityID":"eGRID_ID"},inplace=True)
+        facilities_w_fuel_region=eia_facility_fuel_region(model_specs.eia_gen_year)
+        facilities_w_fuel_region.rename(columns={'FacilityID':'eGRID_ID'}, inplace=True)
     else:
+        from electricitylci.egrid_filter import (
+            egrid_facilities_to_include,
+            emissions_and_waste_for_selected_egrid_facilities,
+        )
+        from electricitylci.generation import (
+            egrid_facilities_w_fuel_region,
+        )
         from electricitylci.egrid_filter import electricity_for_selected_egrid_facilities
+        from electricitylci.egrid_facilities import egrid_facilities
+        facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory','NERC','PercentGenerationfromDesignatedFuelCategory','Balancing Authority Name','Balancing Authority Code']]
+        facilities_w_fuel_region["FacilityID"] = \
+            egrid_facilities_w_fuel_region["FacilityID"].astype(int)
+        facilities_w_fuel_region.rename(columns={'FacilityID':'eGRID_ID'}, inplace=True)
         generation_data=electricity_for_selected_egrid_facilities
         generation_data["Year"]=model_specs.egrid_year
         generation_data["FacilityID"]=generation_data["FacilityID"].astype(int)
@@ -490,7 +545,7 @@ def create_generation_process_df():
 #        generation_data = build_generation_data(
 #            egrid_facilities_to_include=egrid_facilities_to_include
 #        )
-    emissions_df["eGRID_ID"] = emissions_df["eGRID_ID"].astype(int)
+        emissions_df["eGRID_ID"] = emissions_df["eGRID_ID"].astype(int)
     generation_data.rename(columns={'FacilityID':'eGRID_ID'}, inplace=True)
     final_database = pd.merge(
         left=emissions_df,
@@ -498,12 +553,10 @@ def create_generation_process_df():
         on=["eGRID_ID", "Year"],
         how="left",
     )
-    egrid_facilities_w_fuel_region["FacilityID"] = \
-        egrid_facilities_w_fuel_region["FacilityID"].astype(int)
-    egrid_facilities_w_fuel_region.rename(columns={'FacilityID':'eGRID_ID'}, inplace=True)
+
     final_database = pd.merge(
         left=final_database,
-        right=egrid_facilities_w_fuel_region,
+        right=facilities_w_fuel_region,
         on="eGRID_ID",
         how="left",
         suffixes=["", "_right"],
@@ -1084,7 +1137,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
             + ")"
         )
         data["pedigreeUncertainty"] = ""
-        data["comment"] = f"{datasources} - {year}"
+        data["comment"] = data["source_string"].str.replace("_",",") + ", " + data["Year"].astype(str)#f"{datasources} - {year}"
         data_for_dict = data[cols_for_exchange_dict]
         data_for_dict = data_for_dict.append(
             ref_exchange_creator(), ignore_index=True

@@ -9,7 +9,7 @@ from electricitylci.globals import output_dir, data_dir
 import logging
 from xlrd import XLRDError
 from functools import lru_cache
-
+from zipfile import BadZipFile
 # %%
 # Set working directory, files downloaded from EIA will be saved to this location
 # os.chdir = 'N:/eLCI/Transmission and Distribution'
@@ -117,8 +117,9 @@ def eia_trans_dist_download_extract(year):
                     sheet_name="10. Source-Disposition",
                     header=3,
                     index_col=0,
+                    engine="openpyxl"
                 )
-            except XLRDError:
+            except (XLRDError, BadZipFile):
                 # The most current year has a different url - no "archive/year"
                 url = (
                     "https://www.eia.gov/electricity/state/"
@@ -132,6 +133,7 @@ def eia_trans_dist_download_extract(year):
                     sheet_name="10. Source-Disposition",
                     header=3,
                     index_col=0,
+                    engine="openpyxl"
                 )
         else:
             logging.info(
@@ -142,6 +144,7 @@ def eia_trans_dist_download_extract(year):
                 sheet_name="10. Source-Disposition",
                 header=3,
                 index_col=0,
+                engine="openpyxl"
             )
 
         df.columns = df.columns.str.replace("Year\n", "")
@@ -184,7 +187,8 @@ def generate_regional_grid_loss(final_database, year, subregion="all"):
     print("Generating factors for transmission and distribution losses")
     from electricitylci.eia923_generation import build_generation_data
     from electricitylci.combinator import ba_codes
-    from electricitylci.egrid_facilities import egrid_facilities
+    import electricitylci.model_config as config
+    from electricitylci.generation import eia_facility_fuel_region
     td_calc_columns = [
         "State",
         "NERC",
@@ -199,23 +203,36 @@ def generate_regional_grid_loss(final_database, year, subregion="all"):
         "eGRID_ID",
     ]
 #    plant_generation = final_database[td_calc_columns].drop_duplicates()
-    egrid_facilities_w_fuel_region = egrid_facilities[
-        [
-        "FacilityID",
-        "Subregion",
-        "PrimaryFuel",
-        "FuelCategory",
-        "NERC",
-        "PercentGenerationfromDesignatedFuelCategory",
-        "Balancing Authority Name",
-        "Balancing Authority Code",
-        "State"
-        ]
-    ]
-    egrid_facilities_w_fuel_region["FacilityID"]=egrid_facilities_w_fuel_region["FacilityID"].astype(int)
     plant_generation = build_generation_data(generation_years=[year])
     plant_generation["FacilityID"]=plant_generation["FacilityID"].astype(int)
-    plant_generation = plant_generation.merge(egrid_facilities_w_fuel_region,on=["FacilityID"],how="left")
+    if config.model_specs.replace_egrid:
+        plant_data = eia_facility_fuel_region(year)
+        plant_data["FacilityID"]=plant_data["FacilityID"].astype(int)
+        plant_generation=pd.merge(
+            left=plant_generation,
+            right=plant_data,
+            on="FacilityID",
+            how="left",
+        )
+    plant_generation
+    if not config.model_specs.replace_egrid:
+        from electricitylci.egrid_facilities import egrid_facilities
+        egrid_facilities_w_fuel_region = egrid_facilities[
+            [
+            "FacilityID",
+            "Subregion",
+            "PrimaryFuel",
+            "FuelCategory",
+            "NERC",
+            "PercentGenerationfromDesignatedFuelCategory",
+            "Balancing Authority Name",
+            "Balancing Authority Code",
+            "State"
+            ]
+        ]
+        egrid_facilities_w_fuel_region["FacilityID"]=egrid_facilities_w_fuel_region["FacilityID"].astype(int)
+
+        plant_generation = plant_generation.merge(egrid_facilities_w_fuel_region,on=["FacilityID"],how="left")
     plant_generation["Balancing Authority Name"]=plant_generation["Balancing Authority Code"].map(ba_codes["BA_Name"])
     plant_generation["FERC_Region"]=plant_generation["Balancing Authority Code"].map(ba_codes["FERC_Region"])
     plant_generation["EIA_Region"]=plant_generation["Balancing Authority Code"].map(ba_codes["EIA_Region"])
@@ -320,6 +337,8 @@ def olca_schema_distribution_mix(td_by_region, cons_mix_dict, subregion="BA"):
 
 
 if __name__ == "__main__":
+    import electricitylci.model_config as config
+    config.model_specs=config.build_model_class("ELCI_2_2020")
     year = 2016
     final_database=pd.DataFrame()
     trans_dist_grid_loss = generate_regional_grid_loss(

@@ -9,6 +9,7 @@
 
 git+git://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List@v1.0.3#egg=fedelemflowlist
 git+git://github.com/USEPA/standardizedinventories@v0.9.5#egg=StEWI
+python>=3.7        # Python 3.7 is needed to avoid some issues
 numpy>=1.1         # NumPy is the fundamental package for array computing with Python.
 pandas>=0.24       # Powerful Python data analysis toolkit.
 olca-ipc>=0.0.6    # A Python package for calling openLCA functions from Python.
