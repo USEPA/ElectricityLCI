@@ -121,9 +121,9 @@ def generate_petroleum_upstream(year):
 
     # Merging the dataframes within the dictionary to a single datframe
     combined_lci=pd.concat(petroleum_lci,ignore_index=True)
-
+    petroleum_fuel=petroleum_fuel.dropna(subset=["padd"])
     petroleum_fuel['fuel_padd']=(petroleum_fuel['reported_fuel_type_code']+
-                        '_'+petroleum_fuel['padd'].astype(str))
+                        '_'+petroleum_fuel['padd'].astype(int).astype(str))
 
     # Merge the inventories for each fuel with the fuel use by each power plant
     merged_inventory = combined_lci.merge(
