@@ -527,7 +527,7 @@ def get_distribution_mix_df(combined_df, subregion=None):
         subregion = config.model_specs.regional_aggregation
 
     td_loss_df = tnd.generate_regional_grid_loss(
-        combined_df, config.model_specs.eia_gen_year, subregion=subregion
+        config.model_specs.eia_gen_year, subregion=subregion
     )
     return td_loss_df
 

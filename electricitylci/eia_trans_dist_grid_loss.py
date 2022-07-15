@@ -169,16 +169,18 @@ def eia_trans_dist_download_extract(year):
     return eia_trans_dist_loss
 
 
-def generate_regional_grid_loss(final_database, year, subregion="all"):
+def generate_regional_grid_loss(year, subregion="all"):
     """This function generates transmission and distribution losses for the
     provided generation data and given year, aggregated by subregion.
 
     Arguments:
-        final_database: dataframe
-            The database containing plant-level emissions.
         year: int
             Analysis year for the transmission and distribution loss data.
             Ideally this should match the year of your final_database.
+        subregion: string
+            Any subregion as defined in aggregation_selector.subregion_col.
+            Default value "all" will use egrid subregions.
+
     Returns:
         td_by_region: dataframe
             A dataframe of transmission and distribution loss rates as a
@@ -342,8 +344,5 @@ if __name__ == "__main__":
     import electricitylci.model_config as config
     config.model_specs=config.build_model_class("ELCI_2_2020")
     year = 2016
-    final_database=pd.DataFrame()
-    trans_dist_grid_loss = generate_regional_grid_loss(
-        final_database, year, "BA"
-    )
+    trans_dist_grid_loss = generate_regional_grid_loss(year, "BA")
     trans_dist_grid_loss.to_csv(f"{output_dir}/trans_dist_loss_{year}.csv")
