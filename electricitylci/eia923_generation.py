@@ -6,8 +6,12 @@ from os.path import join
 import requests
 from electricitylci.globals import data_dir, EIA923_BASE_URL, FUEL_CAT_CODES
 from electricitylci.utils import download_unzip, find_file_in_folder
-from electricitylci.model_config import model_specs
-
+#from electricitylci.model_config import model_specs
+if __name__=='__main__':
+    import electricitylci.model_config as config
+    config.model_specs = config.build_model_class()
+else:
+    from electricitylci.model_config  import model_specs
 from electricitylci.eia860_facilities import eia860_balancing_authority
 from functools import lru_cache
 
@@ -617,4 +621,7 @@ def eia923_sched8_aec(year):
 
 
 if __name__ == "__main__":
-    rawr = eia923_sched8_aec(2016)
+    #rawr = eia923_sched8_aec(2016)
+    gen_and_fuel_df=eia923_generation_and_fuel(2020)
+    from globals import output_dir
+    gen_and_fuel_df.to_csv(f"{output_dir}/gen_and_fuel_df_2020.csv", encoding="utf-8-sig")
