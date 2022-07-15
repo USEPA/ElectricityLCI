@@ -4,7 +4,7 @@
 import pandas as pd
 import numpy as np
 import os
-import urllib.request
+import requests
 from electricitylci.globals import output_dir, data_dir
 import logging
 from xlrd import XLRDError
@@ -111,9 +111,10 @@ def eia_trans_dist_download_extract(year):
                 + filename
             )
             logger.info(f"Downloading data for {state_abbrev[key]}")
-
             try:
-                urllib.request.urlretrieve(url, filename)
+                r=requests.get(url)
+                with open(filename, 'wb') as f:
+                    f.write(r.content)
                 df = pd.read_excel(
                     filename,
                     sheet_name="10. Source-Disposition",
@@ -129,7 +130,9 @@ def eia_trans_dist_download_extract(year):
                     + "/xls/"
                     + filename
                 )
-                urllib.request.urlretrieve(url, filename)
+                r=requests.get(url)
+                with open(filename, 'wb') as f:
+                    f.write(r.content)
                 df = pd.read_excel(
                     filename,
                     sheet_name="10. Source-Disposition",
