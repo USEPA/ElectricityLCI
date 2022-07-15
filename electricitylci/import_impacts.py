@@ -94,7 +94,7 @@ def generate_canadian_mixes(us_inventory):
             "FlowUUID",
             #                    'stage_code',
         ]
-    )["FlowAmount", "quantity"].sum()
+    )[["FlowAmount", "quantity"]].sum()
     us_inventory_electricity = (
         us_inventory.drop_duplicates(
             subset=[
