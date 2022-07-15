@@ -15,7 +15,7 @@ setup(
         'StEWI @ git+https://github.com/USEPA/standardizedinventories@v0.9.5#egg=StEWI',
         'numpy>=1.14',
         'pandas>=0.24',
-        'olca-ipc>=0.0.6',
+        'olca-ipc=0.10',
         'openpyxl>=2.5',
         'matplotlib>=2.2',
         'seaborn>=0.9',
