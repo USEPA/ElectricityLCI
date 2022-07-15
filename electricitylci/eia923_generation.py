@@ -49,10 +49,10 @@ def _clean_columns(df):
     "Remove special characters and convert column names to snake case"
     df.columns = (
         df.columns.str.lower()
-        .str.replace("[^0-9a-zA-Z\-]+", " ")
-        .str.replace("-", "")
+        .str.replace("[^0-9a-zA-Z\-]+", " ", regex=True)
+        .str.replace("-", "", regex=False)
         .str.strip()
-        .str.replace(" ", "_")
+        .str.replace(" ", "_", regex=False)
     )
     return df
 
@@ -92,8 +92,8 @@ def load_eia923_excel(eia923_path, page="1"):
     )
     # Get ride of line breaks. And apparently 2015 had 'Plant State'
     # instead of 'State'
-    eia.columns = eia.columns.str.replace("\n", " ").str.replace(
-        "Plant State", "State"
+    eia.columns = eia.columns.str.replace("\n", " ", regex=False).str.replace(
+        "Plant State", "State", regex=False
     )
 
     # colstokeep = [

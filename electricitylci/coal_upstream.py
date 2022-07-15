@@ -5,6 +5,8 @@ if __name__=='__main__':
     config.model_specs = config.build_model_class()
 
 import pandas as pd
+import regex
+from sqlalchemy import false
 from electricitylci.globals import data_dir, output_dir
 from electricitylci.eia923_generation import eia923_download
 import os
@@ -63,10 +65,10 @@ def eia_7a_download(year, save_path):
 def _clean_columns(df):
    'Remove special characters and convert column names to snake case'
    df.columns = (df.columns.str.lower()
-                             .str.replace('[^0-9a-zA-Z\-]+', ' ')
-                             .str.replace('-', '')
+                             .str.replace('[^0-9a-zA-Z\-]+', ' ', regex=True)
+                             .str.replace('-', '', regex=True)
                              .str.strip()
-                             .str.replace(' ', '_'))
+                             .str.replace(' ', '_', regex=True))
 
 
 def read_eia923_fuel_receipts(year):
@@ -164,13 +166,13 @@ def generate_upstream_coal_map(year):
             by=["mine_state", "mine_county", "coal_supply_region"],
             as_index=False
             )["production_short_tons"].count()
-    county_basin["mine_state"]=county_basin["mine_state"].str.replace(r" \(.*\)", "")
+    county_basin["mine_state"]=county_basin["mine_state"].str.replace(r" \(.*\)", "", regex=True)
     county_basin["mine_state_abv"]=county_basin["mine_state"].str.lower().map(STATE_ABBREV).str.upper()
     county_basin["mine_county"]=county_basin["mine_county"].str.lower()
     fips_codes = pd.read_csv(f"{data_dir}/fips_codes.csv",)
     _clean_columns(fips_codes)
     fips_codes["gu_name"]=fips_codes["gu_name"].str.lower()
-    fips_codes["county_fips_code"]=fips_codes["county_fips_code"].astype(str).str.replace(".0", "")
+    fips_codes["county_fips_code"]=fips_codes["county_fips_code"].astype(str).str.replace(".0", "", regex=False)
     county_basin=county_basin.merge(
             right=fips_codes[["state_abbreviation", "county_fips_code", "gu_name"]],
             left_on=["mine_state_abv", "mine_county"],
@@ -298,7 +300,7 @@ def generate_upstream_coal(year):
 #    coal_mining_inventory.drop(columns=["Per_Cleaned"],inplace=True)
     coal_mining_inventory["Compartment"]=coal_mining_inventory["Compartment"].apply(literal_eval)
     coal_mining_inventory["Compartment"]=coal_mining_inventory["Compartment"].str.join("/")
-    coal_mining_inventory["Compartment"]=coal_mining_inventory["Compartment"].str.replace("Elementary Flows/", "")
+    coal_mining_inventory["Compartment"]=coal_mining_inventory["Compartment"].str.replace("Elementary Flows/", "",regex=False)
     coal_mining_inventory["ElementaryFlowPrimeContext"]=float("nan")
     coal_mining_inventory.loc[coal_mining_inventory["Compartment"].str.contains("emission/"), "ElementaryFlowPrimeContext"]="emission"
     coal_mining_inventory.loc[coal_mining_inventory["Compartment"].str.contains("resource/"), "ElementaryFlowPrimeContext"]="resource"

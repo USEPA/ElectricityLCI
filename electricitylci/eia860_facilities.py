@@ -25,10 +25,10 @@ def _clean_columns(df):
     "Remove special characters and convert column names to snake case"
     df.columns = (
         df.columns.str.lower()
-        .str.replace("[^0-9a-zA-Z\-]+", " ")
-        .str.replace("-", "")
+        .str.replace("[^0-9a-zA-Z\-]+", " ", regex=True)
+        .str.replace("-", "", regex=False)
         .str.strip()
-        .str.replace(" ", "_")
+        .str.replace(" ", "_", regex=False)
     )
     return df
 
@@ -67,9 +67,9 @@ def load_eia860_excel(eia860_path, sheet="Plant", header=1):
     # Get ride of line breaks. Rename Plant Code to Plant Id (match
     # the 923 column name)
     eia.columns = (
-        eia.columns.str.replace("\n", " ")
-        .str.replace("Plant Code", "Plant Id")
-        .str.replace("Plant State", "State")
+        eia.columns.str.replace("\n", " ", regex=False)
+        .str.replace("Plant Code", "Plant Id", regex=False)
+        .str.replace("Plant State", "State", regex=False)
     )
 
     return eia

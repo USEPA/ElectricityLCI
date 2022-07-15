@@ -149,7 +149,7 @@ def eia_trans_dist_download_extract(year):
                 engine="openpyxl"
             )
 
-        df.columns = df.columns.str.replace("Year\n", "")
+        df.columns = df.columns.str.replace("Year\n", "",regex=True)
         df = df.loc["Estimated losses"] / (
             df.loc["Total disposition"] - df.loc["Direct use"]
         )
