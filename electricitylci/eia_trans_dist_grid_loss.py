@@ -10,6 +10,8 @@ import logging
 from xlrd import XLRDError
 from functools import lru_cache
 from zipfile import BadZipFile
+
+logger = logging.getLogger("eia_trans_dist_grid_loss")
 # %%
 # Set working directory, files downloaded from EIA will be saved to this location
 # os.chdir = 'N:/eLCI/Transmission and Distribution'
@@ -108,7 +110,7 @@ def eia_trans_dist_download_extract(year):
                 + "/xls/"
                 + filename
             )
-            print(f"Downloading data for {state_abbrev[key]}")
+            logger.info(f"Downloading data for {state_abbrev[key]}")
 
             try:
                 urllib.request.urlretrieve(url, filename)
@@ -156,7 +158,7 @@ def eia_trans_dist_download_extract(year):
     eia_trans_dist_loss = pd.concat(state_df_list, axis=1, sort=True)
     max_year = max(eia_trans_dist_loss.index.astype(int))
     if max_year < int(year):
-        print(f'The most recent T&D loss data is from {max_year}')
+        logger.info(f'The most recent T&D loss data is from {max_year}')
         year = str(max_year)
 
     eia_trans_dist_loss.columns = eia_trans_dist_loss.columns.str.upper()
@@ -184,7 +186,7 @@ def generate_regional_grid_loss(final_database, year, subregion="all"):
             for transmission and distribution to match the regionally-
             aggregated emissions unit processes.
     """
-    print("Generating factors for transmission and distribution losses")
+    logger.info("Generating factors for transmission and distribution losses")
     from electricitylci.eia923_generation import build_generation_data
     from electricitylci.combinator import ba_codes
     import electricitylci.model_config as config

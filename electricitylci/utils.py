@@ -28,7 +28,7 @@ def download_unzip(url, unzip_path):
     r = requests.get(url)
     content_type = r.headers["Content-Type"]
     if "zip" not in content_type and "-stream" not in content_type:
-        print(content_type)
+        module_logger.error(content_type)
         raise ValueError("URL does not point to valid zip file")
 
     z = zipfile.ZipFile(io.BytesIO(r.content))
@@ -115,7 +115,7 @@ def fill_default_provider_uuids(dict_to_fill, *args):
     found = False
     dict_list = list(args)
     list_of_dicts = [isinstance(x,dict) for x in dict_list]
-    print("Attempting to find UUIDs for default providers...")
+    module_logger.info("Attempting to find UUIDs for default providers...")
     if all(list_of_dicts):
         for key in dict_to_fill.keys():
             for exch in dict_to_fill[key]['exchanges']:

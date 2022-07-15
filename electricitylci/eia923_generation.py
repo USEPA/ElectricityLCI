@@ -14,6 +14,8 @@ else:
     from electricitylci.model_config  import model_specs
 from electricitylci.eia860_facilities import eia860_balancing_authority
 from functools import lru_cache
+import logging
+logger = logging.getLogger("eia923_generation")
 
 EIA923_PAGES = {
     "1": "Page 1 Generation and Fuel Data",
@@ -142,7 +144,7 @@ def eia923_download_extract(
     expected_923_folder = join(data_dir, "f923_{}".format(year))
 
     if not os.path.exists(expected_923_folder):
-        print("Downloading EIA-923 files")
+        logger.info("Downloading EIA-923 files")
         eia923_download(year=year, save_path=expected_923_folder)
 
         eia923_path, eia923_name = find_file_in_folder(
@@ -181,7 +183,7 @@ def eia923_download_extract(
 
         # Read and return the existing csv file if it exists
         if csv_file:
-            print("Loading {} EIA-923 data from csv file".format(year))
+            logger.info("Loading {} EIA-923 data from csv file".format(year))
             fn = csv_file[0]
             csv_path = join(expected_923_folder, fn)
             eia = pd.read_csv(
@@ -447,7 +449,7 @@ def eia923_generation_and_fuel(year):
     expected_923_folder = join(data_dir, "f923_{}".format(year))
 
     if not os.path.exists(expected_923_folder):
-        print("Downloading EIA-923 files")
+        logger.info("Downloading EIA-923 files")
         eia923_download(year=year, save_path=expected_923_folder)
 
         eia923_path, eia923_name = find_file_in_folder(
@@ -472,7 +474,7 @@ def eia923_generation_and_fuel(year):
 
         # Read and return the existing csv file if it exists
         if csv_file:
-            print("Loading {} EIA-923 data from csv file".format(year))
+            logger.info("Loading {} EIA-923 data from csv file".format(year))
             fn = csv_file[0]
             csv_path = join(expected_923_folder, fn)
             eia = pd.read_csv(
@@ -506,7 +508,7 @@ def eia923_boiler_fuel(year):
     expected_923_folder = join(data_dir, "f923_{}".format(year))
 
     if not os.path.exists(expected_923_folder):
-        print("Downloading EIA-923 files")
+        logger.info("Downloading EIA-923 files")
         eia923_download(year=year, save_path=expected_923_folder)
 
         eia923_path, eia923_name = find_file_in_folder(
@@ -531,7 +533,7 @@ def eia923_boiler_fuel(year):
 
         # Read and return the existing csv file if it exists
         if csv_file:
-            print("Loading {} EIA-923 data from csv file".format(year))
+            logger.info("Loading {} EIA-923 data from csv file".format(year))
             fn = csv_file[0]
             csv_path = join(expected_923_folder, fn)
             eia = pd.read_csv(
@@ -565,7 +567,7 @@ def eia923_sched8_aec(year):
     expected_923_folder = join(data_dir, "f923_{}".format(year))
 
     if not os.path.exists(expected_923_folder):
-        print("Downloading EIA-923 files")
+        logger.info("Downloading EIA-923 files")
         eia923_download(year=year, save_path=expected_923_folder)
 
         eia923_path, eia923_name = find_file_in_folder(
@@ -590,7 +592,7 @@ def eia923_sched8_aec(year):
 
         # Read and return the existing csv file if it exists
         if csv_file:
-            print("Loading {} EIA-923 data from csv file".format(year))
+            logger.info("Loading {} EIA-923 data from csv file".format(year))
             fn = csv_file[0]
             csv_path = join(expected_923_folder, fn)
             eia = pd.read_csv(

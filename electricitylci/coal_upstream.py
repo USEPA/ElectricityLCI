@@ -13,6 +13,8 @@ from electricitylci.utils import find_file_in_folder
 import requests
 import electricitylci.PhysicalQuantities as pq
 import numpy as np
+import logging
+logger = logging.getLogger("coal_upstream")
 
 coal_type_codes={'BIT': 'B',
                  'LIG': 'L',
@@ -48,13 +50,13 @@ def eia_7a_download(year, save_path):
     url = eia7a_base_url + name
     try:
         os.makedirs(save_path)
-        print('Downloading EIA 7-A data...')
+        logger.info('Downloading EIA 7-A data...')
         eia_7a_file = requests.get(url)
         # eia_7a_file.retrieve(url,data_dir+'/'+name)
         open(save_path+'/'+name, 'wb').write(eia_7a_file.content)
         # download_unzip(url,data_dir)
     except:
-        print('Error downloading eia-7a: try manually downloading from:\n'+
+        logger.info('Error downloading eia-7a: try manually downloading from:\n'+
               url)
 
 
@@ -70,7 +72,7 @@ def _clean_columns(df):
 def read_eia923_fuel_receipts(year):
     expected_923_folder = join(data_dir, 'f923_{}'.format(year))
     if not os.path.exists(expected_923_folder):
-        print('Downloading EIA-923 files')
+        logger.info('Downloading EIA-923 files')
         eia923_download(year=year, save_path=expected_923_folder)
 
         eia923_path, eia923_name = find_file_in_folder(
@@ -87,7 +89,7 @@ def read_eia923_fuel_receipts(year):
     else:
         # Check for both csv and year<_Final> in case multiple years
         # or other csv files exist
-        print('Loading data from previously downloaded excel file')
+        logger.info('Loading data from previously downloaded excel file')
         all_files = os.listdir(expected_923_folder)
         # Check for both csv and year<_Final> in case multiple years
         # or other csv files exist
