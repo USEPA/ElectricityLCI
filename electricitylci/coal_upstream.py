@@ -503,6 +503,6 @@ def generate_upstream_coal(year):
     return merged_coal_upstream
 
 if __name__=='__main__':
-    year=2016
+    year=2020
     df = generate_upstream_coal(year)
     df.to_csv(output_dir+'/coal_emissions_{}.csv'.format(year))
