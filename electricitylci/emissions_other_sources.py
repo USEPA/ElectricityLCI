@@ -72,7 +72,8 @@ def integrate_replace_emissions(new_emissions, stewi_emissions):
         ]
     stewi_emissions.loc[stewi_emissions['FlowName'].isin(flow_list),
                         'FlowName'] = stewi_emissions['FlowName'].str.capitalize()
-
+    #added line below because eGRID_ID got duplicated somewhere causing error in concat
+    stewi_emissions = stewi_emissions.loc[:,~stewi_emissions.columns.duplicated()].copy()
     updated_emissions = pd.concat([stewi_emissions, new_emissions])
 
     subset_cols = [
