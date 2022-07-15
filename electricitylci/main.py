@@ -19,9 +19,9 @@ def main():
     if config.model_specs.include_upstream_processes is True:
         # Create dataframe with all generation process data. This will also
         # include upstream and Canadian data.
-        print("get generation process")
+        logger.info("get generation process")
         upstream_df = electricitylci.get_upstream_process_df(config.model_specs.eia_gen_year)
-        print("write generation process to dict")
+        logger.info("write generation process to dict")
         upstream_dict = electricitylci.write_upstream_process_database_to_dict(
             upstream_df
         )
@@ -40,7 +40,7 @@ def main():
         generation_process_df = electricitylci.get_generation_process_df(
             upstream_df=upstream_df
         )
-    print("write gen process to jsonld")
+    logger.info("write gen process to jsonld")
     if config.model_specs.regional_aggregation in ["FERC","US"]:
         generation_process_dict = electricitylci.write_gen_fuel_database_to_dict(
             generation_process_df, upstream_dict, subregion="BA"
@@ -55,15 +55,15 @@ def main():
     # We force the generation of BA aggregation if we're doing FERC, US, or BA
     # regions. This is because the consumption mixes are based on imports from
     # balancing authority areas.
-    print("get gen mix process")
+    logger.info("get gen mix process")
     if config.model_specs.regional_aggregation in ["FERC","US"]:
         generation_mix_df = electricitylci.get_generation_mix_process_df("BA")
     else:
         generation_mix_df = electricitylci.get_generation_mix_process_df()
-    print("write gen mix to dict")
+    logger.info("write gen mix to dict")
     generation_mix_dict = electricitylci.write_generation_mix_database_to_dict(
         generation_mix_df, generation_process_dict)
-    print("write gen mix to jsonld")
+    logger.info("write gen mix to jsonld")
     generation_mix_dict = electricitylci.write_process_dicts_to_jsonld(
         generation_mix_dict
     )
@@ -71,44 +71,44 @@ def main():
     # At this point the two methods diverge from underlying functions enough that
     # it's just easier to split here.
     if config.model_specs.EPA_eGRID_trading is False:
-        print("using alt gen method for consumption mix")
+        logger.info("using alt gen method for consumption mix")
         regions_to_keep=list(generation_mix_dict.keys())
         cons_mix_df_dict = electricitylci.get_consumption_mix_df(regions_to_keep=regions_to_keep)
-        print("write consumption mix to dict")
+        logger.info("write consumption mix to dict")
         cons_mix_dicts={}
         for subreg in cons_mix_df_dict.keys():
             # NEED TO FIND A WAY TO SPECIFY REGION HERE
             cons_mix_dicts[subreg] = electricitylci.write_consumption_mix_to_dict(
                 cons_mix_df_dict[subreg], generation_mix_dict,subregion=subreg
             )
-        print("write consumption mix to jsonld")
+        logger.info("write consumption mix to jsonld")
         for subreg in cons_mix_dicts.keys():
             cons_mix_dicts[subreg] = electricitylci.write_process_dicts_to_jsonld(
                 cons_mix_dicts[subreg])
-        print("get distribution mix")
+        logger.info("get distribution mix")
         dist_mix_df_dict={}
         for subreg in cons_mix_dicts.keys():
             dist_mix_df_dict[subreg] = electricitylci.get_distribution_mix_df(
                 generation_process_df,subregion=subreg)
-        print("write dist mix to dict")
+        logger.info("write dist mix to dict")
         dist_mix_dicts={}
         for subreg in dist_mix_df_dict.keys():
             dist_mix_dicts[subreg] = electricitylci.write_distribution_mix_to_dict(
                 dist_mix_df_dict[subreg], cons_mix_dicts[subreg],subregion=subreg
             )
-        print("write dist mix to jsonld")
+        logger.info("write dist mix to jsonld")
         for subreg in dist_mix_dicts.keys():
             dist_mix_dicts[subreg] = electricitylci.write_process_dicts_to_jsonld(
                 dist_mix_dicts[subreg])
     else:
-        print("us average mix to dict")
+        logger.info("us average mix to dict")
         usavegfuel_mix_dict = electricitylci.write_fuel_mix_database_to_dict(
         generation_mix_df, generation_process_dict)
-        print("write us average mix to jsonld")
+        logger.info("write us average mix to jsonld")
         usavegfuel_mix_dict = electricitylci.write_process_dicts_to_jsonld(
             usavegfuel_mix_dict
         )    
-        print("international average mix to dict")
+        logger.info("international average mix to dict")
         international_mix_dict = electricitylci.write_international_mix_database_to_dict(
         generation_mix_df, usavegfuel_mix_dict)
         international_mix_dict = electricitylci.write_process_dicts_to_jsonld(
@@ -121,9 +121,9 @@ def main():
         generation_mix_dict = electricitylci.write_process_dicts_to_jsonld(
             generation_mix_dict
         )
-        print('write surplus pool consumption mix to jsonld')
+        logger.info('write surplus pool consumption mix to jsonld')
         sur_con_mix_dict = electricitylci.write_process_dicts_to_jsonld(sur_con_mix_dict)
-        print('Filling up UUID of surplus pool consumption mix')
+        logger.info('Filling up UUID of surplus pool consumption mix')
         sur_con_mix_dict = fill_default_provider_uuids(
             sur_con_mix_dict, sur_con_mix_dict, generation_mix_dict, international_mix_dict
         )

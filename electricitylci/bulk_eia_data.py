@@ -9,17 +9,19 @@ import requests
 import logging
 from electricitylci.globals import data_dir
 
+logger = logging.getLogger("bulk_eia_data")
+
 
 def download_EBA():
     """Add docstring."""
     url = 'http://api.eia.gov/bulk/EBA.zip'
-    print(f"Downloading eia bulk data from {url}...", end="")
+    logging.info(f"Downloading eia bulk data from {url}...", end="")
     r = requests.get(url)
     os.makedirs(join(data_dir, 'bulk_data'), exist_ok=True)
     output = open(join(data_dir, 'bulk_data', 'EBA.zip'), 'wb')
     output.write(r.content)
     output.close()
-    print(f"complete.")
+    logger.info(f"complete.")
 
 
 path = join(data_dir, 'bulk_data', 'EBA.zip')

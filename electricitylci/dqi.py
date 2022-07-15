@@ -1,3 +1,7 @@
+import logging
+
+logger = logging.getLogger("dqi")
+
 # Scoring based on USEPA 2016: Guidance on Data Quality Assessment for Life Cycle Inventory Data
 
 flow_data_quality_fields = ['Reliability_Score', 'TemporalCorrelation', 'GeographicalCorrelation',
@@ -22,7 +26,7 @@ def lookup_score_with_bound_key(raw_score, bound_to_dqi):
     elif (raw_score > breakpoints[2]) & (raw_score <= breakpoints[3]):
         score = bound_to_dqi[breakpoints[3]]
     elif (raw_score<0):
-        print('Error: ')
+        logging.debug('Error: invalid dqi score')
     else:
         score = bound_to_dqi[None]
     return score

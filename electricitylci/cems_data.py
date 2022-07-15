@@ -23,6 +23,8 @@ import pandas as pd
 from electricitylci.globals import data_dir, output_dir
 import logging
 
+logger = logging.getLogger("cems_data")
+
 data_years = {
     'epacems': tuple(range(1995, 2021)),
 }
@@ -496,7 +498,7 @@ def download(source, year, states, datadir=data_dir, verbose=True):
             data (like EPA CEMS) that have multiple datasets per year, this
             function will download all the files for the specified year.
         datadir (str): path to the top level directory of the datastore.
-        verbose (bool): If True, print messages about what's happening.
+        verbose (bool): If True, logger.info messages about what's happening.
     Returns:
         outfile (str): path to the local downloaded file.
     """
@@ -522,10 +524,10 @@ def download(source, year, states, datadir=data_dir, verbose=True):
             tmp_dir, os.path.basename(path(source, year)))]
     if(verbose):
         if source != 'epacems':
-            print(
+            logger.info(
                 f"Downloading {source} data for {year}...\n    {src_urls[0]}")
         else:
-            print(f"Downloading {source} data for {year}...")
+            logger.info(f"Downloading {source} data for {year}...")
     url_schemes = {urllib.parse.urlparse(url).scheme for url in src_urls}
     # Pass all the URLs at once, rather than looping here, because that way
     # we can use the same FTP connection for all of the src_urls
@@ -657,7 +659,7 @@ def organize(source, year, states, unzip=True,
         unzip (bool): If true, unzip the file once downloaded, and place the
             resulting data files where they ought to be in the datastore.
         datadir (str): path to the top level directory of the datastore.
-        verbose (bool): If True, print messages about what's happening.
+        verbose (bool): If True, logger.info messages about what's happening.
         no_download (bool): If True, the files were not downloaded in this run
 
     Returns: nothing
@@ -703,7 +705,7 @@ def organize(source, year, states, unzip=True,
     if(unzip and source != 'epacems'):
         # Unzip the downloaded file in its new home:
         zip_ref = zipfile.ZipFile(destfile, 'r')
-        print(f"unzipping {destfile}")
+        logger.info(f"unzipping {destfile}")
         zip_ref.extractall(destdir)
         zip_ref.close()
         # Most of the data sources can just be unzipped in place and be done
@@ -770,7 +772,7 @@ def update(source, year, states, clobber=False, unzip=True, verbose=True,
         clobber (bool): If true, replace existing copy of the requested data
             if we have it, with freshly downloaded data.
         datadir (str): path to the top level directory of the datastore.
-        verbose (bool): If True, print messages about what's happening.
+        verbose (bool): If True, logger.info messages about what's happening.
         no_download (bool): If True, don't download the files, only unzip ones
             that are already present. If False, do download the files. Either
             way, still obey the unzip and clobber settings. (unzip=False and

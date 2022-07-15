@@ -153,7 +153,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         "NETL database/emissions": "NETL database/emissions",
         "NETL database/resources": "NETL database/resources",
     }
-    print(f"Concatenating and flow-mapping {len(arg)} upstream databases.")
+    module_logger.info(f"Concatenating and flow-mapping {len(arg)} upstream databases.")
     upstream_df_list = list()
     for df in arg:
         if isinstance(df, pd.DataFrame):
@@ -512,8 +512,8 @@ if __name__ == "__main__":
     )
     plant_df = gen.create_generation_process_df()
     plant_df["stage_code"] = "Power plant"
-    print(plant_df.columns)
-    print(upstream_df.columns)
+    module_logger.info(plant_df.columns)
+    module_logger.info(upstream_df.columns)
     combined_df = concat_clean_upstream_and_plant(plant_df, upstream_df)
     canadian_inventory = import_impacts.generate_canadian_mixes(combined_df)
     combined_df = pd.concat([combined_df, canadian_inventory])

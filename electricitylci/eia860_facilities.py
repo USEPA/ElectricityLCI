@@ -18,7 +18,8 @@ from electricitylci.utils import (
     find_file_in_folder,
     create_ba_region_map,
 )
-
+import logging
+logger = logging.getLogger("eia860_facilities")
 
 def _clean_columns(df):
     "Remove special characters and convert column names to snake case"
@@ -79,7 +80,7 @@ def eia860_balancing_authority(year, regional_aggregation=None):
     expected_860_folder = join(data_dir, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
-        print("Downloading EIA-860 files")
+        logger.info("Downloading EIA-860 files")
         eia860_download(year=year, save_path=expected_860_folder)
 
         eia860_path, eia860_name = find_file_in_folder(
@@ -118,13 +119,13 @@ def eia860_balancing_authority(year, regional_aggregation=None):
 
         # Read and return the existing csv file if it exists
         if csv_file:
-            print("Loading {} EIA-860 plant data from csv file".format(year))
+            logger.info("Loading {} EIA-860 plant data from csv file".format(year))
             fn = csv_file[0]
             csv_path = join(expected_860_folder, fn)
             eia = pd.read_csv(csv_path, dtype={"Plant Id": str},low_memory=False)
 
         else:
-            print("Loading data from previously downloaded excel file")
+            logger.info("Loading data from previously downloaded excel file")
             eia860_path, eia860_name = find_file_in_folder(
                 folder_path=expected_860_folder,
                 file_pattern_match=["2___Plant"],
@@ -170,7 +171,7 @@ def eia860_EnviroAssoc_so2(year):
     expected_860_folder = join(data_dir, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
-        print("Downloading EIA-860 files")
+        logger.info("Downloading EIA-860 files")
         eia860_download(year=year, save_path=expected_860_folder)
 
         eia860_path, eia860_name = find_file_in_folder(
@@ -210,13 +211,13 @@ def eia860_EnviroAssoc_so2(year):
 
         # Read and return the existing csv file if it exists
         if csv_file:
-            print("Loading {} EIA-860 plant data from csv file".format(year))
+            logger.info("Loading {} EIA-860 plant data from csv file".format(year))
             fn = csv_file[0]
             csv_path = join(expected_860_folder, fn)
             eia = pd.read_csv(csv_path, dtype={"Plant Id": str},low_memory=False)
 
         else:
-            print("Loading data from previously downloaded excel file")
+            logger.info("Loading data from previously downloaded excel file")
             eia860_path, eia860_name = find_file_in_folder(
                 folder_path=expected_860_folder,
                 file_pattern_match=["6_1_EnviroAssoc", "xlsx"],
@@ -241,7 +242,7 @@ def eia860_boiler_info_design(year):
     expected_860_folder = join(data_dir, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
-        print("Downloading EIA-860 files")
+        logger.info("Downloading EIA-860 files")
         eia860_download(year=year, save_path=expected_860_folder)
 
         eia860_path, eia860_name = find_file_in_folder(
@@ -273,13 +274,13 @@ def eia860_boiler_info_design(year):
 
         # Read and return the existing csv file if it exists
         if csv_file:
-            print("Loading {} EIA-860 plant data from csv file".format(year))
+            logger.info("Loading {} EIA-860 plant data from csv file".format(year))
             fn = csv_file[0]
             csv_path = join(expected_860_folder, fn)
             eia = pd.read_csv(csv_path, dtype={"Plant Id": str},low_memory=False)
 
         else:
-            print("Loading data from previously downloaded excel file")
+            logger.info("Loading data from previously downloaded excel file")
             eia860_path, eia860_name = find_file_in_folder(
                 folder_path=expected_860_folder,
                 file_pattern_match=["6_2_EnviroEquip", "xlsx"],
@@ -306,7 +307,7 @@ def eia860_EnviroAssoc_nox(year):
     expected_860_folder = join(data_dir, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
-        print("Downloading EIA-860 files")
+        logger.info("Downloading EIA-860 files")
         eia860_download(year=year, save_path=expected_860_folder)
 
         eia860_path, eia860_name = find_file_in_folder(
@@ -346,13 +347,13 @@ def eia860_EnviroAssoc_nox(year):
 
         # Read and return the existing csv file if it exists
         if csv_file:
-            print("Loading {} EIA-860 plant data from csv file".format(year))
+            logger.info("Loading {} EIA-860 plant data from csv file".format(year))
             fn = csv_file[0]
             csv_path = join(expected_860_folder, fn)
             eia = pd.read_csv(csv_path, dtype={"Plant Id": str},low_memory=False)
 
         else:
-            print("Loading data from previously downloaded excel file")
+            logger.info("Loading data from previously downloaded excel file")
             eia860_path, eia860_name = find_file_in_folder(
                 folder_path=expected_860_folder,
                 file_pattern_match=["6_1_EnviroAssoc", "xlsx"],
@@ -376,7 +377,7 @@ def eia860_generator_info(year):
     expected_860_folder = join(data_dir, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
-        print("Downloading EIA-860 files")
+        logger.info("Downloading EIA-860 files")
         eia860_download(year=year, save_path=expected_860_folder)
 
         eia860_path, eia860_name = find_file_in_folder(
@@ -416,13 +417,13 @@ def eia860_generator_info(year):
 
         # Read and return the existing csv file if it exists
         if csv_file:
-            print("Loading {} EIA-860 plant data from csv file".format(year))
+            logger.info("Loading {} EIA-860 plant data from csv file".format(year))
             fn = csv_file[0]
             csv_path = join(expected_860_folder, fn)
             eia = pd.read_csv(csv_path, dtype={"Plant Id": str},low_memory=False)
 
         else:
-            print("Loading data from previously downloaded excel file")
+            logger.info("Loading data from previously downloaded excel file")
             eia860_path, eia860_name = find_file_in_folder(
                 folder_path=expected_860_folder,
                 file_pattern_match=["3_1_Generator", "xlsx"],

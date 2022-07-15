@@ -9,7 +9,7 @@ import fedelemflowlist
 from electricitylci.model_config import model_specs
 
 import logging
-
+logger = logging.getLogger("ampd_plant_emissions")
 
 def generate_plant_emissions(year):
     """
@@ -841,10 +841,10 @@ def generate_plant_emissions(year):
             row["Source"] = "ap42"
             return row["NOx (lbs)"], row["Source"]
 
-    print(
+    logger.info (
         "Generating power plant emissions from CEMS data or emission factors..."
     )
-    logging.info("Loading data")
+    logger.info("Loading data")
     ampd = cems.build_cems_df(year)
     eia923_gen_fuel = eia923.eia923_generation_and_fuel(year)
     #    eia923_gen_fuel = pd.read_pickle(
@@ -995,7 +995,7 @@ def generate_plant_emissions(year):
     ]
 
     del index1, index2
-    logging.info("Summing eia923 fuel generation")
+    logger.info("Summing eia923 fuel generation")
     eia923_gen_fuel_sub_agg = eia923_gen_fuel_sub.groupby(
         ["plant_id"], as_index=False
     )["total_fuel_consumption_mmbtu", "total_fuel_consumption_quantity"].sum()
@@ -1037,7 +1037,7 @@ def generate_plant_emissions(year):
         "quantity_of_fuel_consumed_november",
         "quantity_of_fuel_consumed_december",
     ]
-    logging.info("Summing eia923 boiler data")
+    logger.info("Summing eia923 boiler data")
     eia923_boiler_sub_agg["total_fuel_consumption_mmbtu"] = (
         np.multiply(
             eia923_boiler_sub_agg[fuel_heating_value_monthly],
@@ -1210,22 +1210,22 @@ def generate_plant_emissions(year):
         ["plant_id", "Primary_Fuel", "Primary Fuel %"]
     ].copy()
     plant_fuel_class["plant_id"] = plant_fuel_class["plant_id"].astype(str)
-    logging.info("Generating co2, ch4, n2o from gen fuel")
+    logger.info("Generating co2, ch4, n2o from gen fuel")
     eia_gen_fuel_co2_ch4_n2o_output = eia_gen_fuel_co2_ch4_n2o_emissions(
         eia923_gen_fuel
     )
-    logging.info("Generating so2 emissions from gen fuel")
+    logger.info("Generating so2 emissions from gen fuel")
     eia_gen_fuel_so2_output = eia_gen_fuel_so2_emissions(eia923_gen_fuel_sub)
-    logging.info("Generating nox emissions from gen fuel")
+    logger.info("Generating nox emissions from gen fuel")
     eia_gen_fuel_nox_output = eia_gen_fuel_nox_emissions(eia923_gen_fuel_sub)
-    logging.info("Generating co2, ch4, n2o emissions from boiler")
+    logger.info("Generating co2, ch4, n2o emissions from boiler")
     eia_boiler_co2_ch4_n2o_output = eia_boiler_co2_ch4_n2o_emissions(
         eia923_boiler
     )
     # This seems to be the long one.
-    logging.info("Generating so2 emissions from boiler fuel")
+    logger.info("Generating so2 emissions from boiler fuel")
     eia_boiler_so2_output = eia_boiler_so2_emissions(eia923_boiler_firing_type)
-    logging.info("Generating nox emissions from boiler fuel")
+    logger.info("Generating nox emissions from boiler fuel")
     eia_boiler_nox_output = eia_boiler_nox_emissions(eia923_boiler_firing_type)
 
     ampd_rev = ampd[
@@ -1276,7 +1276,7 @@ def generate_plant_emissions(year):
         eia_boiler_so2_output,
         eia_boiler_nox_output,
     ]
-    logging.info("Choosing emission sources")
+    logger.info("Choosing emission sources")
     emissions_comparer = pd.concat(df_list, sort=True)
     eia_plant = emissions_comparer.groupby(
         ["plant_id", "plant_name", "operator_name"], as_index=False
@@ -1374,7 +1374,7 @@ def generate_plant_emissions(year):
             "total_fuel_consumption_mmbtu": "Total Fuel Consumption (MMBtu)",
         }
     )
-    logging.info("Melting and mapping")
+    logger.info("Melting and mapping")
     netl_harmonized_melt = netl_harmonized.melt(
         id_vars=[
             "plant_id",

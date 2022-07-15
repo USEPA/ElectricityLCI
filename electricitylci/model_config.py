@@ -2,10 +2,18 @@ import pandas as pd
 from os.path import join
 import datetime
 import yaml
-
+import logging
 from electricitylci.globals import modulepath,list_model_names_in_config,\
                                     data_dir, output_dir
 #################
+formatter = logging.Formatter(
+    "%(levelname)s:%(filename)s:%(funcName)s:%(message)s"
+)
+logging.basicConfig(
+    format="%(levelname)s:%(filename)s:%(funcName)s:%(message)s",
+    level=logging.INFO,
+)
+logger = logging.getLogger("model_config")
 
 def assign_model_name():
     model_menu = list_model_names_in_config()
@@ -29,7 +37,7 @@ def build_model_class(model_name=None):
     
     # pull in model config vars
     def _load_model_specs(model_name):
-        print('Loading model specs')
+        logger.info('Loading model specs')
         try:
             path = join(modulepath, 'modelconfig', '{}_config.yml'.format(model_name))
             with open(path, 'r') as f:
@@ -43,14 +51,14 @@ def build_model_class(model_name=None):
     specs = _load_model_specs(model_name)
     check_model_specs(specs)
     model_class = ModelSpecs(specs, model_name)
-    print(f'Model Specs for {model_class.model_name}')
+    logger.info(f'Model Specs for {model_class.model_name}')
         
     return model_class
 
 
 def check_model_specs(model_specs):
     # Check for consumption matching region selection
-    print('Checking model specs')
+    logger.info('Checking model specs')
     if model_specs["regional_aggregation"] in ["FERC, BA, US"] and model_specs["EPA_eGRID_trading"]:
         raise ConfigurationError(
             "EPA trading method is not compatible with selected regional "

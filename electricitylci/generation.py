@@ -877,7 +877,7 @@ def aggregate_data(total_db, subregion="BA"):
     wm = lambda x: wtd_mean(x, total_db, groupby_cols)
     geo_mean = lambda x: geometric_mean(x, total_db, groupby_cols)
     geo_mean.__name__ = "geo_mean"
-    print(
+    module_logger.info(
         "Aggregating flow amounts, dqi information, and calculating uncertainty"
     )
 

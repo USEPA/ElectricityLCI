@@ -55,7 +55,7 @@ def get_generation_process_df(regions=None, **kwargs):
             upstream_df = kwargs['upstream_df']
             upstream_dict = kwargs['upstream_dict']
         except KeyError:
-            print(
+            logger.info(
                 "A kwarg named 'upstream_dict' must be included if include_upstream_processes"
                 "is True"
             )
@@ -144,7 +144,7 @@ def get_generation_mix_process_df(regions=None):
                 f"the US region, the function for generating US mixes does not "
                 f"support aggregating to the US."
                 )
-        print("EIA923 generation data is used when replacing eGRID")
+        logger.info("EIA923 generation data is used when replacing eGRID")
         generation_data = build_generation_data(
             generation_years=[config.model_specs.eia_gen_year]
         )
@@ -299,7 +299,7 @@ def get_upstream_process_df(eia_gen_year):
     import electricitylci.power_plant_construction as const
     from electricitylci.combinator import concat_map_upstream_databases
     
-    print("Generating upstream inventories...")
+    logger.info("Generating upstream inventories...")
     coal_df = coal.generate_upstream_coal(eia_gen_year)
     ng_df = ng.generate_upstream_ng(eia_gen_year)
     petro_df = petro.generate_petroleum_upstream(eia_gen_year)
@@ -329,7 +329,7 @@ def write_upstream_process_database_to_dict(upstream_df):
     """
     import electricitylci.upstream_dict as upd
 
-    print("Writing upstream processes to dictionaries")
+    logger.info("Writing upstream processes to dictionaries")
     upstream_dicts = upd.olcaschema_genupstream_processes(upstream_df)
     return upstream_dicts
 
@@ -368,7 +368,7 @@ def combine_upstream_and_gen_df(gen_df, upstream_df):
     import electricitylci.combinator as combine
     import electricitylci.import_impacts as import_impacts
 
-    print("Combining upstream and generation inventories")
+    logger.info("Combining upstream and generation inventories")
     combined_df = combine.concat_clean_upstream_and_plant(gen_df, upstream_df)
     canadian_gen = import_impacts.generate_canadian_mixes(combined_df)
     combined_df = pd.concat([combined_df, canadian_gen], ignore_index=True)
@@ -401,7 +401,7 @@ def get_gen_plus_netl():
     import electricitylci.solar_thermal_upstream as solartherm
     
     eia_gen_year = config.model_specs.eia_gen_year
-    print(
+    logger.info(
         "Generating inventories for geothermal, solar, wind, hydro, and solar thermal..."
     )
     geo_df = geo.generate_upstream_geo(eia_gen_year)
@@ -417,7 +417,7 @@ def get_gen_plus_netl():
     netl_gen["TechnologicalCorrelation"] = 1
     netl_gen["DataReliability"] = 1
     netl_gen=pd.concat([netl_gen,hydro_df[netl_gen.columns]],ignore_index=True,sort=False)
-    print("Getting reported emissions for generators...")
+    logger.info("Getting reported emissions for generators...")
     gen_df = gen.create_generation_process_df()
     combined_gen = concat_clean_upstream_and_plant(gen_df, netl_gen)
     return combined_gen
@@ -448,7 +448,7 @@ def aggregate_gen(gen_df, subregion="BA"):
         #to make a FERC region generation mix and also provide the consumption mix.
         #Or it could be possible but would requir running through aggregate twice.
         subregion="BA"
-    print(f"Aggregating to subregion - {subregion}")
+    logger.info(f"Aggregating to subregion - {subregion}")
     aggregate_df = gen.aggregate_data(gen_df, subregion=subregion)
     return aggregate_df
 
@@ -472,7 +472,7 @@ def add_fuels_to_gen(gen_df, fuel_df, canadian_gen, upstream_dict):
     """
     from electricitylci.combinator import add_fuel_inputs
 
-    print("Adding fuel inputs to generator emissions...")
+    logger.info("Adding fuel inputs to generator emissions...")
     gen_plus_fuel = add_fuel_inputs(gen_df, fuel_df, upstream_dict)
     gen_plus_fuel = pd.concat([gen_plus_fuel, canadian_gen], ignore_index=True)
     return gen_plus_fuel
@@ -514,7 +514,7 @@ def write_gen_fuel_database_to_dict(
     #using the required BA aggregation.
     # if subregion in ["BA","FERC","US"]:    
     #     subregion="BA"
-    print("Converting generator dataframe to dictionaries...")
+    logger.info("Converting generator dataframe to dictionaries...")
     gen_plus_fuel_dict = olcaschema_genprocess(
         gen_plus_fuel_df, upstream_dict, subregion=subregion
     )

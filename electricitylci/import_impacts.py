@@ -2,7 +2,9 @@
 import pandas as pd
 from electricitylci.globals import data_dir, output_dir
 from electricitylci.model_config import model_specs
+import logging
 
+logger = logging.getLogger("import_impacts")
 
 def generate_canadian_mixes(us_inventory):
     from electricitylci.combinator import ba_codes
@@ -52,7 +54,7 @@ def generate_canadian_mixes(us_inventory):
         "New Brunswick": "NBSO",
         "Newfoundland and Labrador": "NEWL",
     }
-    print("Generating inventory for Canadian balancing authority areas")
+    logger.info("Generating inventory for Canadian balancing authority areas")
     import_mix = pd.read_csv(f"{data_dir}/International_Electricity_Mix.csv")
     import_mix = import_mix.loc[
         import_mix["Year"] == model_specs.eia_gen_year, :
