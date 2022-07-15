@@ -401,7 +401,7 @@ def olcaschema_genupstream_processes(merged):
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
         elif fuel_type == "NUCLEAR":
             combined_name = (
-                "nuclear fuel extraction, prococessing, and transport"
+                "nuclear fuel extraction, processing, and transport"
             )
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
         elif fuel_type == "GEOTHERMAL":
