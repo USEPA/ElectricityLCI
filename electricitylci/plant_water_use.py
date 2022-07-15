@@ -106,9 +106,9 @@ def generate_plant_water_use(year):
             "Water Discharge Name",
         ],
         as_index=False,
-    )[
+    )[[
         "annual_withdrawal", "annual_discharge", "Total net generation (MWh)"
-    ].sum()
+    ]].sum()
     water_df_group.rename(
         columns={
             "Total net generation (MWh)": "net_generation_water",
