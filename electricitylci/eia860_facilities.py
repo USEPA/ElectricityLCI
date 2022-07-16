@@ -12,7 +12,7 @@ import io
 import os
 from os.path import join
 import requests
-from electricitylci.globals import data_dir, EIA860_BASE_URL
+from electricitylci.globals import EIA860_BASE_URL, paths
 from electricitylci.utils import (
     download_unzip,
     find_file_in_folder,
@@ -77,7 +77,7 @@ def load_eia860_excel(eia860_path, sheet="Plant", header=1):
 
 def eia860_balancing_authority(year, regional_aggregation=None):
 
-    expected_860_folder = join(data_dir, "eia860_{}".format(year))
+    expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
         logger.info("Downloading EIA-860 files")
@@ -168,7 +168,7 @@ def eia860_primary_capacity(year):
 
 
 def eia860_EnviroAssoc_so2(year):
-    expected_860_folder = join(data_dir, "eia860_{}".format(year))
+    expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
         logger.info("Downloading EIA-860 files")
@@ -239,7 +239,7 @@ def eia860_EnviroAssoc_so2(year):
 
 
 def eia860_boiler_info_design(year):
-    expected_860_folder = join(data_dir, "eia860_{}".format(year))
+    expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
         logger.info("Downloading EIA-860 files")
@@ -304,7 +304,7 @@ def eia860_boiler_info_design(year):
 
 
 def eia860_EnviroAssoc_nox(year):
-    expected_860_folder = join(data_dir, "eia860_{}".format(year))
+    expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
         logger.info("Downloading EIA-860 files")
@@ -374,7 +374,7 @@ def eia860_EnviroAssoc_nox(year):
     return eia
 
 def eia860_generator_info(year):
-    expected_860_folder = join(data_dir, "eia860_{}".format(year))
+    expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
         logger.info("Downloading EIA-860 files")

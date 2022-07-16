@@ -281,7 +281,6 @@ def write_process_dicts_to_jsonld(*process_dicts):
     all_process_dicts = dict()
     for d in process_dicts:
         all_process_dicts = {**all_process_dicts, **d}
-
     olca_dicts = write(all_process_dicts, config.model_specs.namestr)
     return olca_dicts
 

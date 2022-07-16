@@ -7,7 +7,7 @@ if __name__=='__main__':
 import pandas as pd
 import regex
 from sqlalchemy import false
-from electricitylci.globals import data_dir, output_dir
+from electricitylci.globals import paths, data_dir, output_dir
 from electricitylci.eia923_generation import eia923_download
 import os
 from os.path import join
@@ -72,7 +72,7 @@ def _clean_columns(df):
 
 
 def read_eia923_fuel_receipts(year):
-    expected_923_folder = join(data_dir, 'f923_{}'.format(year))
+    expected_923_folder = join(paths.local_path, 'f923_{}'.format(year))
     if not os.path.exists(expected_923_folder):
         logger.info('Downloading EIA-923 files')
         eia923_download(year=year, save_path=expected_923_folder)
@@ -135,7 +135,7 @@ def generate_upstream_coal_map(year):
     from electricitylci.globals import STATE_ABBREV
     from electricitylci.eia923_generation import eia923_generation_and_fuel
     eia_fuel_receipts_df=read_eia923_fuel_receipts(year)
-    expected_7a_folder=join(data_dir, 'f7a_{}'.format(year))
+    expected_7a_folder=join(paths.local_path, 'f7a_{}'.format(year))
     if not os.path.exists(expected_7a_folder):
         eia_7a_download(year, expected_7a_folder)
         eia7a_path, eia7a_name = find_file_in_folder(

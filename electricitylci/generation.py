@@ -9,7 +9,7 @@ from scipy.stats.stats import mode
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows
 import pandas as pd
 import numpy as np
-from electricitylci.globals import output_dir, elci_version, data_dir
+from electricitylci.globals import output_dir, elci_version, paths
 from electricitylci.utils import make_valid_version_num
 from datetime import datetime
 from electricitylci.dqi import lookup_score_with_bound_key
@@ -489,7 +489,7 @@ def create_generation_process_df():
         inventories_of_interest_list=sorted([f"{x}_{model_specs.inventories_of_interest[x]}" for x in model_specs.inventories_of_interest.keys()])
         inventories_of_interet_string="_".join(inventories_of_interest_list)
         try:
-            eia860_FRS=pd.read_csv(f"{data_dir}/FRS_bridges/{inventories_of_interet_string}.csv")
+            eia860_FRS=pd.read_csv(f"{paths.local_path}/FRS_bridges/{inventories_of_interet_string}.csv")
             module_logger.info("Got EIA860 to FRS ID matches from existing file")
             eia860_FRS["REGISTRY_ID"]=eia860_FRS["REGISTRY_ID"].astype(str)
         except FileNotFoundError:
@@ -503,8 +503,8 @@ def create_generation_process_df():
                 'PGM_SYS_ID': "str"}
             FRS_bridge = fmglob.read_FRS_file(file, col_dict)
             eia860_FRS = fmglob.filter_by_program_list(df=FRS_bridge,program_list=["EIA-860"])
-            set_dir(f"{data_dir}/FRS_bridges")
-            eia860_FRS.to_csv(f"{data_dir}/FRS_bridges/{inventories_of_interet_string}.csv",encoding="utf-8-sig",index=False)
+            set_dir(f"{paths.local_path}/FRS_bridges")
+            eia860_FRS.to_csv(f"{paths.local_path}/FRS_bridges/{inventories_of_interet_string}.csv",encoding="utf-8-sig",index=False)
         emissions_and_wastes_by_facility=pd.merge(
             left=emissions_and_wastes_by_facility,
             right=eia860_FRS,

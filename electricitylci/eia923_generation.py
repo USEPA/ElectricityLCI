@@ -4,7 +4,7 @@ import io
 import os
 from os.path import join
 import requests
-from electricitylci.globals import data_dir, EIA923_BASE_URL, FUEL_CAT_CODES
+from electricitylci.globals import EIA923_BASE_URL, FUEL_CAT_CODES, paths
 from electricitylci.utils import download_unzip, find_file_in_folder
 #from electricitylci.model_config import model_specs
 if __name__=='__main__':
@@ -141,7 +141,7 @@ def eia923_download_extract(
         generation and fuel consumption data.
 
     """
-    expected_923_folder = join(data_dir, "f923_{}".format(year))
+    expected_923_folder = join(paths.local_path, "f923_{}".format(year))
 
     if not os.path.exists(expected_923_folder):
         logger.info("Downloading EIA-923 files")
@@ -446,7 +446,7 @@ def build_generation_data(
 
 
 def eia923_generation_and_fuel(year):
-    expected_923_folder = join(data_dir, "f923_{}".format(year))
+    expected_923_folder = join(paths.local_path, "f923_{}".format(year))
 
     if not os.path.exists(expected_923_folder):
         logger.info("Downloading EIA-923 files")
@@ -505,7 +505,7 @@ def eia923_generation_and_fuel(year):
 
 
 def eia923_boiler_fuel(year):
-    expected_923_folder = join(data_dir, "f923_{}".format(year))
+    expected_923_folder = join(paths.local_path, "f923_{}".format(year))
 
     if not os.path.exists(expected_923_folder):
         logger.info("Downloading EIA-923 files")
@@ -564,7 +564,7 @@ def eia923_boiler_fuel(year):
 
 
 def eia923_sched8_aec(year):
-    expected_923_folder = join(data_dir, "f923_{}".format(year))
+    expected_923_folder = join(paths.local_path, "f923_{}".format(year))
 
     if not os.path.exists(expected_923_folder):
         logger.info("Downloading EIA-923 files")

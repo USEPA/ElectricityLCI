@@ -5,7 +5,7 @@ import pytz
 import logging as log
 import math
 import uuid
-
+from os import path, makedirs
 from typing import Optional
 
 import olca
@@ -14,6 +14,8 @@ import olca.pack as pack
 
 def write(processes: dict, file_path: str):
     """Write the given process dictionary to a olca-schema zip file with the given path."""
+    if not path.exists(path.split(file_path)[0]):
+        makedirs(path.split(file_path)[0])
     with pack.Writer(file_path) as writer:
         list_of_dicts=list()
         created_ids = set()

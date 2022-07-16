@@ -20,7 +20,7 @@ import os
 import pandas as pd
 # from pudl.settings import SETTINGS
 # import pudl.constants as pc
-from electricitylci.globals import data_dir, output_dir
+from electricitylci.globals import paths, output_dir
 import logging
 
 logger = logging.getLogger("cems_data")
@@ -212,7 +212,7 @@ def get_epacems_dir(year):
     assert year in range(min(data_years['epacems']),
                          max(data_years['epacems']) + 1)
 
-    return os.path.join(data_dir, 'epacems{}'.format(year))
+    return os.path.join(paths.local_path, 'epacems{}'.format(year))
 
 
 def get_epacems_file(year, qtr, state):
@@ -353,7 +353,7 @@ def source_url(source, year, qtr=None, state=None):
     return download_url
 
 
-def path(source, year=0, qtr=None, state=None, file=True, datadir=data_dir):
+def path(source, year=0, qtr=None, state=None, file=True, datadir=paths.local_path):
     """
     Construct a variety of local datastore paths for a given data source.
 
@@ -431,7 +431,7 @@ def path(source, year=0, qtr=None, state=None, file=True, datadir=data_dir):
         if year != 0:
             dstore_path = os.path.join(dstore_path, 'MinesProdQuarterly.zip')
     elif (source == 'epacems'):
-        dstore_path = data_dir
+        dstore_path = paths.local_path
         if(year != 0):
             dstore_path = os.path.join(dstore_path, 'epacems{}'.format(year))
     else:
@@ -462,7 +462,7 @@ def path(source, year=0, qtr=None, state=None, file=True, datadir=data_dir):
 
 
 def paths_for_year(source, year=0, states=cems_states.keys(),
-                   file=True, datadir=data_dir):
+                   file=True, datadir=paths.local_path):
     """Get all the paths for a given source and year. See path() for details."""
     # TODO: I'm not sure this is the best construction, since it relies on
     # the order being the same here as in the url list comprehension
@@ -478,7 +478,7 @@ def paths_for_year(source, year=0, states=cems_states.keys(),
     return paths
 
 
-def download(source, year, states, datadir=data_dir, verbose=True):
+def download(source, year, states, datadir=paths.local_path, verbose=True):
     """
     Download the original data for the specified data source and year.
 
@@ -641,7 +641,7 @@ def _download_default(src_urls, tmp_files, allow_retry=True):
 
 
 def organize(source, year, states, unzip=True,
-             datadir=data_dir,
+             datadir=paths.local_path,
              verbose=False, no_download=False):
     """
     Put a downloaded original data file where it belongs in the datastore.
@@ -749,7 +749,7 @@ def check_if_need_update(source, year, states, datadir, clobber, verbose):
 
 
 def update(source, year, states, clobber=False, unzip=True, verbose=True,
-           datadir=data_dir, no_download=False):
+           datadir=paths.local_path, no_download=False):
     """
     Update the local datastore for the given source and year.
 

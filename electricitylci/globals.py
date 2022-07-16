@@ -1,10 +1,14 @@
 import os
 import glob
 import pkg_resources  # part of setuptools
+from esupy.processed_data_mgmt import Paths
 
 try: modulepath = os.path.dirname(os.path.realpath(__file__)).replace('\\', '/') + '/'
 except NameError: modulepath = 'electricitylci/'
-output_dir = os.path.join(modulepath, 'output')
+
+paths=Paths()
+paths.local_path = os.path.realpath(paths.local_path + "/electricitylci")
+output_dir = os.path.join(paths.local_path, 'output')
 data_dir = os.path.join(modulepath,  'data')
 
 try:
