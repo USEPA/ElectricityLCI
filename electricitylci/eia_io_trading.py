@@ -11,7 +11,7 @@ import requests
 import logging
 
 
-from electricitylci.globals import data_dir, output_dir
+from electricitylci.globals import data_dir, output_dir, paths
 from electricitylci.bulk_eia_data import download_EBA, row_to_df, ba_exchange_to_df
 from electricitylci.model_config import model_specs
 import electricitylci.eia923_generation as eia923
@@ -92,7 +92,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     # Read in the bulk data
 
 #    download_EBA()
-    path = join(data_dir, 'bulk_data', 'EBA.zip')
+    path = join(paths.local_path, 'bulk_data', 'EBA.zip')
     NET_GEN_ROWS = []
     BA_TO_BA_ROWS = []
     DEMAND_ROWS=[]

@@ -5,7 +5,7 @@ import pandas as pd
 import numpy as np
 import os
 import requests
-from electricitylci.globals import output_dir, data_dir
+from electricitylci.globals import output_dir, paths
 import logging
 from xlrd import XLRDError
 from functools import lru_cache
@@ -93,11 +93,11 @@ def eia_trans_dist_download_extract(year):
         "wyoming": "wy",
     }
     old_path = os.getcwd()
-    if os.path.exists(f"{data_dir}/t_and_d_{year}"):
-        os.chdir(f"{data_dir}/t_and_d_{year}")
+    if os.path.exists(f"{paths.local_path}/t_and_d_{year}"):
+        os.chdir(f"{paths.local_path}/t_and_d_{year}")
     else:
-        os.mkdir(f"{data_dir}/t_and_d_{year}")
-        os.chdir(f"{data_dir}/t_and_d_{year}")
+        os.mkdir(f"{paths.local_path}/t_and_d_{year}")
+        os.chdir(f"{paths.local_path}/t_and_d_{year}")
     state_df_list = list()
     for key in state_abbrev:
         filename = f"{state_abbrev[key]}.xlsx"
