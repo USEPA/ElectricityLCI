@@ -316,7 +316,7 @@ def olcaschema_genupstream_processes(merged):
     merged_summary = merged_summary.groupby(
         ["FuelCategory", "stage_code", "FlowName", "FlowUUID", "Compartment","Unit","input"],
         as_index=False,
-    )["quantity", "FlowAmount"].sum()
+    )[["quantity", "FlowAmount"]].sum()
     # ng_rows = merged_summary['fuel_type']=='Natural gas'
 
     # For natural gas extraction there are extraction and transportation stages

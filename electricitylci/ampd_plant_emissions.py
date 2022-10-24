@@ -316,7 +316,7 @@ def generate_plant_emissions(year):
         ].sum(axis=1, skipna=True)
         eia_923_gen_fuel_agg = eia923_gen_fuel.groupby(
             ["plant_id", "plant_name", "operator_name"]
-        )["Annual Net Generation (MWh)"].sum()
+        )[["Annual Net Generation (MWh)"]].sum()
         eia_923_gen_fuel_agg = eia_923_gen_fuel_agg.reset_index()
         eia_923_gen_fuel_agg_fuel_type = eia923_gen_fuel.groupby(
             [
@@ -325,7 +325,7 @@ def generate_plant_emissions(year):
                 "operator_name",
                 "reported_fuel_type_code",
             ]
-        )["Annual Net Generation (MWh)"].sum()
+        )[["Annual Net Generation (MWh)"]].sum()
         eia_923_gen_fuel_agg_fuel_type = (
             eia_923_gen_fuel_agg_fuel_type.reset_index()
         )
