@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """Add docstring in public module."""
-
+if __name__=='__main__':
+    import electricitylci.model_config as config
+    config.model_specs = config.build_model_class()
 import pandas as pd
 from electricitylci.globals import output_dir, data_dir
 import numpy as np
@@ -34,7 +36,7 @@ def generate_upstream_wind(year):
     )
     column_filt = eia_generation_data["Reported Fuel Type Code"] == "WND"
     wind_generation_data = eia_generation_data.loc[column_filt, :]
-    wind_df = pd.read_csv(f"{data_dir}/wind_inventory.csv", header=[0, 1])
+    wind_df = pd.read_csv(f"{data_dir}/wind_farm_2020_construction_LCI.csv", header=[0, 1])
     columns = pd.DataFrame(wind_df.columns.tolist())
     columns.loc[columns[0].str.startswith("Unnamed:"), 0] = np.nan
     columns[0] = columns[0].fillna(method="ffill")
@@ -78,7 +80,7 @@ def generate_upstream_wind(year):
     )
     # These emissions will later be aggregated with any inventory power plant
     # emissions because each facility has its own construction impacts.
-    wind_upstream["stage_code"] = "Power plant"
+    wind_upstream["stage_code"] = "wind_const"
     wind_upstream["fuel_type"] = "WIND"
     compartment_map = {"Air": "air", "Water": "water", "Energy": "input"}
     wind_upstream["Compartment"] = wind_upstream["Compartment"].map(
@@ -88,10 +90,66 @@ def generate_upstream_wind(year):
     wind_upstream.loc[wind_upstream["Compartment"]=="input","input"]=True
     wind_upstream["Unit"]="kg"
     # wind_upstream['Compartment']=wind_upstream['Compartment'].str.lower()
-    return wind_upstream
+
+    wind_ops_df = pd.read_csv(f"{data_dir}/wind_farm_2020_OM_LCI.csv", header=[0, 1], na_values=["#VALUE!", "#DIV/0!"])
+    columns = pd.DataFrame(wind_ops_df.columns.tolist())
+    columns.loc[columns[0].str.startswith("Unnamed:"), 0] = np.nan
+    columns[0] = columns[0].fillna(method="ffill")
+    wind_ops_df.columns = pd.MultiIndex.from_tuples(
+        columns.to_records(index=False).tolist()
+    )
+    wind_ops_df_t = wind_ops_df.transpose()
+    wind_ops_df_t = wind_ops_df_t.reset_index()
+    new_columns = wind_ops_df_t.loc[0, :].tolist()
+    new_columns[0] = "Compartment"
+    new_columns[1] = "FlowName"
+    wind_ops_df_t.columns = new_columns
+    wind_ops_df_t.drop(index=0, inplace=True)
+    wind_ops_df_t_melt = wind_ops_df_t.melt(
+        id_vars=["Compartment", "FlowName"],
+        var_name="plant_id",
+        value_name="FlowAmount",
+    )
+    wind_ops_df_t_melt = wind_ops_df_t_melt.astype({'plant_id' : int})
+    wind_ops = wind_ops_df_t_melt.merge(
+        right=wind_generation_data,
+        left_on="plant_id",
+        right_on="Plant Id",
+        how="left",
+    )
+    wind_ops.rename(
+        columns={"Net Generation (Megawatthours)": "quantity"}, inplace=True
+    )
+    wind_ops["Electricity"]=wind_ops["quantity"]
+    wind_ops["FlowAmount"]=wind_ops["FlowAmount"]*wind_ops["Electricity"]
+    wind_ops.drop(
+        columns=[
+            "Plant Id",
+            "NAICS Code",
+            "Reported Fuel Type Code",
+            "YEAR",
+            "Total Fuel Consumption MMBtu",
+            "State",
+            "Plant Name",
+        ],
+        inplace=True,
+    )
+    # These emissions will later be aggregated with any inventory power plant
+    # emissions because each facility has its own construction impacts.
+    wind_ops["stage_code"] = "Power plant"
+    wind_ops["fuel_type"] = "WIND"
+    compartment_map = {"Air": "air", "Water": "water", "Energy": "input"}
+    wind_ops["Compartment"] = wind_ops["Compartment"].map(
+        compartment_map
+    )
+    wind_ops["input"]=False
+    wind_ops.loc[wind_ops["Compartment"]=="input","input"]=True
+    wind_ops["Unit"]="kg"
+    wind_total=pd.concat([wind_upstream,wind_ops])
+    return wind_total
 
 
 if __name__ == "__main__":
-    year = 2016
+    year = 2020
     wind_upstream = generate_upstream_wind(year)
     wind_upstream.to_csv(f"{output_dir}/upstream_wind_{year}.csv")

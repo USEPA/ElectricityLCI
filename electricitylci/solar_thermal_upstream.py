@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 """Add docstring."""
-
+if __name__=='__main__':
+    import electricitylci.model_config as config
+    config.model_specs = config.build_model_class()
 import pandas as pd
 from electricitylci.globals import output_dir, data_dir
 import numpy as np
@@ -31,7 +33,7 @@ def generate_upstream_solarthermal(year):
     column_filt = (eia_generation_data['Reported Fuel Type Code'] == 'SUN')
     solar_generation_data=eia_generation_data.loc[column_filt,:]
     solar_df = pd.read_csv(
-        f'{data_dir}/solar_thermal_inventory.csv',
+        f'{data_dir}/solar_thermal_2020_construction_LCI.csv',
         header=[0,1]
     )
     columns = pd.DataFrame(solar_df.columns.tolist())
@@ -75,7 +77,7 @@ def generate_upstream_solarthermal(year):
             ],inplace=True)
     # These emissions will later be aggregated with any inventory power plant
     # emissions because each facility has its own construction impacts.
-    solarthermal_upstream['stage_code']="Power plant"
+    solarthermal_upstream['stage_code']="solar_thermal_const"
     solarthermal_upstream['fuel_type']='SOLARTHERMAL'
     compartment_map={
             'Air':'air',
@@ -86,10 +88,73 @@ def generate_upstream_solarthermal(year):
     # solarthermal_upstream['Compartment']=solarthermal_upstream['Compartment'].str.lower()
     solarthermal_upstream["Unit"]="kg"
     solarthermal_upstream["input"]=False
-    return solarthermal_upstream
+    solarthermal_upstream.loc[solarthermal_upstream["FlowName"]=="Electricity","input"]=True
+
+    solar_ops_df = pd.read_csv(
+        f'{data_dir}/solar_thermal_2020_OM_LCI.csv',
+        header=[0,1],
+        na_values=["#VALUE!", "#DIV/0!"]
+    )
+    columns = pd.DataFrame(solar_ops_df.columns.tolist())
+    columns.loc[columns[0].str.startswith('Unnamed:'), 0] = np.nan
+    columns[0] = columns[0].fillna(method='ffill')
+    solar_ops_df.columns = pd.MultiIndex.from_tuples(columns.to_records(index=False).tolist())
+    solar_ops_df_t=solar_ops_df.transpose()
+    solar_ops_df_t=solar_ops_df_t.reset_index()
+    new_columns = solar_ops_df_t.loc[0,:].tolist()
+    new_columns[0]='Compartment'
+    new_columns[1]='FlowName'
+    solar_ops_df_t.columns=new_columns
+    solar_ops_df_t.drop(index=0, inplace=True)
+    solar_ops_df_t_melt=solar_ops_df_t.melt(
+            id_vars=['Compartment','FlowName'],
+            var_name='plant_id',
+            value_name='FlowAmount'
+    )
+    solar_ops_df_t_melt = solar_ops_df_t_melt.astype({'plant_id' : int})
+    solarthermal_ops=solar_ops_df_t_melt.merge(
+            right=solar_generation_data,
+            left_on='plant_id',
+            right_on='Plant Id',
+            how='left'
+    )
+    solarthermal_ops.rename(columns=
+            {
+                    'Net Generation (Megawatthours)':'Electricity',
+            },
+            inplace=True
+    )
+    solarthermal_ops["quantity"]=solarthermal_ops["Electricity"]
+    solarthermal_ops["FlowAmount"]=solarthermal_ops["FlowAmount"]*solarthermal_ops["Electricity"]
+    solarthermal_ops.drop(columns=[
+            'Plant Id',
+            'NAICS Code',
+            'Reported Fuel Type Code',
+            'YEAR',
+            'Total Fuel Consumption MMBtu',
+            'State',
+            'Plant Name',
+            ],inplace=True)
+    # These emissions will later be aggregated with any inventory power plant
+    # emissions because each facility has its own construction impacts.
+    solarthermal_ops['stage_code']="Power plant"
+    solarthermal_ops['fuel_type']='SOLARTHERMAL'
+    compartment_map={
+            'Air':'air',
+            'Water':'water',
+            'Energy':'input'
+    }
+    solarthermal_ops['Compartment']=solarthermal_ops['Compartment'].map(compartment_map)
+    # solarthermal_upstream['Compartment']=solarthermal_upstream['Compartment'].str.lower()
+    solarthermal_ops["Unit"]="kg"
+    solarthermal_ops["input"]=False
+    solarthermal_ops.loc[solarthermal_ops["FlowName"]=="Electricity","input"]=True
+
+    solarthermal_upstream_total=pd.concat([solarthermal_upstream,solarthermal_ops])
+    return solarthermal_upstream_total
 
 
 if __name__=='__main__':
-    year=2016
+    year=2020
     solarthermal_upstream=generate_upstream_solarthermal(year)
     solarthermal_upstream.to_csv(f'{output_dir}/upstream_solarthermal_{year}.csv')
