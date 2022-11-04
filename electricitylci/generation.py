@@ -983,7 +983,7 @@ def aggregate_data(total_db, subregion="BA"):
 
 
 def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
-    """Turns the give database containing generator facility emissions
+    """Turns the given database containing generator facility emissions
     into dictionaries that contain the required data for insertion into
     an openLCA-compatible json-ld. Additionally, default providers
     for fuel inputs are mapped, using the information contained in the dictionary
@@ -1017,11 +1017,16 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     from electricitylci.aggregation_selector import subregion_col
 
     region_agg = subregion_col(subregion)
-    fuel_agg = ["FuelCategory"]
+    fuel_agg = ["FuelCategory"] #Adding stage code to catch renewables construction
+    renewables_const_stage_codes=[
+        "solar_pv_const",
+        "wind_const",
+        "solar_thermal_const"
+    ]
     if region_agg:
-        base_cols = region_agg + fuel_agg
+        base_cols = region_agg + fuel_agg + ["stage_code"]
     else:
-        base_cols = fuel_agg
+        base_cols = fuel_agg + ["stage_code"]
     non_agg_cols = [
         "stage_code",
         "FlowName",
@@ -1174,6 +1179,16 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         process_df["name"] = (
             "Electricity - " + process_df[fuel_agg].values + " - US"
         )
+        process_df.loc[process_df["stage_code"].isin(renewables_const_stage_codes),"description"] = (
+            "Construction of "
+            + process_df[fuel_agg].values
+            + " in the US"
+        )
+        process_df.loc[process_df["stage_code"].isin(renewables_const_stage_codes),"name"] = (
+            "Construction - "
+            + process_df[fuel_agg].values
+            + " - US"
+        )
     else:
         process_df["description"] = (
             "Electricity from "
@@ -1187,6 +1202,21 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
             + process_df[fuel_agg].values
             + " - "
             + process_df[region_agg].values
+        )
+        renewables_filter=process_df["stage_code"].isin(renewables_const_stage_codes)
+        process_df.loc[renewables_filter,"description"] = pd.Series(
+            ("Construction of "
+            + process_df.loc[renewables_filter,fuel_agg[0]].values
+            + " in the "
+            + process_df.loc[renewables_filter,region_agg[0]].values
+            + " region."),index=process_df.loc[renewables_filter].index
+        )
+        process_df.loc[renewables_filter,"name"] = pd.Series(
+            ("Construction - "
+            + process_df.loc[renewables_filter,fuel_agg[0]].values
+            + " - "
+            + process_df.loc[renewables_filter,region_agg[0]].values),
+            index=process_df.loc[renewables_filter].index
         )
     process_df["description"]=(
         process_df["description"]
