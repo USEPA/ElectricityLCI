@@ -145,7 +145,7 @@ def generate_upstream_wind(year):
     wind_ops["input"]=False
     wind_ops.loc[wind_ops["Compartment"]=="input","input"]=True
     wind_ops["Unit"]="kg"
-    wind_total=pd.concat([wind_upstream,wind_ops])
+    wind_total=pd.concat([wind_upstream,wind_ops],ignore_index=True)
     return wind_total
 
 

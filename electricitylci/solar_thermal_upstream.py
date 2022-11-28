@@ -150,7 +150,7 @@ def generate_upstream_solarthermal(year):
     solarthermal_ops["input"]=False
     solarthermal_ops.loc[solarthermal_ops["FlowName"]=="Electricity","input"]=True
 
-    solarthermal_upstream_total=pd.concat([solarthermal_upstream,solarthermal_ops])
+    solarthermal_upstream_total=pd.concat([solarthermal_upstream,solarthermal_ops],ignore_index=True)
     return solarthermal_upstream_total
 
 

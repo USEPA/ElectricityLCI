@@ -149,7 +149,7 @@ def generate_upstream_solar(year):
     solar_ops["Unit"]="kg"
     solar_ops["input"]=False
     solar_ops.loc[solar_ops["FlowName"]=="Electricity","input"]=True
-    solar_total=pd.concat([solar_upstream,solar_ops])
+    solar_total=pd.concat([solar_upstream,solar_ops],ignore_index=True)
     return solar_total
 
 
