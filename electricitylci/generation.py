@@ -1018,17 +1018,18 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
 
     region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"] #Adding stage code to catch renewables construction
+    stage_code=["stage_code"]
     renewables_const_stage_codes=[
         "solar_pv_const",
         "wind_const",
         "solar_thermal_const"
     ]
     if region_agg:
-        base_cols = region_agg + fuel_agg + ["stage_code"]
+        base_cols = region_agg + fuel_agg + stage_code
     else:
-        base_cols = fuel_agg + ["stage_code"]
+        base_cols = fuel_agg + stage_code
     non_agg_cols = [
-        "stage_code",
+        #"stage_code",
         "FlowName",
         "FlowUUID",
         "Compartment",
@@ -1103,21 +1104,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         )
         data.loc[waste_filter,"FlowType"] = "WASTE_FLOW"
         data["flow"] = ""
-        provider_filter = data["stage_code"].isin(upstream_dict.keys())
-        for index, row in data.loc[provider_filter, :].iterrows():
-            provider_dict = {
-                "name": upstream_dict[getattr(row, "stage_code")]["name"],
-                "categoryPath": upstream_dict[getattr(row, "stage_code")][
-                    "category"
-                ],
-                "processType": "UNIT_PROCESS",
-                "@id": upstream_dict[getattr(row, "stage_code")]["uuid"],
-            }
-            data.at[index, "provider"] = provider_dict
-            data.at[index, "unit"] = unit(
-                upstream_dict[getattr(row, "stage_code")]["q_reference_unit"]
-            )
-            data.at[index, "FlowType"] = "PRODUCT_FLOW"
+
         for index, row in data.iterrows():
             data.at[index, "uncertainty"] = uncertainty_table_creation(
                 data.loc[index:index, :]
@@ -1157,6 +1144,30 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         )
     )
     process_df.columns = ["exchanges"]
+    """
+    This next section of code was moved from within the turn_data_to_dict 
+    function and modified to reflect that there are now process dictionaries
+    created for technosphere inputs (e.g. coal input from IL-B-U). These flows
+    must have the default provider defined using the existing upstream dictionary
+    and then "moved" into the Power plant data frame where they should be.
+    """
+    provider_filter = [x for x in process_df.index.values if x[2] in upstream_dict.keys()]
+    for index, row in process_df.loc(axis=0)[:, :,list(upstream_dict.keys())].iterrows():
+        provider_dict = {
+            "name": upstream_dict[index[2]]["name"],
+            "categoryPath": upstream_dict[index[2]][
+                "category"
+            ],
+            "processType": "UNIT_PROCESS",
+            "@id": upstream_dict[index[2]]["uuid"],
+        }
+        row["exchanges"][0]["provider"] = provider_dict
+        row["exchanges"][0]["unit"] = unit(
+            upstream_dict[index[2]]["q_reference_unit"]
+        )
+        row["exchanges"][0]["FlowType"] = "PRODUCT_FLOW"
+        process_df.loc[index[0],index[1],"Power plant"]["exchanges"].append(row["exchanges"][0])
+    process_df=process_df.drop(provider_filter)
     process_df.reset_index(inplace=True)
     process_df["@type"] = "Process"
     process_df["allocationFactors"] = ""
@@ -1179,12 +1190,13 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         process_df["name"] = (
             "Electricity - " + process_df[fuel_agg].values + " - US"
         )
-        process_df.loc[process_df["stage_code"].isin(renewables_const_stage_codes),"description"] = (
+        renewables_filter=process_df["stage_code"].isin(renewables_const_stage_codes)
+        process_df.loc[renewables_filter,"description"] = (
             "Construction of "
             + process_df[fuel_agg].values
             + " in the US"
         )
-        process_df.loc[process_df["stage_code"].isin(renewables_const_stage_codes),"name"] = (
+        process_df.loc[renewables_filter,"name"] = (
             "Construction - "
             + process_df[fuel_agg].values
             + " - US"
