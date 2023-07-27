@@ -8,8 +8,8 @@ import uuid
 from os import path, makedirs
 from typing import Optional
 
-import olca
-import olca.pack as pack
+import olca # TODO: replace with olca_schema (?); try import olca_schema as olca
+import olca.pack as pack # TODO: replace with zipio ZipReader/ZipWriter
 
 
 def write(processes: dict, file_path: str):
@@ -431,7 +431,7 @@ def _isnum(n) -> bool:
 def _format_dq_entry(entry: str) -> Optional[str]:
     """
     Data quality entries.
-    
+
     May contain floating point numbers which are converted to integer numbers in
     this function.
     """
@@ -452,7 +452,7 @@ def _format_dq_entry(entry: str) -> Optional[str]:
 def _format_date(entry: str) -> Optional[str]:
     """
     Date entries currently have the format `month/day/year`.
-    
+
     This function converts such entries into the ISO format year-month-day.
     """
     if not isinstance(entry, str):
