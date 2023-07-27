@@ -1,14 +1,32 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# globals.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import os
 import glob
 import pkg_resources  # part of setuptools
+
 from esupy.processed_data_mgmt import Paths
 
-try: modulepath = os.path.dirname(os.path.realpath(__file__)).replace('\\', '/') + '/'
-except NameError: modulepath = 'electricitylci/'
 
+##############################################################################
+# GLOBALS
+##############################################################################
+try:
+    modulepath = os.path.dirname(
+        os.path.realpath(__file__)).replace('\\', '/') + '/'
+except NameError:
+    modulepath = 'electricitylci/'
+
+# BUG: why are we using this?
 paths=Paths()
-paths.local_path = os.path.realpath(paths.local_path + "/electricitylci")
-output_dir = os.path.join(paths.local_path, 'output')
+paths.local_path = os.path.realpath(str(paths.local_path) + "/electricitylci")
+# hotfix PosixPath in os.path.join [TWD; 2023-07-27]
+output_dir = os.path.join(str(paths.local_path), 'output')
 data_dir = os.path.join(modulepath,  'data')
 
 try:
@@ -16,33 +34,15 @@ try:
 except:
     elci_version = "1"
 
-electricity_flow_name_generation_and_distribution = 'Electricity, AC, 2300-7650 V'  # ref Table 1.1 NERC report
+# ref Table 1.1 NERC report
+electricity_flow_name_generation_and_distribution = (
+    'Electricity, AC, 2300-7650 V')
 electricity_flow_name_consumption = 'Electricity, AC, 120 V'
-
-
-def list_model_names_in_config():
-    configdir = modulepath + 'modelconfig/'
-    configfiles = glob.glob(configdir + '*_config.yml')
-    modelnames_dict = {}
-    selection_num = 1
-    for f in configfiles:
-        f = os.path.basename(f)
-        f = f.replace('_config.yml','')
-        modelnames_dict[selection_num] = f
-        selection_num += 1
-    return modelnames_dict
-
 
 # EIA923 download url - this is just the base, need to add
 # extension and file name
 EIA923_BASE_URL = 'https://www.eia.gov/electricity/data/eia923/'
 EIA860_BASE_URL = 'https://www.eia.gov/electricity/data/eia860/'
-
-
-#
-
-
-##############################
 
 # Grouping of Reported fuel codes to EPA categories
 FUEL_CAT_CODES = {
@@ -143,3 +143,19 @@ STATE_ABBREV = {
     "wisconsin": "wi",
     "wyoming": "wy",
 }
+
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
+def list_model_names_in_config():
+    configdir = modulepath + 'modelconfig/'
+    configfiles = glob.glob(configdir + '*_config.yml')
+    modelnames_dict = {}
+    selection_num = 1
+    for f in configfiles:
+        f = os.path.basename(f)
+        f = f.replace('_config.yml','')
+        modelnames_dict[selection_num] = f
+        selection_num += 1
+    return modelnames_dict
