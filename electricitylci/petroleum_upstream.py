@@ -2,14 +2,16 @@
 
 """Add docstring."""
 
+import logging
+from os.path import join
 
 import pandas as pd
+
 from electricitylci.coal_upstream import read_eia923_fuel_receipts
-from os.path import join
-from electricitylci.globals import data_dir, output_dir
+from electricitylci.globals import data_dir
 import electricitylci.PhysicalQuantities as pq
 import electricitylci.eia923_generation as eia923
-import logging
+
 
 module_logger=logging.getLogger("petroleum_upstream.py")
 
@@ -17,7 +19,7 @@ module_logger=logging.getLogger("petroleum_upstream.py")
 def generate_petroleum_upstream(year):
     """
     Generate annual.
-    
+
     Petroleum extraction, transport, and refining emissions (in kg) for each
     plant in EIA923.
 
@@ -167,6 +169,7 @@ def generate_petroleum_upstream(year):
     return merged_inventory
 
 if __name__=='__main__':
+    from electricitylci.globals import output_dir
     year=2016
     df=generate_petroleum_upstream(year)
     df.to_csv(output_dir+'/petroleum_emissions_{}.csv'.format(year))

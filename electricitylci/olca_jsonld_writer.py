@@ -1,19 +1,43 @@
-"""Add docstring."""
-
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# olca_jsonld_writer.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import datetime
-import pytz
 import logging as log
 import math
-import uuid
-from os import path, makedirs
+from os import path
+from os import makedirs
 from typing import Optional
+import uuid
 
 import olca # TODO: replace with olca_schema (?); try import olca_schema as olca
 import olca.pack as pack # TODO: replace with zipio ZipReader/ZipWriter
+import pytz
 
 
-def write(processes: dict, file_path: str):
-    """Write the given process dictionary to a olca-schema zip file with the given path."""
+##############################################################################
+# FUNCTIONS
+##############################################################################
+def write(processes, file_path):
+    """Write the given process dictionary to a olca-schema zip file to
+    the given path.
+
+    Parameters
+    ----------
+    processes : dict
+        _description_
+    file_path : str
+        _description_
+
+    Returns
+    -------
+    dict
+        Original processes dictionary with
+    """
     if not path.exists(path.split(file_path)[0]):
         makedirs(path.split(file_path)[0])
     with pack.Writer(file_path) as writer:

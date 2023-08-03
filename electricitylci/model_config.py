@@ -1,10 +1,15 @@
-import pandas as pd
 from os.path import join
 import datetime
 import yaml
 import logging
-from electricitylci.globals import modulepath,list_model_names_in_config,\
-                                    data_dir, output_dir
+
+import pandas as pd
+
+from electricitylci.globals import modulepath
+from electricitylci.globals import list_model_names_in_config
+from electricitylci.globals import data_dir
+from electricitylci.globals import output_dir
+
 #################
 formatter = logging.Formatter(
     "%(levelname)s:%(filename)s:%(funcName)s:%(message)s"
@@ -34,7 +39,7 @@ class ConfigurationError(Exception):
         self.message = message
 
 def build_model_class(model_name=None):
-    
+
     # pull in model config vars
     def _load_model_specs(model_name):
         logger.info('Loading model specs')
@@ -45,14 +50,14 @@ def build_model_class(model_name=None):
         except FileNotFoundError:
             raise ConfigurationError("Model specs not found. Create a model specs file for the model of interest.")
         return specs
-    
+
     if not model_name:
         model_name = assign_model_name()
     specs = _load_model_specs(model_name)
     check_model_specs(specs)
     model_class = ModelSpecs(specs, model_name)
     logger.info(f'Model Specs for {model_class.model_name}')
-        
+
     return model_class
 
 
@@ -79,7 +84,7 @@ def check_model_specs(model_specs):
         )
 
 class ModelSpecs:
-    
+
     model_name = ''
     def __init__(self, model_specs, model_name):
         self.model_name = model_name
@@ -90,9 +95,9 @@ class ModelSpecs:
         # use 923 and cems rather than egrid, but still use the egrid_year
         # parameter to determine the data year
         self.replace_egrid = model_specs["replace_egrid"]
-        
+
         self.include_renewable_generation = model_specs["include_renewable_generation"]
-        self.include_netl_water = model_specs["include_netl_water"] 
+        self.include_netl_water = model_specs["include_netl_water"]
         self.include_upstream_processes = model_specs["include_upstream_processes"]
         self.inventories_of_interest = model_specs["inventories_of_interest"]
         self.inventories = list(model_specs["inventories_of_interest"])
@@ -121,5 +126,5 @@ class ModelSpecs:
             f"{output_dir}/{model_name}_jsonld_"
             f"{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
             )
-        
+
 #model_specs = build_model_class('ELCI_1')

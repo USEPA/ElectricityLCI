@@ -49,7 +49,7 @@ def get_generation_process_df(regions=None, **kwargs):
         import electricitylci.plant_water_use as water
         water_df = water.generate_plant_water_use(config.model_specs.eia_gen_year)
         generation_process_df=concat_clean_upstream_and_plant(generation_process_df,water_df)
-    
+
     if config.model_specs.include_upstream_processes is True:
         try:
             upstream_df = kwargs['upstream_df']
@@ -99,11 +99,11 @@ def get_generation_mix_process_df(regions=None):
     """
     Create a dataframe of generation mixes by fuel type in each subregion.
 
-    This function imports and uses the parameter 'replace_egrid' and 
+    This function imports and uses the parameter 'replace_egrid' and
     'gen_mix_from_model_generation_data' from model_config.py. If 'replace_egrid'
-    is true or the specified 'regions' is true, then the generation mix will 
+    is true or the specified 'regions' is true, then the generation mix will
     come from EIA 923 data. If 'replace_egrid' is false then the generation
-    mix will either come from the eGRID reference data 
+    mix will either come from the eGRID reference data
     ('gen_mix_from_model_generation_data' is false) or from the generation data
     from this model ('gen_mix_from_model_generation_data' is true).
 
@@ -130,7 +130,7 @@ def get_generation_mix_process_df(regions=None):
         create_generation_mix_process_df_from_model_generation_data,
     )
     from electricitylci.eia923_generation import build_generation_data
-    
+
     if regions is None:
         regions = config.model_specs.regional_aggregation
 
@@ -277,9 +277,11 @@ def write_process_dicts_to_jsonld(*process_dicts):
 
     """
     from electricitylci.olca_jsonld_writer import write
-    
+
     all_process_dicts = dict()
     for d in process_dicts:
+        # Append dictionaries together using double asterisk syntax
+        # (see about dictionary interaction with ** syntax)
         all_process_dicts = {**all_process_dicts, **d}
     olca_dicts = write(all_process_dicts, config.model_specs.namestr)
     return olca_dicts
@@ -297,7 +299,7 @@ def get_upstream_process_df(eia_gen_year):
     import electricitylci.nuclear_upstream as nuke
     import electricitylci.power_plant_construction as const
     from electricitylci.combinator import concat_map_upstream_databases
-    
+
     logger.info("Generating upstream inventories...")
     coal_df = coal.generate_upstream_coal(eia_gen_year)
     ng_df = ng.generate_upstream_ng(eia_gen_year)
@@ -376,9 +378,9 @@ def combine_upstream_and_gen_df(gen_df, upstream_df):
 
 def get_gen_plus_netl():
     """
-    This will combine the netl life cycle data for solar, solar thermal, 
+    This will combine the netl life cycle data for solar, solar thermal,
     geothermal, wind, and hydro and will include impacts from construction, etc.
-    that would be omitted from the regular sources of emissions. 
+    that would be omitted from the regular sources of emissions.
     It then generates power plant emissions. The two different dataframes are
     combined to provide a single dataframe representing annual emissions or
     life cycle emissions apportioned over the appropriate number of years for
@@ -398,7 +400,7 @@ def get_gen_plus_netl():
     import electricitylci.wind_upstream as wind
     import electricitylci.hydro_upstream as hydro
     import electricitylci.solar_thermal_upstream as solartherm
-    
+
     eia_gen_year = config.model_specs.eia_gen_year
     logger.info(
         "Generating inventories for geothermal, solar, wind, hydro, and solar thermal..."
@@ -511,7 +513,7 @@ def write_gen_fuel_database_to_dict(
     #of dictionaries for other levels of aggregation. This logic will need to
     #be implemented in main.py so that FERC consumption mixes can be made
     #using the required BA aggregation.
-    # if subregion in ["BA","FERC","US"]:    
+    # if subregion in ["BA","FERC","US"]:
     #     subregion="BA"
     logger.info("Converting generator dataframe to dictionaries...")
     gen_plus_fuel_dict = olcaschema_genprocess(

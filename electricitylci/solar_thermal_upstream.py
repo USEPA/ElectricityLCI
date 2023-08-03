@@ -3,7 +3,7 @@
 """Add docstring."""
 
 import pandas as pd
-from electricitylci.globals import output_dir, data_dir
+from electricitylci.globals import data_dir
 import numpy as np
 from electricitylci.eia923_generation import eia923_download_extract
 
@@ -11,7 +11,7 @@ from electricitylci.eia923_generation import eia923_download_extract
 def generate_upstream_solarthermal(year):
     """
     Generate the annual emissions.
-    
+
     For solar thermal plant construction for each plant in EIA923. The emissions
     inventory file has already allocated the total emissions to construct the
     entire power plant over its assumed 30 year life. So the emissions returned
@@ -90,6 +90,7 @@ def generate_upstream_solarthermal(year):
 
 
 if __name__=='__main__':
+    from electricitylci.globals import output_dir
     year=2016
     solarthermal_upstream=generate_upstream_solarthermal(year)
     solarthermal_upstream.to_csv(f'{output_dir}/upstream_solarthermal_{year}.csv')

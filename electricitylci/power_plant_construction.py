@@ -6,16 +6,15 @@ Created on Thu Jul 18 04:52:01 2019.
 @author: jamiesom
 """
 import pandas as pd
-from electricitylci.globals import data_dir, output_dir
-import numpy as np
+
+from electricitylci.globals import data_dir
 from electricitylci.eia860_facilities import eia860_generator_info
-import re
 
 
 def generate_power_plant_construction(year):
     """
     Function uses an NETL study.
-    
+
     That generated the life cycle inventory for power plant construction using
     an economic input output model. Two types of plants are considered: sub-
     critical pulverized coal and a natural gas combined cycle plant. The

@@ -60,3 +60,6 @@ EWI`
     * Successfully installs:
         + mpmath-1.3.0
         + sympy-1.12
++ `pip install scipy`
+    * Successfully installs:
+        + scipy-1.11.1

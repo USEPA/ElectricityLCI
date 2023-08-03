@@ -1,11 +1,22 @@
-import electricitylci
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# main.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
+import argparse
 import logging
 
-from electricitylci.globals import output_dir
+import electricitylci
 import electricitylci.model_config as config
 from electricitylci.utils import fill_default_provider_uuids
-import argparse
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def main():
     """This function will generate an openLCA-schema JSON-LD zip file containing
     life cycle inventory for US power plants based on the settings in the
@@ -20,7 +31,8 @@ def main():
         # Create dataframe with all generation process data. This will also
         # include upstream and Canadian data.
         logger.info("get generation process")
-        upstream_df = electricitylci.get_upstream_process_df(config.model_specs.eia_gen_year)
+        upstream_df = electricitylci.get_upstream_process_df(
+            config.model_specs.eia_gen_year)
         logger.info("write generation process to dict")
         upstream_dict = electricitylci.write_upstream_process_database_to_dict(
             upstream_df
@@ -107,13 +119,13 @@ def main():
         logger.info("write us average mix to jsonld")
         usavegfuel_mix_dict = electricitylci.write_process_dicts_to_jsonld(
             usavegfuel_mix_dict
-        )    
+        )
         logger.info("international average mix to dict")
         international_mix_dict = electricitylci.write_international_mix_database_to_dict(
         generation_mix_df, usavegfuel_mix_dict)
         international_mix_dict = electricitylci.write_process_dicts_to_jsonld(
         international_mix_dict
-        ) 
+        )
         # Get surplus and consumption mix dictionary
         sur_con_mix_dict = electricitylci.write_surplus_pool_and_consumption_mix_dict()
         # Get dist dictionary
@@ -136,6 +148,9 @@ def main():
     )
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--model_config", help="specify model configuration", default="")

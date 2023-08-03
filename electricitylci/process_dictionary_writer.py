@@ -4,11 +4,13 @@ The dictionary is based on the openLCA (OLCA) schema
 This dictionary can be used for writing JSON-LD files or templates
 """
 
-import time
-import pandas as pd
-import yaml
 import logging
 from os.path import join
+import time
+import yaml
+
+import pandas as pd
+
 from electricitylci.globals import (
     data_dir,
     electricity_flow_name_generation_and_distribution,
@@ -22,6 +24,7 @@ if not model_specs.replace_egrid:
 else:
     egrid_subregions=[]
 from electricitylci.globals import data_dir
+
 
 international = pd.read_csv(data_dir+'/International_Electricity_Mix.csv')
 international_reg = list(pd.unique(international['Subregion']))
@@ -192,7 +195,7 @@ def con_process_ref(reg, ref_type="generation"):
     elif reg in egrid_subregions:
         name = generation_mix_name +" - "+reg
     elif reg in international_reg:
-        name = generation_mix_name +" - "+reg  
+        name = generation_mix_name +" - "+reg
     elif ref_type == "generation_international":
         name = fuel_mix_name + " - " + reg
     else:
@@ -200,7 +203,7 @@ def con_process_ref(reg, ref_type="generation"):
     processref = dict()
     processref["name"] = name
     if ref_type == "generation_international":
-       processref["location"] = 'US' 
+       processref["location"] = 'US'
     else:
        processref["location"] = reg
     processref["processType"] = "UNIT_PROCESS"
@@ -688,7 +691,7 @@ def process_table_creation_con_mix(region, exchanges_list):
         + " region."
     )
     ar["description"]=(ar["description"]
-        + " This process was created with ElectricityLCI " 
+        + " This process was created with ElectricityLCI "
         + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
         + " using the " + model_specs.model_name + " configuration."
     )
@@ -715,7 +718,7 @@ def process_table_creation_genmix(region, exchanges_list):
         "Electricity generation mix in the " + str(region) + " region."
     )
     ar["description"]=(ar["description"]
-        + " This process was created with ElectricityLCI " 
+        + " This process was created with ElectricityLCI "
         + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
         + " using the " + model_specs.model_name + " configuration."
     )
@@ -742,7 +745,7 @@ def process_table_creation_usaverage(fuel, exchanges_list):
         "Electricity fuel US Average mix for the " + str(fuel) + " fuel."
     )
     ar["description"]=(ar["description"]
-        + " This process was created with ElectricityLCI " 
+        + " This process was created with ElectricityLCI "
         + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
         + " using the " + model_specs.model_name + " configuration."
     )
@@ -767,7 +770,7 @@ def process_table_creation_surplus(region, exchanges_list):
     ] = "22: Utilities/2211: Electric Power Generation, Transmission and Distribution"
     ar["description"] = "Electricity surplus in the " + str(region) + " region."
     ar["description"]=(ar["description"]
-        + " This process was created with ElectricityLCI " 
+        + " This process was created with ElectricityLCI "
         + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
         + " using the " + model_specs.model_name + " configuration."
     )
@@ -796,7 +799,7 @@ def process_table_creation_distribution(region, exchanges_list):
         + " region."
     )
     ar["description"]=(ar["description"]
-        + " This process was created with ElectricityLCI " 
+        + " This process was created with ElectricityLCI "
         + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
         + " using the " + model_specs.model_name + " configuration."
     )

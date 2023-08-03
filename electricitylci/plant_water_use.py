@@ -4,7 +4,8 @@
 """Add docstring."""
 
 import pandas as pd
-from electricitylci.globals import output_dir, data_dir
+
+from electricitylci.globals import data_dir
 import electricitylci.PhysicalQuantities as pq
 from electricitylci.eia923_generation import eia923_download_extract
 
@@ -12,7 +13,7 @@ from electricitylci.eia923_generation import eia923_download_extract
 def generate_plant_water_use(year):
     """
     Uses data from an NETL.
-    
+
     Water use analysis to generate water withdrawal and discharge flows for
     power plants. The underlying data represents an analysis of water use in
     2016. The water intensities are used to generate annual amounts of water use
@@ -220,6 +221,7 @@ def generate_plant_water_use(year):
 
 
 if __name__ == "__main__":
+    from electricitylci.globals import output_dir
     year = 2016
     water_df = generate_plant_water_use(year)
     water_df.to_csv(f"{output_dir}/plant_water_use_{year}.csv")

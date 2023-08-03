@@ -5,7 +5,6 @@ Created on Fri May 31 16:10:00 2019
 @author: Matt Jamieson
 """
 import pandas as pd
-from electricitylci.globals import data_dir, output_dir
 
 from electricitylci.eia923_generation import eia923_download_extract
 
@@ -115,6 +114,7 @@ def generate_upstream_geo(year):
 
 
 if __name__ == "__main__":
+    from electricitylci.globals import data_dir, output_dir
     year = 2016
     df = generate_upstream_geo(year)
     df.to_csv(output_dir + "/geothermal_emissions_{}.csv".format(year))

@@ -1,18 +1,14 @@
 # -*- coding: utf-8 -*-
 
 """Add docstring."""
+import logging
 
-import pandas as pd
-from electricitylci.globals import output_dir, data_dir
 from electricitylci.coal_upstream import (
     coal_type_codes,
     mine_type_codes,
     basin_codes,
 )
 from electricitylci import write_process_dicts_to_jsonld
-import logging
-import yaml
-import time
 from electricitylci.process_dictionary_writer import (
         exchangeDqsystem,
         processDqsystem,
@@ -21,6 +17,7 @@ from electricitylci.process_dictionary_writer import (
 )
 from electricitylci.utils import make_valid_version_num
 from electricitylci.globals import elci_version
+
 
 module_logger=logging.getLogger("upstream_dict.py")
 # with open(f"{data_dir}/upstream_metadata.yaml", 'r') as f:
@@ -67,7 +64,6 @@ def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
 
 
 def _exchange_table_creation_ref(fuel_type):
-    # region = data['Subregion'].iloc[0]
     natural_gas_flow = {
         "flowType": "PRODUCT_FLOW",
         "flowProperties": "",
@@ -253,7 +249,7 @@ def _exchange_table_creation_output(data):
 def olcaschema_genupstream_processes(merged):
     """
     Generate olca-schema dictionaries.
-    
+
     For upstream processes for the inventory provided in the given dataframe.
 
     Parameters
@@ -473,6 +469,7 @@ if __name__ == "__main__":
     import electricitylci.petroleum_upstream as petro
     import electricitylci.nuclear_upstream as nuke
     from combinator import concat_map_upstream_databases
+    from electricitylci.globals import output_dir
 
     year = 2016
     coal_df = coal.generate_upstream_coal(year)

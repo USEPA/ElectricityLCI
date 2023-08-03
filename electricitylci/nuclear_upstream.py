@@ -4,12 +4,12 @@ Created on Fri May 31 16:10:00 2019
 
 @author: Matt Jamieson
 """
-import pandas as pd
-from electricitylci.globals import data_dir, output_dir
-
-from electricitylci.eia923_generation import eia923_download_extract
-
 import copy
+
+import pandas as pd
+
+from electricitylci.globals import data_dir
+from electricitylci.eia923_generation import eia923_download_extract
 
 
 def generate_upstream_nuc(year):
@@ -95,6 +95,7 @@ def generate_upstream_nuc(year):
 
 
 if __name__ == "__main__":
+    from electricitylci.globals import output_dir
     year = 2016
     df = generate_upstream_nuc(year)
     df.to_csv(output_dir + "/nuclear_emissions_{}.csv".format(year))

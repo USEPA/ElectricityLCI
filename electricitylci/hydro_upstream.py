@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import pandas as pd
-from electricitylci.globals import output_dir, data_dir
+from electricitylci.globals import data_dir
 import electricitylci.PhysicalQuantities as pq
 from electricitylci.eia923_generation import eia923_download_extract
 from electricitylci.eia860_facilities import eia860_balancing_authority
@@ -77,5 +77,6 @@ def generate_hydro_emissions():
     return hydro_df
 
 if __name__=="__main__":
+    from electricitylci.globals import output_dir
     hydro_df=generate_hydro_emissions()
     hydro_df.to_csv(f"{output_dir}/hydro_emissions_2016.csv")

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
-from electricitylci.globals import data_dir, output_dir
+from electricitylci.globals import data_dir
 from electricitylci.model_config import model_specs
 import logging
 

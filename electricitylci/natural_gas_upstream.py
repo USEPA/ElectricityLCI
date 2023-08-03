@@ -4,14 +4,13 @@ Created on Mon Feb 18 11:39:15 2019
 
 @author: cooneyg
 """
-import pandas as pd
-from electricitylci.globals import (
-    data_dir,
-    output_dir)
+import logging
 
+import pandas as pd
+
+from electricitylci.globals import data_dir
 from electricitylci.eia923_generation import eia923_download_extract
 import electricitylci.PhysicalQuantities as pq
-import logging
 
 module_logger = logging.getLogger(name="natural_gas_upstream.py")
 
@@ -119,6 +118,7 @@ def generate_upstream_ng(year):
 
 
 if __name__=='__main__':
+    from electricitylci.globals import output_dir
     year=2016
     df = generate_upstream_ng(year)
     df.to_csv(output_dir+'/ng_emissions_{}.csv'.format(year))

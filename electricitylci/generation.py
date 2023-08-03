@@ -1,33 +1,41 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Tue Jun  4 12:07:46 2019
 
 @author: jamiesom
 """
-from scipy.stats.stats import mode
-from electricitylci.elementaryflows import map_emissions_to_fedelemflows
-import pandas as pd
-import numpy as np
-from electricitylci.globals import output_dir, elci_version, paths
-from electricitylci.utils import make_valid_version_num
-from datetime import datetime
-from electricitylci.dqi import lookup_score_with_bound_key
-from scipy.stats import t, norm
-from scipy.special import erfinv
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 import ast
+from datetime import datetime
 import logging
+
+import numpy as np
+import pandas as pd
+from scipy.stats import t
+from scipy.special import erfinv
+
+from electricitylci.elementaryflows import map_emissions_to_fedelemflows
+from electricitylci.globals import elci_version, paths
+from electricitylci.utils import make_valid_version_num
+from electricitylci.dqi import lookup_score_with_bound_key
 from electricitylci.eia923_generation import eia923_primary_fuel
 from electricitylci.eia860_facilities import eia860_balancing_authority
 from electricitylci.model_config import model_specs
 
 
-
-
-
+##############################################################################
+# GLOBALS
+##############################################################################
 module_logger = logging.getLogger("generation.py")
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def eia_facility_fuel_region(year):
     primary_fuel = eia923_primary_fuel(year=year)
     ba_match = eia860_balancing_authority(year)
@@ -72,7 +80,7 @@ def add_flow_representativeness_data_quality_scores(db,total_gen):
 def add_temporal_correlation_score(db, electricity_lci_target_year):
     # db['TemporalCorrelation'] = 5
     from electricitylci.dqi import temporal_correlation_lower_bound_to_dqi
-    
+
     # Could be more precise here with year
     db['Age'] =  electricity_lci_target_year - pd.to_numeric(db['Year'])
     db['TemporalCorrelation'] = db['Age'].apply(
@@ -474,7 +482,7 @@ def create_generation_process_df():
         from electricitylci.egrid_emissions_and_waste_by_facility import (
             emissions_and_wastes_by_facility,
             base_inventory,
-        ) 
+        )
         eia_facilities_to_include=generation_data["FacilityID"].unique()
         if base_inventory == "eGRID":
             id_column="eGRID_ID"
@@ -610,8 +618,8 @@ def create_generation_process_df():
         "FlowAmount",
         "Compartment",
     ]
-    
-    
+
+
     final_database = final_database.loc[
         :, ~final_database.columns.duplicated()
     ]
@@ -619,7 +627,7 @@ def create_generation_process_df():
     drop_columns = ['PrimaryFuel_right', 'FuelCategory',
                     'FuelCategory_right'
                     ]
-    drop_columns = [c for c in drop_columns 
+    drop_columns = [c for c in drop_columns
                     if c in final_database.columns.values.tolist()]
     final_database.drop(columns=drop_columns, inplace=True)
     final_database.rename(
@@ -628,7 +636,7 @@ def create_generation_process_df():
         },
         inplace=True,
     )
-    
+
     final_database = add_temporal_correlation_score(final_database, model_specs.electricity_lci_target_year)
     final_database = add_technological_correlation_score(final_database)
     final_database["DataCollection"] = 5
@@ -1041,7 +1049,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         "Emission_factor",
         "GeomMean",
         "GeomSD",
-    ]   
+    ]
     def turn_data_to_dict(data, upstream_dict):
 
         module_logger.debug(
@@ -1076,7 +1084,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         data["flowProperty"] = ""
         data["input"]=False
         input_filter = (
-                (data["Compartment"].str.lower().str.contains("input")) 
+                (data["Compartment"].str.lower().str.contains("input"))
                 | (data["Compartment"].str.lower().str.contains("resource"))
                 | (data["Compartment"].str.lower().str.contains("technosphere"))
         )
@@ -1190,7 +1198,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         )
     process_df["description"]=(
         process_df["description"]
-        + " This process was created with ElectricityLCI " 
+        + " This process was created with ElectricityLCI "
         + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
         + " using the " + model_specs.model_name + " configuration."
     )
@@ -1214,7 +1222,11 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     return result
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == "__main__":
+    from electricitylci.globals import output_dir
     plant_emission_df = create_generation_process_df()
     aggregated_emissions_df = aggregate_data(plant_emission_df, subregion="BA")
     datetimestr = datetime.now().strftime("%Y%m%d_%H%M%S")

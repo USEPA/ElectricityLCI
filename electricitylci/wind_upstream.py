@@ -3,16 +3,17 @@
 
 """Add docstring in public module."""
 
-import pandas as pd
-from electricitylci.globals import output_dir, data_dir
 import numpy as np
+import pandas as pd
+
+from electricitylci.globals import data_dir
 from electricitylci.eia923_generation import eia923_download_extract
 
 
 def generate_upstream_wind(year):
     """
     Generate the annual emissions.
-    
+
     For wind farm construction for each plant in EIA923. The emissions inventory
     file has already allocated the total emissions to construct the turbines and
     balance of system for the entire wind farm over the assumed 20 year life of
@@ -92,6 +93,7 @@ def generate_upstream_wind(year):
 
 
 if __name__ == "__main__":
+    from electricitylci.globals import output_dir
     year = 2016
     wind_upstream = generate_upstream_wind(year)
     wind_upstream.to_csv(f"{output_dir}/upstream_wind_{year}.csv")
