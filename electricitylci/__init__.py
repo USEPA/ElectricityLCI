@@ -297,7 +297,7 @@ def get_upstream_process_df(eia_gen_year):
     import electricitylci.natural_gas_upstream as ng
     import electricitylci.petroleum_upstream as petro
     import electricitylci.nuclear_upstream as nuke
-    import electricitylci.power_plant_construction as const
+    import electricitylci.power_plant_construction as ppc
     from electricitylci.combinator import concat_map_upstream_databases
 
     logger.info("Generating upstream inventories...")
@@ -305,7 +305,7 @@ def get_upstream_process_df(eia_gen_year):
     ng_df = ng.generate_upstream_ng(eia_gen_year)
     petro_df = petro.generate_petroleum_upstream(eia_gen_year)
     nuke_df = nuke.generate_upstream_nuc(eia_gen_year)
-    const = const.generate_power_plant_construction(eia_gen_year)
+    const = ppc.generate_power_plant_construction(eia_gen_year)
     #coal and ng already conform to mapping so no mapping needed
     upstream_df = concat_map_upstream_databases(eia_gen_year,
         petro_df, nuke_df, const
