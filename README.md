@@ -44,8 +44,7 @@ A Python virtual environment (v 3.11 or higher) is required with the following p
         + six-1.16.0
         + tzdata-2023.3
         + urllib3-1.26.16
-+ `pip install git+https://github.com/USEPA/standardizedinventories@v1.1.1#egg=St
-EWI`
++ `pip install git+https://github.com/USEPA/standardizedinventories@v1.1.1#egg=StEWI`
     * Successfully installed:
         + StEWI-1.1.1
         + beautifulsoup4-4.12.2
