@@ -34,6 +34,7 @@ def main():
         upstream_df = electricitylci.get_upstream_process_df(
             config.model_specs.eia_gen_year)
         logger.info("write generation process to dict")
+        # Where we left off. 2023-08-16; TWD
         upstream_dict = electricitylci.write_upstream_process_database_to_dict(
             upstream_df
         )
@@ -152,6 +153,17 @@ def main():
 # MAIN
 ##############################################################################
 if __name__ == "__main__":
+    # Define a logger
+    root_logger = logging.getLogger()
+    root_handler = logging.StreamHandler()
+    rec_format = (
+        "%(asctime)s.%(msecs)03d:%(levelname)s:%(name)s:%(funcName)s:"
+        "%(message)s")
+    formatter = logging.Formatter(rec_format, datefmt='%Y-%m-%d %H:%M:%S')
+    root_handler.setFormatter(formatter)
+    root_logger.addHandler(root_handler)
+    root_logger.setLevel("INFO")
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--model_config", help="specify model configuration", default="")
     args=parser.parse_args()

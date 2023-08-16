@@ -5,12 +5,18 @@ Created on Thu Jul 18 04:52:01 2019.
 
 @author: jamiesom
 """
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import pandas as pd
 
 from electricitylci.globals import data_dir
 from electricitylci.eia860_facilities import eia860_generator_info
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def generate_power_plant_construction(year):
     """
     Function uses an NETL study.
@@ -74,44 +80,85 @@ def generate_power_plant_construction(year):
             }
     gas_prime = ["GT","IC","OT","CT","CS","CE","CA","ST"]
     coal_type = ["BIT","SUB","LIG","WC","RC"]
-    gen_df = gen_df.loc[gen_df["energy_source_1"].isin(energy_sources), gen_columns]
+
+    gen_df = gen_df.loc[
+        gen_df["energy_source_1"].isin(energy_sources), gen_columns]
     gen_df["plant_id"]=gen_df["plant_id"].astype(int)
-    groupby_cols=["plant_id","technology","energy_source_1","prime_mover"]
-    gen_df_group = gen_df.groupby(by=groupby_cols,as_index=False)["nameplate_capacity_mw"].sum()
-    prime_energy_combo=gen_df_group.groupby(by=["prime_mover","energy_source_1"]).size().reset_index().rename(columns={0:'count'})
-    prime_energy_combo["const_type"]="coal"
-    gas_const_criteria=(prime_energy_combo["prime_mover"].isin(gas_prime))&(~prime_energy_combo["energy_source_1"].isin(coal_type))
-    prime_energy_combo.loc[gas_const_criteria,"const_type"]="ngcc"
-    gen_df_group=gen_df_group.merge(prime_energy_combo[['prime_mover', 'energy_source_1', 'const_type']],
-                                    on=["prime_mover","energy_source_1"],
-                                    how="left")
-    inventory = pd.read_csv(f"{data_dir}/plant_construction_inventory.csv",low_memory=False)
-    inventory = pd.concat([inventory, inventory["Flow"].str.rsplit('/',1,expand=True)],axis=1).drop(columns=["Flow"]).rename(columns={0:"Flow",1:"Unit"})
-    inventory = pd.concat([inventory, inventory["Flow"].str.rsplit('/',1,expand=True)],axis=1).drop(columns=["Flow"]).rename(columns={0:"Compartment_path",1:"FlowName"})
-    inventory = pd.concat([inventory,inventory["Compartment_path"].str.split('/',n=1,expand=True)],axis=1).rename(columns={0:"Compartment",1:"delete"}).drop(columns="delete")
-    scpc_inventory = inventory[['SCPC_550_MW', 'Unit', 'Compartment_path', 'FlowName','Compartment']]
-    scpc_inventory["const_type"]="coal"
-    scpc_inventory["stage_code"]="coal_const"
-    scpc_inventory.rename(columns={"SCPC_550_MW":"FlowAmount"},inplace=True)
-    scpc_inventory["FlowAmount"]=scpc_inventory["FlowAmount"]/30/550
-    ngcc_inventory = inventory[['NGCC_630_MW', 'Unit', 'Compartment_path', 'FlowName','Compartment']]
-    ngcc_inventory["const_type"]="ngcc"
-    ngcc_inventory["stage_code"]="ngcc_const"
-    ngcc_inventory.rename(columns={"NGCC_630_MW":"FlowAmount"},inplace=True)
+    groupby_cols=["plant_id", "technology", "energy_source_1", "prime_mover"]
+    gen_df_group = gen_df.groupby(
+        by=groupby_cols, as_index=False)["nameplate_capacity_mw"].sum()
+    prime_energy_combo = gen_df_group.groupby(
+        by=["prime_mover", "energy_source_1"]).size().reset_index().rename(
+        columns={0: 'count'})
+    prime_energy_combo["const_type"] = "coal"
+    gas_const_criteria = (
+        prime_energy_combo["prime_mover"].isin(gas_prime)) & (
+        ~prime_energy_combo["energy_source_1"].isin(coal_type))
+    prime_energy_combo.loc[gas_const_criteria, "const_type"] = "ngcc"
+    gen_df_group = gen_df_group.merge(
+        prime_energy_combo[['prime_mover', 'energy_source_1', 'const_type']],
+        on=["prime_mover","energy_source_1"],
+        how="left")
+
+    inventory = pd.read_csv(
+        f"{data_dir}/plant_construction_inventory.csv", low_memory=False)
+    inventory = pd.concat(
+        [
+            inventory,
+            inventory["Flow"].str.rsplit("/", n=1, expand=True)
+        ],
+        axis=1
+    ).drop(columns=["Flow"]).rename(columns={0:"Flow", 1:"Unit"})
+    inventory = pd.concat(
+        [
+            inventory,
+            inventory["Flow"].str.rsplit('/', n=1, expand=True)
+        ],
+        axis=1
+    ).drop(columns=["Flow"]).rename(
+        columns={0:"Compartment_path", 1:"FlowName"})
+    inventory = pd.concat(
+        [
+            inventory,
+            inventory["Compartment_path"].str.split('/', n=1, expand=True)
+        ],
+        axis=1
+    ).rename(
+        columns={0:"Compartment", 1:"delete"}).drop(columns="delete")
+
+    scpc_inventory = inventory[
+        ['SCPC_550_MW', 'Unit', 'Compartment_path', 'FlowName','Compartment']]
+    scpc_inventory["const_type"] = "coal"
+    scpc_inventory["stage_code"] = "coal_const"
+    scpc_inventory.rename(columns={"SCPC_550_MW":"FlowAmount"}, inplace=True)
+    scpc_inventory["FlowAmount"] = scpc_inventory["FlowAmount"]/30/550
+    ngcc_inventory = inventory[
+        ['NGCC_630_MW', 'Unit', 'Compartment_path', 'FlowName','Compartment']]
+    ngcc_inventory["const_type"] = "ngcc"
+    ngcc_inventory["stage_code"] = "ngcc_const"
+    ngcc_inventory.rename(columns={"NGCC_630_MW":"FlowAmount"}, inplace=True)
     ngcc_inventory["FlowAmount"] = ngcc_inventory["FlowAmount"]/30/630
     inventory = pd.concat([scpc_inventory,ngcc_inventory])
-    inventory["Compartment_path"]=inventory["Compartment_path"].map(compartment_mapping)
-    inventory["input"]=False
+    inventory["Compartment_path"] = inventory["Compartment_path"].map(
+        compartment_mapping)
+    inventory["input"] = False
     input_list=["resource" in x for x in inventory["Compartment"]]
-    inventory["input"]=input_list
+    inventory["input"] = input_list
     construction_df = gen_df_group.merge(inventory,on="const_type",how="left")
-    construction_df["FlowAmount"]=construction_df["FlowAmount"]*construction_df["nameplate_capacity_mw"]
-    construction_df.rename(columns={"nameplate_capacity_mw":"quantity"},inplace=True)
-    construction_df.drop(columns=["const_type","energy_source_1","prime_mover"],inplace=True)
+    construction_df["FlowAmount"] = construction_df["FlowAmount"] * construction_df["nameplate_capacity_mw"]
+    construction_df.rename(
+        columns={"nameplate_capacity_mw":"quantity"}, inplace=True)
+    construction_df.drop(
+        columns=["const_type","energy_source_1","prime_mover"], inplace=True)
     construction_df["fuel_type"]="Construction"
-    construction_df["Unit"]=construction_df["Unit"].str.replace("mj","MJ", regex=False)
+    construction_df["Unit"] = construction_df["Unit"].str.replace(
+        "mj","MJ", regex=False)
     return construction_df
 
+
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == "__main__":
     year=2016
     df = generate_power_plant_construction(year)
