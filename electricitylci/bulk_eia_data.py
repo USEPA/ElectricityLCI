@@ -73,19 +73,20 @@ if __name__=="__main__":
 
 
 def row_to_df(rows, data_type):
-    """
-    Turn rows of a single type from the bulk data text file into a dataframe
-    with the region, datetime, and data as columns
+    """Turn rows of a single type from the bulk data text file into a dataframe
+    with the region, datetime, and data as columns.
+
     Parameters
     ----------
     rows : list
         rows from the EBA.txt file
     data_type : str
         name to use for the data column (e.g. demand or total_interchange)
+
     Returns
     -------
-    dataframe
-        Data for all regions in a single df with datatimes converted and UTC
+    pandas.DataFrame
+        Data for all regions in a single df with datatimes converted and UTC.
     """
     tuple_list = []
     for row in rows:
