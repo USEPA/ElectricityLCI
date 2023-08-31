@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+import logging
+
 import pandas as pd
+
 from electricitylci.globals import data_dir
 from electricitylci.model_config import model_specs
-import logging
+
 
 logger = logging.getLogger("import_impacts")
 
@@ -197,7 +200,3 @@ def generate_canadian_mixes(us_inventory):
         "Balancing Authority Code"
     ].map(ba_codes["EIA_Region"])
     return ca_mix_inventory
-
-
-if __name__ == "__main__":
-    pass
