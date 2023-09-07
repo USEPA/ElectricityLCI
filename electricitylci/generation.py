@@ -15,7 +15,7 @@ import logging
 
 import numpy as np
 import pandas as pd
-from scipy.stats import t
+from scipy.stats import t            # in geometric_mean in aggregate_data
 from scipy.special import erfinv
 
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows
@@ -990,12 +990,134 @@ def aggregate_data(total_db, subregion="BA"):
     return database_f3
 
 
+def turn_data_to_dict(data, upstream_dict):
+    """Turn aggregated emission data into a dictionary for openLCA.
+
+    Parameters
+    ----------
+    data : pandas.Series
+        Data series containing aggregated emissions to be turned into openLCA
+        unit processes.
+    upstream_dict : dict
+        Dictionary as created by upstream_dict.py, containing the openLCA
+        formatted data for all of the fuel inputs.
+
+    Returns
+    -------
+    dict
+    """
+    from electricitylci.process_dictionary_writer import unit
+    from electricitylci.process_dictionary_writer import flow_table_creation
+    from electricitylci.process_dictionary_writer import ref_exchange_creator
+    from electricitylci.process_dictionary_writer import (
+        uncertainty_table_creation
+    )
+
+    module_logger.debug(f"Turning flows from {data.name} into dictionaries")
+    cols_for_exchange_dict = [
+        "internalId",
+        "@type",
+        "avoidedProduct",
+        "flow",
+        "flowProperty",
+        "input",
+        "quantitativeReference",
+        "baseUncertainty",
+        "provider",
+        "amount",
+        "amountFormula",
+        "unit",
+        "pedigreeUncertainty",
+        "dqEntry",
+        "uncertainty",
+        "comment",
+    ]
+    year = ",".join(data["Year"].astype(str).unique())
+    datasources = ",".join(data["source_string"].astype(str).unique())
+    data["Maximum"] = data["uncertaintyMax"]
+    data["Minimum"] = data["uncertaintyMin"]
+    data["uncertainty"] = ""
+    data["internalId"] = ""
+    data["@type"] = "Exchange"
+    data["avoidedProduct"] = False
+    data["flowProperty"] = ""
+    data["input"]=False
+    input_filter = (
+        (data["Compartment"].str.lower().str.contains("input"))
+        | (data["Compartment"].str.lower().str.contains("resource"))
+        | (data["Compartment"].str.lower().str.contains("technosphere"))
+    )
+    data.loc[input_filter, "input"] = True
+    data["baseUncertainty"] = ""
+    data["provider"] = ""
+    data["unit"] = data["Unit"]
+    data["FlowType"]="ELEMENTARY_FLOW"
+    product_filter=(
+        (data["Compartment"].str.lower().str.contains("technosphere"))
+        |(data["Compartment"].str.lower().str.contains("valuable"))
+    )
+    data.loc[product_filter,"FlowType"] = "PRODUCT_FLOW"
+    waste_filter = (
+        (data["Compartment"].str.lower().str.contains("technosphere"))
+    )
+    data.loc[waste_filter,"FlowType"] = "WASTE_FLOW"
+    data["flow"] = ""
+    provider_filter = data["stage_code"].isin(upstream_dict.keys())
+    for index, row in data.loc[provider_filter, :].iterrows():
+        provider_dict = {
+            "name": upstream_dict[getattr(row, "stage_code")]["name"],
+            "categoryPath": upstream_dict[getattr(row, "stage_code")][
+                "category"
+            ],
+            "processType": "UNIT_PROCESS",
+            "@id": upstream_dict[getattr(row, "stage_code")]["uuid"],
+        }
+        data.at[index, "provider"] = provider_dict
+        data.at[index, "unit"] = unit(
+            upstream_dict[getattr(row, "stage_code")]["q_reference_unit"]
+        )
+        data.at[index, "FlowType"] = "PRODUCT_FLOW"
+
+    for index, row in data.iterrows():
+        data.at[index, "uncertainty"] = uncertainty_table_creation(
+            data.loc[index:index, :]
+        )
+        data.at[index, "flow"] = flow_table_creation(
+            data.loc[index:index, :]
+        )
+    data["amount"] = data["Emission_factor"]
+    data["amountFormula"] = ""
+    data["quantitativeReference"] = False
+    data["dqEntry"] = (
+        "("
+        + str(round(data["DataReliability"].iloc[0], 1))
+        + ";"
+        + str(round(data["TemporalCorrelation"].iloc[0], 1))
+        + ";"
+        + str(round(data["GeographicalCorrelation"].iloc[0], 1))
+        + ";"
+        + str(round(data["TechnologicalCorrelation"].iloc[0], 1))
+        + ";"
+        + str(round(data["DataCollection"].iloc[0], 1))
+        + ")"
+    )
+    data["pedigreeUncertainty"] = ""
+    data["comment"] = data["source_string"].str.replace(
+        "_", "," , regex=False) + ", " + data["Year"].astype(str)
+    data_for_dict = data[cols_for_exchange_dict]
+    data_for_dict = data_for_dict.append(
+        ref_exchange_creator(), ignore_index=True
+    )
+    data_dict = data_for_dict.to_dict("records")
+    return data_dict
+
+
 def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
-    """Turns the give database containing generator facility emissions
-    into dictionaries that contain the required data for insertion into
-    an openLCA-compatible json-ld. Additionally, default providers
-    for fuel inputs are mapped, using the information contained in the dictionary
-    containing openLCA-formatted data for the fuels.
+    """Turn a database containing generator facility emissions into a
+    dictionary that contains required data for an openLCA-compatible JSON-LD.
+
+    Additionally, default providers for fuel inputs are mapped using the information contained in the dictionary containing openLCA-formatted
+    data for the fuels.
 
     Parameters
     ----------
@@ -1012,17 +1134,11 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
 
     Returns
     -------
-    dictionary: dictionary contaning openLCA-formatted data
+    dict
+        Dictionary contaning openLCA-formatted data.
     """
-    from electricitylci.process_dictionary_writer import (
-        unit,
-        flow_table_creation,
-        ref_exchange_creator,
-        uncertainty_table_creation,
-        process_doc_creation,
-    )
-
     from electricitylci.aggregation_selector import subregion_col
+    from electricitylci.process_dictionary_writer import process_doc_creation
 
     region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"]
@@ -1050,114 +1166,10 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         "GeomMean",
         "GeomSD",
     ]
-    def turn_data_to_dict(data, upstream_dict):
-
-        module_logger.debug(
-            f"Turning flows from {data.name} into dictionaries"
-        )
-        cols_for_exchange_dict = [
-            "internalId",
-            "@type",
-            "avoidedProduct",
-            "flow",
-            "flowProperty",
-            "input",
-            "quantitativeReference",
-            "baseUncertainty",
-            "provider",
-            "amount",
-            "amountFormula",
-            "unit",
-            "pedigreeUncertainty",
-            "dqEntry",
-            "uncertainty",
-            "comment",
-        ]
-        year = ",".join(data["Year"].astype(str).unique())
-        datasources = ",".join(data["source_string"].astype(str).unique())
-        data["Maximum"] = data["uncertaintyMax"]
-        data["Minimum"] = data["uncertaintyMin"]
-        data["uncertainty"] = ""
-        data["internalId"] = ""
-        data["@type"] = "Exchange"
-        data["avoidedProduct"] = False
-        data["flowProperty"] = ""
-        data["input"]=False
-        input_filter = (
-                (data["Compartment"].str.lower().str.contains("input"))
-                | (data["Compartment"].str.lower().str.contains("resource"))
-                | (data["Compartment"].str.lower().str.contains("technosphere"))
-        )
-        data.loc[input_filter, "input"] = True
-        data["baseUncertainty"] = ""
-        data["provider"] = ""
-        data["unit"] = data["Unit"]
-#        data["ElementaryFlowPrimeContext"] = data["Compartment"]
-#        default_unit = unit("kg")
-#        data["unit"] = [default_unit] * len(data)
-        data["FlowType"]="ELEMENTARY_FLOW"
-        product_filter=(
-                (data["Compartment"].str.lower().str.contains("technosphere"))
-                |(data["Compartment"].str.lower().str.contains("valuable"))
-        )
-        data.loc[product_filter,"FlowType"] = "PRODUCT_FLOW"
-        waste_filter=(
-                (data["Compartment"].str.lower().str.contains("technosphere"))
-        )
-        data.loc[waste_filter,"FlowType"] = "WASTE_FLOW"
-        data["flow"] = ""
-        provider_filter = data["stage_code"].isin(upstream_dict.keys())
-        for index, row in data.loc[provider_filter, :].iterrows():
-            provider_dict = {
-                "name": upstream_dict[getattr(row, "stage_code")]["name"],
-                "categoryPath": upstream_dict[getattr(row, "stage_code")][
-                    "category"
-                ],
-                "processType": "UNIT_PROCESS",
-                "@id": upstream_dict[getattr(row, "stage_code")]["uuid"],
-            }
-            data.at[index, "provider"] = provider_dict
-            data.at[index, "unit"] = unit(
-                upstream_dict[getattr(row, "stage_code")]["q_reference_unit"]
-            )
-            data.at[index, "FlowType"] = "PRODUCT_FLOW"
-        for index, row in data.iterrows():
-            data.at[index, "uncertainty"] = uncertainty_table_creation(
-                data.loc[index:index, :]
-            )
-            data.at[index, "flow"] = flow_table_creation(
-                data.loc[index:index, :]
-            )
-        data["amount"] = data["Emission_factor"]
-        data["amountFormula"] = ""
-        data["quantitativeReference"] = False
-        data["dqEntry"] = (
-            "("
-            + str(round(data["DataReliability"].iloc[0], 1))
-            + ";"
-            + str(round(data["TemporalCorrelation"].iloc[0], 1))
-            + ";"
-            + str(round(data["GeographicalCorrelation"].iloc[0], 1))
-            + ";"
-            + str(round(data["TechnologicalCorrelation"].iloc[0], 1))
-            + ";"
-            + str(round(data["DataCollection"].iloc[0], 1))
-            + ")"
-        )
-        data["pedigreeUncertainty"] = ""
-        data["comment"] = data["source_string"].str.replace("_",",", regex=False) + ", " + data["Year"].astype(str)#f"{datasources} - {year}"
-        data_for_dict = data[cols_for_exchange_dict]
-        data_for_dict = data_for_dict.append(
-            ref_exchange_creator(), ignore_index=True
-        )
-        data_dict = data_for_dict.to_dict("records")
-        return data_dict
 
     database_groupby = database.groupby(by=base_cols)
     process_df = pd.DataFrame(
-        database_groupby[non_agg_cols].apply(
-            turn_data_to_dict, (upstream_dict)
-        )
+        database_groupby[non_agg_cols].apply(turn_data_to_dict, (upstream_dict))
     )
     process_df.columns = ["exchanges"]
     process_df.reset_index(inplace=True)
@@ -1166,12 +1178,10 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     process_df["defaultAllocationMethod"] = ""
     process_df["location"] = process_df[region_agg].values
     process_df["parameters"] = ""
-#    process_doc_dict = process_doc_creation(process_type)
-#    process_df["processDocumentation"] = [process_doc_dict]*len(process_df)
     process_df["processType"] = "UNIT_PROCESS"
     process_df["category"] = (
-        "22: Utilities/2211: Electric Power Generation, Transmission and Distribution/"
-        + process_df[fuel_agg].values
+        "22: Utilities/2211: Electric Power Generation, "
+        "Transmission and Distribution/" + process_df[fuel_agg].values
     )
     if region_agg is None:
         process_df["description"] = (
@@ -1196,14 +1206,17 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
             + " - "
             + process_df[region_agg].values
         )
-    process_df["description"]=(
+    process_df["description"] = (
         process_df["description"]
         + " This process was created with ElectricityLCI "
         + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
         + " using the " + model_specs.model_name + " configuration."
     )
     process_df["version"] = make_valid_version_num(elci_version)
-    process_df["processDocumentation"]=[process_doc_creation(x) for x in list(process_df["FuelCategory"].str.lower())]
+    process_df["processDocumentation"] = [
+        process_doc_creation(x) for x in list(
+            process_df["FuelCategory"].str.lower())
+    ]
     process_cols = [
         "@type",
         "allocationFactors",
@@ -1227,6 +1240,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
 ##############################################################################
 if __name__ == "__main__":
     from electricitylci.globals import output_dir
+
     plant_emission_df = create_generation_process_df()
     aggregated_emissions_df = aggregate_data(plant_emission_df, subregion="BA")
     datetimestr = datetime.now().strftime("%Y%m%d_%H%M%S")

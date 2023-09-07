@@ -54,7 +54,7 @@ def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
     ar['processDocumentation']=process_doc_creation(process_type=f"{fuel_type.lower()}_upstream")
     ar["processType"] = "LCI_RESULT"
     ar["name"] = process_name
-    if fuel_type is "coal_transport":
+    if fuel_type == "coal_transport":
         ar["category"] = fuel_category_dict["COAL"]
     else:
         ar["category"] = fuel_category_dict[fuel_type]
