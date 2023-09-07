@@ -3,8 +3,6 @@
 
 import pandas as pd
 from electricitylci.globals import data_dir
-import electricitylci.PhysicalQuantities as pq
-from electricitylci.eia923_generation import eia923_download_extract
 from electricitylci.eia860_facilities import eia860_balancing_authority
 
 
