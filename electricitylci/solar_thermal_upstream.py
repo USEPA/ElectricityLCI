@@ -83,7 +83,6 @@ def generate_upstream_solarthermal(year):
             'Energy':'input'
     }
     solarthermal_upstream['Compartment']=solarthermal_upstream['Compartment'].map(compartment_map)
-    # solarthermal_upstream['Compartment']=solarthermal_upstream['Compartment'].str.lower()
     solarthermal_upstream["Unit"]="kg"
     solarthermal_upstream["input"]=False
     return solarthermal_upstream
