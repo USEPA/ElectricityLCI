@@ -1,14 +1,16 @@
 """Small utility functions for use throughout the repository."""
 
 import io
-import zipfile
+import logging
 import os
-from os.path import join
-from electricitylci.globals import data_dir
+import re
+import zipfile
 
 import requests
 import pandas as pd
-import logging
+
+from electricitylci.globals import data_dir
+
 
 module_logger = logging.getLogger("utils.py")
 
@@ -47,7 +49,7 @@ def find_file_in_folder(folder_path, file_pattern_match, return_name=True):
         if all(a in f for a in file_pattern_match):
             file_name = f
 
-    file_path = join(folder_path, file_name)
+    file_path = os.path.join(folder_path, file_name)
 
     if not return_name:
         return file_path
@@ -59,7 +61,7 @@ def create_ba_region_map(
     match_fn="BA code match.csv", region_col="ferc_region"
 ):
 
-    match_path = join(data_dir, match_fn)
+    match_path = os.path.join(data_dir, match_fn)
     region_match = pd.read_csv(match_path, index_col=0)
     region_match["Balancing Authority Code"] = region_match.index
     try:
@@ -90,7 +92,7 @@ def create_ba_region_map(
 def fill_default_provider_uuids(dict_to_fill, *args):
     """
     Fills in UUIDs.
-    
+
     For default providers in the specified dictionary (dict_to_fill) using any
     number of other dictionaries given in args to find the matching process and
     provide the UUID. This is to ensure all the required data for providers is
@@ -139,13 +141,24 @@ def fill_default_provider_uuids(dict_to_fill, *args):
 
 def make_valid_version_num(foo):
     """
-    Strips letters from a string to keep only digits and periods to try to make the version
-    number valid to work for version in http://greendelta.github.io/olca-schema/html/Process.html
-    :param str: A string of the software version
-    :return: str with only numbers and periods
+    Strip letters from a string to keep only digits and dots to make
+    the version number valid in olca-schema processes
+
+    Notes
+    -----
+    See also: http://greendelta.github.io/olca-schema/html/Process.html
+
+    Parameters
+    ----------
+    foo : str
+        A string of the software version.
+
+    Returns
+    -------
+    str
+        Same string with only numbers and periods.
     """
-    import re
-    result = re.sub('[^0-9,.]','',foo)
+    result = re.sub('[^0-9,.]', '', foo)
     return result
 
 
@@ -164,3 +177,56 @@ def join_with_underscore(items):
         items = [str(x) for x in items]
     return "_".join(items)
 
+
+def get_stewi_inventory(invent_dict):
+    # LEFT OFF WITH TESTING 'eGRID' (replacing download_eGRID).
+
+    if not isinstance(invent_dict):
+        raise TypeError(
+            "Expected an inventory of interest dictionary, "
+            "found %s" % type(invent_dict))
+
+    import stewi.egrid as eGRID
+    import stewi.GHGRP as GHGRP
+    import stewi.NEI as NEI
+    import stewi.RCRAInfo as RCRAInfo
+    import stewi.TRI as TRI
+
+    for inventory_acronym, year in invent_dict.items():
+        # StEWI main() methods have all string parameters!
+        year = str(invent_dict[inventory_acronym])
+
+        if inventory_acronym == 'eGRID':
+            # HOTFIX requests error in esupy.
+            url = eGRID._config[year]['download_url']
+            f_name = eGRID._config[year]['file_name']
+            is_zip = os.path.splitext(f_name)[1] == ".zip"
+            # Make output folder, if not already
+            eGRID.OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
+            destination = eGRID.OUTPUT_PATH.joinpath(f_name)
+
+            r = requests.get(url)
+            if is_zip:
+                z = zipfile.ZipFile(io.BytesIO(r.content))
+                wb = z.read(f_name)
+            else:
+                wb = r.content
+            with open(destination, 'wb') as output:
+                output.write(wb)
+
+            eGRID.generate_metadata(year, datatype='source')
+            eGRID.main(Option = 'B', Year = [year])
+        elif inventory_acronym == 'GHGRP':
+            GHGRP.main(Option = 'A', Year = [year])
+            GHGRP.main(Option = 'B', Year = [year])
+        elif inventory_acronym == 'NEI':
+            NEI.main(Option = 'A', Year = [year])
+        elif inventory_acronym == 'RCRAInfo':
+            RCRAInfo.main(Option = 'A', Year = [year],
+                        Tables = ['BR_REPORTING', 'HD_LU_WASTE_CODE'])
+            RCRAInfo.main(Option = 'B', Year = [year],
+                        Tables = ['BR_REPORTING'])
+            RCRAInfo.main(Option = 'C', Year = [year])
+        elif inventory_acronym == 'TRI':
+            TRI.main(Option = 'A', Year = [year], Files = ['1a', '3a'])
+            TRI.main(Option = 'C', Year = [year], Files = ['1a', '3a'])
