@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# process_dictionary_writer.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 """
 Writes process data and metadata as a dictionary
 The dictionary is based on the openLCA (OLCA) schema
@@ -26,6 +34,9 @@ else:
 from electricitylci.globals import data_dir
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 international = pd.read_csv(data_dir+'/International_Electricity_Mix.csv')
 international_reg = list(pd.unique(international['Subregion']))
 

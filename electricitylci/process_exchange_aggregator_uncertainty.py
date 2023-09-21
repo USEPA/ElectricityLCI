@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# process_exchange_aggregator_uncertainty.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 # Uncertainty calculations based on Log Normal distribution
 # Comopilation based on weight factor
 
@@ -8,6 +16,9 @@ from sympy import var,solve
 import pandas as pd
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 # TRoy weight based method to compute emissions factors.  Rename calculation of emission factors. descriptive of the varaible.
 def compilation(db,total_gen):
         # Troy Method

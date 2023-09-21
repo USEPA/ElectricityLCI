@@ -1,9 +1,20 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# technosphereflows.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 """Add docstring."""
 
 import pandas as pd
 from electricitylci.model_config import model_specs
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def map_heat_inputs_to_fuel_names(generation_df):
     """Add docstring."""
     fuel_info_tech_flows = model_specs.fuel_name[model_specs.fuel_name["ElementaryFlowInput"]==0]

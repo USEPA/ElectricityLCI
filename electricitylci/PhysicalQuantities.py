@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# PhysicalQuantities.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 # Physical quantities with units
 #
 # Written by Konrad Hinsen <hinsen@cnrs-orleans.fr>
@@ -17,6 +25,10 @@ from functools import reduce
 import numpy as N
 import re
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 """
 Physical quantities with units.
 

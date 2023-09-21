@@ -1,11 +1,19 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+#
+# hydro_upstream.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import pandas as pd
 from electricitylci.globals import data_dir
 from electricitylci.eia860_facilities import eia860_balancing_authority
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def generate_hydro_emissions():
     """
     This generates a dataframe of hydro power plant emissions using data

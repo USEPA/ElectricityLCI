@@ -1,10 +1,19 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+#
+# manual_edits.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import yaml
 from electricitylci.globals import data_dir
 import logging
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 module_logger = logging.getLogger("manual_edits.py")
 
 with open(f"{data_dir}/manual_edits.yml", "r") as f:

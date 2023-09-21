@@ -1,6 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+#
+# plant_water_use.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 """Add docstring."""
 
 import pandas as pd
@@ -10,6 +15,9 @@ import electricitylci.PhysicalQuantities as pq
 from electricitylci.eia923_generation import eia923_download_extract
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def generate_plant_water_use(year):
     """
     Uses data from an NETL.

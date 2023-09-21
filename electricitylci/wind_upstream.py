@@ -1,5 +1,11 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# -*- coding: utf-8 -*-
+#
+# wind_upstream.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 
 """Add docstring in public module."""
 
@@ -10,6 +16,9 @@ from electricitylci.globals import data_dir
 from electricitylci.eia923_generation import eia923_download_extract
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def generate_upstream_wind(year):
     """
     Generate the annual emissions.

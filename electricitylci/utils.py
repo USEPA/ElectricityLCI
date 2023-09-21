@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# utils.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 """Small utility functions for use throughout the repository."""
 
 import io
@@ -12,6 +20,9 @@ import pandas as pd
 from electricitylci.globals import data_dir
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 module_logger = logging.getLogger("utils.py")
 
 

@@ -1,4 +1,11 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# solar_upstream.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 
 """Add docstring."""
 
@@ -8,6 +15,9 @@ import numpy as np
 from electricitylci.eia923_generation import eia923_download_extract
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def generate_upstream_solar(year):
     """
     Generate the annual emissions.

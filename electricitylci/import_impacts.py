@@ -1,4 +1,11 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# import_impact.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import logging
 
 import pandas as pd
@@ -7,6 +14,9 @@ from electricitylci.globals import data_dir
 from electricitylci.model_config import model_specs
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 logger = logging.getLogger("import_impacts")
 
 def generate_canadian_mixes(us_inventory):

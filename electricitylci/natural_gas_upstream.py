@@ -1,4 +1,11 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# natural_gas_upstream.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 """
 Created on Mon Feb 18 11:39:15 2019
 
@@ -12,6 +19,10 @@ from electricitylci.globals import data_dir
 from electricitylci.eia923_generation import eia923_download_extract
 import electricitylci.PhysicalQuantities as pq
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 module_logger = logging.getLogger(name="natural_gas_upstream.py")
 
 

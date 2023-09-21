@@ -1,4 +1,11 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# upstream_dict.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 
 """Add docstring."""
 import logging
@@ -19,6 +26,9 @@ from electricitylci.utils import make_valid_version_num
 from electricitylci.globals import elci_version
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 module_logger=logging.getLogger("upstream_dict.py")
 
 
@@ -104,6 +114,7 @@ def _exchange_table_creation_ref(fuel_type):
             "id":"",
             "category":"Technosphere Flows/23: Construction/2371: Utility System Construction"
             }
+    # the following link provides the undefined variable: https://github.com/KeyLogicLCA/ElectricityLCI/commit/f61d28a3d0cf5b0ef61ca147f870e15a863f8ec3
     ar = dict()
     ar["internalId"] = ""
     ar["@type"] = "Exchange"

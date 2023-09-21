@@ -1,4 +1,11 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# petroleum_upstream.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 
 """Add docstring."""
 
@@ -13,6 +20,9 @@ import electricitylci.PhysicalQuantities as pq
 import electricitylci.eia923_generation as eia923
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 module_logger=logging.getLogger("petroleum_upstream.py")
 
 

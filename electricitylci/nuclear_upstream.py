@@ -1,4 +1,11 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# natural_gas_upstream.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 """
 Created on Fri May 31 16:10:00 2019
 
@@ -12,6 +19,9 @@ from electricitylci.globals import data_dir
 from electricitylci.eia923_generation import eia923_download_extract
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def generate_upstream_nuc(year):
     """
     Generate the annual uranium extraction, processing and transportation
