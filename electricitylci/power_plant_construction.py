@@ -3,11 +3,6 @@
 #
 # power_plant_construction.py
 #
-"""
-Created on Thu Jul 18 04:52:01 2019.
-
-@author: jamiesom
-"""
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
@@ -15,6 +10,17 @@ import pandas as pd
 
 from electricitylci.globals import data_dir
 from electricitylci.eia860_facilities import eia860_generator_info
+
+
+##############################################################################
+# MODULE DOCUMENTATION
+##############################################################################
+__doc__ = """Short summary sentence.
+
+Longer description.
+
+Last edited: 2023-09-21
+"""
 
 
 ##############################################################################
