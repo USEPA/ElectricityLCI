@@ -486,5 +486,3 @@ def olcaschema_international(database, gen_dict, subregion=None):
         # print(reg +' Process Created')
         generation_mix_dict[reg] = final
     return generation_mix_dict
-
-
