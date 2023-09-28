@@ -25,6 +25,8 @@ from electricitylci.dqi import lookup_score_with_bound_key
 from electricitylci.eia923_generation import eia923_primary_fuel
 from electricitylci.eia860_facilities import eia860_balancing_authority
 from electricitylci.model_config import model_specs
+from electricitylci.dqi import data_collection_lower_bound_to_dqi
+from electricitylci.aggregation_selector import subregion_col
 
 
 ##############################################################################
@@ -78,14 +80,11 @@ def add_flow_representativeness_data_quality_scores(db,total_gen):
 
 
 def add_temporal_correlation_score(db, electricity_lci_target_year):
-    # db['TemporalCorrelation'] = 5
     from electricitylci.dqi import temporal_correlation_lower_bound_to_dqi
-
     # Could be more precise here with year
     db['Age'] =  electricity_lci_target_year - pd.to_numeric(db['Year'])
     db['TemporalCorrelation'] = db['Age'].apply(
         lambda x: lookup_score_with_bound_key(x, temporal_correlation_lower_bound_to_dqi))
-    # db = db.drop(columns='Age')
     return db
 
 
@@ -160,7 +159,6 @@ def aggregate_facility_flows(df):
                 }
         )
     )
-    #    group_db=df.loc[emissions,:].groupby(groupby_cols,as_index=False)['FlowAmount'].sum()
     group_db_merge = group_db.merge(
         right=df_emissions.drop_duplicates(subset=groupby_cols),
         on=groupby_cols,
@@ -202,32 +200,18 @@ def _combine_sources(p_series, df, cols, source_limit=None):
     source_list = list(np.unique(p_series))
     if source_limit:
         if len(source_list) > source_limit:
-            # result = pd.DataFrame()
-            #            result=dict({"source_list":float("nan"),"source_string":float("nan")})
-            #            result["source_list"]=float("nan")
-            #            result["source_string"]=float("nan")
             result = [float("nan"), float("nan")]
             return result
         else:
-            #            result = pd.DataFrame()
             source_list.sort()
             source_list_string = "_".join(source_list)
-            #            result=dict({"source_list":source_list,"source_string":source_list_string})
             result = [source_list, source_list_string]
-            #            result["source_list"] = pd.DataFrame(data=[source_list]).values.tolist()
-            #            result["source_string"] = source_list_string
-
             return result
     else:
-        #        result = pd.DataFrame()
         source_list.sort()
         source_list_string = "_".join(source_list)
-        #        result = pd.DataFrame()
-        #        result["source_list"] = pd.DataFrame(data=[source_list]).values.tolist()
-        #        result["source_string"] = source_list_string
         source_list.sort()
         source_list_string = "_".join(source_list)
-        #        result=dict({"source_list":source_list,"source_string":source_list_string})
         result = [source_list, source_list_string]
         return result
 
@@ -251,8 +235,7 @@ def add_data_collection_score(db, elec_df, subregion="BA"):
         The level of subregion that the data will be aggregated to. Choices
         are 'all', 'NERC', 'BA', 'US', by default 'BA'
     """
-    from electricitylci.dqi import data_collection_lower_bound_to_dqi
-    from electricitylci.aggregation_selector import subregion_col
+
 
     region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"]
@@ -341,9 +324,7 @@ def calculate_electricity_by_source(db, subregion="BA"):
         x, db, ["FlowName", "Compartment"], 1
     )
     combine_source_lambda = lambda x: _combine_sources(
-        x, db_multiple_sources, groupby_cols
-    )
-    # power_db = db.loc[db["stage_code"]=='Power plant',:]
+        x, db_multiple_sources, groupby_cols)
 
     # This is a pretty expensive process when we have to start looking at each
     # flow generated in each compartment for each balancing authority area.
@@ -391,21 +372,17 @@ def calculate_electricity_by_source(db, subregion="BA"):
             how="left",
         )
         db_multiple_sources.index = old_index
-        # db[["source_string","source_list"]].fillna(db_multiple_sources[["source_string","source_list"]],inplace=True)
         db_powerplant.loc[
             db_powerplant["source_string"].isna(), ["source_string", "source_list"]
         ] = db_multiple_sources[["source_string", "source_list"]]
     unique_source_lists = list(db_powerplant["source_string"].unique())
-    # unique_source_lists = [x for x in unique_source_lists if ((str(x) != "nan")&(str(x)!="netl"))]
     unique_source_lists = [
         x for x in unique_source_lists if ((str(x) != "nan"))
     ]
     # One set of emissions passed into this routine may be life cycle emissions
     # used as proxies for Canadian generation. In those cases the electricity
     # generation will be equal to the Electricity already in the dataframe.
-
     elec_sum_lists = list()
-
     unique_source_lists  = unique_source_lists+[all_sources]
     for src in unique_source_lists:
         module_logger.info(f"Calculating electricity for {src}")
@@ -417,7 +394,6 @@ def calculate_electricity_by_source(db, subregion="BA"):
                 db["Source"].values.tolist(), db["temp_src"].values.tolist()
             )
         ]
-        #        total_filter = ~fuelcat_all & src_filter
         sub_db = db.loc[src_filter, :]
         sub_db.drop_duplicates(subset=fuel_agg + ["eGRID_ID"], inplace=True)
         sub_db_group = sub_db.groupby(elec_groupby_cols, as_index=False).agg(
@@ -428,7 +404,6 @@ def calculate_electricity_by_source(db, subregion="BA"):
             "electricity_mean",
             "facility_count",
         ]
-        #        zero_elec_filter = sub_db_group["electricity_sum"]==0
         sub_db_group["source_string"] = src
         elec_sum_lists.append(sub_db_group)
     db_nonpower["source_string"]=all_sources
@@ -550,9 +525,6 @@ def create_generation_process_df():
         generation_data["Year"]=model_specs.egrid_year
         generation_data["FacilityID"]=generation_data["FacilityID"].astype(int)
         emissions_df = emissions_and_waste_for_selected_egrid_facilities
-#        generation_data = build_generation_data(
-#            egrid_facilities_to_include=egrid_facilities_to_include
-#        )
         emissions_df["eGRID_ID"] = emissions_df["eGRID_ID"].astype(int)
     generation_data.rename(columns={'FacilityID':'eGRID_ID'}, inplace=True)
     final_database = pd.merge(
@@ -594,17 +566,7 @@ def create_generation_process_df():
         ].map(
             key_df["FuelCategory"]
         )
-    # if replace_egrid:
-    #     final_database["FuelCategory"].fillna(
-    #         final_database["FuelCategory_right"], inplace=True
-    #     )
     final_database["Final_fuel_agg"] = final_database["FuelCategory"]
-    # if model_specs.use_primaryfuel_for_coal:
-    #     final_database.loc[
-    #         final_database["FuelCategory"] == "COAL", ["Final_fuel_agg"]
-    #     ] = final_database.loc[
-    #         final_database["FuelCategory"] == "COAL", "PrimaryFuel"
-    #     ]
     if 'Year_x' in final_database.columns:
         year_filter = final_database["Year_x"] == final_database["Year_y"]
         final_database = final_database.loc[year_filter, :]

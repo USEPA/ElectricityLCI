@@ -241,3 +241,4 @@ def get_stewi_inventory(invent_dict):
         elif inventory_acronym == 'TRI':
             TRI.main(Option = 'A', Year = [year], Files = ['1a', '3a'])
             TRI.main(Option = 'C', Year = [year], Files = ['1a', '3a'])
+            
