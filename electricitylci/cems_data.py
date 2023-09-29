@@ -1,4 +1,11 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# cems_data.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 
 """
 Retrieve data from EPA CEMS daily zipped CSVs.
@@ -23,6 +30,10 @@ import pandas as pd
 from electricitylci.globals import paths, output_dir
 import logging
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 logger = logging.getLogger("cems_data")
 
 data_years = {
@@ -822,6 +833,9 @@ def build_cems_df(year):
     return summary_df
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == '__main__':
     year = 2016
     df = build_cems_df(year)

@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# egrid_energy.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import numpy as np
 import pandas as pd
 from os.path import join
@@ -9,6 +17,10 @@ from electricitylci.model_config import model_specs
 import warnings
 warnings.filterwarnings("ignore")
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 # Get flow by facility data for egrid
 egrid_net_generation = egrid_flowbyfacility[egrid_flowbyfacility['FlowName'] == 'Electricity']
 # Convert flow amount to MWh

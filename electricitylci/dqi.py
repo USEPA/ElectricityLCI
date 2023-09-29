@@ -1,5 +1,17 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# dqi.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import logging
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 logger = logging.getLogger("dqi")
 
 # Scoring based on USEPA 2016: Guidance on Data Quality Assessment for Life Cycle Inventory Data

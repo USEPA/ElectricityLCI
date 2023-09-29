@@ -1,4 +1,11 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# combinator.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import pandas as pd
 from electricitylci.globals import output_dir, data_dir
 import electricitylci.generation as gen
@@ -7,6 +14,10 @@ from electricitylci.model_config import model_specs
 
 import logging
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 # I added this section to populate a ba_codes variable that could be used
 # by other modules without having to re-read the excel files. The purpose
 # is to try and provide a common source for balancing authority names, as well
@@ -491,6 +502,9 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     return gen_plus_up_df
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == "__main__":
     import electricitylci.coal_upstream as coal
     import electricitylci.natural_gas_upstream as ng

@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# eia860_facilities.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 """
 Download and import EIA860 data, including power plant information such as
 plant code, location, balancing authority, and primary fuel type.
@@ -7,11 +15,8 @@ combined and generalized in the future.
 
 """
 import pandas as pd
-import zipfile
-import io
 import os
 from os.path import join
-import requests
 from electricitylci.globals import EIA860_BASE_URL, paths
 from electricitylci.utils import (
     download_unzip,
@@ -21,6 +26,10 @@ from electricitylci.utils import (
 import logging
 logger = logging.getLogger("eia860_facilities")
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def _clean_columns(df):
     "Remove special characters and convert column names to snake case"
     df.columns = (
@@ -444,6 +453,9 @@ def eia860_generator_info(year):
     return eia
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == "__main__":
     eia_nox = eia860_EnviroAssoc_nox(2016)
     eia_so2 = eia860_EnviroAssoc_so2(2016)

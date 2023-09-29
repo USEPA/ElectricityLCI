@@ -1,7 +1,19 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# egrid_emissions_and_waste_by_facility.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import pandas as pd
 import stewicombo
 from electricitylci.model_config import model_specs
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 emissions_and_wastes_by_facility = None
 if model_specs.stewicombo_file is not None:
     emissions_and_wastes_by_facility = stewicombo.getInventory(model_specs.stewicombo_file)

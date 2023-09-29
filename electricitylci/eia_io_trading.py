@@ -1,13 +1,17 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# eia_io_trading.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import numpy as np
-import os
 import pandas as pd
-# import eia
 from datetime import datetime
-import pytz
 import json
 from os.path import join
 import zipfile
-import requests
 import logging
 
 
@@ -51,6 +55,9 @@ from electricitylci.process_dictionary_writer import *
 """
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     REGION_NAMES = [
         'California', 'Carolinas', 'Central',

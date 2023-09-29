@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# ampd_plant_emissions.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import pandas as pd
 import numpy as np
 from electricitylci.globals import data_dir, output_dir
@@ -11,6 +19,10 @@ from electricitylci.model_config import model_specs
 import logging
 logger = logging.getLogger("ampd_plant_emissions")
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def generate_plant_emissions(year):
     """
     Reads data from EPA air markets program data and fuel use from EIA 923 Page 1
@@ -1464,6 +1476,9 @@ def generate_plant_emissions(year):
     return netl_harmonized_melt
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == "__main__":
     netl_harmonized_melt = generate_plant_emissions(2016)
     netl_harmonized_melt.to_csv(f"{output_dir}/netl_harmonized.csv")

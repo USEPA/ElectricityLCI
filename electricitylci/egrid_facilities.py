@@ -1,9 +1,21 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# egrid_facilities.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import pandas as pd
 import stewi
 from os.path import join
 from electricitylci.globals import data_dir
 from electricitylci.model_config import model_specs
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 # get egrid facility file from stewi
 egrid_facilities = stewi.getInventoryFacilities("eGRID", model_specs.egrid_year)
 egrid_facilities.rename(columns={'Plant primary coal/oil/gas/ other fossil fuel category': 'FuelCategory', 'Plant primary fuel': 'PrimaryFuel', 'eGRID subregion acronym': 'Subregion', 'NERC region acronym': 'NERC'}, inplace=True)

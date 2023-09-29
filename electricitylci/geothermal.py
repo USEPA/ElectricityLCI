@@ -1,4 +1,11 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# geothermal.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 """
 Created on Fri May 31 16:10:00 2019
 
@@ -10,6 +17,9 @@ from electricitylci.eia923_generation import eia923_download_extract
 from electricitylci.globals import data_dir
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def generate_upstream_geo(year):
     """
     Generate the annual emissions from geothermal power plants. These emissions
@@ -112,6 +122,9 @@ def generate_upstream_geo(year):
     return geo_merged
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == "__main__":
     from electricitylci.globals import output_dir
 

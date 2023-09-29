@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# bulk_eia_data.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 """Extract hourly real-time EIA data from the bulk-download zip file."""
 
 import pandas as pd
@@ -12,6 +20,9 @@ from electricitylci.globals import paths
 logger = logging.getLogger("bulk_eia_data")
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def download_EBA():
     """Add docstring."""
     url = 'http://api.eia.gov/bulk/EBA.zip'

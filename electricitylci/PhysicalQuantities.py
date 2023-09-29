@@ -1007,5 +1007,9 @@ __doc__ = str(__doc__) + '\n' + str(description())
 # Some demonstration code. Run with "python -i PhysicalQuantities.py"
 # to have this available.
 
+
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == '__main__':
     demo()

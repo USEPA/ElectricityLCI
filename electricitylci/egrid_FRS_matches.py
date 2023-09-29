@@ -1,8 +1,20 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# egrid_FRS_matches.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import pandas as pd
 import facilitymatcher
 from electricitylci.model_config import model_specs
 from electricitylci.egrid_facilities import egrid_facilities
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 # get egrid program matches from FRS from facility matcher
 egrid_FRS_matches = facilitymatcher.get_matches_for_inventories(["eGRID"])
 egrid_FRS_matches.head()

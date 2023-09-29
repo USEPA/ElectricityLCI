@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# generation_mix.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 """
 The functions in this script calculate the fraction of each generating source
 (either from generation data or straight from eGRID)
@@ -11,6 +19,10 @@ from electricitylci.model_config import model_specs
 from electricitylci.generation import eia_facility_fuel_region
 import logging
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 # Get a subset of the egrid_facilities dataset
 if not model_specs.replace_egrid:
     from electricitylci.egrid_facilities import egrid_facilities, egrid_subregions

@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# eia_trans_dist_grid_loss.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 # %%
 # Import python modules
 
@@ -21,6 +29,9 @@ logger = logging.getLogger("eia_trans_dist_grid_loss")
 # state-wide transmission and distribution losses for the user-specified year
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 @lru_cache(maxsize=10)
 def eia_trans_dist_download_extract(year):
 
@@ -343,6 +354,9 @@ def olca_schema_distribution_mix(td_by_region, cons_mix_dict, subregion="BA"):
     return distribution_mix_dict
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == "__main__":
     import electricitylci.model_config as config
     config.model_specs=config.build_model_class("ELCI_2_2020")

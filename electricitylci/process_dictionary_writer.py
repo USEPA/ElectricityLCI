@@ -817,6 +817,10 @@ def process_table_creation_distribution(region, exchanges_list):
     ar["version"] = make_valid_version_num(elci_version)
     return ar
 
+
+##############################################################################
+# MAIN
+##############################################################################
 if __name__=="__main__":
     """
     Run for debugging purposes, to evaluate result of metadata from various models

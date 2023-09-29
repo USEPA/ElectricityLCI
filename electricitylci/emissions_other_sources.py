@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# emissions_other_sources.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 """
 Integration of emissions from data sources that were not included in stewi
 """
@@ -5,6 +13,9 @@ Integration of emissions from data sources that were not included in stewi
 import pandas as pd
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def integrate_replace_emissions(new_emissions, stewi_emissions):
     """
     Replace and/or add emissions to those compiled in stewi. This is done by

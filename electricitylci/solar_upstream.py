@@ -100,6 +100,9 @@ def generate_upstream_solar(year):
     return solar_upstream
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__=='__main__':
     from electricitylci.globals import output_dir
     year=2016

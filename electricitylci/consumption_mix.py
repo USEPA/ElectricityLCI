@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# consumption_mix.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import openpyxl
 import pandas as pd
 import numpy as np
@@ -12,6 +20,10 @@ from electricitylci.process_dictionary_writer import (
     process_table_creation_surplus
 )
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 if not model_specs.replace_egrid:
     wb2 = openpyxl.load_workbook(data_dir+'/eGRID_Consumption_Mix_new.xlsx', data_only=True)
     data = wb2['ConsumptionMixContributions']

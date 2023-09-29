@@ -82,6 +82,10 @@ def generate_hydro_emissions():
     hydro_df["Compartment"]=hydro_df["Compartment_path"]
     return hydro_df
 
+
+##############################################################################
+# MAIN
+##############################################################################
 if __name__=="__main__":
     from electricitylci.globals import output_dir
     hydro_df=generate_hydro_emissions()

@@ -1,6 +1,18 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# elementaryflows.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import pandas as pd
 import fedelemflowlist
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 # flowlist = fedelemflowlist.get_flowlist()
 mapping_to_fedelemflows = fedelemflowlist.get_flowmapping()
 mapping_to_fedelemflows = mapping_to_fedelemflows[
