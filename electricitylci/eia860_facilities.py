@@ -66,6 +66,7 @@ def eia860_download(year, save_path):
 
 
 def load_eia860_excel(eia860_path, sheet="Plant", header=1):
+    """Add docstring."""
     eia = pd.read_excel(
         eia860_path,
         sheet_name=sheet,
@@ -85,6 +86,7 @@ def load_eia860_excel(eia860_path, sheet="Plant", header=1):
 
 
 def eia860_balancing_authority(year, regional_aggregation=None):
+    """Add docstring."""
 
     expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
 
@@ -172,11 +174,13 @@ def eia860_balancing_authority(year, regional_aggregation=None):
 
 
 def eia860_primary_capacity(year):
+    """Add docstring."""
 
     pass
 
 
 def eia860_EnviroAssoc_so2(year):
+    """Add docstring."""
     expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
@@ -248,6 +252,7 @@ def eia860_EnviroAssoc_so2(year):
 
 
 def eia860_boiler_info_design(year):
+    """Add docstring."""
     expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
@@ -313,6 +318,7 @@ def eia860_boiler_info_design(year):
 
 
 def eia860_EnviroAssoc_nox(year):
+    """Add docstring."""
     expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
@@ -383,6 +389,7 @@ def eia860_EnviroAssoc_nox(year):
     return eia
 
 def eia860_generator_info(year):
+    """Add docstring."""
     expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
