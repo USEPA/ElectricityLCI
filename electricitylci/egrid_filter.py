@@ -6,7 +6,8 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
-# Creates the data for electricity generation processes by fuel type and eGRID subregion
+"""Creates the data for electricity generation processes by fuel type and eGRID subregion"""
+
 # Uses global variables set in the globals file that define fifile:///C:/Users/TGhosh/Dropbox/Electricity_LCI/2. Electric_Refactor after July/ElectricityLCI/electricitylci/%23%23_____code%23for%23developer.pylters
 import warnings
 import pandas as pd
