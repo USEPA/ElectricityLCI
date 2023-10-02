@@ -6,21 +6,36 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
-"""Add docstring."""
-
-import pandas as pd
-import os
-from os.path import join
-from globals import output_dir
-from electricitylci.globals import EIA923_BASE_URL, FUEL_CAT_CODES, paths
-from electricitylci.utils import download_unzip, find_file_in_folder
-from electricitylci.model_config import model_specs
-import electricitylci.model_config as config
-config.model_specs = config.build_model_class()
-from electricitylci.model_config  import model_specs
-from electricitylci.eia860_facilities import eia860_balancing_authority
 from functools import lru_cache
 import logging
+import os
+from os.path import join
+
+import pandas as pd
+
+from electricitylci.eia860_facilities import eia860_balancing_authority
+from electricitylci.globals import EIA923_BASE_URL
+from electricitylci.globals import FUEL_CAT_CODES
+from electricitylci.globals import output_dir
+from electricitylci.globals import paths
+from electricitylci.utils import download_unzip
+from electricitylci.utils import find_file_in_folder
+try:
+    from electricitylci.model_config import model_specs
+except ImportError:
+    import electricitylci.model_config as config
+    config.model_specs = config.build_model_class()
+
+
+##############################################################################
+# GLOBALS
+##############################################################################
+__doc__ = """Download and import EIA 923 data, which primarily includes electricity generated and fuel used by facility. This module will download the data as needed and provides functions to access different pages of the Excel workbook.
+
+
+Last edited: 2023-10-02
+"""
+
 logger = logging.getLogger("eia923_generation")
 
 EIA923_PAGES = {
@@ -51,8 +66,22 @@ EIA923_HEADER_ROWS = {
 }
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def _clean_columns(df):
-    "Remove special characters and convert column names to snake case"
+    """Remove special characters and convert column names to snake case.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        A data frame with column names.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The same data frame with column names formatted.
+    """
     df.columns = (
         df.columns.str.lower()
         .str.replace("[^0-9a-zA-Z\-]+", " ", regex=True)
@@ -64,9 +93,8 @@ def _clean_columns(df):
 
 
 def eia923_download(year, save_path):
-    """
-    Download and unzip one year of EIA 923 annual data to a subfolder
-    of the data directory
+    """Download and unzip one year of EIA 923 annual data to a subfolder
+    of the data directory.
 
     Parameters
     ----------
@@ -632,7 +660,12 @@ def eia923_sched8_aec(year):
     return eia
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == "__main__":
-    #rawr = eia923_sched8_aec(2016)
-    gen_and_fuel_df=eia923_generation_and_fuel(2020)
-    gen_and_fuel_df.to_csv(f"{output_dir}/gen_and_fuel_df_2020.csv", encoding="utf-8-sig")
+    gen_and_fuel_df = eia923_generation_and_fuel(2020)
+    gen_and_fuel_df.to_csv(
+        f"{output_dir}/gen_and_fuel_df_2020.csv",
+        encoding="utf-8-sig"
+    )
