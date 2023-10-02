@@ -6,10 +6,31 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
-"""Add docstring."""
-
 import logging
 
+
+##############################################################################
+# GLOBALS
+##############################################################################
+__doc__ = """Contains a single function to return the correct region for
+results aggregation.
+
+Various functions throughout this package accept a subregion or region
+parameter; therefore, this module was created to provide consistency and reduce
+the repetition. The the following choices are available:
+
+-   'eGRID': eGRID regions
+-   'EIA': EIA region
+-   'FERC': Federal Energy Regulatory Commission (FERC) regions
+-   'BA': Balancing Authority Areas
+-   'NERC': National American Electric Reliability (NERC) regions
+-   'US': National average
+
+Last edited: 2023-10-02
+"""
+__all__ = [
+    "subregion_col",
+]
 module_logger = logging.getLogger("aggregation_selector.py")
 
 
@@ -17,7 +38,20 @@ module_logger = logging.getLogger("aggregation_selector.py")
 # FUNCTIONS
 ##############################################################################
 def subregion_col(subregion="BA"):
-    """Add docstring."""
+    """Corrects regions for results aggregation.
+
+    Parameters
+    ----------
+    subregion : str, optional
+        Subregion abbreviation.
+        Valid options include: 'eGRID', 'NERC', 'BA', 'US', 'FERC' or 'EIA'.
+        Defaults to "BA".
+
+    Returns
+    -------
+    str
+        The correct region name associated with region abbreviation.
+    """
     available_options = ["eGRID", "NERC", "BA", "US", "FERC", "EIA"]
     if subregion not in available_options:
         module_logger.warning("Invalid subregion specified - US selected")
