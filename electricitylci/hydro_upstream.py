@@ -6,10 +6,12 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+"""Add docstring."""
+
 import pandas as pd
 from electricitylci.globals import data_dir
 from electricitylci.eia860_facilities import eia860_balancing_authority
-
+from electricitylci.globals import output_dir
 
 ##############################################################################
 # FUNCTIONS
@@ -87,6 +89,5 @@ def generate_hydro_emissions():
 # MAIN
 ##############################################################################
 if __name__=="__main__":
-    from electricitylci.globals import output_dir
     hydro_df=generate_hydro_emissions()
     hydro_df.to_csv(f"{output_dir}/hydro_emissions_2016.csv")
