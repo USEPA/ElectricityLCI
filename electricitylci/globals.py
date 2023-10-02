@@ -6,6 +6,8 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+"""Add docstring."""
+
 import os
 import glob
 import pkg_resources  # part of setuptools
@@ -151,6 +153,7 @@ STATE_ABBREV = {
 # FUNCTIONS
 ##############################################################################
 def list_model_names_in_config():
+    """Add docstring."""
     configdir = modulepath + 'modelconfig/'
     configfiles = glob.glob(configdir + '*_config.yml')
     modelnames_dict = {}
