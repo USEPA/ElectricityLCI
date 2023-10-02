@@ -6,16 +6,17 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+"""Add docstring."""
 """
 Created on Fri May 31 16:10:00 2019
 
 @author: Matt Jamieson
 """
-import pandas as pd
 
+import pandas as pd
 from electricitylci.eia923_generation import eia923_download_extract
 from electricitylci.globals import data_dir
-
+from electricitylci.globals import output_dir
 
 ##############################################################################
 # FUNCTIONS
@@ -126,8 +127,7 @@ def generate_upstream_geo(year):
 # MAIN
 ##############################################################################
 if __name__ == "__main__":
-    from electricitylci.globals import output_dir
-
+    
     year = 2016
     df = generate_upstream_geo(year)
     df.to_csv(output_dir + "/geothermal_emissions_{}.csv".format(year))
