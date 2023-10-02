@@ -1,17 +1,23 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# eia923_generation.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
+"""Add docstring."""
+
 import pandas as pd
-import zipfile
-import io
 import os
 from os.path import join
-import requests
+from globals import output_dir
 from electricitylci.globals import EIA923_BASE_URL, FUEL_CAT_CODES, paths
 from electricitylci.utils import download_unzip, find_file_in_folder
-#from electricitylci.model_config import model_specs
-if __name__=='__main__':
-    import electricitylci.model_config as config
-    config.model_specs = config.build_model_class()
-else:
-    from electricitylci.model_config  import model_specs
+from electricitylci.model_config import model_specs
+import electricitylci.model_config as config
+config.model_specs = config.build_model_class()
+from electricitylci.model_config  import model_specs
 from electricitylci.eia860_facilities import eia860_balancing_authority
 from functools import lru_cache
 import logging
@@ -81,6 +87,7 @@ def eia923_download(year, save_path):
 
 
 def load_eia923_excel(eia923_path, page="1"):
+    """Add docstring."""
     page_to_load = EIA923_PAGES[page]
     header_row = EIA923_HEADER_ROWS[page]
     eia = pd.read_excel(
@@ -227,7 +234,7 @@ def eia923_download_extract(
 
 
 def group_fuel_categories(df):
-
+    """Add docstring."""
     new_fuel_categories = df["Reported Fuel Type Code"].map(FUEL_CAT_CODES)
 
     return new_fuel_categories
@@ -335,7 +342,7 @@ def eia923_primary_fuel(
 
 
 def calculate_plant_efficiency(gen_fuel_data):
-
+    """Add docstring."""
     plant_total = gen_fuel_data.groupby("Plant Id", as_index=False).sum()
     plant_total["efficiency"] = (
         plant_total["Net Generation (Megawatthours)"]
@@ -347,7 +354,7 @@ def calculate_plant_efficiency(gen_fuel_data):
 
 
 def efficiency_filter(df, egrid_facility_efficiency_filters):
-
+    """Add docstring."""
     upper = egrid_facility_efficiency_filters["upper_efficiency"]
     lower = egrid_facility_efficiency_filters["lower_efficiency"]
 
@@ -357,8 +364,7 @@ def efficiency_filter(df, egrid_facility_efficiency_filters):
 
 
 def build_generation_data(
-    egrid_facilities_to_include=None, generation_years=None,
-    ):
+        egrid_facilities_to_include=None, generation_years=None):
     """
     Build a dataset of facility-level generation using EIA923. This
     function will apply filters for positive generation, generation
@@ -378,16 +384,14 @@ def build_generation_data(
 
     Returns
     ----------
-    DataFrame
-
-    Dataframe columns include:
-    ['FacilityID', 'Electricity', 'Year']
+    pandas.DataFrame
+        Dataframe columns include: ['FacilityID', 'Electricity', 'Year'].
     """
-
     if generation_years is None:
         # Use the years from inventories of interest
         generation_years = set(
-            list(model_specs.inventories_of_interest.values()) + [model_specs.eia_gen_year]
+            list(model_specs.inventories_of_interest.values())
+            + [model_specs.eia_gen_year]
         )
 
     df_list = []
@@ -403,7 +407,10 @@ def build_generation_data(
                     final_gen_df["Net Generation (Megawatthours)"] >= 0, :
                 ]
             if model_specs.filter_on_efficiency:
-                final_gen_df = efficiency_filter(final_gen_df, model_specs.egrid_facility_efficiency_filters)
+                final_gen_df = efficiency_filter(
+                    final_gen_df,
+                    model_specs.egrid_facility_efficiency_filters
+                )
             if (
                 model_specs.filter_on_min_plant_percent_generation_from_primary_fuel
                 and not model_specs.keep_mixed_plant_category
@@ -446,6 +453,7 @@ def build_generation_data(
 
 
 def eia923_generation_and_fuel(year):
+    """Add docstring."""
     expected_923_folder = join(paths.local_path, "f923_{}".format(year))
 
     if not os.path.exists(expected_923_folder):
@@ -505,6 +513,7 @@ def eia923_generation_and_fuel(year):
 
 
 def eia923_boiler_fuel(year):
+    """Add docstring."""
     expected_923_folder = join(paths.local_path, "f923_{}".format(year))
 
     if not os.path.exists(expected_923_folder):
@@ -564,6 +573,7 @@ def eia923_boiler_fuel(year):
 
 
 def eia923_sched8_aec(year):
+    """Add docstring."""
     expected_923_folder = join(paths.local_path, "f923_{}".format(year))
 
     if not os.path.exists(expected_923_folder):
@@ -625,5 +635,4 @@ def eia923_sched8_aec(year):
 if __name__ == "__main__":
     #rawr = eia923_sched8_aec(2016)
     gen_and_fuel_df=eia923_generation_and_fuel(2020)
-    from globals import output_dir
     gen_and_fuel_df.to_csv(f"{output_dir}/gen_and_fuel_df_2020.csv", encoding="utf-8-sig")
