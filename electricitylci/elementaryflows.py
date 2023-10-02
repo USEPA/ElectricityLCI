@@ -6,6 +6,8 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+"""Add docstring."""
+
 import pandas as pd
 import fedelemflowlist
 
@@ -30,7 +32,7 @@ mapping_to_fedelemflows = mapping_to_fedelemflows[
 
 
 def map_emissions_to_fedelemflows(df_with_flows_compartments):
-
+    """Add docstring."""
     mapped_df = pd.merge(
         df_with_flows_compartments,
         mapping_to_fedelemflows.drop_duplicates(
@@ -78,7 +80,7 @@ def map_emissions_to_fedelemflows(df_with_flows_compartments):
 # Manually mapping of input 'Heat' to energy types for renewables
 # !Still need to consider amount conversion
 def map_renewable_heat_flows_to_fedelemflows(df_with_flows_compart_direction):
-
+    """Add docstring."""
     # For all other fuel sources assume techonosphere flows and set to null
     df_with_flows_compart_direction.loc[
         (df_with_flows_compart_direction["FlowName"] == "Heat"),
@@ -167,6 +169,7 @@ compartment_to_flowtype = pd.DataFrame(
 
 
 def map_compartment_to_flow_type(df_with_compartments):
+    """Add docstring."""
     df_with_flowtypes = pd.merge(
         df_with_compartments,
         compartment_to_flowtype,
@@ -177,6 +180,7 @@ def map_compartment_to_flow_type(df_with_compartments):
 
 
 def add_flow_direction(df_with_flowtypes):
+    """Add docstring."""
     df_with_flowtypes["FlowDirection"] = "output"
     df_with_flowtypes.loc[
         (df_with_flowtypes["Compartment"] == "input")
