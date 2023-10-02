@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# emissions_other_sources.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 """
 Created on Tue Jun  4 12:07:46 2019
 
 @author: jamiesom
 """
 
-##############################################################################
-# FUNCTIONS
-##############################################################################
 import ast
 from datetime import datetime
 import logging
@@ -441,31 +444,34 @@ def calculate_electricity_by_source(db, subregion="BA"):
 
 def create_generation_process_df():
     """
-    Reads emissions and generation data from different sources to provide
+    Read emissions and generation data from different sources to provide
     facility-level emissions. Most important inputs to this process come
     from the model configuration file.
 
-    Parameters
-    ----------
-    None
-
     Returns
     ----------
-    dataframe
-        Datafrane includes all facility-level emissions
+    pandas.DataFrame
+        Data frame includes all facility-level emissions.
     """
-    from electricitylci.eia923_generation import (
-        build_generation_data,
-        eia923_primary_fuel
-    )
+    from electricitylci.eia923_generation import build_generation_data
+    from electricitylci.eia923_generation import eia923_primary_fuel
     import electricitylci.emissions_other_sources as em_other
     import electricitylci.ampd_plant_emissions as ampd
     from electricitylci.combinator import ba_codes
     import electricitylci.manual_edits as edits
-    from electricitylci.generation import (
-            add_technological_correlation_score,
-            add_temporal_correlation_score,
-        )
+    from electricitylci.generation import add_technological_correlation_score
+    from electricitylci.generation import add_temporal_correlation_score
+    from electricitylci.generation import egrid_facilities_w_fuel_region
+    from electricitylci.egrid_facilities import egrid_facilities
+    from electricitylci.egrid_emissions_and_waste_by_facility import (
+        emissions_and_wastes_by_facility,
+        base_inventory
+    )
+    from electricitylci.egrid_filter import (
+        emissions_and_waste_for_selected_egrid_facilities,
+        electricity_for_selected_egrid_facilities
+    )
+
     COMPARTMENT_DICT = {
         "emission/air": "air",
         "emission/water": "water",
@@ -479,11 +485,7 @@ def create_generation_process_df():
     }
     if model_specs.replace_egrid:
         generation_data = build_generation_data().drop_duplicates()
-        from electricitylci.egrid_emissions_and_waste_by_facility import (
-            emissions_and_wastes_by_facility,
-            base_inventory,
-        )
-        eia_facilities_to_include=generation_data["FacilityID"].unique()
+        eia_facilities_to_include = generation_data["FacilityID"].unique()
         if base_inventory == "eGRID":
             id_column="eGRID_ID"
         elif "NEI" in model_specs.inventories_of_interest.keys():
@@ -533,15 +535,6 @@ def create_generation_process_df():
         facilities_w_fuel_region=eia_facility_fuel_region(model_specs.eia_gen_year)
         facilities_w_fuel_region.rename(columns={'FacilityID':'eGRID_ID'}, inplace=True)
     else:
-        from electricitylci.egrid_filter import (
-            egrid_facilities_to_include,
-            emissions_and_waste_for_selected_egrid_facilities,
-        )
-        from electricitylci.generation import (
-            egrid_facilities_w_fuel_region,
-        )
-        from electricitylci.egrid_filter import electricity_for_selected_egrid_facilities
-        from electricitylci.egrid_facilities import egrid_facilities
         facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory','NERC','PercentGenerationfromDesignatedFuelCategory','Balancing Authority Name','Balancing Authority Code']]
         facilities_w_fuel_region["FacilityID"] = \
             egrid_facilities_w_fuel_region["FacilityID"].astype(int)
@@ -618,7 +611,6 @@ def create_generation_process_df():
         "FlowAmount",
         "Compartment",
     ]
-
 
     final_database = final_database.loc[
         :, ~final_database.columns.duplicated()
