@@ -6,9 +6,10 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+"""Add docstring."""
+
 import openpyxl
 import pandas as pd
-import numpy as np
 
 from electricitylci.globals import data_dir
 from electricitylci.model_config import model_specs
@@ -25,6 +26,7 @@ from electricitylci.process_dictionary_writer import (
 # FUNCTIONS
 ##############################################################################
 if not model_specs.replace_egrid:
+    
     wb2 = openpyxl.load_workbook(data_dir+'/eGRID_Consumption_Mix_new.xlsx', data_only=True)
     data = wb2['ConsumptionMixContributions']
 
@@ -46,7 +48,7 @@ if not model_specs.replace_egrid:
 
 
 def surplus_pool_dictionary(nerc_region, surplus_pool_trade_in, trade_matrix, gen_quantity, eGRID_region, nerc_region2):
-
+    """Add docstring."""
     surplus_dict = dict()
     for i in range(0, len(nerc_region2)):
 
@@ -72,7 +74,7 @@ def surplus_pool_dictionary(nerc_region, surplus_pool_trade_in, trade_matrix, ge
 
 
 def consumption_mix_dictionary(nerc_region, surplus_pool_trade_in, trade_matrix, generation_quantity, egrid_regions, nerc_region2):
-
+    """Add docstring."""
     surplus_dict = surplus_pool_dictionary(nerc_region, surplus_pool_trade_in, trade_matrix, generation_quantity, egrid_regions, nerc_region2)
     # global region
     consumption_dict = dict()
@@ -111,7 +113,7 @@ def consumption_mix_dictionary(nerc_region, surplus_pool_trade_in, trade_matrix,
 
 
 def check_trading_normalized(trading_matrix):
-
+    """Add docstring."""
     if trading_matrix.iloc[:, 0].sum() > 1:
         for col in trading_matrix.columns:
             trading_matrix[col] /= trading_matrix[col].sum()
