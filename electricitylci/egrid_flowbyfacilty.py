@@ -6,6 +6,8 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+"""Add docstring."""
+
 import stewi
 from electricitylci.model_config import model_specs
 
