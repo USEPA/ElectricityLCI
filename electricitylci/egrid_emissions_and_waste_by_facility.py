@@ -6,6 +6,8 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+"""Add docstring."""
+
 import pandas as pd
 import stewicombo
 from electricitylci.model_config import model_specs
@@ -14,6 +16,8 @@ from electricitylci.model_config import model_specs
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
+"""Add docstring."""
+
 emissions_and_wastes_by_facility = None
 if model_specs.stewicombo_file is not None:
     emissions_and_wastes_by_facility = stewicombo.getInventory(model_specs.stewicombo_file)
