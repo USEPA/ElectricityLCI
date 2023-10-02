@@ -37,16 +37,6 @@ def download_EBA():
 
 path = join(paths.local_path, 'bulk_data', 'EBA.zip')
 
-if __name__=="__main__":
-    try:
-        z = zipfile.ZipFile(path, 'r')
-        with z.open('EBA.txt') as f:
-            raw_txt = f.readlines()
-    except FileNotFoundError:
-        download_EBA()
-        z = zipfile.ZipFile(path, 'r')
-        with z.open('EBA.txt') as f:
-            raw_txt = f.readlines()
 
 # REGION_NAMES = [
 #    'California', 'Carolinas', 'Central',
@@ -185,3 +175,18 @@ def ba_exchange_to_df(rows, data_type='ba_to_ba'):
 #    df = pd.concat(df_list).reset_index(drop=True)
     df=pd.DataFrame(tuple_list, columns=["from_region", "to_region", "datetime", data_type])
     return df
+
+
+##############################################################################
+# MAIN
+##############################################################################
+if __name__=="__main__":
+    try:
+        z = zipfile.ZipFile(path, 'r')
+        with z.open('EBA.txt') as f:
+            raw_txt = f.readlines()
+    except FileNotFoundError:
+        download_EBA()
+        z = zipfile.ZipFile(path, 'r')
+        with z.open('EBA.txt') as f:
+            raw_txt = f.readlines()
