@@ -49,8 +49,10 @@ def subregion_col(subregion="BA"):
 
     Returns
     -------
-    str
-        The correct region name associated with region abbreviation.
+    list
+        A list of length one.
+        The list item is the correct region name associated with the given
+        region abbreviation; for use with pandas data frames.
     """
     available_options = ["eGRID", "NERC", "BA", "US", "FERC", "EIA"]
     if subregion not in available_options:
