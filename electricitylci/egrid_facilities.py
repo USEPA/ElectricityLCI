@@ -6,6 +6,8 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+"""Add docstring."""
+
 import pandas as pd
 import stewi
 from os.path import join
@@ -61,12 +63,14 @@ egrid_facilities_fuel_cat_per_gen = egrid_facilities_fuel_cat_per_gen[egrid_faci
 
 
 def add_percent_generation_from_primary_fuel_category_col(x):
+    """Add docstring."""
     plant_fuel_category = x['FuelCategory']
     x['PercentGenerationfromDesignatedFuelCategory'] = x[fuel_cat_to_per_gen[plant_fuel_category]]
     return x
 
 
 def list_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min():
+    """Add docstring."""
     passing_facilties = egrid_facilities_fuel_cat_per_gen[egrid_facilities_fuel_cat_per_gen['PercentGenerationfromDesignatedFuelCategory'] > model_specs.min_plant_percent_generation_from_primary_fuel_category]
     # Delete duplicates by creating a set
     facility_ids_passing = list(set(passing_facilties['FacilityID']))
