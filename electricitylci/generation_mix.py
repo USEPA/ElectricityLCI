@@ -23,7 +23,7 @@ import logging
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-# Get a subset of the egrid_facilities dataset
+"""Get a subset of the egrid_facilities dataset"""
 if not model_specs.replace_egrid:
     from electricitylci.egrid_facilities import egrid_facilities, egrid_subregions
     egrid_facilities_w_fuel_region = egrid_facilities[
@@ -318,6 +318,7 @@ def create_generation_mix_process_df_from_egrid_ref_data(subregion=None):
 
 
 def olcaschema_genmix(database, gen_dict, subregion=None):
+    """Add docstring."""
     if subregion is None:
         subregion = model_specs.regional_aggregation
     generation_mix_dict = {}
@@ -375,6 +376,7 @@ def olcaschema_genmix(database, gen_dict, subregion=None):
 
 
 def olcaschema_usaverage(database, gen_dict, subregion=None, excluded_regions = ['HIMS','HIOA','AKGD','AKMS']):
+    """Add docstring."""
     if subregion is None:
         subregion = model_specs.regional_aggregation
     generation_mix_dict = {}
@@ -444,7 +446,7 @@ def olcaschema_usaverage(database, gen_dict, subregion=None, excluded_regions = 
     return generation_mix_dict
 
 def olcaschema_international(database, gen_dict, subregion=None):
-    
+    """Add docstring."""
     intl_database = pd.read_csv(data_dir+'/International_Electricity_Mix.csv')
     database = intl_database
     generation_mix_dict = {}
