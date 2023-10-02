@@ -6,6 +6,8 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+"""Add docstring."""
+
 import pandas as pd
 import facilitymatcher
 from electricitylci.model_config import model_specs
@@ -39,6 +41,8 @@ egrid_facilities_with_FRS_NAICS = pd.merge(egrid_facilities_with_FRS,egrid_FRS_N
 
 
 def list_FRS_ids_filtered_for_NAICS():
+    """Add docstring."""
+    
     egrid_facilities_with_FRS_NAICS_filtered = egrid_facilities_with_FRS_NAICS[((egrid_facilities_with_FRS_NAICS['NAICS_4'] == '5622')
                                                                                 & (egrid_facilities_with_FRS_NAICS['FuelCategory'] == 'BIOMASS')
                                                                                 & (egrid_facilities_with_FRS_NAICS['PRIMARY_INDICATOR'] == 'PRIMARY'))
