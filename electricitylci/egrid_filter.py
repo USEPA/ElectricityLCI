@@ -1,4 +1,13 @@
-# Creates the data for electricity generation processes by fuel type and eGRID subregion
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# egrid_filter.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
+"""Creates the data for electricity generation processes by fuel type and eGRID subregion"""
+
 # Uses global variables set in the globals file that define fifile:///C:/Users/TGhosh/Dropbox/Electricity_LCI/2. Electric_Refactor after July/ElectricityLCI/electricitylci/%23%23_____code%23for%23developer.pylters
 import warnings
 import pandas as pd
@@ -10,6 +19,10 @@ from electricitylci.egrid_energy import list_egrid_facilities_with_positive_gene
 from electricitylci.egrid_emissions_and_waste_by_facility import emissions_and_wastes_by_facility
 from electricitylci.egrid_FRS_matches import list_FRS_ids_filtered_for_NAICS
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 # Get lists of egrid facilities
 all_egrid_facility_ids = list(egrid_facilities['FacilityID'])
 len(all_egrid_facility_ids)

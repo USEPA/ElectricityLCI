@@ -6,6 +6,8 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+"""Add docstring."""
+
 import logging
 import os
 from os.path import join
@@ -14,12 +16,17 @@ import numpy as np
 import pandas as pd
 import requests
 
+from ast import literal_eval
 from electricitylci.globals import paths
 from electricitylci.globals import data_dir
 from electricitylci.globals import output_dir
 from electricitylci.eia923_generation import eia923_download
 from electricitylci.utils import find_file_in_folder
 import electricitylci.PhysicalQuantities as pq
+from electricitylci.globals import STATE_ABBREV
+from electricitylci.eia923_generation import eia923_generation_and_fuel
+import electricitylci.model_config as config
+config.model_specs = config.build_model_class()
 
 
 ##############################################################################
@@ -58,6 +65,7 @@ transport_dict={'Avg Barge Ton*Miles': 'Barge',
 # FUNCTIONS
 ##############################################################################
 def eia_7a_download(year, save_path):
+    """Add docstring."""
     eia7a_base_url = 'http://www.eia.gov/coal/data/public/xls/'
     name = 'coalpublic{}.xls'.format(year)
     url = eia7a_base_url + name
@@ -83,6 +91,7 @@ def _clean_columns(df):
 
 
 def read_eia923_fuel_receipts(year):
+    """Add docstring."""
     expected_923_folder = join(paths.local_path, 'f923_{}'.format(year))
     if not os.path.exists(expected_923_folder):
         logger.info('Downloading EIA-923 files')
@@ -128,6 +137,7 @@ def read_eia923_fuel_receipts(year):
 
 
 def _coal_code(row):
+    """Add docstring."""
     # _coal_code_str = basin_codes[basin] + '-' + coal_type_codes[coal_type] + '-' + mine_type
     coal_code_str=(
             f'{basin_codes[row["netl_basin"]]}-'
@@ -138,13 +148,13 @@ def _coal_code(row):
 
 
 def _transport_code(row):
+    """Add docstring."""
     transport_str=transport_dict[row['coal_source_code']]
     return transport_str
 
 
 def generate_upstream_coal_map(year):
-    from electricitylci.globals import STATE_ABBREV
-    from electricitylci.eia923_generation import eia923_generation_and_fuel
+    """Add docstring."""
     eia_fuel_receipts_df=read_eia923_fuel_receipts(year)
     expected_7a_folder=join(paths.local_path, 'f7a_{}'.format(year))
     if not os.path.exists(expected_7a_folder):
@@ -275,7 +285,6 @@ def generate_upstream_coal_map(year):
 
 
 def generate_upstream_coal(year):
-    from ast import literal_eval
     """
     Generate the annual coal mining and transportation emissions (in kg) for
     each plant in EIA923.
@@ -353,6 +362,7 @@ def generate_upstream_coal(year):
     groupby_cols=["FlowUUID"]
 
     def wtd_mean(pdser, total_db):
+        """Add docstring."""
         try:
             wts = total_db.loc[pdser.index, "quantity"]
             result = np.average(pdser, weights=wts)
@@ -522,9 +532,7 @@ def generate_upstream_coal(year):
 # MAIN
 ##############################################################################
 if __name__=='__main__':
-    import electricitylci.model_config as config
-    config.model_specs = config.build_model_class()
-
+    
     year=2020
     df = generate_upstream_coal(year)
     df.to_csv(output_dir+'/coal_emissions_{}.csv'.format(year))

@@ -1,8 +1,22 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# egrid_FRS_matches.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
+"""Add docstring."""
+
 import pandas as pd
 import facilitymatcher
 from electricitylci.model_config import model_specs
 from electricitylci.egrid_facilities import egrid_facilities
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 # get egrid program matches from FRS from facility matcher
 egrid_FRS_matches = facilitymatcher.get_matches_for_inventories(["eGRID"])
 egrid_FRS_matches.head()
@@ -27,6 +41,8 @@ egrid_facilities_with_FRS_NAICS = pd.merge(egrid_facilities_with_FRS,egrid_FRS_N
 
 
 def list_FRS_ids_filtered_for_NAICS():
+    """Add docstring."""
+    
     egrid_facilities_with_FRS_NAICS_filtered = egrid_facilities_with_FRS_NAICS[((egrid_facilities_with_FRS_NAICS['NAICS_4'] == '5622')
                                                                                 & (egrid_facilities_with_FRS_NAICS['FuelCategory'] == 'BIOMASS')
                                                                                 & (egrid_facilities_with_FRS_NAICS['PRIMARY_INDICATOR'] == 'PRIMARY'))
@@ -35,29 +51,3 @@ def list_FRS_ids_filtered_for_NAICS():
                                                                                 & (egrid_facilities_with_FRS_NAICS['PRIMARY_INDICATOR'] == 'PRIMARY'))]
     frs_ids = list(pd.unique(egrid_facilities_with_FRS_NAICS_filtered['FRS_ID']))
     return frs_ids
-
-
-# FRS_NAICS_conditions = [{"NAICS_4":"2211","PRIMARY_INDICATOR":"PRIMARY"},{"NAICS_4":"5622","FuelCategory":"BIOMASS","PRIMARY_INDICATOR":"PRIMARY"}]
-# def list_FRS_ids_filtered_for_NAICS():
-#     #create conditions
-#     all_conditions=[]
-#     a = 0
-#     for i in FRS_NAICS_conditions:
-#         and_conditions = ''
-#         ind=0
-#         for k,v in i.items():
-#             condition = '(egrid_facilities_with_FRS_NAICS[\'' + k + '\'] == \'' + v + '\')'
-#             if ind==0:
-#                 and_conditions = condition
-#             else:
-#                 and_conditions = and_conditions + ' & ' + condition
-#             ind = ind+1
-#             #Add parens around it
-#             and_conditions = "(" + and_conditions + ")"
-#             all_conditions.append(and_conditions)
-#     statement = ''
-#     for c in all_conditions:
-#         if a==0:
-#             statement = c + ' or '
-#         else:
-#             statement = statement + c

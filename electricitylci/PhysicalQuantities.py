@@ -19,7 +19,6 @@
 # replaced by numpy. Modifications by H. P. Langtangen
 # <hpl@simula.no>. To test: py.test/nosetests -s -v PhysicalQuantities.py)
 
-"""Add docstring."""
 
 from functools import reduce
 import numpy as N
@@ -1008,5 +1007,9 @@ __doc__ = str(__doc__) + '\n' + str(description())
 # Some demonstration code. Run with "python -i PhysicalQuantities.py"
 # to have this available.
 
+
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == '__main__':
     demo()

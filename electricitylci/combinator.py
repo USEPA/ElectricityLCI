@@ -1,12 +1,34 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# combinator.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
+"""Add docstring."""
+
 import pandas as pd
 from electricitylci.globals import output_dir, data_dir
-import electricitylci.generation as gen
-import electricitylci.import_impacts as import_impacts
+from electricitylci.import_impacts import import_impacts
 from electricitylci.model_config import model_specs
+from electricitylci.eia860_facilities import eia860_balancing_authority
+import electricitylci.coal_upstream as coal
+import electricitylci.natural_gas_upstream as ng
+import electricitylci.petroleum_upstream as petro
+import electricitylci.geothermal as geo
+import electricitylci.solar_upstream as solar
+import electricitylci.wind_upstream as wind
+import electricitylci.nuclear_upstream as nuke
+from electricitylci.generation import add_temporal_correlation_score
 
+import fedelemflowlist as fedefl
 import logging
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 # I added this section to populate a ba_codes variable that could be used
 # by other modules without having to re-read the excel files. The purpose
 # is to try and provide a common source for balancing authority names, as well
@@ -59,7 +81,6 @@ def fill_nans(df, eia_gen_year, key_column="FacilityID", target_columns=[], drop
     -------
     dataframe: hopefully with all of the nans filled.
     """
-    from electricitylci.eia860_facilities import eia860_balancing_authority
 
     if not target_columns:
         target_columns = [
@@ -116,8 +137,7 @@ def fill_nans(df, eia_gen_year, key_column="FacilityID", target_columns=[], drop
 
 
 def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
-    import fedelemflowlist as fedefl
-
+    
     """
     Concatenates all of the databases given as args. Then all of the
     emissions in the combined database are mapped to the federal elementary
@@ -412,10 +432,6 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     -------
     dataframe
     """
-    from electricitylci.generation import (
-        add_technological_correlation_score,
-        add_temporal_correlation_score,
-    )
 
     upstream_reduced = upstream_df.drop_duplicates(
         subset=["plant_id", "stage_code", "quantity"]
@@ -491,17 +507,12 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     return gen_plus_up_df
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == "__main__":
-    import electricitylci.coal_upstream as coal
-    import electricitylci.natural_gas_upstream as ng
-    import electricitylci.petroleum_upstream as petro
-    import electricitylci.geothermal as geo
-    import electricitylci.solar_upstream as solar
-    import electricitylci.wind_upstream as wind
-    import electricitylci.nuclear_upstream as nuke
-
-    # coal_df = coal.generate_upstream_coal(2016)
-    # ng_df = ng.generate_upstream_ng(2016)
+    coal_df = coal.generate_upstream_coal(2016)
+    ng_df = ng.generate_upstream_ng(2016)
     petro_df = petro.generate_petroleum_upstream(2016)
     geo_df = geo.generate_upstream_geo(2016)
     solar_df = solar.generate_upstream_solar(2016)

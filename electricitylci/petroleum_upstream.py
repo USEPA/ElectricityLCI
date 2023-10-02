@@ -178,6 +178,10 @@ def generate_petroleum_upstream(year):
 
     return merged_inventory
 
+
+##############################################################################
+# MAIN
+##############################################################################
 if __name__=='__main__':
     from electricitylci.globals import output_dir
     year=2016

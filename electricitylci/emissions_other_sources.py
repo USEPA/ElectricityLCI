@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# emissions_other_sources.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 """
 Integration of emissions from data sources that were not included in stewi
 """
@@ -5,6 +13,9 @@ Integration of emissions from data sources that were not included in stewi
 import pandas as pd
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def integrate_replace_emissions(new_emissions, stewi_emissions):
     """
     Replace and/or add emissions to those compiled in stewi. This is done by
@@ -100,58 +111,3 @@ def integrate_replace_emissions(new_emissions, stewi_emissions):
                     if c in updated_emissions.columns.values.tolist()]
     updated_emissions.drop(columns=drop_columns, inplace=True)
     return updated_emissions
-
-
-# def combine_upstream_emissions():
-#     """
-#     Combine upstream emissions generated from a list of functions. Each function
-#     generates the upstream emissions from a single fuel type (e.g. coal, NG, etc.)
-#     as a dataframe.
-
-#     All dataframes should include the columns:
-#         - [ADD COLUMN NAMES]
-
-#     Returns
-#     -------
-#     DataFrame
-#         A single dataframe with emissions upstream of the power plant for all
-#         fuel types.
-#     """
-
-#     upstream = pd.concat(fn for fn in UPSTREAM_EMISSION_GENERATORS)
-
-#     return upstream
-
-
-# def add_upstream_emissions(plant_emissions):
-#     """
-#     Add upstream emissions to emissions at the power plant. The upstream emissions
-#     have extra columns.
-
-#     - Need a fuel type column
-#     - Need a life cycle stage column
-#     - Only for use when exporting to dataframe (no JSON-LD for now)
-
-#     New columns:
-#         - Fuel type? (coal/gas/nuclear/solar/wind, etc)
-#         - Fuel index code? (e.g. subbit from prb surface)
-#         - Stage (e.g. extraction, transportation)
-#         - Stage index? (maybe add dictionary in globals.py to map stage names
-#         across fuels)
-#         -
-#     Parameters
-#     ----------
-#     plant_emissions : DataFrame
-#         Facility-level emissions from each power plant.
-
-#     Returns
-#     -------
-#     DataFrame
-#         The combined emissions from power plant and upstream fuel life cycle.
-#     """
-
-#     upstream_emissions = combine_upstream_emissions()
-
-#     combined_emissions = pd.concat([plant_emissions, upstream_emissions])
-
-#     return combined_emissions

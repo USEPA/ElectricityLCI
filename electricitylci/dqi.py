@@ -1,5 +1,18 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# dqi.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
+"""Add docstring."""
+
 import logging
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 logger = logging.getLogger("dqi")
 
 # Scoring based on USEPA 2016: Guidance on Data Quality Assessment for Life Cycle Inventory Data
@@ -16,6 +29,7 @@ technological_correlation_lower_bound_to_dqi = {.4: 4, .6: 3, .8: 2, 1: 1, None:
 
 
 def lookup_score_with_bound_key(raw_score, bound_to_dqi):
+    """Add docstring."""
     breakpoints = list(bound_to_dqi.keys())
     if raw_score <= breakpoints[0]:
         score = bound_to_dqi[breakpoints[0]]

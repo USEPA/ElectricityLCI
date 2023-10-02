@@ -128,6 +128,9 @@ def generate_upstream_ng(year):
     return ng_lci_basin
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__=='__main__':
     from electricitylci.globals import output_dir
     year=2016

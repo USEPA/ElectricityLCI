@@ -1,3 +1,13 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# ampd_plant_emissions.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
+"""Add docstring."""
+
 import pandas as pd
 import numpy as np
 from electricitylci.globals import data_dir, output_dir
@@ -5,12 +15,15 @@ import electricitylci.PhysicalQuantities as pq
 import electricitylci.cems_data as cems
 import electricitylci.eia923_generation as eia923
 import electricitylci.eia860_facilities as eia860
-import fedelemflowlist
 from electricitylci.model_config import model_specs
 
 import logging
 logger = logging.getLogger("ampd_plant_emissions")
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def generate_plant_emissions(year):
     """
     Reads data from EPA air markets program data and fuel use from EIA 923 Page 1
@@ -75,8 +88,10 @@ def generate_plant_emissions(year):
         "WO": "OIL",
         "Mixed Fuel Type": "MIXED",
     }
+    
 
     def emissions_check_gen_fuel(df):
+        """Add docstring."""
         emissions_check = eia923_gen_fuel_sub_agg.merge(
             df, on="plant_id", how="left"
         )
@@ -110,8 +125,10 @@ def generate_plant_emissions(year):
         )
 
         return emissions_check
+    
 
     def emissions_check_boiler(df):
+        """Add docstring."""
         df_list = [
             eia923_gen_fuel_boiler_agg,
             df,
@@ -186,8 +203,9 @@ def generate_plant_emissions(year):
 
         return emissions_check
 
-    def eia_gen_fuel_co2_ch4_n2o_emissions(eia923_gen_fuel):
 
+    def eia_gen_fuel_co2_ch4_n2o_emissions(eia923_gen_fuel):
+        """Add docstring."""
         emissions = pd.DataFrame()
 
         for row in ef_co2_ch4_n2o.itertuples():
@@ -223,8 +241,9 @@ def generate_plant_emissions(year):
 
         return emissions_agg
 
-    def eia_boiler_co2_ch4_n2o_emissions(eia923_boiler):
 
+    def eia_boiler_co2_ch4_n2o_emissions(eia923_boiler):
+        """Add docstring."""
         emissions = pd.DataFrame()
 
         for row in ef_co2_ch4_n2o.itertuples():
@@ -294,9 +313,10 @@ def generate_plant_emissions(year):
         emissions_agg["plant_id"] = emissions_agg["plant_id"].astype(str)
 
         return emissions_agg
+    
 
     def eia_gen_fuel_net_gen(eia923_gen_fuel):
-
+        """Add docstring."""
         net_gen_monthly = [
             "netgen_january",
             "netgen_february",
@@ -345,10 +365,11 @@ def generate_plant_emissions(year):
         ].astype(str)
 
         return eia_923_gen_fuel_agg
+    
 
     def eia_gen_fuel_so2_emissions(eia923_gen_fuel_sub):
-
-        #        emissions = pd.DataFrame()
+        """Add docstring."""
+        emissions = pd.DataFrame()
         emissions = eia923_gen_fuel_sub.merge(
             ef_so2.loc[ef_so2["Boiler_Firing_Type_Code"] == "None", :],
             left_on=["reported_prime_mover", "reported_fuel_type_code"],
@@ -403,9 +424,10 @@ def generate_plant_emissions(year):
         emissions_agg["plant_id"] = emissions_agg["plant_id"].astype(str)
 
         return emissions_agg
+    
 
     def eia_boiler_so2_emissions(eia923_boiler_firing_type):
-
+        """Add docstring."""
         fuel_heating_value_monthly = [
             "mmbtu_per_unit_january",
             "mmbtu_per_unit_february",
@@ -593,10 +615,11 @@ def generate_plant_emissions(year):
         )
 
         return emissions_agg
+    
 
     def eia_gen_fuel_nox_emissions(eia923_gen_fuel_sub):
-
-        #        emissions = pd.DataFrame()
+        """Add docstring."""
+        emissions = pd.DataFrame()
         emissions = eia923_gen_fuel_sub.merge(
             ef_nox,
             left_on=["reported_fuel_type_code", "reported_prime_mover"],
@@ -624,14 +647,18 @@ def generate_plant_emissions(year):
         emissions_agg["plant_id"] = emissions_agg["plant_id"].astype(str)
 
         return emissions_agg
+    
 
     def eia_boiler_nox(row):
+        """Add docstring."""
         if row["nox_emission_rate_entire_year_lbs_mmbtu"] > 0:
             return row["NOx Based on Annual Rate (lbs)"]
         else:
             return row["NOx (lbs)"]
 
+
     def eia_boiler_nox_emissions(eia923_boiler_firing_type):
+        """Add docstring."""
         fuel_heat_quantity_monthly = [
             "MMBtu January",
             "MMBtu February",
@@ -689,6 +716,7 @@ def generate_plant_emissions(year):
         emissions_agg["plant_id"] = emissions_agg["plant_id"].astype(str)
         emissions_agg = emissions_agg.rename(columns={"NOx_lbs": "NOx (lbs)"})
         return emissions_agg
+
 
     def eia_wtd_sulfur_content(eia923_boiler):
         """This function determines the weighted average sulfur content of all reported fuel types
@@ -775,13 +803,17 @@ def generate_plant_emissions(year):
 
         return sulfur_content_agg
 
+
     def eia_primary_fuel(row):
+        """Add docstring."""
         if row["Primary Fuel %"] < model_specs.min_plant_percent_generation_from_primary_fuel_category/100:
             return "Mixed Fuel Type"
         else:
             return row["Primary Fuel"]
 
+
     def emissions_logic_CO2(row):
+        """Add docstring."""
         if (
             (
                 row["ampd Heat Input (MMBtu)"]
@@ -801,7 +833,9 @@ def generate_plant_emissions(year):
             row["Source"] = "ap42"
             return row["CO2 (Tons)"], row["Source"]
 
+
     def emissions_logic_SO2(row):
+        """Add docstring."""
         if (
             (
                 row["ampd Heat Input (MMBtu)"]
@@ -821,7 +855,9 @@ def generate_plant_emissions(year):
             row["Source"] = "ap42"
             return row["SO2 (lbs)"], row["Source"]
 
+
     def emissions_logic_NOx(row):
+        """Add docstring."""
         if (
             (
                 row["ampd Heat Input (MMBtu)"]
@@ -1464,6 +1500,9 @@ def generate_plant_emissions(year):
     return netl_harmonized_melt
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == "__main__":
     netl_harmonized_melt = generate_plant_emissions(2016)
     netl_harmonized_melt.to_csv(f"{output_dir}/netl_harmonized.csv")

@@ -1,5 +1,15 @@
-# %%
-# Import python modules
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# eia_trans_dist_grid_loss.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
+"""
+Define function to extract EIA state-wide electricity profiles and calculate
+state-wide transmission and distribution losses for the user-specified year
+"""
 
 import pandas as pd
 import numpy as np
@@ -10,17 +20,31 @@ import logging
 from xlrd import XLRDError
 from functools import lru_cache
 from zipfile import BadZipFile
+from electricitylci.eia923_generation import build_generation_data
+from electricitylci.combinator import ba_codes
+import electricitylci.model_config as config
+from electricitylci.generation import eia_facility_fuel_region
+from electricitylci.egrid_facilities import egrid_facilities
+from electricitylci.aggregation_selector import subregion_col
+from electricitylci.aggregation_selector import subregion_col
+from electricitylci.process_dictionary_writer import (
+        exchange_table_creation_ref,
+        exchange,
+        ref_exchange_creator,
+        electricity_at_user_flow,
+        electricity_at_grid_flow,
+        process_table_creation_distribution,
+    )
+
 
 logger = logging.getLogger("eia_trans_dist_grid_loss")
 # %%
 # Set working directory, files downloaded from EIA will be saved to this location
 # os.chdir = 'N:/eLCI/Transmission and Distribution'
 
-# %%
-# Define function to extract EIA state-wide electricity profiles and calculate
-# state-wide transmission and distribution losses for the user-specified year
-
-
+##############################################################################
+# FUNCTIONS
+##############################################################################
 @lru_cache(maxsize=10)
 def eia_trans_dist_download_extract(year):
 
@@ -192,10 +216,7 @@ def generate_regional_grid_loss(year, subregion="all"):
             aggregated emissions unit processes.
     """
     logger.info("Generating factors for transmission and distribution losses")
-    from electricitylci.eia923_generation import build_generation_data
-    from electricitylci.combinator import ba_codes
-    import electricitylci.model_config as config
-    from electricitylci.generation import eia_facility_fuel_region
+
     td_calc_columns = [
         "State",
         "NERC",
@@ -223,7 +244,6 @@ def generate_regional_grid_loss(year, subregion="all"):
         )
     plant_generation
     if not config.model_specs.replace_egrid:
-        from electricitylci.egrid_facilities import egrid_facilities
         egrid_facilities_w_fuel_region = egrid_facilities[
             [
             "FacilityID",
@@ -254,7 +274,6 @@ def generate_regional_grid_loss(year, subregion="all"):
     td_by_plant.dropna(subset=["t_d_losses"], inplace=True)
     td_by_plant["t_d_losses"] = td_by_plant["t_d_losses"].astype(float)
 
-    from electricitylci.aggregation_selector import subregion_col
     aggregation_column=subregion_col(subregion)
     wm = lambda x: np.average(
         x, weights=td_by_plant.loc[x.index, "Electricity"]
@@ -272,15 +291,7 @@ def generate_regional_grid_loss(year, subregion="all"):
 
 
 def olca_schema_distribution_mix(td_by_region, cons_mix_dict, subregion="BA"):
-    from electricitylci.process_dictionary_writer import (
-        exchange_table_creation_ref,
-        exchange,
-        ref_exchange_creator,
-        electricity_at_user_flow,
-        electricity_at_grid_flow,
-        process_table_creation_distribution,
-    )
-
+    """Add docstring."""
     distribution_mix_dict = {}
     if subregion == "all":
         aggregation_column = "Subregion"
@@ -343,8 +354,10 @@ def olca_schema_distribution_mix(td_by_region, cons_mix_dict, subregion="BA"):
     return distribution_mix_dict
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == "__main__":
-    import electricitylci.model_config as config
     config.model_specs=config.build_model_class("ELCI_2_2020")
     year = 2016
     trans_dist_grid_loss = generate_regional_grid_loss(year, "BA")

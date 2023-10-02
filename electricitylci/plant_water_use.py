@@ -228,6 +228,9 @@ def generate_plant_water_use(year):
     return final_water
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == "__main__":
     from electricitylci.globals import output_dir
     year = 2016

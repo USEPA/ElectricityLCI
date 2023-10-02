@@ -362,6 +362,10 @@ def olcaschema_genupstream_processes(merged):
         ] = final
     return upstream_process_dict
 
+
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == "__main__":
     import electricitylci.coal_upstream as coal
     import electricitylci.natural_gas_upstream as ng

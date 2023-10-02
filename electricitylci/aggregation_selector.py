@@ -1,5 +1,11 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+#
+# aggregation_selector.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 """Add docstring."""
 
 import logging
@@ -7,6 +13,9 @@ import logging
 module_logger = logging.getLogger("aggregation_selector.py")
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def subregion_col(subregion="BA"):
     """Add docstring."""
     available_options = ["eGRID", "NERC", "BA", "US", "FERC", "EIA"]

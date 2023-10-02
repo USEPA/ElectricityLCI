@@ -1,4 +1,11 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# cems_data.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 
 """
 Retrieve data from EPA CEMS daily zipped CSVs.
@@ -18,11 +25,18 @@ copies or substantial portions of the Software.
 """
 import os
 import pandas as pd
-# from pudl.settings import SETTINGS
-# import pudl.constants as pc
-from electricitylci.globals import paths, output_dir
 import logging
+import urllib
+import ftplib
+import zipfile
+import shutil
+import warnings
 
+from electricitylci.globals import paths, output_dir
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 logger = logging.getLogger("cems_data")
 
 data_years = {
@@ -280,15 +294,6 @@ def extract(epacems_years, states, verbose=True):
     return dfs
 
 
-import urllib
-import ftplib
-import zipfile
-import shutil
-import warnings
-# import pudl.constants as pc
-# from pudl.settings import SETTINGS
-
-
 def assert_valid_param(source, year, qtr=None, state=None, check_month=None):
     """Add docstring."""
     assert source in ('epacems'), \
@@ -540,6 +545,7 @@ def download(source, year, states, datadir=paths.local_path, verbose=True):
 
 
 def _download_FTP(src_urls, tmp_files, allow_retry=True):
+    """Add docstring."""
     assert len(src_urls) == len(tmp_files) > 0
     parsed_urls = [urllib.parse.urlparse(url) for url in src_urls]
     domains = {url.netloc for url in parsed_urls}
@@ -822,6 +828,9 @@ def build_cems_df(year):
     return summary_df
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == '__main__':
     year = 2016
     df = build_cems_df(year)

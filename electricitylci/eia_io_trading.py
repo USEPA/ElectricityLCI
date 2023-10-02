@@ -1,22 +1,36 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# eia_io_trading.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
+"""Add docstring."""
+
 import numpy as np
-import os
 import pandas as pd
-# import eia
 from datetime import datetime
-import pytz
 import json
 from os.path import join
 import zipfile
-import requests
 import logging
-
-
 from electricitylci.globals import data_dir, output_dir, paths
 from electricitylci.bulk_eia_data import download_EBA, row_to_df, ba_exchange_to_df
 from electricitylci.model_config import model_specs
 import electricitylci.eia923_generation as eia923
 import electricitylci.eia860_facilities as eia860
-
+from electricitylci.generation import eia_facility_fuel_region
+from electricitylci.globals import data_dir, output_dir
+from electricitylci.process_dictionary_writer import (
+        exchange_table_creation_ref,
+        exchange,
+        ref_exchange_creator,
+        electricity_at_user_flow,
+        electricity_at_grid_flow,
+        process_table_creation_con_mix,
+        exchange_table_creation_input_con_mix
+    )
 from electricitylci.process_dictionary_writer import *
 """
     Merge generation and emissions data. Add region designations using either
@@ -50,8 +64,12 @@ from electricitylci.process_dictionary_writer import *
 
 """
 
-
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
+    """Add docstring."""
+
     REGION_NAMES = [
         'California', 'Carolinas', 'Central',
         'Electric Reliability Council of Texas, Inc.', 'Florida',
@@ -544,29 +562,8 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     return {'BA':BAA_final_trade,'FERC':ferc_final_trade,'US':us_final_trade}
 
 
-if __name__=='__main__':
-    year=2016
-    subregion = 'BA'
-    mix_df_dict = ba_io_trading_model(year, subregion)
-
-
 def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
-    import numpy as np
-    import pandas as pd
-
-    from electricitylci.generation import eia_facility_fuel_region
-    from electricitylci.globals import data_dir, output_dir
-    from electricitylci.process_dictionary_writer import (
-        exchange_table_creation_ref,
-        exchange,
-        ref_exchange_creator,
-        electricity_at_user_flow,
-        electricity_at_grid_flow,
-        process_table_creation_con_mix,
-        exchange_table_creation_input_con_mix
-    )
-    import logging
-
+    """Add docstring."""
 # DELETE NEXT LINE
 #    database = cons_mix_df
 #    database = database.drop(columns = ['value', 'total'])
@@ -638,3 +635,12 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
         consumption_mix_dict[f"{reg} - {subregion}"] = final
 
     return consumption_mix_dict
+
+
+##############################################################################
+# MAIN
+##############################################################################
+if __name__=='__main__':
+    year=2016
+    subregion = 'BA'
+    mix_df_dict = ba_io_trading_model(year, subregion)

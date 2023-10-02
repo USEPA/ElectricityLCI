@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# eia860_facilities.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 """
 Download and import EIA860 data, including power plant information such as
 plant code, location, balancing authority, and primary fuel type.
@@ -7,11 +15,8 @@ combined and generalized in the future.
 
 """
 import pandas as pd
-import zipfile
-import io
 import os
 from os.path import join
-import requests
 from electricitylci.globals import EIA860_BASE_URL, paths
 from electricitylci.utils import (
     download_unzip,
@@ -21,6 +26,10 @@ from electricitylci.utils import (
 import logging
 logger = logging.getLogger("eia860_facilities")
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def _clean_columns(df):
     "Remove special characters and convert column names to snake case"
     df.columns = (
@@ -57,6 +66,7 @@ def eia860_download(year, save_path):
 
 
 def load_eia860_excel(eia860_path, sheet="Plant", header=1):
+    """Add docstring."""
     eia = pd.read_excel(
         eia860_path,
         sheet_name=sheet,
@@ -76,6 +86,7 @@ def load_eia860_excel(eia860_path, sheet="Plant", header=1):
 
 
 def eia860_balancing_authority(year, regional_aggregation=None):
+    """Add docstring."""
 
     expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
 
@@ -163,11 +174,13 @@ def eia860_balancing_authority(year, regional_aggregation=None):
 
 
 def eia860_primary_capacity(year):
+    """Add docstring."""
 
     pass
 
 
 def eia860_EnviroAssoc_so2(year):
+    """Add docstring."""
     expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
@@ -239,6 +252,7 @@ def eia860_EnviroAssoc_so2(year):
 
 
 def eia860_boiler_info_design(year):
+    """Add docstring."""
     expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
@@ -304,6 +318,7 @@ def eia860_boiler_info_design(year):
 
 
 def eia860_EnviroAssoc_nox(year):
+    """Add docstring."""
     expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
@@ -374,6 +389,7 @@ def eia860_EnviroAssoc_nox(year):
     return eia
 
 def eia860_generator_info(year):
+    """Add docstring."""
     expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
@@ -444,6 +460,9 @@ def eia860_generator_info(year):
     return eia
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == "__main__":
     eia_nox = eia860_EnviroAssoc_nox(2016)
     eia_so2 = eia860_EnviroAssoc_so2(2016)
