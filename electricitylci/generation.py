@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# emissions_other_sources.py
+#
+##############################################################################
+# REQUIRED MODULES  
+##############################################################################
+"""Add docstring."""
 """
 Created on Tue Jun  4 12:07:46 2019
 
 @author: jamiesom
 """
 
-##############################################################################
-# FUNCTIONS
-##############################################################################
 import ast
 from datetime import datetime
 import logging
@@ -22,13 +26,45 @@ from electricitylci.elementaryflows import map_emissions_to_fedelemflows
 from electricitylci.globals import elci_version, paths
 from electricitylci.utils import make_valid_version_num
 from electricitylci.dqi import lookup_score_with_bound_key
-from electricitylci.eia923_generation import eia923_primary_fuel
 from electricitylci.eia860_facilities import eia860_balancing_authority
 from electricitylci.model_config import model_specs
 from electricitylci.dqi import data_collection_lower_bound_to_dqi
 from electricitylci.aggregation_selector import subregion_col
-
-
+from electricitylci.dqi import temporal_correlation_lower_bound_to_dqi
+from electricitylci.globals import output_dir
+from electricitylci.utils import set_dir
+from electricitylci.egrid_filter import (
+            egrid_facilities_to_include,
+            emissions_and_waste_for_selected_egrid_facilities,
+        )
+from electricitylci.generation import (
+            egrid_facilities_w_fuel_region,
+        )
+from electricitylci.egrid_facilities import egrid_facilities
+import facilitymatcher.globals as fmglob
+from electricitylci.eia923_generation import (
+        build_generation_data,
+        eia923_primary_fuel
+    )
+import electricitylci.emissions_other_sources as em_other
+import electricitylci.ampd_plant_emissions as ampd
+from electricitylci.combinator import ba_codes
+import electricitylci.manual_edits as edits
+from electricitylci.generation import (
+            add_technological_correlation_score,
+            add_temporal_correlation_score,
+        )
+from electricitylci.egrid_emissions_and_waste_by_facility import (
+            emissions_and_wastes_by_facility,
+            base_inventory,
+        )
+from electricitylci.process_dictionary_writer import unit
+from electricitylci.process_dictionary_writer import flow_table_creation
+from electricitylci.process_dictionary_writer import ref_exchange_creator
+from electricitylci.process_dictionary_writer import (
+        uncertainty_table_creation
+    )
+from electricitylci.process_dictionary_writer import process_doc_creation
 ##############################################################################
 # GLOBALS
 ##############################################################################
@@ -39,6 +75,7 @@ module_logger = logging.getLogger("generation.py")
 # FUNCTIONS
 ##############################################################################
 def eia_facility_fuel_region(year):
+    """Add docstring."""
     primary_fuel = eia923_primary_fuel(year=year)
     ba_match = eia860_balancing_authority(year)
     primary_fuel["Plant Id"]=primary_fuel["Plant Id"].astype(int)
@@ -62,9 +99,9 @@ def eia_facility_fuel_region(year):
 
 
 def add_technological_correlation_score(db):
+    """Add docstring."""
     # Create col, set to 5 by default
     # db['TechnologicalCorrelation'] = 5
-    from electricitylci.dqi import technological_correlation_lower_bound_to_dqi
     # convert PercentGen to fraction
     #db['PercentGenerationfromDesignatedFuelCategory'] = db['PercentGenerationfromDesignatedFuelCategory']/100
     db['TechnologicalCorrelation'] = db['PercentGenerationfromDesignatedFuelCategory'].apply(lambda x: lookup_score_with_bound_key(x,technological_correlation_lower_bound_to_dqi))
@@ -73,6 +110,7 @@ def add_technological_correlation_score(db):
 
 
 def add_flow_representativeness_data_quality_scores(db,total_gen):
+    """Add docstring."""
     db = add_technological_correlation_score(db)
     db = add_temporal_correlation_score(db)
     db = add_data_collection_score(db,total_gen)
@@ -80,7 +118,8 @@ def add_flow_representativeness_data_quality_scores(db,total_gen):
 
 
 def add_temporal_correlation_score(db, electricity_lci_target_year):
-    from electricitylci.dqi import temporal_correlation_lower_bound_to_dqi
+    """Add docstring."""
+    
     # Could be more precise here with year
     db['Age'] =  electricity_lci_target_year - pd.to_numeric(db['Year'])
     db['TemporalCorrelation'] = db['Age'].apply(
@@ -128,6 +167,7 @@ def aggregate_facility_flows(df):
     ]
 
     def wtd_mean(pdser, total_db, cols):
+        """Add docstring."""
         try:
             wts = total_db.loc[pdser.index, "FlowAmount"]
             result = np.average(pdser, weights=wts)
@@ -296,7 +336,6 @@ def calculate_electricity_by_source(db, subregion="BA"):
         are 'all', 'NERC', 'BA', 'US', by default 'BA'
     """
 
-    from electricitylci.aggregation_selector import subregion_col
     all_sources='_'.join(sorted(list(db["Source"].unique())))
     power_plant_criteria=db["stage_code"]=="Power plant"
     db_powerplant=db.loc[power_plant_criteria,:]
@@ -429,18 +468,7 @@ def create_generation_process_df():
     dataframe
         Datafrane includes all facility-level emissions
     """
-    from electricitylci.eia923_generation import (
-        build_generation_data,
-        eia923_primary_fuel
-    )
-    import electricitylci.emissions_other_sources as em_other
-    import electricitylci.ampd_plant_emissions as ampd
-    from electricitylci.combinator import ba_codes
-    import electricitylci.manual_edits as edits
-    from electricitylci.generation import (
-            add_technological_correlation_score,
-            add_temporal_correlation_score,
-        )
+
     COMPARTMENT_DICT = {
         "emission/air": "air",
         "emission/water": "water",
@@ -454,10 +482,7 @@ def create_generation_process_df():
     }
     if model_specs.replace_egrid:
         generation_data = build_generation_data().drop_duplicates()
-        from electricitylci.egrid_emissions_and_waste_by_facility import (
-            emissions_and_wastes_by_facility,
-            base_inventory,
-        )
+
         eia_facilities_to_include=generation_data["FacilityID"].unique()
         if base_inventory == "eGRID":
             id_column="eGRID_ID"
@@ -477,8 +502,7 @@ def create_generation_process_df():
             eia860_FRS["REGISTRY_ID"]=eia860_FRS["REGISTRY_ID"].astype(str)
         except FileNotFoundError:
             module_logger.info("Will need to load EIA860 to FRS matches using stewi facility matcher - it may take a while to download and read the required data")
-            import facilitymatcher.globals as fmglob
-            from electricitylci.utils import set_dir
+
             file = fmglob.FRS_config['FRS_bridge_file']
             file_path = fmglob.FRSpath + '/' + file
             col_dict = {'REGISTRY_ID': "str",
@@ -508,15 +532,6 @@ def create_generation_process_df():
         facilities_w_fuel_region=eia_facility_fuel_region(model_specs.eia_gen_year)
         facilities_w_fuel_region.rename(columns={'FacilityID':'eGRID_ID'}, inplace=True)
     else:
-        from electricitylci.egrid_filter import (
-            egrid_facilities_to_include,
-            emissions_and_waste_for_selected_egrid_facilities,
-        )
-        from electricitylci.generation import (
-            egrid_facilities_w_fuel_region,
-        )
-        from electricitylci.egrid_filter import electricity_for_selected_egrid_facilities
-        from electricitylci.egrid_facilities import egrid_facilities
         facilities_w_fuel_region = egrid_facilities[['FacilityID','Subregion','PrimaryFuel','FuelCategory','NERC','PercentGenerationfromDesignatedFuelCategory','Balancing Authority Name','Balancing Authority Code']]
         facilities_w_fuel_region["FacilityID"] = \
             egrid_facilities_w_fuel_region["FacilityID"].astype(int)
@@ -648,9 +663,10 @@ def aggregate_data(total_db, subregion="BA"):
         dataframe includes an average emission factor and, when applicable
         uncertainty distributions.
     """
-    from electricitylci.aggregation_selector import subregion_col
+    
 
     def geometric_mean(p_series, df, cols):
+        """Add docstring."""
         # Alternatively we can use scipy.stats.lognorm to fit a distribution
         # and provide the parameters
         if (len(p_series) > 3) & (p_series.quantile(0.5) > 0):
@@ -721,6 +737,7 @@ def aggregate_data(total_db, subregion="BA"):
             return None
 
     def calc_geom_std(df):
+        """Add docstring."""
         if region_agg is not None:
             debug_string=f"{df[region_agg]}-{df['FuelCategory']}-{df['FlowName']}"
         else:
@@ -828,6 +845,7 @@ def aggregate_data(total_db, subregion="BA"):
     total_db.dropna(subset=["facility_emission_factor"], inplace=True)
 
     def wtd_mean(pdser, total_db, cols):
+        """Add docstring."""
         try:
             wts = total_db.loc[pdser.index, "FlowAmount"]
             result = np.average(pdser, weights=wts)
@@ -968,12 +986,7 @@ def turn_data_to_dict(data, upstream_dict):
     -------
     dict
     """
-    from electricitylci.process_dictionary_writer import unit
-    from electricitylci.process_dictionary_writer import flow_table_creation
-    from electricitylci.process_dictionary_writer import ref_exchange_creator
-    from electricitylci.process_dictionary_writer import (
-        uncertainty_table_creation
-    )
+
 
     module_logger.debug(f"Turning flows from {data.name} into dictionaries")
     cols_for_exchange_dict = [
@@ -1099,8 +1112,6 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     dict
         Dictionary contaning openLCA-formatted data.
     """
-    from electricitylci.aggregation_selector import subregion_col
-    from electricitylci.process_dictionary_writer import process_doc_creation
 
     region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"]
@@ -1201,7 +1212,6 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
 # MAIN
 ##############################################################################
 if __name__ == "__main__":
-    from electricitylci.globals import output_dir
 
     plant_emission_df = create_generation_process_df()
     aggregated_emissions_df = aggregate_data(plant_emission_df, subregion="BA")
