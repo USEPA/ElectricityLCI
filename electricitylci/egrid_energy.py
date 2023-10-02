@@ -6,6 +6,8 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+"""Add docstring."""
+
 import numpy as np
 import pandas as pd
 from os.path import join
@@ -36,6 +38,7 @@ len(egrid_net_generation)
 
 # Returns list of egrid ids with positive_generation
 def list_egrid_facilities_with_positive_generation():
+    """Add docstring."""
     egrid_net_generation_above_min = egrid_net_generation[egrid_net_generation['Electricity'] > 0]
     return list(egrid_net_generation_above_min['FacilityID'])
 
@@ -51,6 +54,7 @@ len(egrid_efficiency)
 
 
 def list_egrid_facilities_in_efficiency_range(min_efficiency, max_efficiency):
+    """Add docstring."""
     egrid_efficiency_pass = egrid_efficiency[(egrid_efficiency['Efficiency'] >= min_efficiency) & (egrid_efficiency['Efficiency'] <= max_efficiency)]
     return list(egrid_efficiency_pass['FacilityID'])
 
