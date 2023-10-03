@@ -69,13 +69,13 @@ if emissions_and_wastes_by_facility is None:
         model_specs.inventories_of_interest,
         filter_for_LCI=True
     )
-    # drop SRS fields
+    # Drop SRS fields
     emissions_and_wastes_by_facility = emissions_and_wastes_by_facility.drop(
         columns=['SRS_ID', 'SRS_CAS'])
-    # drop 'Electricity' flow
+    # Drop 'Electricity' flow
     emissions_and_wastes_by_facility = emissions_and_wastes_by_facility[
         emissions_and_wastes_by_facility['FlowName'] != 'Electricity']
-    # save stewicombo processed file
+    # Save stewicombo processed file
     saveInventory(
         model_specs.model_name,
         emissions_and_wastes_by_facility,
