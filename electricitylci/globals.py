@@ -6,13 +6,21 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
-"""Add docstring."""
-
 import os
 import glob
 import pkg_resources  # part of setuptools
 
 from esupy.processed_data_mgmt import Paths
+
+
+##############################################################################
+# MODULE DOCUMENTATION
+##############################################################################
+__doc__ = """Defines paths, variables, and functions used by more than one
+module.
+
+Last updated: 2023-10-25
+"""
 
 
 ##############################################################################
@@ -24,7 +32,6 @@ try:
 except NameError:
     modulepath = 'electricitylci/'
 
-# BUG: why are we using this?
 paths=Paths()
 paths.local_path = os.path.realpath(str(paths.local_path) + "/electricitylci")
 # hotfix PosixPath in os.path.join [TWD; 2023-07-27]
@@ -148,12 +155,23 @@ STATE_ABBREV = {
     "wyoming": "wy",
 }
 
+API_SLEEP = 0.2
+'''float : A courtesy sleep time between API calls.'''
+
 
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
 def list_model_names_in_config():
-    """Add docstring."""
+    """Read YAML file names in modelconfig directory.
+
+    Returns
+    -------
+    dict
+        Dictionary with numeric keys (e.g., 1, 2, 3) and string values, where
+        the values represent the ELCI model names found in the modelconfig
+        directory.
+    """
     configdir = modulepath + 'modelconfig/'
     configfiles = glob.glob(configdir + '*_config.yml')
     modelnames_dict = {}
