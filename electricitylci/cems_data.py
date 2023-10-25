@@ -6,11 +6,31 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+import os
+import logging
+import urllib
+import ftplib
+import zipfile
+import shutil
+import time
+import warnings
 
-"""
+import pandas as pd
+import requests
+
+from electricitylci.globals import API_SLEEP
+from electricitylci.globals import paths
+from electricitylci.globals import output_dir
+
+
+##############################################################################
+# GLOBALS
+##############################################################################
+__doc__ = """
 Retrieve data from EPA CEMS daily zipped CSVs.
 
-This modules pulls data from EPA's published CSV files.
+This module pulls data from EPA's published CSV files, which are utilized
+in ampd_plant_emissions.py.
 
 Copyright 2017 Catalyst Cooperative and the Climate Policy Initiative
 
@@ -22,21 +42,10 @@ copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
+
+Last edited: 2023-10-25
 """
-import os
-import pandas as pd
-import logging
-import urllib
-import ftplib
-import zipfile
-import shutil
-import warnings
 
-from electricitylci.globals import paths, output_dir
-
-##############################################################################
-# FUNCTIONS
-##############################################################################
 logger = logging.getLogger("cems_data")
 
 data_years = {
@@ -193,34 +202,42 @@ us_states = {
     'WY': 'Wyoming'
 }
 
-cems_states = {k: v for k, v in us_states.items() if v not in
-               {'Alaska',
-                'American Samoa',
-                'Guam',
-                'Hawaii',
-                'Northern Mariana Islands',
-                'National',
-                'Puerto Rico',
-                'Virgin Islands'}
-               }
+cems_states = {
+    k: v for k, v in us_states.items() if v not in [
+        'Alaska',
+        'American Samoa',
+        'Guam',
+        'Hawaii',
+        'Northern Mariana Islands',
+        'National',
+        'Puerto Rico',
+        'Virgin Islands']
+}
 
 cems_col_names = {
-        'GLOAD (MWh)': 'gross_load_mwh',
-        'SO2_MASS (tons)': 'so2_mass_tons',
-        'NOX_MASS (tons)': 'nox_mass_tons',
-        'SUM_OP_TIME': 'sum_op_time',
-        'COUNT_OP_TIME': 'count_op_time'
+    'GLOAD (MWh)': 'gross_load_mwh',
+    'SO2_MASS (tons)': 'so2_mass_tons',
+    'NOX_MASS (tons)': 'nox_mass_tons',
+    'SUM_OP_TIME': 'sum_op_time',
+    'COUNT_OP_TIME': 'count_op_time'
 }
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def get_epacems_dir(year):
-    """
-    Data directory search for EPA CEMS hourly.
+    """Data directory search for EPA CEMS hourly.
 
-    Args:
-        year (int): The year that we're trying to read data for.
-    Returns:
-        path to appropriate EPA CEMS data directory.
+    Parameters
+    ----------
+    year : int
+        The year that we're trying to read data for.
+
+    Returns
+    -------
+    str
+        Path to appropriate EPA CEMS data directory.
     """
     # These are the only years we've got...
     assert year in range(min(data_years['epacems']),
@@ -230,15 +247,22 @@ def get_epacems_dir(year):
 
 
 def get_epacems_file(year, qtr, state):
-    """
-    Given a year, month, and state, return the appropriate EPA CEMS zipfile.
+    """Return the appropriate EPA CEMS zipfile for a given a year, month, and
+    state.
 
-    Args:
-        year (int): The year that we're trying to read data for.
-        month (int): The month we're trying to read data for.
-        state (str): The state we're trying to read data for.
-    Returns:
-        path to EPA CEMS zipfiles for that year, month, and state.
+    Parameters
+    ----------
+    year : int
+        The year that we're trying to read data for.
+    month : int
+        The month we're trying to read data for.
+    state : str
+        The state we're trying to read data for.
+
+    Returns
+    -------
+    str
+        The path to EPA CEMS zipfiles for that year, month, and state.
     """
     state = state.lower()
     month = str(qtr)
@@ -251,10 +275,17 @@ def get_epacems_file(year, qtr, state):
 
 
 def read_cems_csv(filename):
-    """
-    Read one CEMS CSV file.
+    """Read one CEMS CSV file.
 
     Note that some columns are not read. See epacems_columns_to_ignores.
+
+    Parameters
+    ----------
+    filename : str
+
+    Returns
+    -------
+    pandas.DataFrame
     """
     df = pd.read_csv(
         filename,
@@ -265,37 +296,107 @@ def read_cems_csv(filename):
     return df
 
 
-def extract(epacems_years, states, verbose=True):
-    """
-    Extract the EPA CEMS hourly data.
+def read_cems_api(api_key, year, state=None):
+    # Use the annual apportioned emissions API URL:
+    s_url = (
+        "https://api.epa.gov/easey/streaming-services/emissions/"
+        "apportioned/annual/by-facility"
+    )
+    # Keep column naming consistent with legacy code:
+    c_map = {
+        'stateCode': 'state',
+        'facilityName': 'facility_name',
+        'facilityId': 'plant_id_eia',
+        'year': 'year',
+        'grossLoad': 'gross_load_mwh',
+        'steamLoad': 'steam_load_1000_lbs',
+        'so2Mass': 'so2_mass_tons',
+        'co2Mass': 'co2_mass_tons',
+        'noxMass': 'nox_mass_tons',
+        'heatInput': 'heat_content_mmbtu'
+    }
+    if api_key is None or api_key == "":
+        raise ValueError("Missing API key!")
+
+    params = {'api_key': api_key, 'year': year, 'stateCode': state}
+    try:
+        r = requests.get(s_url, params=params)
+    except:
+        raise OSError("Unexpected error during EPA data API call!")
+    else:
+        if r.ok:
+            tmp_df = pd.DataFrame.from_dict(r.json()).rename(columns=c_map)
+        else:
+            # This catches incorrect API keys or bad parameters
+            logging.warning("Failed to retrieve data for %s %s" % (state, year))
+            tmp_df = pd.DataFrame(columns=list(c_map.values()))
+        return tmp_df
+
+
+def extract(epacems_years, states, use_api=True):
+    """Extract the EPA CEMS hourly data.
 
     This function is the main function of this file. It returns a generator
     for extracted DataFrames.
+
+    Parameters
+    ----------
+    epacems_years : list
+        List of years.
+    states : list
+        List of states.
+    use_api : bool, optional
+        Option to by-pass the FTP download.
+        Triggers input for API key, available for free at:
+        https://www.epa.gov/power-sector/cam-api-portal#/api-key-signup
+
+    Returns
+    -------
+    list
     """
-    # TODO: this is really slow. Can we do some parallel processing?
     logging.info("Extracting EPA CEMS data...")
     dfs = []
+
+    # Add API support
+    if use_api:
+        api_key = input("Enter EPA API key: ")
+
     for year in epacems_years:
         # The keys of the us_states dictionary are the state abbrevs
         for state in states:
-            # dfs = []
-            for qtr in range(1, 5):
-                filename = get_epacems_file(year, qtr, state)
-
-                logging.info(f"Reading {year} - {state} - qtr {qtr}")
-                dfs.append(read_cems_csv(filename))
-            # Return a dictionary where the key identifies this dataset
-            # (just like the other extract functions), but unlike the
-            # others, this is yielded as a generator (and it's a one-item
-            # dictionary).
-#            yield {
-#                (year, state): pd.concat(dfs, sort=True, copy=False, ignore_index=True)
-#            }
+            if use_api:
+                tmp_df = read_cems_api(api_key, year, state)
+                # HOTFIX: don't add empty data frames
+                if len(tmp_df) > 0:
+                    dfs.append(tmp_df)
+                time.sleep(API_SLEEP)
+            else:
+                for qtr in range(1, 5):
+                    filename = get_epacems_file(year, qtr, state)
+                    logging.info(f"Reading {year} - {state} - qtr {qtr}")
+                    dfs.append(read_cems_csv(filename))
     return dfs
 
 
 def assert_valid_param(source, year, qtr=None, state=None, check_month=None):
-    """Add docstring."""
+    """Assertions used for data validation.
+
+    Note that this is not a proper use of data validation, as assertions can
+    be disabled. See error handling.
+
+    Parameters
+    ----------
+    source : str
+        The source string (e.g., 'epacems').
+    year : int
+        The year (e.g., 1995--2021).
+    qtr : int, optional
+        The quarter (e.g., 1--4).
+    state : str, optional
+        The two-character state abbreviation (e.g, "PA").
+    check_month : bool, optional
+        Whether to check the state and quarter parameters.
+    """
     assert source in ('epacems'), \
         f"Source '{source}' not found in valid data sources."
     assert source in data_years, \
@@ -322,35 +423,41 @@ def assert_valid_param(source, year, qtr=None, state=None, check_month=None):
 
 
 def source_url(source, year, qtr=None, state=None):
-    """
-    Construct a download URL for the specified federal data source and year.
+    """Construct a URL for the specified federal data source and year.
 
-    Args:
-        source (str): A string indicating which data source we are going to be
-            downloading. Currently it must be one of the following:
-            - 'eia860'
-            - 'eia861'
-            - 'eia923'
-            - 'ferc1'
-            - 'mshamines'
-            - 'mshaops'
-            - 'mshaprod'
-            - 'epacems'
-        year (int): the year for which data should be downloaded. Must be
-            within the range of valid data years, which is specified for
-            each data source in the pudl.constants module.
-        month (int): the month for which data should be downloaded.
-            Only used for EPA CEMS.
-        state (str): the state for which data should be downloaded.
-            Only used for EPA CEMS.
-    Returns:
-        download_url (string): a full URL from which the requested
-            data may be obtained
+    Parameters
+    ----------
+    source : str
+        A string indicating which data source we are going to be
+        downloading. Currently it must be one of the following:
+
+        - 'eia860'
+        - 'eia861'
+        - 'eia923'
+        - 'ferc1'
+        - 'mshamines'
+        - 'mshaops'
+        - 'mshaprod'
+        - 'epacems'
+
+    year : int
+        The year for which data should be downloaded. Must be
+        within the range of valid data years, which is specified for
+        each data source in the pudl.constants module.
+    month : int
+        The month for which data should be downloaded.
+        Only used for EPA CEMS.
+    state : str
+        The state for which data should be downloaded.
+        Only used for EPA CEMS.
+
+    Returns
+    -------
+    str
+        A full URL from which the requested data may be obtained.
     """
     assert_valid_param(source=source, year=year, qtr=qtr, state=state)
-
     base_url = 'ftp://newftp.epa.gov/dmdnload/emissions/daily/quarterly/'
-
     download_url = '{base_url}/{year}/DLY_{year}{state}Q{qtr}.zip'.format(
             base_url=base_url, year=year,
             state=state.lower(), qtr=str(qtr)
@@ -358,9 +465,13 @@ def source_url(source, year, qtr=None, state=None):
     return download_url
 
 
-def path(source, year=0, qtr=None, state=None, file=True, datadir=paths.local_path):
-    """
-    Construct a variety of local datastore paths for a given data source.
+def path(source,
+         year=0,
+         qtr=None,
+         state=None,
+         file_=True,
+         datadir=paths.local_path):
+    """Construct a variety of local datastore paths for a given data source.
 
     PUDL expects the original data it ingests to be organized in a particular
     way. This function allows you to easily construct useful paths that refer
@@ -371,33 +482,41 @@ def path(source, year=0, qtr=None, state=None, file=True, datadir=paths.local_pa
     source can be found.
     Note: if you change the default arguments here, you should also change them
     for paths_for_year()
-    Args:
-        source (str): A string indicating which data source we are going to be
-            downloading. Currently it must be one of the following:
-            - 'ferc1'
-            - 'eia923'
-            - 'eia860'
-            - 'epacems'
-        year (int): the year of data that the returned path should pertain to.
-            Must be within the range of valid data years, which is specified
-            for each data source in pudl.constants.data_years, unless year is
-            set to zero, in which case only the top level directory for the
-            data source specified in source is returned.
-        file (bool): If True, return the full path to the originally
-            downloaded file specified by the data source and year.
-            If file is true, year must not be set to zero, as a year is
-            required to specify a particular downloaded file.
-        datadir (os.path): path to the top level directory that contains the
-            PUDL data store.
 
-    Returns:
-        dstore_path (os.pat): the path to the requested resource within the
-            local PUDL datastore.
+    Parameters
+    ----------
+    source : str
+        A string indicating which data source we are going to be
+        downloading. Currently it must be one of the following:
+
+        - 'ferc1'
+        - 'eia923'
+        - 'eia860'
+        - 'epacems'
+
+    year : int
+        The year of data that the returned path should pertain to.
+        Must be within the range of valid data years, which is specified
+        for each data source in pudl.constants.data_years, unless year is
+        set to zero, in which case only the top level directory for the
+        data source specified in source is returned.
+    file_ : bool
+        If True, return the full path to the originally
+        downloaded file specified by the data source and year.
+        If file is true, year must not be set to zero, as a year is
+        required to specify a particular downloaded file.
+    datadir : str
+        Path to the top level directory that contains the PUDL data store.
+
+    Returns
+    -------
+    str :
+        The path to the requested resource within the local PUDL datastore.
     """
     assert_valid_param(source=source, year=year, qtr=qtr, state=state,
                        check_month=False)
 
-    if file:
+    if file_:
         assert year != 0, \
             "Non-zero year required to generate full datastore file path."
 
@@ -416,28 +535,28 @@ def path(source, year=0, qtr=None, state=None, file=True, datadir=paths.local_pa
                 prefix = 'f906920_'
             else:
                 prefix = 'f923_'
-            dstore_path = os.path.join(dstore_path,
-                                       '{}{}'.format(prefix, year))
+            dstore_path = os.path.join(
+                dstore_path, '{}{}'.format(prefix, year))
     elif source == 'ferc1':
         dstore_path = os.path.join(datadir, 'ferc', 'form1')
         if year != 0:
             dstore_path = os.path.join(dstore_path, 'f1_{}'.format(year))
-    elif source == 'mshamines' and file:
+    elif source == 'mshamines' and file_:
         dstore_path = os.path.join(datadir, 'msha')
         if year != 0:
             dstore_path = os.path.join(dstore_path, 'Mines.zip')
     elif source == 'mshaops':
         dstore_path = os.path.join(datadir, 'msha')
-        if year != 0 and file:
-            dstore_path = os.path.join(dstore_path,
-                                       'ControllerOperatorHistory.zip')
-    elif source == 'mshaprod' and file:
+        if year != 0 and file_:
+            dstore_path = os.path.join(
+                dstore_path, 'ControllerOperatorHistory.zip')
+    elif source == 'mshaprod' and file_:
         dstore_path = os.path.join(datadir, 'msha')
         if year != 0:
             dstore_path = os.path.join(dstore_path, 'MinesProdQuarterly.zip')
     elif (source == 'epacems'):
         dstore_path = paths.local_path
-        if(year != 0):
+        if year != 0:
             dstore_path = os.path.join(dstore_path, 'epacems{}'.format(year))
     else:
         # we should never ever get here because of the assert statement.
@@ -456,36 +575,38 @@ def path(source, year=0, qtr=None, state=None, file=True, datadir=paths.local_pa
     # Current naming convention requires the name of the directory to which
     # an original data source is downloaded to be the same as the basename
     # of the file itself...
-    if (file and source not in ['mshamines', 'mshaops', 'mshaprod']):
+    if (file_ and source not in ['mshamines', 'mshaops', 'mshaprod']):
         basename = os.path.basename(dstore_path)
         # For all the non-CEMS data, state_str and month_str are '',
         # but this should work for other monthly data too.
-        dstore_path = os.path.join(dstore_path,
-                                   f"{basename}{state_str}{qtr_str}.zip")
-
+        dstore_path = os.path.join(
+            dstore_path, f"{basename}{state_str}{qtr_str}.zip"
+        )
     return dstore_path
 
 
-def paths_for_year(source, year=0, states=cems_states.keys(),
-                   file=True, datadir=paths.local_path):
+def paths_for_year(source,
+                   year=0,
+                   states=cems_states.keys(),
+                   file_=True,
+                   datadir=paths.local_path):
     """Get all the paths for a given source and year. See path() for details."""
     # TODO: I'm not sure this is the best construction, since it relies on
     # the order being the same here as in the url list comprehension
     if source == 'epacems':
         paths = [path(source=source, year=year, qtr=qtr, state=state,
-                      file=file, datadir=datadir)
+                      file_=file_, datadir=datadir)
                  # For consistency, it's important that this is state, then
                  # month
                  for state in states
                  for qtr in range(1, 5)]
     else:
-        paths = [path(source=source, year=year, file=file, datadir=datadir)]
+        paths = [path(source=source, year=year, file_=file_, datadir=datadir)]
     return paths
 
 
 def download(source, year, states, datadir=paths.local_path, verbose=True):
-    """
-    Download the original data for the specified data source and year.
+    """Download the original data for the specified data source and year.
 
     Given a data source and the desired year of data, download the original
     data files from the appropriate federal website, and place them in a
@@ -494,18 +615,25 @@ def download(source, year, states, datadir=paths.local_path, verbose=True):
     and does not do any of the organization of the datastore after download,
     it simply gets the requested file.
 
-    Args:
-        source (str): the data source to retrieve. Must be one of: 'eia860',
-            'eia923', 'ferc1', or 'epacems'.
-        year (int): the year of data that the returned path should pertain to.
-            Must be within the range of valid data years, which is specified
-            for each data source in pudl.constants.data_years. Note that for
-            data (like EPA CEMS) that have multiple datasets per year, this
-            function will download all the files for the specified year.
-        datadir (str): path to the top level directory of the datastore.
-        verbose (bool): If True, logger.info messages about what's happening.
-    Returns:
-        outfile (str): path to the local downloaded file.
+    Parameters
+    ----------
+    source : str
+        The data source to retrieve. Must be one of: 'eia860',
+        'eia923', 'ferc1', or 'epacems'.
+    year : int
+        The year of data that the returned path should pertain to.
+        Must be within the range of valid data years, which is specified
+        for each data source in pudl.constants.data_years. Note that for
+        data (like EPA CEMS) that have multiple datasets per year, this
+        function will download all the files for the specified year.
+    datadir : str
+        The path to the top level directory of the datastore.
+    verbose : bool
+        If True, logger.info messages about what's happening.
+
+    Returns
+    -------
+    str : The path to the local downloaded file.
     """
     assert_valid_param(source=source, year=year, check_month=False)
 
@@ -527,7 +655,7 @@ def download(source, year, states, datadir=paths.local_path, verbose=True):
         src_urls = [source_url(source, year)]
         tmp_files = [os.path.join(
             tmp_dir, os.path.basename(path(source, year)))]
-    if(verbose):
+    if verbose:
         if source != 'epacems':
             logger.info(
                 f"Downloading {source} data for {year}...\n    {src_urls[0]}")
@@ -562,7 +690,8 @@ def _download_FTP(src_urls, tmp_files, allow_retry=True):
     url_to_retry = []
     tmp_to_retry = []
     error_messages = []
-    for path, tmp_file, src_url in zip(within_domain_paths, tmp_files, src_urls):
+    for path, tmp_file, src_url in zip(
+            within_domain_paths, tmp_files, src_urls):
         with open(tmp_file, "wb") as f:
             try:
                 ftp.retrbinary(f"RETR {path}", f.write)
@@ -579,10 +708,8 @@ def _download_FTP(src_urls, tmp_files, allow_retry=True):
         elif allow_retry and src_urls != url_to_retry:
             # If there were multiple URLs and at least one didn't fail,
             # keep retrying until all fail or all succeed.
-            return _download_FTP(url_to_retry,
-                                 tmp_to_retry,
-                                 allow_retry=allow_retry
-                                 )
+            return _download_FTP(
+                url_to_retry, tmp_to_retry, allow_retry=allow_retry)
         if url_to_retry == src_urls:
             err_msg = (
                 f"Download failed for all {num_failed} URLs. " +
@@ -603,16 +730,17 @@ def _download_FTP(src_urls, tmp_files, allow_retry=True):
 def _download_default(src_urls, tmp_files, allow_retry=True):
     """Download URLs to files. Designed to be called by `download` function.
 
-    Args:
-        src_urls (list of str): the source URLs to download.
-        tmp_files (list of str): the corresponding files to save.
-        allow_retry (bool): Should the function call itself again to
-            retry the download? (Default will try twice for a single file, or
-            until all files fail)
-    Returns:
-        None
-
     If the file cannot be downloaded, the program will issue a warning.
+
+    Parameters
+    ----------
+    src_urls : list
+        A list of the source URLs to download.
+    tmp_files : list
+        A list of the corresponding files to save.
+    allow_retry : bool
+        Should the function call itself again to retry the download?
+        Default will try twice for a single file, or until all files fail.
     """
     assert len(src_urls) == len(tmp_files) > 0
     url_to_retry = []
@@ -649,26 +777,34 @@ def _download_default(src_urls, tmp_files, allow_retry=True):
 def organize(source, year, states, unzip=True,
              datadir=paths.local_path,
              verbose=False, no_download=False):
-    """
-    Put a downloaded original data file where it belongs in the datastore.
+    """Put a downloaded original data file where it belongs in the datastore.
 
     Once we've downloaded an original file from the public website it lives on
     we need to put it where it belongs in the datastore. Optionally, we also
     unzip it and clean up the directory hierarchy that results from unzipping.
 
-    Args:
-        source (str): the data source to retrieve. Must be one of: 'eia860',
-            'eia923', 'ferc1', or 'epacems'.
-        year (int): the year of data that the returned path should pertain to.
-            Must be within the range of valid data years, which is specified
-            for each data source in pudl.constants.data_years.
-        unzip (bool): If true, unzip the file once downloaded, and place the
-            resulting data files where they ought to be in the datastore.
-        datadir (str): path to the top level directory of the datastore.
-        verbose (bool): If True, logger.info messages about what's happening.
-        no_download (bool): If True, the files were not downloaded in this run
-
-    Returns: nothing
+    Parameters
+    ----------
+    source : str
+        The data source to retrieve. Must be one of: 'eia860',
+        'eia923', 'ferc1', or 'epacems'.
+    year : int
+        The year of data that the returned path should pertain to.
+        Must be within the range of valid data years, which is specified
+        for each data source in pudl.constants.data_years.
+    unzip : bool, optional
+        If true, unzip the file once downloaded, and place the
+        resulting data files where they ought to be in the datastore.
+        Defaults to true.
+    datadir : str, optional
+        The path to the top level directory of the datastore.
+        Defaults to local path.
+    verbose : bool, optional
+        If True, logger.info messages about what's happening.
+        Defaults to false. Unused.
+    no_download : bool, optional
+        If True, the files were not downloaded in this run.
+        Defaults to false.
     """
     assert source in ('epacems'), \
         "Source '{}' not found in valid data sources.".format(source)
@@ -687,11 +823,11 @@ def organize(source, year, states, unzip=True,
     newfiles = [os.path.join(tmpdir, os.path.basename(f))
                 for f in paths_for_year(source, year, states)]
     destfiles = paths_for_year(
-        source, year, states, file=True, datadir=datadir)
+        source, year, states, file_=True, datadir=datadir)
 
     # If we've gotten to this point, we're wiping out the previous version of
     # the data for this source and year... so lets wipe it! Scary!
-    destdir = path(source, year, file=False, datadir=datadir)
+    destdir = path(source, year, file_=False, datadir=datadir)
     if not no_download:
         if os.path.exists(destdir):
             shutil.rmtree(destdir)
@@ -756,8 +892,7 @@ def check_if_need_update(source, year, states, datadir, clobber, verbose):
 
 def update(source, year, states, clobber=False, unzip=True, verbose=True,
            datadir=paths.local_path, no_download=False):
-    """
-    Update the local datastore for the given source and year.
+    """Update the local datastore for the given source and year.
 
     If necessary, pull down a new copy of the data for the specified data
     source and year. If we already have the requested data, do nothing,
@@ -766,25 +901,37 @@ def update(source, year, states, clobber=False, unzip=True, verbose=True,
 
     Note that update_datastore.py runs this function in parallel, so files
     multiple sources and years may be in progress simultaneously.
-    Args:
-        source (str): the data source to retrieve. Must be one of: 'eia860',
-            'eia923', 'ferc1', or 'epacems'.
-        year (int): the year of data that the returned path should pertain to.
-            Must be within the range of valid data years, which is specified
-            for each data source in pudl.constants.data_years.
-        unzip (bool): If true, unzip the file once downloaded, and place the
-            resulting data files where they ought to be in the datastore.
-            EPA CEMS files will never be unzipped.
-        clobber (bool): If true, replace existing copy of the requested data
-            if we have it, with freshly downloaded data.
-        datadir (str): path to the top level directory of the datastore.
-        verbose (bool): If True, logger.info messages about what's happening.
-        no_download (bool): If True, don't download the files, only unzip ones
-            that are already present. If False, do download the files. Either
-            way, still obey the unzip and clobber settings. (unzip=False and
-            no_download=True will do nothing.)
 
-    Returns: nothing
+    Parameters
+    ----------
+    source : str
+        The data source to retrieve. Must be one of: 'eia860',
+        'eia923', 'ferc1', or 'epacems'.
+    year : int
+        The year of data that the returned path should pertain to.
+        Must be within the range of valid data years, which is specified
+        for each data source in pudl.constants.data_years.
+    clobber : bool, optional
+        If true, replace existing copy of the requested data
+        if we have it, with freshly downloaded data.
+        Defaults to false.
+    unzip : bool, optional
+        If true, unzip the file once downloaded, and place the
+        resulting data files where they ought to be in the datastore.
+        EPA CEMS files will never be unzipped.
+        Defaults to true.
+    verbose : bool, optional
+        If True, logger.info messages about what's happening.
+        Defaults to true.
+    datadir : str, optional
+        The path to the top level directory of the datastore.
+        Defaults to local path.
+    no_download : bool, optional
+        If True, don't download the files, only unzip ones
+        that are already present. If False, do download the files. Either
+        way, still obey the unzip and clobber settings. (unzip=False and
+        no_download=True will do nothing.)
+        Defaults to false.
     """
     need_update = check_if_need_update(source=source,
                                        year=year,
@@ -801,31 +948,120 @@ def update(source, year, states, clobber=False, unzip=True, verbose=True,
                  verbose=verbose, no_download=no_download)
 
 
-def build_cems_df(year):
-    """Add docstring."""
+def build_cems_df(year, use_api=False):
+    """Build the CEMS data frame.
+
+    Download the CEMS CSV zip files for each state for a given year,
+    then open each one and append it to a pandas data frame, and
+    aggregate the data by facility.
+
+    Parameters
+    ----------
+    year : int
+    use_api : bool, optional
+
+    Returns
+    -------
+    pandas.DataFrame :
+        A data frame with the annual CEMS data by facility.
+
+    Examples
+    --------
+    >>> df = build_cems_df(2016)
+    >>> list(df.columns)
+    ['state',
+     'plant_id_eia',
+     'gross_load_mwh',
+     'steam_load_1000_lbs',
+     'so2_mass_tons',
+     'nox_mass_tons',
+     'co2_mass_tons',
+     'heat_content_mmbtu']
+    >>> len(df)
+    1463
+    >>> df.head()
+      state  plant_id_eia  facility_id  ...  co2_mass_tons  heat_content_mmbtu
+    0    AL             3            1  ...    8235782.477        1.055546e+08
+    1    AL             7            3  ...     162134.726        2.734769e+06
+    2    AL             8            4  ...    6140953.861        5.985333e+07
+    3    AL            10            5  ...    1055231.747        1.354952e+07
+    4    AL            26            6  ...    4981736.725        5.059296e+07
+
+    Notes
+    -----
+    The same data can be accessed using EPA's CAMPD custom data download tool,
+    which is available here:
+
+    - https://campd.epa.gov/data/custom-data-download
+
+    Set the following conditions in the query builder:
+
+    - Data Type:
+
+        - Data Type: Emissions
+        - Data Subtype: Annual Emissions
+        - Aggregation: Facility
+
+    - Filters:
+
+        - Time period: 2016
+
+    Then click "Preview Data" and download the CSV.
+    """
     states = cems_states.keys()
-    update('epacems', year, states)
+
+    if not use_api:
+        update('epacems', year, states)
     raw_dfs = extract(
-            epacems_years=[year],
-            states=states,
-            verbose=True
-        )
-    df = pd.concat(raw_dfs)
+        epacems_years=[year],
+        states=states,
+        use_api=use_api
+    )
+    summary_df = process_cems_dfs(raw_dfs)
+    return summary_df
+
+
+def process_cems_dfs(df_list):
+    """Concatenate a list of quarterly state CEMS data frames and aggregate
+    by facility.
+
+    Parameters
+    ----------
+    df_list : list
+        A list of pandas.DataFrame objects (see read_cems_csv).
+
+    Returns
+    -------
+    pandas.DataFrame
+        A concatenated and aggregated data frame.
+        Columns include:
+
+        - 'state' - two-letter state abbreviation
+        - 'plant_id_eia' - the plant ID used elsewhere in eLCI
+        - 'gross_load_mwh'
+        - 'steam_load_1000_lbs'
+        - 'so2_mass_tons'
+        - 'nox_mass_tons'
+        - 'co2_mass_tons'
+        - 'heat_content_mmbtu'
+    """
+    df = pd.concat(df_list)
     df.rename(columns=cems_col_names, inplace=True)
     cols_to_sum = [
-            'gross_load_mwh',
-            'steam_load_1000_lbs',
-            'so2_mass_tons',
-            'nox_mass_tons',
-            'co2_mass_tons',
-            'heat_content_mmbtu'
+        'gross_load_mwh',
+        'steam_load_1000_lbs',
+        'so2_mass_tons',
+        'nox_mass_tons',
+        'co2_mass_tons',
+        'heat_content_mmbtu'
     ]
-    summary_df = df.groupby(
-            by=['state', 'plant_id_eia', 'facility_id'],
-            group_keys=False,
-            as_index=False
-            )[cols_to_sum].sum()
-    return summary_df
+    # HOTFIX: remove 'facility_id' from groupby
+    new_df = df.groupby(
+        by=['state', 'plant_id_eia'],
+        group_keys=False,
+        as_index=False
+    )[cols_to_sum].sum()
+    return new_df
 
 
 ##############################################################################
@@ -835,3 +1071,24 @@ if __name__ == '__main__':
     year = 2016
     df = build_cems_df(year)
     df.to_csv(f'{output_dir}/cems_emissions_{year}.csv')
+
+
+##############################################################################
+# SANDBOX
+##############################################################################
+if True:
+    import glob
+    import os
+    from electricitylci.cems_data import read_cems_csv
+    from electricitylci.cems_data import process_cems_dfs
+
+    b_dir = os.path.expanduser("~")
+    l_dir = "Envs/lca/lib/python3.9/site-packages/electricitylci"
+    d_dir = "data/epacems2016"
+    my_dir = os.path.join(b_dir, l_dir, d_dir)
+    my_files = glob.glob(os.path.join(my_dir, "*.zip"))
+    df_list = []
+    for my_file in my_files:
+        tmp_df = read_cems_csv(my_file)
+        df_list.append(tmp_df)
+    df = process_cems_dfs(df_list)
