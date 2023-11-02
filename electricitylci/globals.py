@@ -16,10 +16,10 @@ from esupy.processed_data_mgmt import Paths
 ##############################################################################
 # MODULE DOCUMENTATION
 ##############################################################################
-__doc__ = """Defines paths, variables, and functions used by more than one
-module.
+__doc__ = """Define paths, variables, and functions used across several
+modules.
 
-Last updated: 2023-10-25
+Last updated: 2023-10-27
 """
 
 
@@ -43,7 +43,7 @@ data_dir = os.path.join(modulepath,  'data')
 try:
     elci_version = pkg_resources.require("ElectricityLCI")[0].version
 except:
-    elci_version = "1"
+    elci_version = "1.0.2"
 
 # ref Table 1.1 NERC report
 electricity_flow_name_generation_and_distribution = (
