@@ -6,11 +6,12 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
-"""Add docstring."""
+import logging
 
 import pandas as pd
+
 from electricitylci.globals import output_dir, data_dir
-from electricitylci.import_impacts import import_impacts
+from electricitylci.import_impacts import generate_canadian_mixes
 from electricitylci.model_config import model_specs
 from electricitylci.eia860_facilities import eia860_balancing_authority
 import electricitylci.coal_upstream as coal
@@ -23,27 +24,39 @@ import electricitylci.nuclear_upstream as nuke
 from electricitylci.generation import add_temporal_correlation_score
 
 import fedelemflowlist as fedefl
-import logging
 
 
 ##############################################################################
-# FUNCTIONS
+# MODULE DOCUMENTATION
 ##############################################################################
-# I added this section to populate a ba_codes variable that could be used
+__doc__ = """This module contains several utility methods for combining
+data from different sources, such as power plant-level emissions
+provided by Standardized Emission and Waste Inventories (StEWI), NETL
+fuel emissions (e.g., coal mining/transport, natural gas extraction,
+nuclear fuel cycle), and maps emissions based on the Federal LCA Commons
+Elementary Flow List in order to provide life cycle inventory.
+
+Last edited: 2023-10-06
+"""
+
+
+##############################################################################
+# GLOBALS
+##############################################################################
+module_logger = logging.getLogger("combinator.py")
+
+# This was added to populate a ba_codes variable that could be used
 # by other modules without having to re-read the excel files. The purpose
 # is to try and provide a common source for balancing authority names, as well
 # as FERC an EIA region names.
-module_logger = logging.getLogger("combinator.py")
-ba_codes = pd.concat(
-    [
-        pd.read_excel(
-            f"{data_dir}/BA_Codes_930.xlsx", header=4, sheet_name="US"
-        ),
-        pd.read_excel(
-            f"{data_dir}/BA_Codes_930.xlsx", header=4, sheet_name="Canada"
-        ),
-    ]
-)
+ba_codes = pd.concat([
+    pd.read_excel(
+        f"{data_dir}/BA_Codes_930.xlsx", header=4, sheet_name="US"
+    ),
+    pd.read_excel(
+        f"{data_dir}/BA_Codes_930.xlsx", header=4, sheet_name="Canada"
+    ),
+])
 ba_codes.rename(
     columns={
         "etag ID": "BA_Acronym",
@@ -56,7 +69,15 @@ ba_codes.rename(
 ba_codes.set_index("BA_Acronym", inplace=True)
 
 
-def fill_nans(df, eia_gen_year, key_column="FacilityID", target_columns=[], dropna=True):
+##############################################################################
+# FUNCTIONS
+##############################################################################
+def fill_nans(
+        df,
+        eia_gen_year,
+        key_column="FacilityID",
+        target_columns=[],
+        dropna=True):
     """Fills nan values for the specified target columns by using the data from
     other rows, using the key_column for matches. There is an extra step
     to fill remaining nans for the state column because the module to calculate
@@ -81,7 +102,6 @@ def fill_nans(df, eia_gen_year, key_column="FacilityID", target_columns=[], drop
     -------
     dataframe: hopefully with all of the nans filled.
     """
-
     if not target_columns:
         target_columns = [
             "Balancing Authority Code",
@@ -107,11 +127,6 @@ def fill_nans(df, eia_gen_year, key_column="FacilityID", target_columns=[], drop
             f"Key column '{key_column}' is not in the dataframe"
         )
         raise KeyError
-    #    key_df = (
-    #        df[[key_column] + target_columns]
-    #        .drop_duplicates(subset=key_column)
-    #        .set_index(key_column)
-    #    )
     for col in confirmed_target:
         key_df = (
             df[[key_column, col]]
@@ -128,8 +143,7 @@ def fill_nans(df, eia_gen_year, key_column="FacilityID", target_columns=[], drop
         df["State"] = float("nan")
         confirmed_target.append("State")
     df.loc[df["State"].isna(), "State"] = df.loc[
-        df["State"].isna(), "eGRID_ID"
-    ].map(plant_ba["State"])
+        df["State"].isna(), "eGRID_ID"].map(plant_ba["State"])
     if dropna:
         df.dropna(subset=confirmed_target, inplace=True, how="all")
         df.dropna(subset=["Electricity"],inplace=True)
@@ -137,12 +151,12 @@ def fill_nans(df, eia_gen_year, key_column="FacilityID", target_columns=[], drop
 
 
 def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
-    
-    """
-    Concatenates all of the databases given as args. Then all of the
-    emissions in the combined database are mapped to the federal elementary
-    flows list based on the mapping file 'eLCI' in preparation for being
-    turned into openLCA processes and combined with the generation emissions.
+    """Concatenate and map all of the databases given as args.
+
+    All of the emissions in the combined database are mapped to the
+    federal elementary flows list based on the mapping file 'eLCI' in
+    preparation for being turned into openLCA processes and combined with
+    the generation emissions.
 
     Parameters
     ----------
@@ -155,8 +169,11 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     -------
     datafame
 
-    if kwarg group_name is used then the function will return a tuple containing
-    the mapped dataframe and lists of tuples for the unique mapped and unmapped flows.
+    Notes
+    -----
+    If 'group_name' is provided in kwargs, then the function will return a
+    tuple containing the mapped dataframe and lists of tuples for the unique
+    mapped and unmapped flows.
     """
     mapped_column_dict = {
         "TargetFlowName": "FlowName",
@@ -173,15 +190,16 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         "NETL database/emissions": "NETL database/emissions",
         "NETL database/resources": "NETL database/resources",
     }
-    module_logger.info(f"Concatenating and flow-mapping {len(arg)} upstream databases.")
+    module_logger.info(
+        f"Concatenating and flow-mapping {len(arg)} upstream databases.")
     upstream_df_list = list()
     for df in arg:
         if isinstance(df, pd.DataFrame):
             if "Compartment_path" not in df.columns:
                 df["Compartment_path"] = float("nan")
                 df["Compartment_path"].fillna(
-                        df["Compartment"].map(compartment_mapping), inplace=True
-                        )
+                    df["Compartment"].map(compartment_mapping), inplace=True
+                )
             upstream_df_list.append(df)
     upstream_df = pd.concat(upstream_df_list, ignore_index=True, sort=False)
     module_logger.info("Creating flow mapping database")
@@ -225,7 +243,9 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         upstream_df_grp = upstream_df.groupby(
             groupby_cols, as_index=False
         ).agg({"FlowAmount": "sum", "quantity": "mean"})
-    upstream_df=upstream_df[["FlowName_orig", "Compartment_path_orig", "stage_code"]]
+    upstream_df = upstream_df[
+        ["FlowName_orig", "Compartment_path_orig", "stage_code"]
+    ]
     module_logger.info("Merging upstream database and flow mapping")
     upstream_mapped_df = pd.merge(
         left=upstream_df_grp,
@@ -250,8 +270,10 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     # upstream_mapped_df.to_csv(f"{output_dir}/upstream_mapped_df.csv")
 
     module_logger.info("Applying conversion factors")
-    upstream_mapped_df["FlowAmount"]=(upstream_mapped_df["FlowAmount"]*
-                                       upstream_mapped_df["ConversionFactor"])
+    upstream_mapped_df["FlowAmount"] = (
+        upstream_mapped_df["FlowAmount"]
+        * upstream_mapped_df["ConversionFactor"]
+    )
 
     upstream_mapped_df.rename(
         columns={"fuel_type": "FuelCategory"}, inplace=True
@@ -331,9 +353,9 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
 
 
 def concat_clean_upstream_and_plant(pl_df, up_df):
-    """
-    Combined the upstream and the generator (power plant) databases followed
-    by some database cleanup
+    """Combine the upstream and the generator (power plant) databases.
+
+    Includes some database cleanup.
 
     Parameters
     ----------
@@ -383,10 +405,12 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
         except KeyError:
             module_logger.debug(f"Error deleting column {x}")
     combined_df["FacilityID"] = combined_df["eGRID_ID"]
-    # I think without the following, given the way the data is created for fuels,
-    # there are too many instances where fuel demand can be created when no emissions
-    # are reported for the power plant. This should force the presence of a power plant
-    # in the dataset for a fuel input to be counted.
+
+    # I think without the following, given the way the data is created for
+    # fuels, there are too many instances where fuel demand can be created
+    # when no emissions are reported for the power plant. This should force
+    # the presence of a power plant in the dataset for a fuel input to be
+    # counted.
     combined_df.loc[
         ~(combined_df["stage_code"] == "Power plant"), "FuelCategory"
     ] = float("nan")
@@ -412,10 +436,11 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
 
 
 def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
-    """
-    Converts the upstream emissions database to fuel inputs and adds them
-    to the generator dataframe. This is in preparation of generating unit
-    processes for openLCA.
+    """Convert the upstream emissions database to fuel inputs and add them
+    to the generator dataframe.
+
+    This is in preparation of generating unit processes for openLCA.
+
     Parameters
     ----------
     gen_df : dataframe
@@ -432,13 +457,13 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     -------
     dataframe
     """
-
     upstream_reduced = upstream_df.drop_duplicates(
         subset=["plant_id", "stage_code", "quantity"]
     )
     fuel_df = pd.DataFrame(columns=gen_df.columns)
-    # The upstream reduced should only have one instance of each plant/stage code
-    # combination. We'll first map the upstream dictionary to each plant
+
+    # The upstream reduced should only have one instance of each plant/stage
+    # code combination. We'll first map the upstream dictionary to each plant
     # and then expand that dictionary into columns we can use. The goal is
     # to generate the fuels and associated metadata with each plant. That will
     # then be merged with the generation database.
@@ -487,9 +512,8 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     fuel_df["DataReliability"] = 1
     fuel_df["ElementaryFlowPrimeContext"] = "input"
     fuel_cat_key = (
-        gen_df[["FacilityID", "FuelCategory"]]
-        .drop_duplicates(subset="FacilityID")
-        .set_index("FacilityID")
+        gen_df[["FacilityID", "FuelCategory"]].drop_duplicates(
+            subset="FacilityID").set_index("FacilityID")
     )
     fuel_df["FuelCategory"] = fuel_df["FacilityID"].map(
         fuel_cat_key["FuelCategory"]
@@ -511,6 +535,8 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
 # MAIN
 ##############################################################################
 if __name__ == "__main__":
+    from electricitylci.generation import create_generation_process_df
+
     coal_df = coal.generate_upstream_coal(2016)
     ng_df = ng.generate_upstream_ng(2016)
     petro_df = petro.generate_petroleum_upstream(2016)
@@ -521,12 +547,12 @@ if __name__ == "__main__":
     upstream_df = concat_map_upstream_databases(
         petro_df, geo_df, solar_df, wind_df, nuke_df
     )
-    plant_df = gen.create_generation_process_df()
+    plant_df = create_generation_process_df()
     plant_df["stage_code"] = "Power plant"
     module_logger.info(plant_df.columns)
     module_logger.info(upstream_df.columns)
     combined_df = concat_clean_upstream_and_plant(plant_df, upstream_df)
-    canadian_inventory = import_impacts.generate_canadian_mixes(combined_df)
+    canadian_inventory = generate_canadian_mixes(combined_df)
     combined_df = pd.concat([combined_df, canadian_inventory])
     combined_df.sort_values(
         by=["eGRID_ID", "Compartment", "FlowName", "stage_code"], inplace=True
