@@ -16,10 +16,44 @@ import stewi
 
 
 ##############################################################################
+# MODULE DOCUMENTATION
+##############################################################################
+__doc__ = """This module modifies the eGRID facility list to include the
+percent of generation from the plant's primary fuel type.
+
+When called, this module simplifies the eGRID data frame to only contain the
+percent generation from the plant's primary fuel type. It creates an
+intermediate dataframe to select and store the primary percentage while
+removing the percentages from the imported eGRID dataframe. This data frame is
+returned after merging the primary percentage into it.
+
+Model specs (in model_config) must be defined before calling this module.
+
+Last updated: 2023-11-03
+"""
+__all__ = [
+    "egrid_subregions",
+    "egrid_facilities",
+    "list_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min",
+]
+
+
+##############################################################################
 # FUNCTIONS
 ##############################################################################
 def add_percent_generation_from_primary_fuel_category_col(x):
-    """Add docstring."""
+    """Get the fuel percentage of a plant's primary fuel category and assign it to a new column.
+
+    Parameters
+    ----------
+    x : pandas.Series
+        A series object for an eGRID facility's generation data.
+
+    Returns
+    -------
+    pandas.Series
+        A modified version of the series received.
+    """
     plant_fuel_category = x['FuelCategory']
     x['PercentGenerationfromDesignatedFuelCategory'] = x[
         fuel_cat_to_per_gen[plant_fuel_category]
@@ -28,7 +62,14 @@ def add_percent_generation_from_primary_fuel_category_col(x):
 
 
 def list_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min():
-    """Add docstring."""
+    """Return a list of plant IDs for the plants that operate on primarily just
+    one fuel type (e.g., >90% generation from a single fuel category).
+
+    Returns
+    -------
+    list
+        List of plant identification codes that operate with a primary fuel.
+    """
     passing_facilties = egrid_facilities_fuel_cat_per_gen[
         egrid_facilities_fuel_cat_per_gen[
             'PercentGenerationfromDesignatedFuelCategory'] > model_specs.min_plant_percent_generation_from_primary_fuel_category
@@ -41,18 +82,6 @@ def list_facilities_w_percent_generation_from_primary_fuel_category_greater_than
 ##############################################################################
 # GLOBALS
 ##############################################################################
-__doc__ = """The main purpose of this module is to modify the eGRID facility list to include the percent of generation from the plant's primary fuel type.
-
-When called, this module simplifies the eGRID data frame to only contain the percent generation from the plant's primary fuel type. It creates an intermediate data frame to select and store the primary percentage while removing the percentages from the imported eGRID data frame. It returns this dataframe after merging the primary percentage to it.
-
-Last edited: 2023-10-03
-"""
-__all__ = [
-    "egrid_subregions",
-    "egrid_facilities",
-    "list_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min",
-]
-
 # Get egrid facility file from stewi
 egrid_facilities = stewi.getInventoryFacilities("eGRID", model_specs.egrid_year)
 '''pandas.DataFrame : eGRID facility-level information.'''
@@ -136,5 +165,5 @@ egrid_facilities = pd.merge(
 )
 
 # TODO: are these globals used anywhere?
-international = pd.read_csv(data_dir+'/International_Electricity_Mix.csv')
+international = pd.read_csv(data_dir + '/International_Electricity_Mix.csv')
 international_reg = list(pd.unique(international['Subregion']))
