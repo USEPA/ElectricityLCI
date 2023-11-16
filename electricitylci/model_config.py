@@ -211,7 +211,7 @@ def assign_model_name():
     model_menu = list_model_names_in_config()
     print("Select a model number to use:")
     for k in model_menu.keys():
-        print("\t"+str(k)+": "+model_menu[k])
+        print("\t" + str(k) + ": " + model_menu[k])
     model_num = input()
     try:
         model_name = model_menu[int(model_num)]
