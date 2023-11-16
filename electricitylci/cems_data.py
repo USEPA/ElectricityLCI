@@ -1076,7 +1076,7 @@ if __name__ == '__main__':
 ##############################################################################
 # SANDBOX
 ##############################################################################
-if True:
+if False:
     import glob
     import os
     from electricitylci.cems_data import read_cems_csv
