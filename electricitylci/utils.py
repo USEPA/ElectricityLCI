@@ -6,8 +6,6 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
-"""Small utility functions for use throughout the repository."""
-
 import io
 import logging
 import os
@@ -21,11 +19,20 @@ from electricitylci.globals import data_dir
 
 
 ##############################################################################
-# FUNCTIONS
+# MODULE DOCUMENTATION
+##############################################################################
+__doc__ = """Small utility functions for use throughout the repository."""
+
+
+##############################################################################
+# GLOBALS
 ##############################################################################
 module_logger = logging.getLogger("utils.py")
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def download_unzip(url, unzip_path):
     """
     Download a zip file from url and extract contents to a given path.
@@ -187,58 +194,3 @@ def join_with_underscore(items):
     if type_cast_to_str:
         items = [str(x) for x in items]
     return "_".join(items)
-
-
-def get_stewi_inventory(invent_dict):
-    # LEFT OFF WITH TESTING 'eGRID' (replacing download_eGRID).
-
-    if not isinstance(invent_dict):
-        raise TypeError(
-            "Expected an inventory of interest dictionary, "
-            "found %s" % type(invent_dict))
-
-    import stewi.egrid as eGRID
-    import stewi.GHGRP as GHGRP
-    import stewi.NEI as NEI
-    import stewi.RCRAInfo as RCRAInfo
-    import stewi.TRI as TRI
-
-    for inventory_acronym, year in invent_dict.items():
-        # StEWI main() methods have all string parameters!
-        year = str(invent_dict[inventory_acronym])
-
-        if inventory_acronym == 'eGRID':
-            # HOTFIX requests error in esupy.
-            url = eGRID._config[year]['download_url']
-            f_name = eGRID._config[year]['file_name']
-            is_zip = os.path.splitext(f_name)[1] == ".zip"
-            # Make output folder, if not already
-            eGRID.OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
-            destination = eGRID.OUTPUT_PATH.joinpath(f_name)
-
-            r = requests.get(url)
-            if is_zip:
-                z = zipfile.ZipFile(io.BytesIO(r.content))
-                wb = z.read(f_name)
-            else:
-                wb = r.content
-            with open(destination, 'wb') as output:
-                output.write(wb)
-
-            eGRID.generate_metadata(year, datatype='source')
-            eGRID.main(Option = 'B', Year = [year])
-        elif inventory_acronym == 'GHGRP':
-            GHGRP.main(Option = 'A', Year = [year])
-            GHGRP.main(Option = 'B', Year = [year])
-        elif inventory_acronym == 'NEI':
-            NEI.main(Option = 'A', Year = [year])
-        elif inventory_acronym == 'RCRAInfo':
-            RCRAInfo.main(Option = 'A', Year = [year],
-                        Tables = ['BR_REPORTING', 'HD_LU_WASTE_CODE'])
-            RCRAInfo.main(Option = 'B', Year = [year],
-                        Tables = ['BR_REPORTING'])
-            RCRAInfo.main(Option = 'C', Year = [year])
-        elif inventory_acronym == 'TRI':
-            TRI.main(Option = 'A', Year = [year], Files = ['1a', '3a'])
-            TRI.main(Option = 'C', Year = [year], Files = ['1a', '3a'])
-            
