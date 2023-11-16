@@ -45,9 +45,12 @@ Changelog:
     -   New methods for getting current date and year
     -   New methods for checking valid year and UUID
     -   New flow property generator based on olca-schema.units module
+    -   Fix locations that are just strings (not a data dictionary)
+    -   Fix UUID validation for nan
+    -   Add save option as parameter in write method
 
 Last edited:
-    2023-11-02
+    2023-11-16
 """
 __all__ = [
     "write",
@@ -57,7 +60,7 @@ __all__ = [
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def write(processes, file_path):
+def write(processes, file_path, to_save=True):
     """Write a process dictionary as a olca-schema zip file to the given path.
 
     Note that a process has several root entity types associated with it,
@@ -78,6 +81,8 @@ def write(processes, file_path):
         OLCA schema dictionaries (e.g. Process).
     file_path : str
         A path to a zip file where the JSON-LD will be written.
+    to_save : bool
+        Whether this method should write the JSON-LD to zip file.
 
     Returns
     -------
@@ -92,6 +97,7 @@ def write(processes, file_path):
     # Make sure output folder exists
     file_dir = os.path.dirname(file_path)
     if not os.path.exists(file_dir):
+        logging.info("Creating folder, '%s'" % file_dir)
         os.makedirs(file_dir)
 
     # Initialize empty root entity mapper (i.e., dictionary)
@@ -123,16 +129,18 @@ def write(processes, file_path):
                 )
 
     # Write to JSON-LD zip format
-    with zipio.ZipWriter(file_path) as writer:
-        for k in spec_map.keys():
-            for k_obj in spec_map[k]['objs']:
-                # Last chance to fix Ref's
-                if isinstance(k_obj, o.Ref):
-                    logging.warning("Found Ref object in JSON-LD writer!")
-                    k_type = k_obj.ref_type.value
-                    k_dict = k_obj.to_dict()
-                    k_obj = spec_map[k_type]['class'].from_dict(k_dict)
-                writer.write(k_obj)
+    if to_save:
+        logging.info("Writing to '%s'" % file_path)
+        with zipio.ZipWriter(file_path) as writer:
+            for k in spec_map.keys():
+                for k_obj in spec_map[k]['objs']:
+                    # Last chance to fix Ref's
+                    if isinstance(k_obj, o.Ref):
+                        logging.warning("Found Ref object in JSON-LD writer!")
+                        k_type = k_obj.ref_type.value
+                        k_dict = k_obj.to_dict()
+                        k_obj = spec_map[k_type]['class'].from_dict(k_dict)
+                    writer.write(k_obj)
     return processes
 
 
@@ -326,7 +334,6 @@ def _dq_system(dict_d, dict_s, dq_type):
     return (dq_obj.to_ref(), dict_s)
 
 
-# TODO
 def _exchange_list(dict_d, dict_s):
     """Generates a list of exchanges.
 
@@ -408,6 +415,7 @@ def _exchange(dict_d, dict_s):
     """
     # Error handle missing data:
     if dict_d is None:
+        logging.debug("No exchange data!")
         return (None, dict_s)
 
     e = o.Exchange.from_dict({
@@ -452,7 +460,8 @@ def _unit(unit_name):
     Notes
     -----
     The version 4 UUIDs provided in this module are the same as those provided
-    by GreenDelta's olca_schema.units sub-package.
+    by GreenDelta's olca_schema.units sub-package, so it was replaced with
+    their unit-reference method.
 
     Parameters
     ----------
@@ -473,6 +482,7 @@ def _unit(unit_name):
             unit_name = ""
             logging.error(
                 'dict passed as unit_name but does not contain name key')
+    logging.debug("Creating unit, '%s'" % unit_name)
     r_obj = o_units.unit_ref(unit_name)
     if r_obj is None:
         logging.error("unknown unit, '%s'; no unit reference" % unit_name)
@@ -500,7 +510,7 @@ def _flow_property(unit_name):
     --------
     >>> import pandas as pd
     >>> f = ("https://github.com/GreenDelta/olca-schema/"
-             "blob/master/py/olca_schema/units/units.csv")
+    ...      "blob/master/py/olca_schema/units/units.csv")
     >>> df = pd.read_csv(f)
     >>> list(df['flow property name'].unique())
     ['Area*time',
@@ -620,7 +630,7 @@ def _flow(dict_d, flowprop, dict_s):
         flow = dict_s['Flow']['objs'][idx]
         logging.debug("Found previous flow, '%s'" % flow.name)
     else:
-        logging.debug("Creating new flow for, '%s'" % name)
+        logging.debug("Creating new flow for, '%s' (%s)" % (name, uid))
         if _uid_is_valid(uid, 3) or _uid_is_valid(uid, 4):
             # Keep the good UUID
             pass
@@ -659,8 +669,8 @@ def _location(dict_d, dict_s):
 
     Parameters
     ----------
-    dict_d : dict
-        A dictionary with location data (may be an empty string).
+    dict_d : dict or str
+        A dictionary with location data or a string of location name.
     dict_s : dict
         Dictionary with created root entities.
 
@@ -679,14 +689,23 @@ def _location(dict_d, dict_s):
     """
     # Check for missing location code (e.g., ISO 2-letter country code)
     # No code, no location!
-    code = _val(dict_d, 'name')
+    # HOTFIX: locations may just be a string [2023-11-14; TWD]
+    if isinstance(dict_d, str):
+        code = dict_d
+        uid = None
+    elif isinstance(dict_d, dict):
+        code = _val(dict_d, 'name')
+        uid = _val(dict_d, 'id')
+    else:
+        code = ""
+        uid = ""
+
     if not isinstance(code, str):
         return (None, dict_s)
     if code == '':
         return (None, dict_s)
 
     # Check for valid UUID; otherwise, generate one
-    uid = _val(dict_d, 'id')
     if not _uid_is_valid(uid):
         uid = _uid(o.ModelType.LOCATION, code)
 
@@ -695,7 +714,9 @@ def _location(dict_d, dict_s):
     if uid in dict_s['Location']['ids']:
         idx = dict_s['Location']['ids'].index(uid)
         location = dict_s['Location']['objs'][idx]
+        logging.debug("Using existing location, %s" % location.name)
     else:
+        logging.debug("Creating new location entry for '%s'" % code)
         location = o.Location(id=uid, code=code)
         location.name = code
         location.latitude = _val(dict_d, 'latitude')
@@ -1200,7 +1221,7 @@ def _uid_is_valid(uuid_str, version=3):
     Returns
     -------
     bool
-        `True` if uuid_to_test is a valid UUID, otherwise `False`.
+        `True` if uuid_str is a valid UUID, otherwise `False`.
 
     Examples
     --------
@@ -1214,9 +1235,10 @@ def _uid_is_valid(uuid_str, version=3):
     Code snipped by Rafael (2020). CC-BY-SA 4.0. Online:
     https://stackoverflow.com/a/33245493
     """
+    # HOTFIX: deal with non-strings (e.g., nan) [2023-11-14; TWD]
     try:
         uuid_obj = uuid.UUID(uuid_str, version=version)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, AttributeError):
         return False
     return str(uuid_obj) == uuid_str
 
