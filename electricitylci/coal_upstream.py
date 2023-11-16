@@ -26,7 +26,6 @@ import electricitylci.PhysicalQuantities as pq
 from electricitylci.globals import STATE_ABBREV
 from electricitylci.eia923_generation import eia923_generation_and_fuel
 import electricitylci.model_config as config
-config.model_specs = config.build_model_class()
 
 
 ##############################################################################
@@ -532,7 +531,9 @@ def generate_upstream_coal(year):
 # MAIN
 ##############################################################################
 if __name__=='__main__':
-    
+    import electricitylci.model_config as config
+    config.model_specs = config.build_model_class()
+
     year=2020
     df = generate_upstream_coal(year)
     df.to_csv(output_dir+'/coal_emissions_{}.csv'.format(year))
