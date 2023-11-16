@@ -19,7 +19,7 @@ from esupy.processed_data_mgmt import Paths
 __doc__ = """Define paths, variables, and functions used across several
 modules.
 
-Last updated: 2023-10-27
+Last updated: 2023-11-16
 """
 
 
@@ -176,9 +176,10 @@ def list_model_names_in_config():
     configfiles = glob.glob(configdir + '*_config.yml')
     modelnames_dict = {}
     selection_num = 1
-    for f in configfiles:
+    # HOTFIX: lexicographically sort model names
+    for f in sorted(configfiles):
         f = os.path.basename(f)
-        f = f.replace('_config.yml','')
+        f = f.replace('_config.yml', '')
         modelnames_dict[selection_num] = f
         selection_num += 1
     return modelnames_dict
