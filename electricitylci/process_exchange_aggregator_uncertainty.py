@@ -69,7 +69,7 @@ def uncertainty(db, mean_gen, total_gen, total_facility_considered):
     # Troy Method
     data_1 = db
 
-    df2 = pd.DataFrame([[0, 0]],columns = ['Electricity', 'FlowAmount'])
+    df2 = pd.DataFrame([[0, 0]], columns=['Electricity', 'FlowAmount'])
     for i in range(len(data_1), total_facility_considered):
         data = data_1.append(df2, ignore_index=True)
         data_1 = data
@@ -77,13 +77,14 @@ def uncertainty(db, mean_gen, total_gen, total_facility_considered):
     data = data_1
     mean = np.mean(data.iloc[:, 1])
     l,b = data.shape
+    # Compute standard error of the mean (but call it sd...)
     sd = np.std(data.iloc[:, 1])/np.sqrt(l)
-    # mean_gen = np.mean(data.iloc[:,0])
-    # obtaining the emissions factor from the weight based method
+
+    # Obtain the weighted emissions factor (emissions per MWh)
     ef = compilation(db, total_gen)
 
     # Endpoints of the range that contains alpha percent of the distribution
-    pi1, pi2 = t.interval(alpha=0.90, df=l-2, loc=mean, scale=sd)
+    pi1, pi2 = t.interval(0.90, df=l-2, loc=mean, scale=sd)
 
     # Converting prediction interval to emission factors
     pi2 = pi2/mean_gen
@@ -98,8 +99,7 @@ def uncertainty(db, mean_gen, total_gen, total_facility_considered):
         # This method will not work if the interval limits are more than
         # 280% of the mean.
         if pi3 < 2.8:
-            # sd1,sd2 = solve(0.5*x*x -(1.16308*np.sqrt(2))*x + (np.log(1+pi3)),x)
-
+            # Solve roots of the quadratic, ax^2 + bx + c = 0
             a = 0.5
             b = -(1.16308*np.sqrt(2))
             c = np.log(1+pi3)
