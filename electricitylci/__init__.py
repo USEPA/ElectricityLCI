@@ -18,7 +18,7 @@ from electricitylci.globals import elci_version
 ##############################################################################
 __doc__ = """This module contains the main API functions to be used by the end user.
 
-Last updated: 2023-10-25
+Last updated: 2023-11-16
 """
 __version__ = elci_version
 
@@ -59,10 +59,13 @@ def get_generation_process_df(regions=None, **kwargs):
     import electricitylci.generation as gen
     import electricitylci.combinator as combine
 
+    # Add NETL renewables
     if config.model_specs.include_renewable_generation is True:
         generation_process_df = get_gen_plus_netl()
     else:
         generation_process_df = gen.create_generation_process_df()
+
+    # Add NETL water
     if config.model_specs.include_netl_water is True:
         import electricitylci.plant_water_use as water
 
@@ -71,6 +74,7 @@ def get_generation_process_df(regions=None, **kwargs):
         generation_process_df = combine.concat_clean_upstream_and_plant(
             generation_process_df, water_df)
 
+    # Add upstream processes
     if config.model_specs.include_upstream_processes is True:
         try:
             upstream_df = kwargs['upstream_df']
@@ -80,9 +84,11 @@ def get_generation_process_df(regions=None, **kwargs):
                 "A kwarg named 'upstream_dict' must be included if "
                 "include_upstream_processes is true."
             )
+        # Get combined upstream and generation data + Canadian generation
         _, canadian_gen = combine_upstream_and_gen_df(
             generation_process_df, upstream_df
         )
+        # Add upstream fuels
         gen_plus_fuels = add_fuels_to_gen(
             generation_process_df, upstream_df, canadian_gen, upstream_dict
         )
@@ -100,8 +106,12 @@ def get_generation_process_df(regions=None, **kwargs):
         generation_process_df = pd.concat(
             [generation_process_df, canadian_gen_df], ignore_index=True)
         gen_plus_fuels = generation_process_df
+
+    # NOTE: It would be nice if the following were in a separate method so
+    # gen_plus_fuels could be retained without aggregation.
     if regions is None:
         regions = config.model_specs.regional_aggregation
+
     if regions in ["BA", "FERC", "US"]:
         generation_process_df = aggregate_gen(gen_plus_fuels, "BA")
     else:
@@ -331,6 +341,7 @@ def write_process_dicts_to_jsonld(*process_dicts):
         # it all back to a single dictionary!
         all_process_dicts = {**all_process_dicts, **d}
     olca_dicts = write(all_process_dicts, config.model_specs.namestr)
+    logging.info("Wrote JSON-LD to %s" % config.model_specs.namestr)
     return olca_dicts
 
 
@@ -576,6 +587,7 @@ def write_gen_fuel_database_to_dict(
     if subregion is None:
         # Another change to accommodate FERC consumption pulling BAs.
         subregion = config.model_specs.regional_aggregation
+
     # TODO:
     # Removing the statements below for now. This is preventing the generation
     # of dictionaries for other levels of aggregation. This logic will need to
