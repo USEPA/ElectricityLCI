@@ -33,6 +33,23 @@ Retrieve data from EPA CEMS daily zipped CSVs.
 This module pulls data from EPA's published CSV files, which are utilized
 in ampd_plant_emissions.py.
 
+In the 2023 update, the workflow is to apply for an EPA Data API key
+
+- https://www.epa.gov/power-sector/cam-api-portal#/api-key-signup
+
+Then, run the following:
+
+.. code: python
+
+    >>> from electricitylci.cems_data import build_cems_df
+    >>> df = build_cems_df(2016, use_api=True)
+
+This will trigger the 48 lower states (plus DC) zip files to be downloaded.
+Subsequent calls of ElectricityLCI will search for these local files before
+triggering another API call, thus avoiding the API key input.
+
+---
+
 Copyright 2017 Catalyst Cooperative and the Climate Policy Initiative
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
