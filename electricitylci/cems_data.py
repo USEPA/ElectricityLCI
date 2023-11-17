@@ -21,10 +21,11 @@ import requests
 from electricitylci.globals import API_SLEEP
 from electricitylci.globals import paths
 from electricitylci.globals import output_dir
+from electricitylci.globals import US_STATES
 
 
 ##############################################################################
-# GLOBALS
+# MODULE DOCUMENTATION
 ##############################################################################
 __doc__ = """
 Retrieve data from EPA CEMS daily zipped CSVs.
@@ -43,11 +44,13 @@ furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
-Last edited: 2023-10-25
+Last edited: 2023-11-17
 """
 
-logger = logging.getLogger("cems_data")
 
+##############################################################################
+# GLOBALS
+##############################################################################
 data_years = {
     'epacems': tuple(range(1995, 2021)),
 }
@@ -62,14 +65,13 @@ epacems_columns_to_ignore = {
     "CO2_RATE_MEASURE_FLG",
 }
 
+# NOTE: The op_date, op_hour, and op_time variables get converted to
+# operating_date, operating_datetime and operating_time_interval in
+# transform/epacems.py
 epacems_csv_dtypes = {
     "STATE": str,
-    # "FACILITY_NAME": str,  # Not reading from CSV
     "ORISPL_CODE": int,
     "UNITID": str,
-    # These op_date, op_hour, and op_time variables get converted to
-    # operating_date, operating_datetime and operating_time_interval in
-    # transform/epacems.py
     "OP_DATE": str,
     "OP_HOUR": int,
     "OP_TIME": float,
@@ -81,9 +83,6 @@ epacems_csv_dtypes = {
     "SO2_MASS (lbs)": float,
     "SO2_MASS": float,
     "SO2_MASS_MEASURE_FLG": str,
-    # "SO2_RATE (lbs/mmBtu)": float,  # Not reading from CSV
-    # "SO2_RATE": float,  # Not reading from CSV
-    # "SO2_RATE_MEASURE_FLG": str,  # Not reading from CSV
     "NOX_RATE (lbs/mmBtu)": float,
     "NOX_RATE": float,
     "NOX_RATE_MEASURE_FLG": str,
@@ -93,9 +92,6 @@ epacems_csv_dtypes = {
     "CO2_MASS (tons)": float,
     "CO2_MASS": float,
     "CO2_MASS_MEASURE_FLG": str,
-    # "CO2_RATE (tons/mmBtu)": float,  # Not reading from CSV
-    # "CO2_RATE": float,  # Not reading from CSV
-    # "CO2_RATE_MEASURE_FLG": str,  # Not reading from CSV
     "HEAT_INPUT (mmBtu)": float,
     "HEAT_INPUT": float,
     "FAC_ID": int,
@@ -104,12 +100,8 @@ epacems_csv_dtypes = {
 
 epacems_rename_dict = {
     "STATE": "state",
-    # "FACILITY_NAME": "plant_name",  # Not reading from CSV
     "ORISPL_CODE": "plant_id_eia",
     "UNITID": "unitid",
-    # These op_date, op_hour, and op_time variables get converted to
-    # operating_date, operating_datetime and operating_time_interval in
-    # transform/epacems.py
     "OP_DATE": "op_date",
     "OP_HOUR": "op_hour",
     "OP_TIME": "operating_time_hours",
@@ -121,9 +113,6 @@ epacems_rename_dict = {
     "SO2_MASS (lbs)": "so2_mass_lbs",
     "SO2_MASS": "so2_mass_lbs",
     "SO2_MASS_MEASURE_FLG": "so2_mass_measurement_code",
-    # "SO2_RATE (lbs/mmBtu)": "so2_rate_lbs_mmbtu",  # Not reading from CSV
-    # "SO2_RATE": "so2_rate_lbs_mmbtu",  # Not reading from CSV
-    # "SO2_RATE_MEASURE_FLG": "so2_rate_measure_flg",  # Not reading from CSV
     "NOX_RATE (lbs/mmBtu)": "nox_rate_lbs_mmbtu",
     "NOX_RATE": "nox_rate_lbs_mmbtu",
     "NOX_RATE_MEASURE_FLG": "nox_rate_measurement_code",
@@ -133,77 +122,14 @@ epacems_rename_dict = {
     "CO2_MASS (tons)": "co2_mass_tons",
     "CO2_MASS": "co2_mass_tons",
     "CO2_MASS_MEASURE_FLG": "co2_mass_measurement_code",
-    # "CO2_RATE (tons/mmBtu)": "co2_rate_tons_mmbtu",  # Not reading from CSV
-    # "CO2_RATE": "co2_rate_tons_mmbtu",  # Not reading from CSV
-    # "CO2_RATE_MEASURE_FLG": "co2_rate_measure_flg",  # Not reading from CSV
     "HEAT_INPUT (mmBtu)": "heat_content_mmbtu",
     "HEAT_INPUT": "heat_content_mmbtu",
     "FAC_ID": "facility_id",
     "UNIT_ID": "unit_id_epa",
 }
 
-us_states = {
-    'AK': 'Alaska',
-    'AL': 'Alabama',
-    'AR': 'Arkansas',
-    'AS': 'American Samoa',
-    'AZ': 'Arizona',
-    'CA': 'California',
-    'CO': 'Colorado',
-    'CT': 'Connecticut',
-    'DC': 'District of Columbia',
-    'DE': 'Delaware',
-    'FL': 'Florida',
-    'GA': 'Georgia',
-    'GU': 'Guam',
-    'HI': 'Hawaii',
-    'IA': 'Iowa',
-    'ID': 'Idaho',
-    'IL': 'Illinois',
-    'IN': 'Indiana',
-    'KS': 'Kansas',
-    'KY': 'Kentucky',
-    'LA': 'Louisiana',
-    'MA': 'Massachusetts',
-    'MD': 'Maryland',
-    'ME': 'Maine',
-    'MI': 'Michigan',
-    'MN': 'Minnesota',
-    'MO': 'Missouri',
-    'MP': 'Northern Mariana Islands',
-    'MS': 'Mississippi',
-    'MT': 'Montana',
-    'NA': 'National',
-    'NC': 'North Carolina',
-    'ND': 'North Dakota',
-    'NE': 'Nebraska',
-    'NH': 'New Hampshire',
-    'NJ': 'New Jersey',
-    'NM': 'New Mexico',
-    'NV': 'Nevada',
-    'NY': 'New York',
-    'OH': 'Ohio',
-    'OK': 'Oklahoma',
-    'OR': 'Oregon',
-    'PA': 'Pennsylvania',
-    'PR': 'Puerto Rico',
-    'RI': 'Rhode Island',
-    'SC': 'South Carolina',
-    'SD': 'South Dakota',
-    'TN': 'Tennessee',
-    'TX': 'Texas',
-    'UT': 'Utah',
-    'VA': 'Virginia',
-    'VI': 'Virgin Islands',
-    'VT': 'Vermont',
-    'WA': 'Washington',
-    'WI': 'Wisconsin',
-    'WV': 'West Virginia',
-    'WY': 'Wyoming'
-}
-
 cems_states = {
-    k: v for k, v in us_states.items() if v not in [
+    k: v for k, v in US_STATES.items() if v not in [
         'Alaska',
         'American Samoa',
         'Guam',
@@ -229,6 +155,8 @@ cems_col_names = {
 def get_epacems_dir(year):
     """Data directory search for EPA CEMS hourly.
 
+    LEGACY CODE
+
     Parameters
     ----------
     year : int
@@ -249,6 +177,8 @@ def get_epacems_dir(year):
 def get_epacems_file(year, qtr, state):
     """Return the appropriate EPA CEMS zipfile for a given a year, month, and
     state.
+
+    LEGACY CODE
 
     Parameters
     ----------
@@ -279,6 +209,8 @@ def read_cems_csv(filename):
 
     Note that some columns are not read. See epacems_columns_to_ignores.
 
+    LEGACY CODE
+
     Parameters
     ----------
     filename : str
@@ -296,7 +228,80 @@ def read_cems_csv(filename):
     return df
 
 
-def read_cems_api(api_key, year, state=None):
+def _write_cems_api(data, file_path):
+    """Helper method for writing the API data frames to file.
+
+    This is in support of repeated usage of ElectricityLCI to avoid
+    running API calls (and inputting the API key) each and every time.
+
+    Parameters
+    ----------
+    data : pandas.DataFrame
+        A data frame with CEMS data as read from API and converted from JSON.
+    file_path : str
+        A path to the zip CSV file (e.g., as generated by :func:`path`).
+        Warns if file already exists, as the default is to overwrite.
+
+    Raises
+    ------
+    TypeError
+        If other than data frame data object is received.
+    """
+    if os.path.exists(file_path):
+        logging.warning("Overwriting existing CEMS CSV file!")
+
+    if not isinstance(data, pd.DataFrame):
+        raise TypeError("Expected pandas data frame, received %s" % type(data))
+
+    file_dir = os.path.dirname(file_path)
+    if not os.path.isdir(file_dir):
+        logging.info("Creating output directory for CEMS data: %s" % file_dir)
+        try:
+            os.makedirs(file_dir, exist_ok=True)
+        except Exception as e:
+            logging.error("Failed to create folder, %s" % file_dir)
+            logging.error("%s" % str(e))
+
+    try:
+        # Should infer zip compression from file extension.
+        data.to_csv(file_path, index=False)
+    except Exception as e:
+        logging.error("Failed to write CEMS data to CSV: %s" % file_path)
+        logging.error("%s" % str(e))
+    else:
+        logging.info("Saved CEMS data to file, %s" % file_path)
+
+
+def read_cems_api(api_key, year, state=None, force=False):
+    """Read CEMS annual apportioned emissions from new EPA API.
+
+    Method checks local directory for file existence and prioritizes
+    reading from file before calling the API unless force is set to true.
+
+    Parameters
+    ----------
+    api_key : str
+        EPA data API key
+    year : int
+        Data year (e.g., 2016)
+    state : str, optional
+        Two-character state abbreviation (e.g., "VA"), by default None
+    force : bool, optional
+        Whether to force reading from API (rather than check for local copy).
+        Defaults to false.
+
+    Returns
+    -------
+    pandas.DataFrame
+        CEMS data frame.
+
+    Raises
+    ------
+    ValueError
+        For missing API key.
+    OSError
+        For unexpected API errors.
+    """
     # Use the annual apportioned emissions API URL:
     s_url = (
         "https://api.epa.gov/easey/streaming-services/emissions/"
@@ -315,22 +320,35 @@ def read_cems_api(api_key, year, state=None):
         'noxMass': 'nox_mass_tons',
         'heatInput': 'heat_content_mmbtu'
     }
-    if api_key is None or api_key == "":
-        raise ValueError("Missing API key!")
+    # Prepare the empty return dataframe
+    tmp_df = pd.DataFrame(columns=list(c_map.values()))
 
-    params = {'api_key': api_key, 'year': year, 'stateCode': state}
-    try:
-        r = requests.get(s_url, params=params)
-    except:
-        raise OSError("Unexpected error during EPA data API call!")
+    # HOTFIX: add local file checking [2023-11-17; TWD]
+    c_file = path("epacems", year=year, state=state)
+    if os.path.exists(c_file) and not force:
+        logging.info("Found CEMS data file for %s %s" % (state, year))
+        tmp_df = pd.read_csv(c_file)
     else:
-        if r.ok:
-            tmp_df = pd.DataFrame.from_dict(r.json()).rename(columns=c_map)
+        # Check that API key exists
+        if api_key is None or api_key == "":
+            raise ValueError("Missing API key!")
+
+        # Prepare the API parameters
+        params = {'api_key': api_key, 'year': year, 'stateCode': state}
+        try:
+            r = requests.get(s_url, params=params)
+        except:
+            raise OSError("Unexpected error during EPA data API call!")
         else:
-            # This catches incorrect API keys or bad parameters
-            logging.warning("Failed to retrieve data for %s %s" % (state, year))
-            tmp_df = pd.DataFrame(columns=list(c_map.values()))
-        return tmp_df
+            if r.ok:
+                tmp_df = pd.DataFrame.from_dict(r.json()).rename(columns=c_map)
+                _write_cems_api(tmp_df, c_file)
+            else:
+                # This catches incorrect API keys or bad parameters
+                logging.warning(
+                    "Failed to retrieve data for %s %s" % (state, year))
+
+    return tmp_df
 
 
 def extract(epacems_years, states, use_api=True):
@@ -356,21 +374,32 @@ def extract(epacems_years, states, use_api=True):
     """
     logging.info("Extracting EPA CEMS data...")
     dfs = []
-
-    # Add API support
-    if use_api:
-        api_key = input("Enter EPA API key: ")
+    api_key = None
 
     for year in epacems_years:
         # The keys of the us_states dictionary are the state abbrevs
         for state in states:
+            # Add API support
             if use_api:
-                tmp_df = read_cems_api(api_key, year, state)
+                # HOTFIX: add local file support [2023-11-17; TWD]
+                c_file = path("epacems", year=year, state=state)
+                if os.path.exists(c_file):
+                    logging.info(
+                        "Found CEMS data file for %s %s" % (state, year))
+                    tmp_df = pd.read_csv(c_file)
+                else:
+                    if api_key is None:
+                        api_key = input("Enter EPA API key: ")
+                    tmp_df = read_cems_api(api_key, year, state)
+
                 # HOTFIX: don't add empty data frames
-                if len(tmp_df) > 0:
+                records = len(tmp_df)
+                logging.debug("%s %s: %d records" % (state, year, records))
+                if records > 0:
                     dfs.append(tmp_df)
                 time.sleep(API_SLEEP)
             else:
+                # LEGACY CODE
                 for qtr in range(1, 5):
                     filename = get_epacems_file(year, qtr, state)
                     logging.info(f"Reading {year} - {state} - qtr {qtr}")
@@ -413,7 +442,7 @@ def assert_valid_param(source, year, qtr=None, state=None, check_month=None):
     if source == 'epacems':
         valid_states = cems_states.keys()
     else:
-        valid_states = us_states.keys()
+        valid_states = US_STATES.keys()
 
     if check_month:
         assert qtr in range(1, 5), \
@@ -424,6 +453,8 @@ def assert_valid_param(source, year, qtr=None, state=None, check_month=None):
 
 def source_url(source, year, qtr=None, state=None):
     """Construct a URL for the specified federal data source and year.
+
+    LEGACY CODE
 
     Parameters
     ----------
@@ -629,11 +660,12 @@ def download(source, year, states, datadir=paths.local_path, verbose=True):
     datadir : str
         The path to the top level directory of the datastore.
     verbose : bool
-        If True, logger.info messages about what's happening.
+        If True, see logging info messages about what's happening.
 
     Returns
     -------
-    str : The path to the local downloaded file.
+    str
+        The path to the local downloaded file.
     """
     assert_valid_param(source=source, year=year, check_month=False)
 
@@ -657,10 +689,10 @@ def download(source, year, states, datadir=paths.local_path, verbose=True):
             tmp_dir, os.path.basename(path(source, year)))]
     if verbose:
         if source != 'epacems':
-            logger.info(
+            logging.info(
                 f"Downloading {source} data for {year}...\n    {src_urls[0]}")
         else:
-            logger.info(f"Downloading {source} data for {year}...")
+            logging.info(f"Downloading {source} data for {year}...")
     url_schemes = {urllib.parse.urlparse(url).scheme for url in src_urls}
     # Pass all the URLs at once, rather than looping here, because that way
     # we can use the same FTP connection for all of the src_urls
@@ -800,7 +832,7 @@ def organize(source, year, states, unzip=True,
         The path to the top level directory of the datastore.
         Defaults to local path.
     verbose : bool, optional
-        If True, logger.info messages about what's happening.
+        If True, see logging info messages about what's happening.
         Defaults to false. Unused.
     no_download : bool, optional
         If True, the files were not downloaded in this run.
@@ -847,7 +879,7 @@ def organize(source, year, states, unzip=True,
     if(unzip and source != 'epacems'):
         # Unzip the downloaded file in its new home:
         zip_ref = zipfile.ZipFile(destfile, 'r')
-        logger.info(f"unzipping {destfile}")
+        logging.info(f"unzipping {destfile}")
         zip_ref.extractall(destdir)
         zip_ref.close()
         # Most of the data sources can just be unzipped in place and be done
@@ -921,7 +953,7 @@ def update(source, year, states, clobber=False, unzip=True, verbose=True,
         EPA CEMS files will never be unzipped.
         Defaults to true.
     verbose : bool, optional
-        If True, logger.info messages about what's happening.
+        If True, see logging info messages about what's happening.
         Defaults to true.
     datadir : str, optional
         The path to the top level directory of the datastore.
@@ -1071,24 +1103,3 @@ if __name__ == '__main__':
     year = 2016
     df = build_cems_df(year)
     df.to_csv(f'{output_dir}/cems_emissions_{year}.csv')
-
-
-##############################################################################
-# SANDBOX
-##############################################################################
-if False:
-    import glob
-    import os
-    from electricitylci.cems_data import read_cems_csv
-    from electricitylci.cems_data import process_cems_dfs
-
-    b_dir = os.path.expanduser("~")
-    l_dir = "Envs/lca/lib/python3.9/site-packages/electricitylci"
-    d_dir = "data/epacems2016"
-    my_dir = os.path.join(b_dir, l_dir, d_dir)
-    my_files = glob.glob(os.path.join(my_dir, "*.zip"))
-    df_list = []
-    for my_file in my_files:
-        tmp_df = read_cems_csv(my_file)
-        df_list.append(tmp_df)
-    df = process_cems_dfs(df_list)
