@@ -41,7 +41,7 @@ or Federal Energy Regulatory Commission (FERC) regions. These electricity
 flows are then used to generate the consumption mix for a given region or
 balancing authority area.
 
-Last updated: 2023-11-16
+Last updated: 2023-11-17
 """
 __all__ = [
     "ba_io_trading_model",
@@ -52,54 +52,28 @@ __all__ = [
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
-    """Merge generation and emissions data.
-
-    Add region designations using either eGRID or EIA-860. Same for primary fuel by plant (eGRID or 923). Calculate and merge in the total generation by region. Create the column "Subregion" to hold regional name info. Remove electricity flows. Rename flows and add UUIDs according to the federal flow list.
-
-    Parameters
-    ----------
-    year : int, optional
-        Specified year to pull transaction data between balancing authorities.
-    subregion : str, optional
-        Description of a group of regions. Options include 'FERC' for all FERC
-        market regions, 'BA' for all balancing authorities.
-    regions_to_keep : list, optional
+def _read_ba():
+    """Generate the Balancing Authority data frame and acronym and FERC lists.
 
     Returns
     -------
-    Dictionary of dataframes with import region, export region, transaction amount, total
-    imports for import region, and fraction of total. The dictionary keys
-    are the level of aggregation: "BA", "FERC", "US".
+    tuple
+        A tuple of length three.
 
-    Examples
-    --------
-    >>> ferc_final_trade.head()
-    import ferc region export ferc region         value         total  fraction
-0              CAISO              CAISO  2.662827e+08  3.225829e+08  0.825471
-1              CAISO             Canada  1.119572e+06  3.225829e+08  0.003471
-2              CAISO              ERCOT  0.000000e+00  3.225829e+08  0.000000
-3              CAISO             ISO-NE  0.000000e+00  3.225829e+08  0.000000
-4              CAISO               MISO  0.000000e+00  3.225829e+08  0.000000
+        - pandas.DataFrame : Balancing authority data
+          Columns include the following.
+
+            * 'BA_Acronym' (str) : short letter abbreviation
+            * 'BA_Name' (str) : long name
+            * 'NCR ID#' (str) : NRC identifier
+            * 'EIA_Region' (str) : region name (includes Canada)
+            * 'FERC_Region' (str) : FERC region (includes Canada)
+            * 'EIA_Region_Abbr' (str) : EIA region abbreviation
+            * 'FERC_Region_Abbr' (str) : FERC region abbreviation
+
+        - list : U.S. Balancing Authority abbreviation codes
+        - list : U.S. FERC region codes
     """
-    REGION_ACRONYMS = [
-        'TVA', 'MIDA', 'CAL', 'CAR', 'CENT', 'ERCO', 'FLA',
-        'MIDW', 'ISNE', 'NYIS', 'NW', 'SE', 'SW',
-    ]
-
-    if year is None:
-        year = model_specs.NETL_IO_trading_year
-
-    if subregion is None:
-        subregion = model_specs.regional_aggregation
-
-    if subregion not in ['BA', 'FERC','US']:
-        raise ValueError(
-            'Subregion or regional_aggregation must have a value of "BA" '
-            'or "FERC" when calculating trading with input-output, '
-            f'not {subregion}'
-        )
-
     # Read in BAA file that contains the names and abbreviations
     df_BA = pd.read_excel(
         data_dir + '/BA_Codes_930.xlsx',
@@ -116,7 +90,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     )
     US_BA_acronyms = df_BA['BA_Acronym'].tolist()
 
-    # Original df_BAA does not include the Canadian balancing authorities
+    # Original df_BA does not include the Canadian balancing authorities
     # Import and concatenate to make a single df_BAA_NA (North America).
     df_BA_CA = pd.read_excel(
         data_dir + '/BA_Codes_930.xlsx',
@@ -133,6 +107,30 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     )
     df_BA_NA = pd.concat([df_BA, df_BA_CA])
     ferc_list = df_BA_NA['FERC_Region_Abbr'].unique().tolist()
+
+    return df_BA_NA, US_BA_acronyms, ferc_list
+
+
+def _read_bulk():
+    """Read and parse EIA's U.S. Electric System Operating Data.
+
+    Creates three lists of JSON-based dictionaries.
+    Each dictionary contains metadata and a timeseries of data.
+    Time series data appear to go back to 2015.
+
+    Returns
+    -------
+    tuple
+        A tuple of length three.
+
+        - list : rows associated with net generation.
+        - list : rows associated with BA-to-BA trade.
+        - list : rows associated with demand.
+    """
+    REGION_ACRONYMS = [
+        'TVA', 'MIDA', 'CAL', 'CAR', 'CENT', 'ERCO', 'FLA',
+        'MIDW', 'ISNE', 'NYIS', 'NW', 'SE', 'SW',
+    ]
 
     # Read in the bulk data
     path = os.path.join(paths.local_path, 'bulk_data', 'EBA.zip')
@@ -171,9 +169,33 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     logging.debug(f"BA to BA rows:{len(BA_TO_BA_ROWS)}")
     logging.debug(f"Demand rows:{len(DEMAND_ROWS)}")
 
+    return (NET_GEN_ROWS, BA_TO_BA_ROWS, DEMAND_ROWS)
+
+
+def _read_eia_gen(year):
+    """Create data frame of EIA generation data for balancing authorities.
+
+    Data are from EIA Forms 923 and 860.
+
+    Parameters
+    ----------
+    year : int
+        Data year (e.g., 2016)
+
+    Returns
+    -------
+    tuple
+        A tuple of length two.
+
+        - pandas.DataFrame : EIA generation data with two columns:
+          "Balacing Authority Code" and "Electricity".
+        - list : EIA 860 balancing authority abbreviation codes
+    """
     eia923_gen = eia923.build_generation_data(generation_years=[year])
     eia860_df = eia860.eia860_balancing_authority(year)
     eia860_df["Plant Id"] = eia860_df["Plant Id"].astype(int)
+    eia860_ba_list = list(
+        eia860_df["Balancing Authority Code"].dropna().unique())
     eia_combined_df = eia923_gen.merge(
         eia860_df,
         left_on=["FacilityID"],
@@ -185,6 +207,43 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
         as_index=False
     )["Electricity"].sum()
 
+    return (eia_gen_ba, eia860_ba_list)
+
+
+def _make_net_gen(year, ba_cols, ng_json_list):
+    """Convert EIA bulk net generation data into time series data frame.
+
+    Parameters
+    ----------
+    year : int
+        Data year (e.g., 2016)
+    ba_cols : list
+        A list of balancing authority abbreviation codes.
+    ng_json_list : list
+        A list of JSON dictionaries for net generation from EIA's bulk data
+        download.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A data frame of net generation values with columns for each balancing
+        authority code and a row index of time stamps associated with the given
+        year.
+
+    Examples
+    --------
+    >>> df_BA_NA, ba_cols, ferc_list = _read_ba()
+    >>> NET_GEN_ROWS, BA_TO_BA_ROWS, DEMAND_ROWS = _read_bulk()
+    >>> df_net_gen = _make_net_gen(2016, ba_cols, NET_GEN_ROWS)
+    >>> df_net_gen.head()
+    region                       AEC  ...    WACM    WALC    WWA    YAD
+    datetime                          ...
+    2016-01-01 00:00:00+00:00  742.0  ...  5003.0   913.0   167.0  171.0
+    2016-01-01 01:00:00+00:00  691.0  ...  5481.0  1136.0   184.0  169.0
+    2016-01-01 02:00:00+00:00  630.0  ...  5531.0  1235.0   182.0  170.0
+    2016-01-01 03:00:00+00:00  575.0  ...  5551.0  1081.0   165.0  170.0
+    2016-01-01 04:00:00+00:00  586.0  ...  5394.0  1055.0   160.0  171.0
+    """
     # Subset for specified eia_gen_year
     start_datetime = '{}-01-01 00:00:00+00:00'.format(year)
     end_datetime = '{}-12-31 23:00:00+00:00'.format(year)
@@ -193,9 +252,8 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     end_datetime = datetime.strptime(end_datetime, '%Y-%m-%d %H:%M:%S%z')
 
     # Net Generation Data Import
-    logging.info("Generating df with datetime")
-    df_net_gen = row_to_df(NET_GEN_ROWS, 'net_gen')
-    del(NET_GEN_ROWS)
+    logging.info("Creating net generation data frame with datetime")
+    df_net_gen = row_to_df(ng_json_list, 'net_gen')
 
     logging.info("Pivoting")
     df_net_gen = df_net_gen.pivot(
@@ -203,7 +261,6 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
         columns='region',
         values='net_gen'
     )
-    ba_cols = US_BA_acronyms
     gen_cols = list(df_net_gen.columns.values)
 
     gen_cols_set = set(gen_cols)
@@ -212,8 +269,8 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     col_diff = list(ba_ref_set - gen_cols_set)
     col_diff.sort(key = str.upper)
 
-    logging.info("Cleaning net_gen dataframe")
     # Add in missing columns, then sort in alphabetical order
+    logging.info("Cleaning net_gen dataframe")
     for i in col_diff:
         df_net_gen[i] = 0
 
@@ -226,6 +283,85 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     df_net_gen = df_net_gen.sort_index(axis=1)
     df_net_gen = df_net_gen.fillna(value=0)
     df_net_gen = df_net_gen.loc[start_datetime:end_datetime]
+
+    return df_net_gen
+
+
+def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
+    """Use EIA trading data to calculate the consumption mix for
+    balancing authority area, FERC region, and U.S. national levels.
+
+    Parameters
+    ----------
+    year : int, optional
+        Specified year to pull transaction data between balancing authorities.
+    subregion : str, optional
+        Description of a group of regions. Options include 'FERC' for all FERC
+        market regions, 'BA' for all balancing authorities.
+    regions_to_keep : list, optional
+        A list of balancing authority names of interest.
+        Otherwise, returns all balancing authorities.
+
+    Returns
+    -------
+    dict
+        A dictionary of dataframes. Each with import region, export region,
+        transaction amount, total imports for import region, and fraction of
+        total.
+
+        The dictionary keys are the level of aggregation: "BA", "FERC", "US".
+
+    Notes
+    -----
+    A candidate for parsing out the long list of methods into their own
+    separate functions.
+
+    Examples
+    --------
+    >>> d = ba_io_trading_model()  # uses modelconfig values
+    >>> ferc_final_trade = d['FERC']
+    >>> ferc_final_trade.head()
+    import ferc region export ferc region         value         total  fraction
+0              CAISO              CAISO  2.662827e+08  3.225829e+08  0.825471
+1              CAISO             Canada  1.119572e+06  3.225829e+08  0.003471
+2              CAISO              ERCOT  0.000000e+00  3.225829e+08  0.000000
+3              CAISO             ISO-NE  0.000000e+00  3.225829e+08  0.000000
+4              CAISO               MISO  0.000000e+00  3.225829e+08  0.000000
+    """
+    if year is None:
+        year = model_specs.NETL_IO_trading_year
+    logging.info("Using trade year %d" % year)
+
+    if subregion is None:
+        subregion = model_specs.regional_aggregation
+    logging.info("Using trade aggregation level: %s" % subregion)
+
+    if subregion not in ['BA', 'FERC','US']:
+        raise ValueError(
+            'Subregion or regional_aggregation must have a value of "BA" '
+            'or "FERC" when calculating trading with input-output, '
+            f'not {subregion}'
+        )
+
+    # Subset for specified eia_gen_year
+    start_datetime = '{}-01-01 00:00:00+00:00'.format(year)
+    end_datetime = '{}-12-31 23:00:00+00:00'.format(year)
+
+    start_datetime = datetime.strptime(start_datetime, '%Y-%m-%d %H:%M:%S%z')
+    end_datetime = datetime.strptime(end_datetime, '%Y-%m-%d %H:%M:%S%z')
+
+    # Import US and CA BA into single North America data frame.
+    df_BA_NA, ba_cols, ferc_list = _read_ba()
+
+    # Read necessary data from EIA's bulk data download.
+    NET_GEN_ROWS, BA_TO_BA_ROWS, DEMAND_ROWS = _read_bulk()
+
+    # Create EIA generation dataset and Form 860 balancing authority list.
+    eia_gen_ba, eia860_ba_list = _read_eia_gen(year)
+
+    # Net Generation Data Import
+    df_net_gen = _make_net_gen(year, ba_cols, NET_GEN_ROWS)
+    del(NET_GEN_ROWS)
 
     # Sum values in each column
     df_net_gen_sum = df_net_gen.sum(axis=0).to_frame()
@@ -300,12 +436,13 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     del(BA_TO_BA_ROWS)
 
     df_ba_trade = df_ba_trade.set_index('datetime')
-    df_ba_trade['transacting regions'] = df_ba_trade['from_region'] + '-' + df_ba_trade['to_region']
+    df_ba_trade['transacting regions'] = (
+        df_ba_trade['from_region'] + '-' + df_ba_trade['to_region'])
 
-    logging.info("Filtering trading dataframe")
     # Keep only the columns that match the balancing authority names, there are
     # several other columns included in the dataset that represent states
     # (e.g., TEX, NY, FL) and other areas (US48)
+    logging.info("Filtering trading dataframe")
     filt1 = df_ba_trade['from_region'].isin(ba_cols)
     filt2 = df_ba_trade['to_region'].isin(ba_cols)
     filt = filt1 & filt2
@@ -324,7 +461,11 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     df_ba_trade_sum.columns = ['BAAs','Exchange']
 
     # Split BAA string into exporting and importing BAA columns
-    df_ba_trade_sum['BAA1'], df_ba_trade_sum['BAA2'] = df_ba_trade_sum['BAAs'].str.split('-', 1).str
+    # HOTFIX: 'maxsplit' is now 'n' in string split [2023-11-17; TWD]
+    # Reference: https://www.statology.org/pandas-split-column/
+    df_ba_trade_sum[['BAA1', 'BAA2']] = df_ba_trade_sum['BAAs'].str.split(
+        '-', n=1, expand=True)
+
     df_ba_trade_sum = df_ba_trade_sum.rename(
         columns={'BAAs': 'Transacting BAAs'}
     )
@@ -344,7 +485,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
         'BAA2_2_1', 'BAA1_2_1','Transacting BAAs_2_1', 'Exchange_2_1']
 
     # Combine two grouped tables for comparison for exchange values
-    df_concat_trade = pd.concat([df_trade_sum_1_2,df_trade_sum_2_1], axis = 1)
+    df_concat_trade = pd.concat([df_trade_sum_1_2,df_trade_sum_2_1], axis=1)
     df_concat_trade['Exchange_1_2_abs'] = df_concat_trade['Exchange_1_2'].abs()
     df_concat_trade['Exchange_2_1_abs'] = df_concat_trade['Exchange_2_1'].abs()
 
@@ -504,7 +645,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     logging.info("Inflow vector")
     x = []
     for i in range (len(df_net_gen_sum)):
-        x.append(df_net_gen_sum.iloc[i] + df_trade_pivot.sum(axis = 0).iloc[i])
+        x.append(df_net_gen_sum.iloc[i] + df_trade_pivot.sum(axis=0).iloc[i])
     x_np = np.array(x)
 
     # If values are zero, x_hat matrix will be singular,
@@ -574,8 +715,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     # consumption mixes are made up of the rest of the incoming balancing
     # authority areas.
     eia860_bas = sorted(
-        list(eia860_df["Balancing Authority Code"].dropna().unique())
-        + list(df_CA_Imports_Cols.columns)
+        eia860_ba_list + list(df_CA_Imports_Cols.columns)
     )
     keep_rows = [x for x in df_final_trade_out_filt.index if x in eia860_bas]
     keep_cols = [x for x in df_final_trade_out_filt.columns if x in eia860_bas]
@@ -602,8 +742,8 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     )
     df_final_trade_out_filt_melted = df_final_trade_out_filt_melted.rename(
         columns={
-            'Source BAA':'export BAA',
-            'variable':'import BAA'}
+            'Source BAA': 'export BAA',
+            'variable': 'import BAA'}
     )
 
     # Merge to bring in import region name matched with BAA
@@ -696,6 +836,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
         if (
             BAA_final_trade.loc[
                 BAA_final_trade["import BAA"] == x, "fraction"].sum() == 0)]
+
     BAAs_from_zero_trade_with_demand = []
     for d_row in DEMAND_ROWS:
         if d_row["series_id"].split('.')[1].split('-')[0] in BAA_zero_trade:
@@ -706,8 +847,10 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
         set(BAAs_from_zero_trade_with_demand))
     del(DEMAND_ROWS)
 
+    # HOTFIX: use 'loc' not 'at' for setting values against boolean lists
+    # [2023-11-17; TWD]
     for baa in BAAs_from_zero_trade_with_demand:
-        BAA_final_trade.at[
+        BAA_final_trade.loc[
             (
                 (BAA_final_trade["import BAA"] == baa)
                 & (BAA_final_trade["export BAA"] == baa)
@@ -715,7 +858,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
         ] = 1
 
     for baa in list(set(BAA_zero_trade)-set(BAAs_from_zero_trade_with_demand)):
-        BAA_final_trade.at[
+        BAA_final_trade.loc[
             (
                 (BAA_final_trade["import BAA"] == baa)
                 & (BAA_final_trade["export BAA"]==baa)
@@ -728,7 +871,10 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
             inplace=True
         )
 
-    BAA_final_trade.to_csv(output_dir + '/BAA_final_trade_{}.csv'.format(year))
+    f_trade_file = os.path.join(
+        output_dir, 'BAA_final_trade_{}.csv'.format(year))
+    logging.info("Writing final trade data to file, %s" % f_trade_file)
+    BAA_final_trade.to_csv(f_trade_file)
 
     BAA_final_trade["export_name"] = BAA_final_trade["export BAA"].map(
         df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
@@ -763,11 +909,14 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     ferc_list.remove('CAN')
     ferc_filt = ferc_final_trade['import ferc region abbr'].isin(ferc_list)
     ferc_final_trade = ferc_final_trade[ferc_filt]
-    ferc_final_trade.to_csv(
-        output_dir + '/ferc_final_trade_{}.csv'.format(year))
+
+    f_trade_file = os.path.join(
+        output_dir, 'ferc_final_trade_{}.csv'.format(year))
+    logging.info("Writing FERC trade data to file, %s" % f_trade_file)
+    ferc_final_trade.to_csv(f_trade_file)
 
     ferc_final_trade["export_name"] = ferc_final_trade["export BAA"].map(
-        df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
+        df_BA_NA[["BA_Acronym", "BA_Name"]].set_index("BA_Acronym")["BA_Name"])
 
     us_import_grouped_tot = df_final_trade_out_filt_melted_merge['value'].sum()
     us_final_trade = df_final_trade_out_filt_melted_merge.copy()
@@ -777,7 +926,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     us_final_trade = us_final_trade.fillna(value = 0)
     us_final_trade=us_final_trade.drop(columns = ["value"])
     us_final_trade["export_name"] = us_final_trade["export BAA"].map(
-        df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
+        df_BA_NA[["BA_Acronym", "BA_Name"]].set_index("BA_Acronym")["BA_Name"])
 
     return {
         'BA': BAA_final_trade,
@@ -787,7 +936,23 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
 
 def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
     """Convert the consumption mix dataframe into a openLCA-schema compatible
-    dictionary."""
+    dictionary.
+
+    Parameters
+    ----------
+    database : pandas.DataFrame
+        A trade data frame generated by :func:`ba_io_trading_model`
+    gen_dict : dictionary
+        A dictionary of generation mix data already processed for JSON-LD.
+    subregion : str, optional
+        The aggregation level for trade data. Also the dictionary key
+        associated with the given database.
+
+    Returns
+    -------
+    dict
+        A process dictionary with exchanges ready for openLCA.
+    """
     consumption_mix_dict = {}
     if subregion == "FERC":
         aggregation_column = "import ferc region"
@@ -825,7 +990,9 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
                     database_f1, export_region
                 )
                 ra["quantitativeReference"] = False
-                ra['amount'] = database_reg.loc[database_reg[export_column] == export_region,'fraction'].values[0]
+                ra['amount'] = database_reg.loc[
+                    database_reg[export_column] == export_region,'fraction'
+                    ].values[0]
                 matching_dict = None
                 for gen in gen_dict:
                     if (
@@ -846,7 +1013,6 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
                         "category": matching_dict["category"].split("/"),
                     }
                 exchange(ra, exchanges_list)
-        # Writing final file
         final = process_table_creation_con_mix(reg, exchanges_list)
         final["name"] = (
             f"Electricity; at grid; consumption mix - {reg} - {subregion}"
@@ -854,12 +1020,3 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
         consumption_mix_dict[f"{reg} - {subregion}"] = final
 
     return consumption_mix_dict
-
-
-##############################################################################
-# MAIN
-##############################################################################
-if __name__=='__main__':
-    year = 2016
-    subregion = 'BA'
-    mix_df_dict = ba_io_trading_model(year, subregion)
