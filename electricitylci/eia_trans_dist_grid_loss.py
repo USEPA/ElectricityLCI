@@ -6,116 +6,81 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
-"""
-Define function to extract EIA state-wide electricity profiles and calculate
-state-wide transmission and distribution losses for the user-specified year
-"""
+from functools import lru_cache
+import logging
+import os
+from zipfile import BadZipFile
 
 import pandas as pd
 import numpy as np
-import os
 import requests
-from electricitylci.globals import output_dir, paths
-import logging
 from xlrd import XLRDError
-from functools import lru_cache
-from zipfile import BadZipFile
+
+from electricitylci.globals import output_dir
+from electricitylci.globals import paths
+from electricitylci.globals import STATE_ABBREV
 from electricitylci.eia923_generation import build_generation_data
 from electricitylci.combinator import ba_codes
 import electricitylci.model_config as config
 from electricitylci.generation import eia_facility_fuel_region
 from electricitylci.egrid_facilities import egrid_facilities
 from electricitylci.aggregation_selector import subregion_col
-from electricitylci.aggregation_selector import subregion_col
 from electricitylci.process_dictionary_writer import (
-        exchange_table_creation_ref,
-        exchange,
-        ref_exchange_creator,
-        electricity_at_user_flow,
-        electricity_at_grid_flow,
-        process_table_creation_distribution,
-    )
+    exchange,
+    ref_exchange_creator,
+    electricity_at_user_flow,
+    electricity_at_grid_flow,
+    process_table_creation_distribution,
+)
 
 
-logger = logging.getLogger("eia_trans_dist_grid_loss")
-# %%
-# Set working directory, files downloaded from EIA will be saved to this location
-# os.chdir = 'N:/eLCI/Transmission and Distribution'
+##############################################################################
+# MODULE DOCUMENTATION
+##############################################################################
+__doc__ = """
+Define function to extract EIA state-wide electricity profiles and calculate
+state-wide transmission and distribution losses for the user-specified year.
+
+See also: https://www.eia.gov/tools/faqs/faq.php?id=105&t=3
+
+Last updated: 2023-11-17
+"""
+__all__ = [
+    "eia_trans_dist_download_extract",
+    "generate_regional_grid_loss",
+    "olca_schema_distribution_mix",
+]
+
 
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
 @lru_cache(maxsize=10)
 def eia_trans_dist_download_extract(year):
+    """Calculate state-level transmission and distribution losses.
 
-    """[This function (1) downloads EIA state-level electricity profiles for all
+    This function (1) downloads EIA state-level electricity profiles for all
     50 states in the U.S. for a specified year to the working directory, and (2)
     calculates the transmission and distribution gross grid loss for each state
-    based on statewide 'estimated losses', 'total disposition', and 'direct use'.
+    based on statewide 'estimated losses', 'total disposition', and 'direct
+    use'.
+
     The final output from this function is a [50x1] dimensional dataframe that
     contains transmission and distribution gross grid losses for each U.S. state
     for the specified year. Additional information on the calculation for gross
-    grid loss is provided on the EIA website and can be accessed via
-    URL: https://www.eia.gov/tools/faqs/faq.php?id=105&t=3]
+    grid loss is provided on the EIA website and can be accessed here:
+    https://www.eia.gov/tools/faqs/faq.php?id=105&t=3]
 
-    Arguments:
-        year {[str]} -- [Analysis year]
+    Parameters
+    ----------
+    year : str
+        Analysis year
+
+    Returns
+    -------
+    pandas.DataFrame
     """
-
     eia_trans_dist_loss = pd.DataFrame()
-
-    state_abbrev = {
-        "alabama": "al",
-        "alaska": "ak",
-        "arizona": "az",
-        "arkansas": "ar",
-        "california": "ca",
-        "colorado": "co",
-        "connecticut": "ct",
-        "delaware": "de",
-        "florida": "fl",
-        "georgia": "ga",
-        "hawaii": "hi",
-        "idaho": "id",
-        "illinois": "il",
-        "indiana": "in",
-        "iowa": "ia",
-        "kansas": "ks",
-        "kentucky": "ky",
-        "louisiana": "la",
-        "maine": "me",
-        "maryland": "md",
-        "massachusetts": "ma",
-        "michigan": "mi",
-        "minnesota": "mn",
-        "mississippi": "ms",
-        "missouri": "mo",
-        "montana": "mt",
-        "nebraska": "ne",
-        "nevada": "nv",
-        "newhampshire": "nh",
-        "newjersey": "nj",
-        "newmexico": "nm",
-        "newyork": "ny",
-        "northcarolina": "nc",
-        "northdakota": "nd",
-        "ohio": "oh",
-        "oklahoma": "ok",
-        "oregon": "or",
-        "pennsylvania": "pa",
-        "rhodeisland": "ri",
-        "southcarolina": "sc",
-        "southdakota": "sd",
-        "tennessee": "tn",
-        "texas": "tx",
-        "utah": "ut",
-        "vermont": "vt",
-        "virginia": "va",
-        "washington": "wa",
-        "westvirginia": "wv",
-        "wisconsin": "wi",
-        "wyoming": "wy",
-    }
     old_path = os.getcwd()
     if os.path.exists(f"{paths.local_path}/t_and_d_{year}"):
         os.chdir(f"{paths.local_path}/t_and_d_{year}")
@@ -123,8 +88,8 @@ def eia_trans_dist_download_extract(year):
         os.mkdir(f"{paths.local_path}/t_and_d_{year}")
         os.chdir(f"{paths.local_path}/t_and_d_{year}")
     state_df_list = list()
-    for key in state_abbrev:
-        filename = f"{state_abbrev[key]}.xlsx"
+    for key in STATE_ABBREV:
+        filename = f"{STATE_ABBREV[key]}.xlsx"
         if not os.path.exists(filename):
             url = (
                 "https://www.eia.gov/electricity/state/archive/"
@@ -134,9 +99,10 @@ def eia_trans_dist_download_extract(year):
                 + "/xls/"
                 + filename
             )
-            logger.info(f"Downloading data for {state_abbrev[key]}")
+
+            logging.info(f"Downloading data for {STATE_ABBREV[key]}")
             try:
-                r=requests.get(url)
+                r = requests.get(url)
                 with open(filename, 'wb') as f:
                     f.write(r.content)
                 df = pd.read_excel(
@@ -146,7 +112,7 @@ def eia_trans_dist_download_extract(year):
                     index_col=0,
                     engine="openpyxl"
                 )
-            except (XLRDError, BadZipFile):
+            except(XLRDError, BadZipFile):
                 # The most current year has a different url - no "archive/year"
                 url = (
                     "https://www.eia.gov/electricity/state/"
@@ -154,7 +120,7 @@ def eia_trans_dist_download_extract(year):
                     + "/xls/"
                     + filename
                 )
-                r=requests.get(url)
+                r = requests.get(url)
                 with open(filename, 'wb') as f:
                     f.write(r.content)
                 df = pd.read_excel(
@@ -166,7 +132,7 @@ def eia_trans_dist_download_extract(year):
                 )
         else:
             logging.info(
-                f"Using previously downloaded data for {state_abbrev[key]}"
+                f"Using previously downloaded data for {STATE_ABBREV[key]}"
             )
             df = pd.read_excel(
                 filename,
@@ -180,12 +146,13 @@ def eia_trans_dist_download_extract(year):
         df = df.loc["Estimated losses"] / (
             df.loc["Total disposition"] - df.loc["Direct use"]
         )
-        df = df.to_frame(name=state_abbrev[key])
+        df = df.to_frame(name=STATE_ABBREV[key])
         state_df_list.append(df)
+
     eia_trans_dist_loss = pd.concat(state_df_list, axis=1, sort=True)
     max_year = max(eia_trans_dist_loss.index.astype(int))
     if max_year < int(year):
-        logger.info(f'The most recent T&D loss data is from {max_year}')
+        logging.info(f'The most recent T&D loss data is from {max_year}')
         year = str(max_year)
 
     eia_trans_dist_loss.columns = eia_trans_dist_loss.columns.str.upper()
@@ -193,44 +160,32 @@ def eia_trans_dist_download_extract(year):
     eia_trans_dist_loss = eia_trans_dist_loss[[year]]
     eia_trans_dist_loss.columns = ["t_d_losses"]
     os.chdir(old_path)
+
     return eia_trans_dist_loss
 
 
 def generate_regional_grid_loss(year, subregion="all"):
-    """This function generates transmission and distribution losses for the
-    provided generation data and given year, aggregated by subregion.
+    """Generates transmission and distribution losses for the
+    given year, aggregated by subregion.
 
-    Arguments:
-        year: int
-            Analysis year for the transmission and distribution loss data.
-            Ideally this should match the year of your final_database.
-        subregion: string
-            Any subregion as defined in aggregation_selector.subregion_col.
-            Default value "all" will use egrid subregions.
+    Parameters
+    ----------
+    year : int
+        Analysis year for the transmission and distribution loss data.
+        Ideally this should match the year of your final_database.
+    subregion : string
+        Any subregion as defined in aggregation_selector.subregion_col.
+        Default value "all" will use eGRID subregions.
 
-    Returns:
-        td_by_region: dataframe
-            A dataframe of transmission and distribution loss rates as a
-            fraction. This dataframe can be used to generate unit processes
-            for transmission and distribution to match the regionally-
-            aggregated emissions unit processes.
+    Returns
+    -------
+    pandas.DataFrame
+        A dataframe of transmission and distribution loss rates as a
+        fraction. This dataframe can be used to generate unit processes
+        for transmission and distribution to match the regionally-
+        aggregated emissions unit processes.
     """
-    logger.info("Generating factors for transmission and distribution losses")
-
-    td_calc_columns = [
-        "State",
-        "NERC",
-        "FuelCategory",
-        "PrimaryFuel",
-        "NERC",
-        "Balancing Authority Name",
-        "Electricity",
-        "Year",
-        "Subregion",
-        "FRS_ID",
-        "eGRID_ID",
-    ]
-#    plant_generation = final_database[td_calc_columns].drop_duplicates()
+    logging.info("Generating factors for transmission and distribution losses")
     plant_generation = build_generation_data(generation_years=[year])
     plant_generation["FacilityID"]=plant_generation["FacilityID"].astype(int)
     if config.model_specs.replace_egrid:
@@ -242,10 +197,8 @@ def generate_regional_grid_loss(year, subregion="all"):
             on="FacilityID",
             how="left",
         )
-    plant_generation
     if not config.model_specs.replace_egrid:
-        egrid_facilities_w_fuel_region = egrid_facilities[
-            [
+        egrid_facilities_w_fuel_region = egrid_facilities[[
             "FacilityID",
             "Subregion",
             "PrimaryFuel",
@@ -255,14 +208,22 @@ def generate_regional_grid_loss(year, subregion="all"):
             "Balancing Authority Name",
             "Balancing Authority Code",
             "State"
-            ]
-        ]
-        egrid_facilities_w_fuel_region["FacilityID"]=egrid_facilities_w_fuel_region["FacilityID"].astype(int)
+        ]]
+        egrid_facilities_w_fuel_region["FacilityID"] = (
+            egrid_facilities_w_fuel_region["FacilityID"].astype(int)
+        )
+        plant_generation = plant_generation.merge(
+            egrid_facilities_w_fuel_region,
+            on=["FacilityID"],
+            how="left"
+        )
+    plant_generation["Balancing Authority Name"] = plant_generation[
+        "Balancing Authority Code"].map(ba_codes["BA_Name"])
+    plant_generation["FERC_Region"] = plant_generation[
+        "Balancing Authority Code"].map(ba_codes["FERC_Region"])
+    plant_generation["EIA_Region"] = plant_generation[
+        "Balancing Authority Code"].map(ba_codes["EIA_Region"])
 
-        plant_generation = plant_generation.merge(egrid_facilities_w_fuel_region,on=["FacilityID"],how="left")
-    plant_generation["Balancing Authority Name"]=plant_generation["Balancing Authority Code"].map(ba_codes["BA_Name"])
-    plant_generation["FERC_Region"]=plant_generation["Balancing Authority Code"].map(ba_codes["FERC_Region"])
-    plant_generation["EIA_Region"]=plant_generation["Balancing Authority Code"].map(ba_codes["EIA_Region"])
     td_rates = eia_trans_dist_download_extract(f"{year}")
     td_by_plant = pd.merge(
         left=plant_generation,
@@ -274,7 +235,7 @@ def generate_regional_grid_loss(year, subregion="all"):
     td_by_plant.dropna(subset=["t_d_losses"], inplace=True)
     td_by_plant["t_d_losses"] = td_by_plant["t_d_losses"].astype(float)
 
-    aggregation_column=subregion_col(subregion)
+    aggregation_column = subregion_col(subregion)
     wm = lambda x: np.average(
         x, weights=td_by_plant.loc[x.index, "Electricity"]
     )
@@ -287,11 +248,12 @@ def generate_regional_grid_loss(year, subregion="all"):
             td_by_plant.agg({"t_d_losses": wm}), columns=["t_d_losses"]
         )
         td_by_region["Region"] = "US"
+
     return td_by_region
 
 
 def olca_schema_distribution_mix(td_by_region, cons_mix_dict, subregion="BA"):
-    """Add docstring."""
+    """Create dictionaries for openLCA"""
     distribution_mix_dict = {}
     if subregion == "all":
         aggregation_column = "Subregion"
@@ -351,6 +313,7 @@ def olca_schema_distribution_mix(td_by_region, cons_mix_dict, subregion="BA"):
             final = process_table_creation_distribution(reg, exchanges_list)
             final["name"] = f"Electricity; at user; consumption mix - {reg} - {subregion}"
             distribution_mix_dict[f"{reg} - {subregion}"] = final
+
     return distribution_mix_dict
 
 
