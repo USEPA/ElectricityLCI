@@ -50,10 +50,6 @@ A Python virtual environment (v 3.11 or higher) is required with the following p
         + openpyxl-3.1.2
         + soupsieve-2.5
         + xlrd-2.0.1
-+ `pip install sympy`
-    * Successfully installs:
-        + mpmath-1.3.0
-        + sympy-1.12
 + `pip install scipy`
     * Successfully installs:
         + scipy-1.11.3
