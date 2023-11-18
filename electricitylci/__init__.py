@@ -6,8 +6,9 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
-import pandas as pd
 import logging
+
+import pandas as pd
 
 import electricitylci.model_config as config
 from electricitylci.globals import elci_version
@@ -18,7 +19,7 @@ from electricitylci.globals import elci_version
 ##############################################################################
 __doc__ = """This module contains the main API functions to be used by the end user.
 
-Last updated: 2023-11-16
+Last updated: 2023-11-17
 """
 __version__ = elci_version
 
@@ -279,7 +280,7 @@ def write_fuel_mix_database_to_dict(
 
 def write_international_mix_database_to_dict(
         genmix_database, usfuelmix_dict, regions=None):
-    from electricitylci.generation_mix import olcaschema_international;
+    from electricitylci.generation_mix import olcaschema_international
 
     if regions is None:
         regions = config.model_specs.regional_aggregation
@@ -627,6 +628,30 @@ def write_distribution_mix_to_dict(dist_mix_df, gen_mix_dict, subregion=None):
 
 
 def get_consumption_mix_df(subregion=None, regions_to_keep=None):
+    """Alternative to :func:`write_surplus_pool_and_consumption_mix_dict`.
+
+    This function uses EIA trading data to calculate the consumption mix for
+    balancing authority areas or FERC region. The aggregation choices are
+    limited to these 2 because the data is available only at the balancing
+    authority area.
+
+    Parameters
+    ----------
+    subregion : str, optional
+        Aggregation region (e.g., "BA" or "FERC"), by default None
+    regions_to_keep : list, optional
+        List of region names (e.g., balancing authority names), by default None
+
+    Returns
+    -------
+    dict
+        A dictionary with three keys: "BA", "FERC", and "US" for the
+        three levels of consumption mix trading aggregation.
+        The values of each key are pandas.DataFrames of trading data.
+        The data frame columns report the import region, export region,
+        transaction amount, total imports for import region, and fraction of
+        total.
+    """
     import electricitylci.eia_io_trading as trade
 
     if subregion is None:
