@@ -9,7 +9,6 @@
 import argparse
 import logging
 
-#import electricitylci
 from electricitylci import get_consumption_mix_df
 from electricitylci import get_distribution_mix_df
 from electricitylci import get_generation_mix_process_df
@@ -40,7 +39,7 @@ will perform the functions necessary to generate the JSON-LD according to
 those options. The selection of configuration file will occur after the start
 of this script.
 
-Last updated: 2023-11-15
+Last updated: 2023-11-17
 """
 __all__ = [
     "main",
@@ -92,8 +91,7 @@ def main():
             upstream_dict=upstream_dict
         )
     else:
-        # Create dataframe with all generation process data. This will also
-        # include upstream and Canadian data.
+        # Create dataframe with only generation process data.
         upstream_dict = {}
         upstream_df = None
         logging.info("get aggregated generation process")
@@ -108,7 +106,8 @@ def main():
         generation_process_dict = write_gen_fuel_database_to_dict(
             generation_process_df, upstream_dict
         )
-    logging.info("write gen process to JSONLD")
+
+    logging.info("write gen process to JSON-LD")
     generation_process_dict = write_process_dicts_to_jsonld(
         generation_process_dict
     )
@@ -134,16 +133,7 @@ def main():
     # that it's just easier to split here.
     if config.model_specs.EPA_eGRID_trading is False:
         logging.info("using alt gen method for consumption mix")
-
-        # This is, for example, all the Balancing Authority names.
         regions_to_keep = list(generation_mix_dict.keys())
-
-        # LEFT OFF HERE (2023-11-14; TWD)
-        # FIXED.  AttributeError: pandas has no attribute np
-        # FIXED. AttributeError: Series object has no attribute .mad
-        # TypeError: StringMethod.split takes 1 or 2 args, 3 given
-        # --> L327, Split BAA string into exporting and importing BAA columns
-        # --> ba_io_trading_model in eia_io_trading.py
         cons_mix_df_dict = get_consumption_mix_df(
             regions_to_keep=regions_to_keep
         )
@@ -151,38 +141,42 @@ def main():
         logging.info("write consumption mix to dict")
         cons_mix_dicts={}
         for subreg in cons_mix_df_dict.keys():
-            # NEED TO FIND A WAY TO SPECIFY REGION HERE
             cons_mix_dicts[subreg] = write_consumption_mix_to_dict(
                 cons_mix_df_dict[subreg],
                 generation_mix_dict,
                 subregion=subreg
             )
+
         logging.info("write consumption mix to jsonld")
         for subreg in cons_mix_dicts.keys():
             cons_mix_dicts[subreg] = write_process_dicts_to_jsonld(
                 cons_mix_dicts[subreg]
             )
+
         logging.info("get distribution mix")
-        dist_mix_df_dict={}
+        dist_mix_df_dict = {}
         for subreg in cons_mix_dicts.keys():
             dist_mix_df_dict[subreg] = get_distribution_mix_df(
                 generation_process_df,
                 subregion=subreg
             )
+
         logging.info("write dist mix to dict")
-        dist_mix_dicts={}
+        dist_mix_dicts = {}
         for subreg in dist_mix_df_dict.keys():
             dist_mix_dicts[subreg] = write_distribution_mix_to_dict(
                 dist_mix_df_dict[subreg],
                 cons_mix_dicts[subreg],
                 subregion=subreg
             )
+
         logging.info("write dist mix to jsonld")
         for subreg in dist_mix_dicts.keys():
             dist_mix_dicts[subreg] = write_process_dicts_to_jsonld(
                 dist_mix_dicts[subreg]
             )
     else:
+        # UNTESTED
         logging.info("us average mix to dict")
         usavegfuel_mix_dict = write_fuel_mix_database_to_dict(
             generation_mix_df,
@@ -219,8 +213,9 @@ def main():
         sur_con_mix_dict = write_process_dicts_to_jsonld(sur_con_mix_dict)
         dist_dict = fill_default_provider_uuids(dist_dict, sur_con_mix_dict)
         dist_dict = write_process_dicts_to_jsonld(dist_dict)
+
     logging.info(
-        'JSON-LD files have been saved in the "output" folder '
+        'JSON-LD zip file has been saved in the "output" folder '
         f'with the full path {config.model_specs.namestr}'
     )
 
