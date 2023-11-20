@@ -6,6 +6,7 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+import logging
 import os
 
 import pandas as pd
@@ -29,12 +30,14 @@ returned after merging the primary percentage into it.
 
 Model specs (in model_config) must be defined before calling this module.
 
-Last updated: 2023-11-03
+Last updated:
+    2023-11-20
 """
 __all__ = [
     "egrid_subregions",
     "egrid_facilities",
     "list_facilities_w_percent_generation_from_primary_fuel_category_greater_than_min",
+    "make_egrid_subregion_ref",
 ]
 
 
@@ -77,6 +80,66 @@ def list_facilities_w_percent_generation_from_primary_fuel_category_greater_than
     # Delete duplicates by creating a set
     facility_ids_passing = list(set(passing_facilties['FacilityID']))
     return facility_ids_passing
+
+
+def make_egrid_subregion_ref(year):
+    """Generate the 'egrid_subregion_generation_inventory_reference' CSV data
+    file for a given year (if it does not already exist).
+
+    Parameters
+    ----------
+    year : ing
+        Data year.
+    """
+    # Define the output file, which should be in data directory of package.
+    ref_name = (
+        "egrid_subregion_generation_by_fuelcategory_reference_%s.csv" % year)
+    ref_path = os.path.join(data_dir, ref_name)
+
+    if os.path.exists(ref_path):
+        logging.info(
+            "eGRID subregion generation inventory %s reference exists" % year)
+    else:
+        logging.info(
+            "Creating eGRID subregion generation inventory "
+            "%s reference CSV" % year)
+
+        # Pull the inventory data from stewi.
+        a = stewi.getInventory("eGRID", year)
+
+        # Pull facility meta data from stewi.
+        meta_cols = [
+            'FacilityID',
+            'eGRID subregion acronym',
+            'Plant primary coal/oil/gas/ other fossil fuel category'
+        ]
+        b = stewi.getInventoryFacilities("eGRID", 2018)[meta_cols]
+
+        # Merge two data frames together to get inventory + facility metadata.
+        c = pd.merge(
+            left=a.query("FlowName == 'Electricity'"),
+            right=b,
+            on="FacilityID",
+        )
+
+        # Group by and sum by FacilityID and FuelCategory to get total
+        # electricity generation. Update column names to match existing
+        # CSV files in the repo.
+        c = c.groupby(
+            by=[
+                'eGRID subregion acronym',
+                'Plant primary coal/oil/gas/ other fossil fuel category']
+        )['FlowAmount'].agg('sum').reset_index()
+        c = c.rename(columns={
+                'eGRID subregion acronym': 'Subregion',
+                'Plant primary coal/oil/gas/ other fossil fuel category': 'FuelCategory',
+                'FlowAmount': 'Electricity'
+        })
+        # Convert Electricity from MJ to MWh; and order
+        c['Electricity'] /= 3600.0
+        c = c.sort_values(by=['FuelCategory', 'Subregion'])
+        c.to_csv(ref_path, index=False)
+        logging.info("Data written to %s" % ref_path)
 
 
 ##############################################################################
