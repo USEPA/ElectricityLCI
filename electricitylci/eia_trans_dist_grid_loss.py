@@ -83,15 +83,19 @@ def eia_trans_dist_download_extract(year):
     eia_trans_dist_loss = pd.DataFrame()
     old_path = os.getcwd()
     if os.path.exists(f"{paths.local_path}/t_and_d_{year}"):
+        logging.info("Found TD folder for year, %s" % year)
         os.chdir(f"{paths.local_path}/t_and_d_{year}")
     else:
+        logging.info("Creating new TD folder for year, %s" % year)
         os.mkdir(f"{paths.local_path}/t_and_d_{year}")
         os.chdir(f"{paths.local_path}/t_and_d_{year}")
-    state_df_list = list()
+
+    state_df_list = []
     for key in STATE_ABBREV:
         filename = f"{STATE_ABBREV[key]}.xlsx"
         if not os.path.exists(filename):
-            url = (
+            logging.info(f"Downloading archive data for {STATE_ABBREV[key]}")
+            url_a = (
                 "https://www.eia.gov/electricity/state/archive/"
                 + year
                 + "/"
@@ -99,41 +103,25 @@ def eia_trans_dist_download_extract(year):
                 + "/xls/"
                 + filename
             )
-
-            logging.info(f"Downloading data for {STATE_ABBREV[key]}")
-            try:
-                r = requests.get(url)
-                with open(filename, 'wb') as f:
-                    f.write(r.content)
-                df = pd.read_excel(
-                    filename,
-                    sheet_name="10. Source-Disposition",
-                    header=3,
-                    index_col=0,
-                    engine="openpyxl"
-                )
-            except(XLRDError, BadZipFile):
-                # The most current year has a different url - no "archive/year"
-                url = (
-                    "https://www.eia.gov/electricity/state/"
-                    + key
-                    + "/xls/"
-                    + filename
-                )
-                r = requests.get(url)
-                with open(filename, 'wb') as f:
-                    f.write(r.content)
-                df = pd.read_excel(
-                    filename,
-                    sheet_name="10. Source-Disposition",
-                    header=3,
-                    index_col=0,
-                    engine="openpyxl"
-                )
-        else:
-            logging.info(
-                f"Using previously downloaded data for {STATE_ABBREV[key]}"
+            url_b = (
+                "https://www.eia.gov/electricity/state/"
+                + key
+                + "/xls/"
+                + filename
             )
+            r = requests.get(url_a)
+            if not r.ok:
+                logging.info(f"Trying alternative site {STATE_ABBREV[key]}")
+                r = requests.get(url_b)
+
+            if r.ok:
+                with open(filename, 'wb') as f:
+                    f.write(r.content)
+            else:
+                logging.error(
+                    f"No TD loss data for {STATE_ABBREV[key]} {year}")
+
+        try:
             df = pd.read_excel(
                 filename,
                 sheet_name="10. Source-Disposition",
@@ -141,13 +129,16 @@ def eia_trans_dist_download_extract(year):
                 index_col=0,
                 engine="openpyxl"
             )
-
-        df.columns = df.columns.str.replace("Year\n", "",regex=True)
-        df = df.loc["Estimated losses"] / (
-            df.loc["Total disposition"] - df.loc["Direct use"]
-        )
-        df = df.to_frame(name=STATE_ABBREV[key])
-        state_df_list.append(df)
+        except (XLRDError, BadZipFile):
+            logging.error("Failed to read TD data from '%s'" % filename)
+        else:
+            logging.debug("Read %s" % filename)
+            df.columns = df.columns.str.replace("Year\n", "",regex=True)
+            df = df.loc["Estimated losses"] / (
+                df.loc["Total disposition"] - df.loc["Direct use"]
+            )
+            df = df.to_frame(name=STATE_ABBREV[key])
+            state_df_list.append(df)
 
     eia_trans_dist_loss = pd.concat(state_df_list, axis=1, sort=True)
     max_year = max(eia_trans_dist_loss.index.astype(int))
