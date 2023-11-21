@@ -55,7 +55,36 @@ A Python virtual environment (v 3.11 or higher) is required with the following p
         + scipy-1.11.3
 
 
-## Troubleshooting
+# Use
+Check which eLCI model configuration you want to use, or create a new configuration.
+To show the location of the YAML files, run the following:
+
+```py
+>>> from electricitylci.globals import get_config_dir
+>>> get_config_dir()
+'~/ElectricityLCI/electricitylci/modelconfig'
+```
+
+The output string may be copied to File Explorer or Finder address bar.
+
+To run the installed package from the terminal/command line:
+
+```sh
+$ python -m electricitylci.main
+```
+
+To run from within a cloned repository:
+
+```py
+>>> exec(open("electricitylci/main.py").read())
+```
+
+# Known Issues
+* The data quality indicators used for flows and processes (dqi.py) may deviate from the standards:
+    - [Flow Pedigree](https://www.lcacommons.gov/lca-collaboration/National_Renewable_Energy_Laboratory/USLCI_Database_Public/dataset/DQ_SYSTEM/d13b2bc4-5e84-4cc8-a6be-9101ebb252ff)
+    - [Process Pedigree](https://www.lcacommons.gov/lca-collaboration/National_Renewable_Energy_Laboratory/USLCI_Database_Public/dataset/DQ_SYSTEM/70bf370f-9912-4ec1-baa3-fbd4eaf85a10)
+
+# Troubleshooting
 If GitHub-hosted packages fail to clone and install, manually downloading the zip files and setting up within package folders also works (see snippet below for example for older version of fedelemflowlist).
 
 ```bash
@@ -64,11 +93,6 @@ unzip v1.1.2.zip
 cd cd Federal-LCA-Commons-Elementary-Flow-List-1.1.2/
 pip install .
 ```
-
-# Known Issues
-* The data quality indicators used for flows and processes (dqi.py) may deviate from the standards:
-    - [Flow Pedigree](https://www.lcacommons.gov/lca-collaboration/National_Renewable_Energy_Laboratory/USLCI_Database_Public/dataset/DQ_SYSTEM/d13b2bc4-5e84-4cc8-a6be-9101ebb252ff)
-    - [Process Pedigree](https://www.lcacommons.gov/lca-collaboration/National_Renewable_Energy_Laboratory/USLCI_Database_Public/dataset/DQ_SYSTEM/70bf370f-9912-4ec1-baa3-fbd4eaf85a10)
 
 # Data
 This package downloads a significant amount of background and inventory data in order to process electricity baselines.

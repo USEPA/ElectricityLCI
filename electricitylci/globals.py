@@ -19,7 +19,8 @@ from esupy.processed_data_mgmt import Paths
 __doc__ = """Define paths, variables, and functions used across several
 modules.
 
-Last updated: 2023-11-17
+Last updated:
+    2023-11-21
 """
 
 
@@ -222,6 +223,17 @@ API_SLEEP = 0.2
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
+def get_config_dir():
+    """Convenience function to show where eLCI configuration YAMLs are located.
+
+    Returns
+    -------
+    str
+        Folder path to modelconfig directory.
+    """
+    return os.path.join(modulepath, 'modelconfig')
+
+
 def list_model_names_in_config():
     """Read YAML file names in modelconfig directory.
 
@@ -232,8 +244,8 @@ def list_model_names_in_config():
         the values represent the ELCI model names found in the modelconfig
         directory.
     """
-    configdir = modulepath + 'modelconfig/'
-    configfiles = glob.glob(configdir + '*_config.yml')
+    configdir = get_config_dir()
+    configfiles = glob.glob(os.path.join(configdir, '*_config.yml'))
     modelnames_dict = {}
     selection_num = 1
     # HOTFIX: lexicographically sort model names
