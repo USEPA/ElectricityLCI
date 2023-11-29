@@ -12,8 +12,16 @@ import numpy as np
 import pandas as pd
 
 from electricitylci.globals import data_dir
-from electricitylci.process_dictionary_writer import *
 from electricitylci.model_config import model_specs
+from electricitylci.process_dictionary_writer import (
+    exchange,
+    exchange_table_creation_ref,
+    exchange_table_creation_input_genmix,
+    process_table_creation_genmix,
+    exchange_table_creation_input_usaverage,
+    process_table_creation_usaverage,
+    exchange_table_creation_input_international_mix,
+)
 
 
 ##############################################################################
@@ -273,25 +281,46 @@ def create_generation_mix_process_df_from_egrid_ref_data(subregion=None):
 
 
 def olcaschema_genmix(database, gen_dict, subregion=None):
-    """Add docstring."""
+    """Generate an olca-schema process for each region-fuel pairing.
+
+    Parameters
+    ----------
+    database : pandas.DataFrame
+        A generation mix data frame (e.g., from `get_generation_mix_process_df`)
+    gen_dict : dict
+        A dictionary of olca-schema-formatted processes, used for reference.
+    subregion : str, optional
+        The aggregation level (e.g., 'BA'), by default None
+
+    Returns
+    -------
+    dict
+        An olca-schema-formatted process dictionary.
+    """
     if subregion is None:
         subregion = model_specs.regional_aggregation
     generation_mix_dict = {}
 
+    # Define the list of subregions (e.g., BA names)
     if "Subregion" in database.columns:
         region = list(pd.unique(database["Subregion"]))
     else:
         region = ["US"]
         database["Subregion"] = "US"
+    logging.debug("Processing %d regions" % len(region))
+
+    # Grab this list once and reuse it.
+    f_list = list(database["FuelCategory"].unique())
+
     for reg in region:
         database_reg = database[database["Subregion"] == reg]
         exchanges_list = []
 
         # Creating the reference output
-        exchange(exchange_table_creation_ref(database_reg), exchanges_list)
-        for fuelname in list(database["FuelCategory"].unique()):
-            # Reading complete fuel name and heat content information
-            # fuelname = row['Fuelname']
+        exchanges_list = exchange(
+            exchange_table_creation_ref(database_reg), exchanges_list)
+
+        for fuelname in f_list:
             # Cropping the database according to the current fuel being
             # considered.
             database_f1 = database_reg[
@@ -299,11 +328,11 @@ def olcaschema_genmix(database, gen_dict, subregion=None):
             ]
             if database_f1.empty != True:
                 matching_dict = None
+                m_str = "Electricity - " + fuelname + " - " + reg
                 for generator in gen_dict:
-                    if (
-                        gen_dict[generator]["name"]
-                        == "Electricity - " + fuelname + " - " + reg
-                    ):
+                    if gen_dict[generator]["name"] == m_str:
+                        logging.debug(
+                            "Found matching dictionary for '%s'" % m_str)
                         matching_dict = gen_dict[generator]
                         break
                 if matching_dict is None:
@@ -312,21 +341,20 @@ def olcaschema_genmix(database, gen_dict, subregion=None):
                     )
                 else:
                     ra = exchange_table_creation_input_genmix(
-                    database_f1, fuelname
+                        database_f1, fuelname
                     )
                     ra["quantitativeReference"] = False
+                    # HOTFIX: make category string, not list [2023-11-29; TWD]
                     ra["provider"] = {
                         "name": matching_dict["name"],
                         "@id": matching_dict["uuid"],
-                        "category": matching_dict["category"].split("/"),
+                        "category": matching_dict["category"],
                     }
-                    #if matching_dict is None:
-                    exchange(ra, exchanges_list)
-                    # Writing final file
+                    exchanges_list = exchange(ra, exchanges_list)
 
         final = process_table_creation_genmix(reg, exchanges_list)
-        # print(reg +' Process Created')
         generation_mix_dict[reg] = final
+
     return generation_mix_dict
 
 
