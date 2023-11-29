@@ -19,7 +19,7 @@ from electricitylci.globals import elci_version
 ##############################################################################
 __doc__ = """This module contains the main API functions to be used by the end user.
 
-Last updated: 2023-11-17
+Last updated: 2023-11-29
 """
 __version__ = elci_version
 
@@ -184,8 +184,9 @@ def get_generation_mix_process_df(regions=None):
         generation_data = build_generation_data(
             generation_years=[config.model_specs.eia_gen_year]
         )
-        generation_mix_process_df = create_generation_mix_process_df_from_model_generation_data(
-            generation_data, regions
+        generation_mix_process_df = (
+            create_generation_mix_process_df_from_model_generation_data(
+                generation_data, regions)
         )
     else:
         from electricitylci.egrid_filter import (
@@ -234,8 +235,7 @@ def write_generation_process_database_to_dict(gen_database, regions=None):
     return gen_dict
 
 
-def write_generation_mix_database_to_dict(
-        genmix_database, gen_dict, regions=None):
+def write_generation_mix_database_to_dict(genmix_db, gen_dict, regions=None):
     """Create olca-formatted dictionaries for the data frame returned by
     :func:`get_generation_mix_process_df`.
 
@@ -245,8 +245,10 @@ def write_generation_mix_database_to_dict(
 
     Parameters
     ----------
-    genmix_database : pandas.DataFrame
+    genmix_db : pandas.DataFrame
+        A generation mix data frame (e.g., from `get_generation_mix_df`).
     gen_dict : dict
+        An olca-schema-formatted process dictionary used as a reference.
     regions : str, optional
         Region aggregation level (e.g., 'BA'), by default None.
         If none, the regional aggregation level from the configuration file
@@ -255,6 +257,7 @@ def write_generation_mix_database_to_dict(
     Returns
     -------
     dict
+        An olca-schema-formatted process dictionary for generation mixes.
     """
     from electricitylci.generation_mix import olcaschema_genmix
 
@@ -262,24 +265,24 @@ def write_generation_mix_database_to_dict(
         regions = config.model_specs.regional_aggregation
     if regions in ["FERC","US","BA"]:
         regions = "BA"
-    genmix_dict = olcaschema_genmix(genmix_database, gen_dict, regions)
+    genmix_dict = olcaschema_genmix(genmix_db, gen_dict, regions)
+
     return genmix_dict
 
 
-def write_fuel_mix_database_to_dict(
-        genmix_database, gen_dict, regions=None):
+def write_fuel_mix_database_to_dict(genmix_db, gen_dict, regions=None):
     from electricitylci.generation_mix import olcaschema_usaverage
 
     if regions is None:
         regions = config.model_specs.regional_aggregation
     if regions in ["FERC","US","BA"]:
         regions = "BA"
-    usaverage_dict = olcaschema_usaverage(genmix_database, gen_dict, regions)
+    usaverage_dict = olcaschema_usaverage(genmix_db, gen_dict, regions)
+
     return usaverage_dict
 
 
-def write_international_mix_database_to_dict(
-        genmix_database, usfuelmix_dict, regions=None):
+def write_international_mix_database_to_dict(genmix_db, us_mix, regions=None):
     from electricitylci.generation_mix import olcaschema_international
 
     if regions is None:
@@ -287,8 +290,9 @@ def write_international_mix_database_to_dict(
     if regions in ["FERC","US","BA"]:
         regions = "BA"
     international_dict = olcaschema_international(
-        genmix_database, usfuelmix_dict, subregion=regions
+        genmix_db, us_mix, subregion=regions
     )
+
     return international_dict
 
 
