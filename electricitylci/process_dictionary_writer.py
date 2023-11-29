@@ -256,7 +256,7 @@ def exchange(flw, exchanges_list):
 
     Notes
     -----
-    Referenced in eia_io_trading.py.
+    Referenced in eia_io_trading.py and generation_mix.py.
 
     Examples
     --------
