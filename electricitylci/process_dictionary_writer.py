@@ -270,16 +270,17 @@ def exchange(flw, exchanges_list):
 
 def exchange_table_creation_ref(data):
     """
-    Create a reference exchange table entry based on input data.
+    Create a reference exchange table entry for electricity at grid.
 
-    This function generates a dictionary representing a reference exchange table
-    entry based on the provided input data. The reference entry typically describes
-    a specific flow, such as electricity at the grid, within a given region.
+    This function generates a dictionary representing a reference exchange
+    table entry based on the provided input data. The reference entry typically
+    describes a specific flow, such as electricity at the grid, within a given
+    region.
 
     Parameters
     ----------
     data : pd.DataFrame
-        Input data, such as a DataFrame containing subregion information.
+        Unused.
 
     Returns
     -------
@@ -311,18 +312,19 @@ def exchange_table_creation_ref(data):
 
 def exchange_table_creation_ref_cons(data):
     """
-    Create a reference exchange table entry based on input data.
+    Create a reference exchange table entry for electricity at user.
 
-    This function generates a dictionary representing a reference exchange table
-    entry based on the provided input data. The reference entry typically describes
-    a specific flow, such as electricity at the grid, within a given region.
+    This function generates a dictionary representing a reference exchange
+    table entry based on the provided input data. The reference entry typically
+    describes a specific flow, such as electricity at the grid, within a given
+    region.
 
     Referenced in eia_io_trading.py
 
     Parameters
     ----------
     data : pd.DataFrame
-        Input data, such as a DataFrame containing subregion information.
+        Unused.
 
     Returns
     -------
