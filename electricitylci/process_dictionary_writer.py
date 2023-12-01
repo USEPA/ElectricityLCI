@@ -310,8 +310,40 @@ def exchange_table_creation_ref(data):
 
 
 def exchange_table_creation_ref_cons(data):
-    # Found in eia_io_trading.py
-    return exchange_table_creation_ref(data)
+    """
+    Create a reference exchange table entry based on input data.
+
+    This function generates a dictionary representing a reference exchange table
+    entry based on the provided input data. The reference entry typically describes
+    a specific flow, such as electricity at the grid, within a given region.
+
+    Referenced in eia_io_trading.py
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Input data, such as a DataFrame containing subregion information.
+
+    Returns
+    -------
+    dict
+        A dictionary representing the reference exchange table entry.
+    """
+    ar = {
+        "internalId": "",
+        "@type": "Exchange",
+        "avoidedProduct": False,
+        "flow": electricity_at_user_flow,
+        "flowProperty": "",
+        "input": False,
+        "quantitativeReference": True,
+        "baseUncertainty": "",
+        "provider": "",
+        "amount": 1.0,
+        "amountFormula": "",
+        "unit": unit("MWh")
+    }
+    return ar
 
 
 def gen_process_ref(fuel, reg):
