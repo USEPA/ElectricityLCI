@@ -15,7 +15,7 @@ from electricitylci.model_config import model_specs
 
 
 ##############################################################################
-# GLOBALS
+# MODULE DOCUMENTATION
 ##############################################################################
 __doc__ = """This module populates the data frame variable,
 `emissions_and_wastes_by_facility` that contains the combined inventories for
@@ -31,18 +31,23 @@ inventory can take some time. It should be noted that this module is executed
 immediately upon import, which may cause some unexpected delays if the CSV file
 is not present.
 
-Last edited: 2023-10-03
+Last edited:
+    2023-12-01
 """
 __all__ = [
     'base_inventory',
     'emissions_and_wastes_by_facility',
 ]
 
+
+##############################################################################
+# GLOBALS
+##############################################################################
 emissions_and_wastes_by_facility = None
 '''pandas.DataFrame : Facility-level inventory. Defaults to none.'''
 
 base_inventory = ""
-'''str : Inventory of interest name.'''
+'''str : Inventory of interest name. Defaults to empty string.'''
 
 if model_specs.stewicombo_file is not None:
     emissions_and_wastes_by_facility = getInventory(model_specs.stewicombo_file)
@@ -54,6 +59,8 @@ if model_specs.stewicombo_file is not None:
         base_inventory = "TRI"
     elif "RCRAInfo" in model_specs.inventories_of_interest.keys():
         base_inventory = "RCRAInfo"
+
+# Define the preferred priority list of facilities to base inventories upon.
 if emissions_and_wastes_by_facility is None:
     if "eGRID" in model_specs.inventories_of_interest.keys():
         base_inventory = "eGRID"
