@@ -110,13 +110,13 @@ def reassign(data, edit_dict):
             logging.info("Re-assigning using data from yaml")
 
             col = edit_dict["column_to_reassign"]
-            logging.debug(f"{col}")
+            logging.debug(f"Reassign column: {col}")
 
             in_val = edit_dict["incoming_value"]
-            logging.debug(f"{in_val}")
+            logging.debug(f"Incoming value: {in_val}")
 
             out_val = edit_dict["outgoing_value"]
-            logging.debug(f"{out_val}")
+            logging.debug(f"Outgoing value: {out_val}")
 
             # Find all rows associated with the incoming value in the
             # reassignment column.
@@ -130,6 +130,8 @@ def reassign(data, edit_dict):
                     combined_filter &
                     data[filt].isin(edit_dict["filters"][filt])
                 )
+            # Check that there are rows
+            logging.info("Reassigning %s rows" % combined_filter.sum())
             data.loc[combined_filter, col] = out_val
     except KeyError as ke:
         logging.warning("Problem found with manual edit - reassign")
@@ -172,6 +174,7 @@ def remove(data, edit_dict):
                         data[filt].isin(edit_dict["filters"][filt])
                     )
             # Drop rows from dataset
+            logging.info("Removing %s rows" % combined_filter.sum())
             data = data.loc[~combined_filter, :]
     except KeyError as ke:
         logging.warning("Problem found with manual edit - remove")
