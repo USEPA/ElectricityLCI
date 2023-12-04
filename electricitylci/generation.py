@@ -578,17 +578,10 @@ def create_generation_process_df():
         "ground": "ground",
     }
     if model_specs.replace_egrid:
+        # Create data frame with 'FacilityID', 'Electricity', and 'Year'
         generation_data = build_generation_data().drop_duplicates()
 
         eia_facilities_to_include = generation_data["FacilityID"].unique()
-        if base_inventory == "eGRID":
-            id_column = "eGRID_ID"
-        elif "NEI" in model_specs.inventories_of_interest.keys():
-            id_column = "NEI_ID"
-        elif "TRI" in model_specs.inventories_of_interest.keys():
-            id_column = "TRI_ID"
-        elif "RCRAInfo" in model_specs.inventories_of_interest.keys():
-            id_column = "RCRAInfo_ID"
         # Other columns in the emissions_and_wastes_by_Facility
         # FacilityID and FRS_ID (in addition to those above)
         inventories_of_interest_list = sorted([
@@ -650,16 +643,16 @@ def create_generation_process_df():
         emissions_and_waste_for_selected_eia_facilities = ewf_df[
             ewf_df["FacilityID"].isin(eia_facilities_to_include)]
         emissions_and_waste_for_selected_eia_facilities.rename(
-            columns={"FacilityID":"eGRID_ID"}, inplace=True)
+            columns={"FacilityID": "eGRID_ID"}, inplace=True)
         cems_df = ampd.generate_plant_emissions(model_specs.eia_gen_year)
         emissions_df = em_other.integrate_replace_emissions(
             cems_df, emissions_and_waste_for_selected_eia_facilities
         )
-        emissions_df.rename(columns={"FacilityID":"eGRID_ID"}, inplace=True)
+        emissions_df.rename(columns={"FacilityID": "eGRID_ID"}, inplace=True)
         facilities_w_fuel_region = eia_facility_fuel_region(
             model_specs.eia_gen_year)
         facilities_w_fuel_region.rename(
-            columns={'FacilityID':'eGRID_ID'}, inplace=True)
+            columns={'FacilityID': 'eGRID_ID'}, inplace=True)
     else:
         # Load list; only works when not replacing eGRID!
         from electricitylci.generation_mix import egrid_facilities_w_fuel_region
@@ -677,7 +670,7 @@ def create_generation_process_df():
         facilities_w_fuel_region["FacilityID"] = \
             egrid_facilities_w_fuel_region["FacilityID"].astype(int)
         facilities_w_fuel_region.rename(
-            columns={'FacilityID':'eGRID_ID'}, inplace=True)
+            columns={'FacilityID': 'eGRID_ID'}, inplace=True)
         generation_data = electricity_for_selected_egrid_facilities
         generation_data["Year"] = model_specs.egrid_year
         generation_data["FacilityID"] = \
@@ -685,7 +678,7 @@ def create_generation_process_df():
         emissions_df = emissions_and_waste_for_selected_egrid_facilities
         emissions_df["eGRID_ID"] = emissions_df["eGRID_ID"].astype(int)
 
-    generation_data.rename(columns={'FacilityID':'eGRID_ID'}, inplace=True)
+    generation_data.rename(columns={'FacilityID': 'eGRID_ID'}, inplace=True)
     final_database = pd.merge(
         left=emissions_df,
         right=generation_data,
@@ -773,8 +766,13 @@ def create_generation_process_df():
         "Balancing Authority Code"].map(ba_codes["EIA_Region"])
     final_database["FERC_Region"] = final_database[
         "Balancing Authority Code"].map(ba_codes["FERC_Region"])
+
+    # Apply the "manual edits"
+    # See GitHub issues #212, #121, and #77.
+    # https://github.com/USEPA/ElectricityLCI/issues/
     final_database = edits.check_for_edits(
         final_database, "generation.py", "create_generation_process_df")
+
     return final_database
 
 
