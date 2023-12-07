@@ -7,16 +7,21 @@
 # REQUIRED MODULES
 ##############################################################################
 import datetime
+import io
+import json
 import logging
 import math
 import os
 import uuid
+from zipfile import ZipFile
 
 import olca_schema as o
 import olca_schema.units as o_units
 import olca_schema.zipio as zipio
 import pytz
+import requests
 
+from electricitylci.globals import data_dir
 from electricitylci.globals import elci_version as VERSION
 
 
@@ -25,6 +30,13 @@ from electricitylci.globals import elci_version as VERSION
 ##############################################################################
 __doc__ = """This module provides methods that support the writing of
 olca-schema formatted dictionaries to JSON-LD project files for openLCA.
+
+Unit groups and flow properties are based on the Federal Elementary Flow List
+found on the LCA Commons (https://www.lcacommons.gov/lca-collaboration/). This
+was chosen because the UUIDs are consistent with GreenDelta's openLCA schema
+and provide the full metadata where olca-schema Python package provides only
+Ref objects. This could be avoided if opting for 'Units and flow properties'
+is ticked when creating a new openLCA database.
 
 References:
 
@@ -48,9 +60,14 @@ Changelog:
     -   Fix locations that are just strings (not a data dictionary)
     -   Fix UUID validation for nan
     -   Add save option as parameter in write method
+    -   Add openLCA's unit group and flow property lists based on the
+        Federal LCA Commons's Federal Elementary Flow List
+    -   New method for reading JSON-LD that fixes repeated .json entries
+    -   New save method that checks for existing JSON-LD, extracts its data,
+        updates with new data, then re-zips (proper handling of zip archive).
 
 Last edited:
-    2023-11-16
+    2023-12-07
 """
 __all__ = [
     "write",
@@ -66,14 +83,37 @@ def write(processes, file_path, to_save=True):
     Note that a process has several root entity types associated with it,
     namely:
 
-    - Actor
-    - DQSystem
-    - Flow
-    - FlowProperty
-    - Location
-    - Source
+    - 'Actor',
+    - 'Currency'
+    - 'DQSystem'
+    - 'EPD'
+    - 'Flow'
+    - 'FlowProperty'
+    - 'ImpactCategory'
+    - 'ImpactMethod'
+    - 'Location'
+    - 'Parameter'
+    - 'Process'
+    - 'ProductSystem'
+    - 'Project'
+    - 'Result'
+    - 'SocialIndicator'
+    - 'Source'
+    - 'UnitGroup'
 
-    and each of which need to be tracked and stored in the JSON-LD.
+    and each of which need to be tracked and stored in the JSON-LD. Changes
+    to any root entities triggers a modification of the JSON-LD file. Because
+    the JSON-LD is a zip archive, the uuid.json files within it cannot be
+    edited without first extracting from zip, editing, then re-zipping.
+
+    To allow for editing of root entities (assuming any new information is
+    good information), and because this method is called (again and again) in
+    electricity.main, in each method call the JSON-LD file is examined, its
+    data extracted and updated with the latest data, and re-zipped to the same
+    JSON-LD archive (delting the old version in the processes).
+
+    The same methodology is adopted in NetlOlca Python class for interfacing
+    with openLCA v2 projects. This is the way.
 
     Parameters
     ----------
@@ -100,19 +140,23 @@ def write(processes, file_path, to_save=True):
         logging.info("Creating folder, '%s'" % file_dir)
         os.makedirs(file_dir)
 
-    # Initialize empty root entity mapper (i.e., dictionary)
-    spec_map = _init_root_entities()
+    # Initialize root entity mapper (i.e., dictionary), which includes all
+    # entities already written to the JSON-LD file, or simply GreenDelta's
+    # FlowProperties and UnitGroups.
+    spec_map = _init_root_entities(file_path)
 
     for p_key in processes.keys():
         # Pull the process dictionary
         d_vals = processes[p_key]
 
         # Create new process object and find quantitative reference exchange
+        logging.info("Generating process for %s" % p_key)
         p, spec_map, e = _process(d_vals, spec_map)
         spec_map['Process']['ids'].append(p.id)
         spec_map['Process']['objs'].append(p)
 
-        # Update the process dictionary with UUID and reference details
+        # Update the process dictionary and add UUID and reference details
+        processes[p_key].update(p.to_dict())
         processes[p_key]['uuid'] = p.id
         if e is not None and isinstance(e, o.Exchange):
             try:
@@ -130,18 +174,196 @@ def write(processes, file_path, to_save=True):
 
     # Write to JSON-LD zip format
     if to_save:
-        logging.info("Writing to '%s'" % file_path)
-        with zipio.ZipWriter(file_path) as writer:
-            for k in spec_map.keys():
-                for k_obj in spec_map[k]['objs']:
-                    # Last chance to fix Ref's
-                    if isinstance(k_obj, o.Ref):
-                        logging.warning("Found Ref object in JSON-LD writer!")
-                        k_type = k_obj.ref_type.value
-                        k_dict = k_obj.to_dict()
-                        k_obj = spec_map[k_type]['class'].from_dict(k_dict)
-                    writer.write(k_obj)
+        logging.info("Saving to '%s'" % file_path)
+        _save_to_json(file_path, spec_map)
+
     return processes
+
+
+def _save_to_json(json_file, e_dict):
+    """Write an entity dictionary to JSON-LD format.
+
+    Parameters
+    ----------
+    json_file : str
+        A file path to an existing or desired JSON-LD zip file.
+    e_dict : dict
+        An olca-schema entity dictionary where keys are entity names
+        (e.g., 'Actor' and 'Flow') and the values are dictionaries
+        containing lists of olca-schema objects (objs) and their universally
+        unique identifiers (ids).
+    """
+    logging.info("Looking for %s" % os.path.basename(json_file))
+    try:
+        # Grab UUIDs and class objs from existing JSON-LD
+        logging.info("Found existing data in JSON-LD")
+        c_data = _read_jsonld(json_file, _root_entity_dict())
+    except OSError:
+        logging.info("No existing JSON-LD found")
+        c_data = _root_entity_dict()
+    else:
+        logging.info("Successfully read data from previous JSON-LD")
+        logging.info("Removing old archive file")
+        os.remove(json_file)
+    finally:
+        # Update current data (c_data) with new (e_dict).
+        # If JSON-LD exists, then current data are those UUIDs and class
+        # objects from the file; otherwise, the current data is empty.
+        e_dict = _update_data(c_data, e_dict)
+
+    logging.info("Writing to %s" % os.path.basename(json_file))
+    with zipio.ZipWriter(json_file) as writer:
+        for k in e_dict.keys():
+            logging.info("Writing %d %s" % (len(e_dict[k]['ids']), k))
+            for k_obj in e_dict[k]['objs']:
+                # Last chance to fix Ref's and it's not perfect.
+                if isinstance(k_obj, o.Ref):
+                    logging.warning("Found Ref object in JSON-LD writer!")
+                    logging.debug("%s Ref (%s)" % (k, k_obj.id))
+                    k_type = k_obj.ref_type.value
+                    k_dict = k_obj.to_dict()
+                    k_obj = e_dict[k_type]['class'].from_dict(k_dict)
+
+                logging.debug("Writing %s entity (%s)" % (k, k_obj.id))
+                writer.write(k_obj)
+
+
+def _update_data(cur_data, new_data):
+    """Update a current data dictionary with new values.
+
+    Parameters
+    ----------
+    cur_data : dict
+        A data dictionary with UUIDs (ids) and olca root entities (objs) read
+        from a JSON-LD zip archive (i.e., current data).
+    new_data : dict
+        A data dictionary with UUIDs (ids) and olca root entities (objs)
+        processed by electricitylci.main; it may be the same or new values as
+        already written to JSON-LD.
+
+    Returns
+    -------
+    dict
+        The current data updated with new values (i.e., overwrites existing
+        values and appends new).
+    """
+    for k in cur_data.keys():
+        # Make ids/obj lists to dict and update current data with new.
+        d_cur = _make_entity_dict(cur_data, k)
+        d_new = _make_entity_dict(new_data, k)
+        d_cur.update(d_new)
+
+        # Plop the new lists back into the data dictionary
+        ids = []
+        objs = []
+        for uid, obj in d_cur.items():
+            ids.append(uid)
+            objs.append(obj)
+        new_data[k]['ids'] = ids
+        new_data[k]['objs'] = objs
+
+    return new_data
+
+
+def _make_entity_dict(e_dict, e_key):
+    """Convenience function to convert two lists into a single dictionary.
+
+    Parameters
+    ----------
+    e_dict : dict
+        A data dictionary containing olca schema UUIDs (ids) and their respective class objects (objs)
+    e_key : str
+        The data dictionary key to convert into a dictionary; corresponds to olca root entity names (e.g., 'Actor' or 'Flow')
+
+    Returns
+    -------
+    dict
+        A dictionary of UUID keys and their class objects as values.
+    """
+    r_dict = {}
+    num_ids = len(e_dict[e_key]['ids'])
+    for i in range(num_ids):
+        uid = e_dict[e_key]['ids'][i]
+        try:
+            obj = e_dict[e_key]['objs'][i]
+        except IndexError:
+            # Happens, for example, if current data dictionary was
+            # created with IDs only (i.e., no objects). Since we
+            # don't have the object data, it isn't getting copied!
+            logging.warning("Skipping %s (%s)! Missing class info!" % (
+                e_key, uid))
+        else:
+            r_dict[uid] = obj
+
+    return r_dict
+
+
+def _add_unit_groups(spec_map):
+    """Append openLCA unit groups and their flow properties to a spec map
+    dictionary.
+
+    Parameters
+    ----------
+    spec_map : dict
+        A dictionary of openLCA root entities.
+        Requires 'UnitGroup' key dictionary value with keys, 'objs' and 'ids'.
+
+    Returns
+    -------
+    dict
+        The same spec map with UnitGroup and FlowProperty objects and UUIDs
+        appended appropriately.
+
+    Raises
+    ------
+    TypeError
+        If the spec map is not a dictionary.
+    KeyError
+        If the spec map is missing the required key(s).
+    """
+    if not isinstance(spec_map, dict):
+        raise TypeError("Expected a dictionary, received %s" % type(spec_map))
+    if "UnitGroup" not in spec_map.keys():
+        raise KeyError("Failed to find required UnitGroup key!")
+    if "FlowProperty" not in spec_map.keys():
+        raise KeyError("Failed to find required FlowProperty key!")
+
+    u_list, p_list = _read_fedefl()
+    for u_obj in u_list:
+        spec_map['UnitGroup']['objs'].append(u_obj)
+        spec_map['UnitGroup']['ids'].append(u_obj.id)
+    for p_obj in p_list:
+        spec_map['FlowProperty']['objs'].append(p_obj)
+        spec_map['FlowProperty']['ids'].append(p_obj.id)
+
+    return spec_map
+
+
+def _find_ref_exchange(p):
+    """Return the exchange class object associated as the quantitative
+    reference.
+
+    Note that there should be only one in a list of exchanges for a single
+    process.
+
+    Parameters
+    ----------
+    p : o.Process
+        An olca_schema.Process class.
+
+    Returns
+    -------
+    o.Exchange
+        An olca_schema.Exchange object (or NoneType if not found)
+    """
+    e_obj = None
+    if p.exchanges is None or len(p.exchanges) == 0:
+        pass
+    else:
+        for e in p.exchanges:
+            if e.is_quantitative_reference:
+                e_obj = e
+    return e_obj
 
 
 def _process(dict_d, dict_s):
@@ -186,6 +408,8 @@ def _process(dict_d, dict_s):
         idx = dict_s['Process']['ids'].index(uid)
         p = dict_s['Process']['objs'][idx]
         logging.debug("Found existing process, %s" % p.name)
+        # HOTFIX: add missing e_ref from existing process
+        e_ref = _find_ref_exchange(p)
     else:
         logging.debug("Creating new Process entity for '%s'" % name)
         p = o.new_process(name=name)
@@ -219,6 +443,102 @@ def _process(dict_d, dict_s):
         p.exchanges, dict_s, e_ref = _exchange_list(dict_d, dict_s)
 
     return (p, dict_s, e_ref)
+
+
+def _read_fedefl():
+    """Return list of GreenDelta's unit group and flow property objects.
+
+    A local copy of the LCA Commons' Federal Elementary Flow List unit groups
+    is either accessed (in eLCI's data directory) or created (using requests).
+
+    Notes
+    -----
+    This method writes up to two files in electricitylci's data directory:
+
+    -   flow_properties.json
+    -   unit_groups.json
+
+    Returns
+    -------
+    tuple
+        A tuple of length two.
+        First item is a list of 27 olca-schema UnitGroup objects.
+        Second item is a list of 33 olca-schema FlowProperty objects.
+    """
+    url = (
+        "https://www.lcacommons.gov/"
+        "lca-collaboration/ws/public/download/json/"
+        "repository_Federal_LCA_Commons@elementary_flow_list"
+    )
+    u_file = "unit_groups.json"
+    u_path = os.path.join(data_dir, u_file)
+    u_list = []
+
+    # HOTFIX: add flow properties
+    p_file = "flow_properties.json"
+    p_path = os.path.join(data_dir, p_file)
+    p_list = []
+
+    if not os.path.exists(u_path) or not os.path.exists(p_path):
+        # Pull from Federal Elementary Flow List
+        logging.info("Reading data from Federal LCA Commons")
+        r = requests.get(url, stream=True)
+        with ZipFile(io.BytesIO(r.content)) as zippy:
+            # Find the unit groups, convert them to UnitGroup class
+            for name in zippy.namelist():
+                # Note there are only three folders in the zip file:
+                # 'flow_properties', 'flows', and 'unit_groups';
+                # we want the 27 JSON files under unit_groups
+                # and the 33 JSON files under flow_properties.
+                if name.startswith("unit") and name.endswith("json"):
+                    u_dict = json.loads(zippy.read(name))
+                    u_obj = o.UnitGroup.from_dict(u_dict)
+                    u_list.append(u_obj)
+                elif name.startswith("flow_") and name.endswith("json"):
+                    p_dict = json.loads(zippy.read(name))
+                    p_obj = o.FlowProperty.from_dict(p_dict)
+                    p_list.append(p_obj)
+
+        # Archive to avoid running requests again.
+        _archive_json(u_list, u_path)
+        logging.info("Saved unit groups from LCA Commons to JSON")
+
+        _archive_json(p_list, p_path)
+        logging.info("Saved flow properties from LCA Commons to JSON")
+
+    # Only read locally if needed (i.e., if data wasn't just downloaded)
+    if os.path.exists(u_path) and len(u_list) == 0:
+        logging.info("Reading unit groups from local JSON")
+        with open(u_path, 'r') as f:
+            my_list = json.load(f)
+        for my_item in my_list:
+            u_list.append(o.UnitGroup.from_dict(my_item))
+
+    if os.path.exists(p_path) and len(p_list) == 0:
+        logging.info("Reading flow properties from local JSON")
+        with open(p_path, 'r') as f:
+            my_list = json.load(f)
+        for my_item in my_list:
+            p_list.append(o.FlowProperty.from_dict(my_item))
+
+    return (u_list, p_list)
+
+
+def _archive_json(data_list, file_path):
+    """Write a list of dictionaries to a JSON file.
+
+    Parameters
+    ----------
+    data_list : list
+        A list of dictionaries.
+    file_path : str
+        A valid filepath to be written to (CAUTION: overwrites existing data)
+    """
+    logging.debug("Writing %d items to %s" % (len(data_list), file_path))
+    out_str = ",".join([json.dumps(x.to_dict()) for x in data_list])
+    out_str = "[%s]" % out_str
+    with open(file_path, 'w') as f:
+        f.write(out_str)
 
 
 def _find_dq(dict_d, dict_key):
@@ -433,13 +753,9 @@ def _exchange(dict_d, dict_s):
     e.unit = _unit(unit_name)
 
     # Set reference to flow property
-    #   manually add root entity dictionary here
-    f_prop = _flow_property(unit_name)
+    f_prop = _flow_property(unit_name, dict_s)
     if f_prop is not None:
         e.flow_property = f_prop.to_ref()
-    if f_prop.id not in dict_s['FlowProperty']['ids']:
-        dict_s['FlowProperty']['ids'].append(f_prop.id)
-        dict_s['FlowProperty']['objs'].append(f_prop)
 
     # Set flow and uncertainty
     e.flow, dict_s = _flow(_val(dict_d, 'flow'), f_prop, dict_s)
@@ -447,6 +763,7 @@ def _exchange(dict_d, dict_s):
 
     # Find the provider process reference (or create one);
     #  note that this does not update the dict_s entries, but searches them!
+    #  BUG: are you sure this doesn't update dict_s?
     p_ref, dict_s, _ = _process(_val(dict_d, 'provider'), dict_s)
     if p_ref is not None:
         e.default_provider = p_ref.to_ref()
@@ -489,17 +806,16 @@ def _unit(unit_name):
     return r_obj
 
 
-def _flow_property(unit_name):
+def _flow_property(unit_name, dict_s):
     """Return the openLCA flow property reference for the given unit.
-
-    Attempts to create the FlowProperty root entity using only GreenDelta's
-    Ref objects for flow property and unit group.
 
     Parameters
     ----------
     unit_name : str or dict
         The unit name (e.g., 'kg') or unit dictionary as generated by
         the unit() method in process_dictionary_writer.py.
+    dict_s : dict
+        The dictionary with openLCA root entity data.
 
     Returns
     -------
@@ -550,18 +866,21 @@ def _flow_property(unit_name):
                 "Missing the required 'name' key in unit dictionary!")
             return r_obj
 
+    # HOTFIX: reference new flow property list
     p_ref = o_units.property_ref(unit_name)
-    g_ref = o_units.group_ref(unit_name)
     if p_ref is None:
         logging.error(
             "Unknown unit, '%s'; no flow property reference!" % unit_name)
+    elif p_ref.id in dict_s['FlowProperty']['ids']:
+        logging.debug("Reading existing flow property")
+        pid = dict_s['FlowProperty']['ids'].index(p_ref.id)
+        r_obj = dict_s['FlowProperty']['objs'][pid]
     else:
-        r_obj = o.FlowProperty().from_dict(p_ref.to_dict())
-        r_obj.unit_group = g_ref
-        # All flow properties are physical except one, bulk prices:
-        r_obj.flow_property_type = o.FlowPropertyType.PHYSICAL_QUANTITY
-        if p_ref.name == 'Market value, bulk prices':
-            r_obj.flow_property_type = o.FlowPropertyType.ECONOMIC_QUANTITY
+        # Assumes federal elementary flow list was used to populate flow
+        # properties; therefore, the old way of trying to recreate a
+        # flow property from only Ref objects is removed.
+        logging.info("Failed to find flow property for '%s'" % unit_name)
+
     return r_obj
 
 
@@ -587,6 +906,8 @@ def _flow_type(f_type):
 def _flow(dict_d, flowprop, dict_s):
     """Generate a reference to a flow object.
 
+    Called by :func:`_exchange`.
+
     Parameters
     ----------
     dict_d : dict
@@ -606,23 +927,12 @@ def _flow(dict_d, flowprop, dict_s):
         logging.warning("No flow data received!")
         return (None, dict_s)
 
-    uid = _val(dict_d, 'id')
+    uid = _val(dict_d, 'id', '@id')
     name = _val(dict_d, 'name')
     category_path = _val(dict_d, 'category', default='')
-    orig_uid = None
     is_waste = "waste" in category_path.lower()
-    is_techno = any([
-        x in category_path.lower() for x in ["technosphere",
-                                             "third party",
-                                             "waste"]
-    ])
-
-    # Check for technosphere or third party flows that were mapped in
-    # openLCA; these flows must be created in the json-ld here.
-    if isinstance(uid, str) and uid !='' and is_techno:
-        logging.debug("Found technosphere/third-party/waste UUID.")
-        orig_uid = uid
-        uid = ''
+    # HOTFIX: remove technosphere/3rd party flow check;
+    # it duplicates every waste flow in the JSON-LD [2023-12-05; TWD]
 
     # Check for flow existence
     if uid in dict_s['Flow']['ids']:
@@ -634,19 +944,15 @@ def _flow(dict_d, flowprop, dict_s):
         if _uid_is_valid(uid, 3) or _uid_is_valid(uid, 4):
             # Keep the good UUID
             pass
-        elif orig_uid is None:
+        else:
             # Generate new v3 ID based on standard format
             logging.debug("Generating new UUID for flow, '%s'" % name)
             uid = _uid(o.ModelType.FLOW, category_path, name)
-        else:
-            # Pick up that techno/third-party/waste ID generated before.
-            logging.debug("Using technosphere/third-party/waste UUID")
-            uid = orig_uid
 
         # Correct the default flow type for waste flows.
         def_type = "ELEMENTARY_FLOW"
         if is_waste:
-            dict_d['flowType']="WASTE_FLOW"
+            dict_d['flowType'] = "WASTE_FLOW"
             def_type = "WASTE_FLOW"
 
         f_type = _flow_type(_val(dict_d, 'flowType', default=def_type))
@@ -695,7 +1001,7 @@ def _location(dict_d, dict_s):
         uid = None
     elif isinstance(dict_d, dict):
         code = _val(dict_d, 'name')
-        uid = _val(dict_d, 'id')
+        uid = _val(dict_d, 'id', '@id')
     else:
         code = ""
         uid = ""
@@ -1009,7 +1315,7 @@ def _uncertainty(dict_d):
 
     dt = _val(dict_d, 'distributionType')
     if dt != 'Logarithmic Normal Distribution':
-        logging.warning("Found invalid uncertainty method, '%s'" % dt)
+        logging.debug("Found invalid uncertainty method, '%s'" % dt)
         return None
 
     gmean = _val(dict_d, 'geomMean')
@@ -1021,7 +1327,7 @@ def _uncertainty(dict_d):
         gsd = float(gsd)
 
     if not _isnum(gmean) or not _isnum(gsd):
-        logging.warning("Found invalid geometric mean/standard deviation!")
+        logging.debug("Found invalid geometric mean/standard deviation!")
         return None
 
     u = o.Uncertainty.from_dict({
@@ -1243,8 +1549,123 @@ def _uid_is_valid(uuid_str, version=3):
     return str(uuid_obj) == uuid_str
 
 
-def _init_root_entities():
+def _init_root_entities(json_file):
     """Generate dictionary for each openLCA schema root entity.
+
+    Check for JSON-LD file existence and read root entities from file;
+    otherwise, pre-populate with GreenDelta's UnitGroups and FlowProperties.
+
+    Returns
+    -------
+    dict
+        Dictionary with primary keys for each root entity (camel-case).
+        The values are dictionaries with three keys: 'class', 'objs', and 'ids'.
+        The 'ids' list is for quick referencing and 'objs' list is for actual
+        writing to file. The 'class' is value added (if needed).
+    """
+    # Create the empty dictionary for each olca schema root entity
+    # (these are the ones that need to be writted to the JSON-LD zip file)
+    r_dict = _root_entity_dict()
+
+    # Check to see if the JSON-LD file was already written to;
+    # if so, read the old root entity data; otherwise, add unit group and
+    # flow properties data.
+    if os.path.exists(json_file):
+        r_dict = _read_jsonld(json_file, r_dict)
+    else:
+        r_dict = _add_unit_groups(r_dict)
+
+    return r_dict
+
+
+def _read_jsonld(json_file, root_dict, id_only=False):
+    """Read root entities from JSON-LD file and append to root entity
+    dictionary.
+
+    Parameters
+    ----------
+    json_file : str
+        A file path to a zipped JSON-LD file.
+    root_dict : dict
+        A dictionary with olca-schema root entity data (as provided by
+        :func:`_root_entity_dict`).
+    id_only : bool
+        Whether to save UUIDs and olca-schema class objects.
+        If true, only 'ids' list is read.
+
+    Returns
+    -------
+    dict
+        The same root entity dictionary with 'ids' and 'objs' lists updated.
+
+    Raises
+    ------
+    OSError
+        If the JSON-LD file path does not exist (or is not a file).
+
+    Notes
+    -----
+    -   Methods are based on those from NETL's NetlOlca Python class.
+    -   Reads full Class objects into memory (when `id_only` is false),
+        which may be large for large projects (e.g., >2000 flows in the
+        2016 baseline).
+
+    Examples
+    --------
+    >>> my_file = "Federal_LCA_Commons-US_electricity_baseline.zip" # 2016 b.l.
+    >>> my_dict = _read_jsonld(my_file, _root_entity_dict(), False)
+    >>> print(
+    ...     'Process',
+    ...     len(my_dict['Process']['ids']), 'UUIDs',
+    ...     len(my_dict['Process']['objs']), 'objects')
+    Process 606 UUIDs 606 objects
+    >>> my_dict = _read_jsonld(my_file, _root_entity_dict(), True)
+    >>> print(
+    ...     'Process',
+    ...     len(my_dict['Process']['ids']), 'UUIDs',
+    ...     len(my_dict['Process']['objs']), 'objects')
+    Process 606 UUIDs 0 objects
+    """
+    if not os.path.isfile(json_file):
+        raise OSError("File not found! %s" % json_file)
+    else:
+        # Create a file handle to the JSON-LD zip
+        logging.info("Opening JSON-LD file, %s" % os.path.basename(json_file))
+        j_file = zipio.ZipReader(json_file)
+        for name in root_dict.keys():
+            # Get IDs for each root entity
+            spec = root_dict[name]['class']
+            r_ids = j_file.ids_of(spec)
+            logging.info("Read %d UUIDs for %s" % (len(r_ids), name))
+            # Get the root entity object based on its type
+            for rid in r_ids:
+                # Only read from file when a new UUID is found.
+                # (easier to debug this way, rather than a set for unique vals)
+                if rid in root_dict[name]['ids']:
+                    logging.debug(
+                        "Skipping existing UUID for %s (%s)" % (name, rid))
+                else:
+                    if id_only:
+                        root_dict[name]['ids'].append(rid)
+                    else:
+                        r_obj = None
+                        try:
+                            r_obj = j_file.read(spec, rid)
+                        except Exception as e:
+                            logging.warning(
+                                "Failed to read %s (%s) from file! %s" % (
+                                    name, rid, str(e)))
+                        # Add the UUID and Class object pair to their lists
+                        if r_obj is not None:
+                            root_dict[name]['ids'].append(rid)
+                            root_dict[name]['objs'].append(r_obj)
+        j_file.close()
+
+        return root_dict
+
+
+def _root_entity_dict():
+    """Generate empty dictionary for each openLCA schema root entity.
 
     Returns
     -------
