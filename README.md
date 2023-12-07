@@ -83,6 +83,8 @@ To run from within a cloned repository:
 * The data quality indicators used for flows and processes (dqi.py) may deviate from the standards:
     - [Flow Pedigree](https://www.lcacommons.gov/lca-collaboration/National_Renewable_Energy_Laboratory/USLCI_Database_Public/dataset/DQ_SYSTEM/d13b2bc4-5e84-4cc8-a6be-9101ebb252ff)
     - [Process Pedigree](https://www.lcacommons.gov/lca-collaboration/National_Renewable_Energy_Laboratory/USLCI_Database_Public/dataset/DQ_SYSTEM/70bf370f-9912-4ec1-baa3-fbd4eaf85a10)
+* The mapping of Balancing Authorities to FERC regions may need updating as BAs are introduced to the grid.
+    - See GitHub [Issue #215](https://github.com/USEPA/ElectricityLCI/issues/215)
 
 # Troubleshooting
 If GitHub-hosted packages fail to clone and install, manually downloading the zip files and setting up within package folders also works (see snippet below for example for older version of fedelemflowlist).
