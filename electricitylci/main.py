@@ -23,7 +23,6 @@ from electricitylci import write_generation_mix_database_to_dict
 from electricitylci import write_international_mix_database_to_dict
 from electricitylci import write_process_dicts_to_jsonld
 from electricitylci import write_surplus_pool_and_consumption_mix_dict
-from electricitylci import write_upstream_dicts_to_jsonld
 from electricitylci import write_upstream_process_database_to_dict
 import electricitylci.model_config as config
 from electricitylci.utils import fill_default_provider_uuids
@@ -39,7 +38,16 @@ will perform the functions necessary to generate the JSON-LD according to
 those options. The selection of configuration file will occur after the start
 of this script.
 
-Last updated: 2023-11-17
+Last updated:
+    2023-11-17
+
+Changelog:
+    -   Remove 'write_upstream_dicts_to_jsonld' as a separate function; it
+        simply is a redirect to 'write_process_dicts_to_jsonld,' which is
+        used consistently throughout the rest of :func:`main`.
+    -   Add "to_save" boolean to write-to-JSON-LD calls (limits the number
+        of writes).
+
 """
 __all__ = [
     "main",
@@ -52,7 +60,17 @@ __all__ = [
 def main():
     """Generate an openLCA-schema JSON-LD zip file containing the life cycle
     inventory for US power plants based on the settings in the user-specified
-    configuration file.
+    configuration file. The basic workflow is as follows:
+
+    1.  Generate upstream processes (if requested) and convert them to olca
+        dictionary objects.
+    2.  Generate facility-level processes, including renewables and water use,
+        append with upstream processes, aggregate to the requested region
+        (e.g., balancing authority or FERC), and convert them to olca
+        dictionary objects .
+    3.  Create the three-layered unit processes: generation mix, consumption
+        mix (at grid), and consumption mix (at user); the latter is also called
+        the distribution mix.
     """
     if config.model_specs is None:
         # Prompt user to select configuration option.
@@ -69,22 +87,20 @@ def main():
         logging.info("write upstream process to dict")
         upstream_dict = write_upstream_process_database_to_dict(upstream_df)
 
-        # NOTE:    UUID's for upstream processes are created when converting to
-        #          JSON-LD. This has to be done here if the information is
-        #          going to be included in the final outputs.
-        # NOTE:    The parameter, to_save, exists in olca_jsonld_writer.write,
-        #          to be exploited if ever the export to file is unwanted.
-        # WARNING: This method writes data to your computer!
-        #          (see info messages for exact folder and file names)
-        upstream_dict = write_upstream_dicts_to_jsonld(upstream_dict)
+        # NOTE: UUID's for upstream processes are created when converting to
+        #       JSON-LD. This has to be done here if the information is
+        #       going to be included in the final outputs.
+        # NOTE: Use the parameter, to_save, in olca_jsonld_writer.write,
+        #       to write the output JSON-LD once.
+        upstream_dict = write_process_dicts_to_jsonld(False, upstream_dict)
 
         # NOTE: This method triggers an input request for EPA data API key
         #       see https://github.com/USEPA/ElectricityLCI/issues/207
         # NOTE: This method runs aggregation and emission uncertainty
         #       calculations.
-        # TODO KeyError: add_fuel_inputs in combinator.py
-        #      --> expand_fuel_df["q_reference_name"]
-        #      Ran model a second time and it went away...
+        # BUG   KeyError: add_fuel_inputs in combinator.py
+        #       --> expand_fuel_df["q_reference_name"]
+        #       Ran model a second time and it went away...
         logging.info("get aggregated generation process")
         generation_process_df = get_generation_process_df(
             upstream_df=upstream_df,
@@ -109,8 +125,7 @@ def main():
 
     logging.info("write gen process to JSON-LD")
     generation_process_dict = write_process_dicts_to_jsonld(
-        generation_process_dict
-    )
+        True, generation_process_dict)
 
     # Force the generation of BA aggregation if doing FERC, US, or BA regions.
     # This is because the consumption mixes are based on imports from
@@ -127,7 +142,8 @@ def main():
     )
 
     logging.info("write gen mix to jsonld")
-    generation_mix_dict = write_process_dicts_to_jsonld(generation_mix_dict)
+    generation_mix_dict = write_process_dicts_to_jsonld(
+        True, generation_mix_dict)
 
     # At this point the two methods diverge from underlying functions enough
     # that it's just easier to split here.
@@ -150,7 +166,7 @@ def main():
         logging.info("write consumption mix to jsonld")
         for subreg in cons_mix_dicts.keys():
             cons_mix_dicts[subreg] = write_process_dicts_to_jsonld(
-                cons_mix_dicts[subreg]
+                True, cons_mix_dicts[subreg]
             )
 
         logging.info("get distribution mix")
@@ -173,7 +189,7 @@ def main():
         logging.info("write dist mix to jsonld")
         for subreg in dist_mix_dicts.keys():
             dist_mix_dicts[subreg] = write_process_dicts_to_jsonld(
-                dist_mix_dicts[subreg]
+                True, dist_mix_dicts[subreg]
             )
     else:
         # UNTESTED
@@ -184,7 +200,7 @@ def main():
         )
         logging.info("write us average mix to jsonld")
         usavegfuel_mix_dict = write_process_dicts_to_jsonld(
-            usavegfuel_mix_dict
+            True, usavegfuel_mix_dict
         )
         logging.info("international average mix to dict")
         international_mix_dict = write_international_mix_database_to_dict(
@@ -192,17 +208,18 @@ def main():
             usavegfuel_mix_dict
         )
         international_mix_dict = write_process_dicts_to_jsonld(
-            international_mix_dict
+            True, international_mix_dict
         )
         # Get surplus and consumption mix dictionary
         sur_con_mix_dict = write_surplus_pool_and_consumption_mix_dict()
         # Get dist dictionary
         dist_dict = write_distribution_dict()
         generation_mix_dict = write_process_dicts_to_jsonld(
-            generation_mix_dict
+            True, generation_mix_dict
         )
         logging.info('write surplus pool consumption mix to jsonld')
-        sur_con_mix_dict = write_process_dicts_to_jsonld(sur_con_mix_dict)
+        sur_con_mix_dict = write_process_dicts_to_jsonld(
+            False, sur_con_mix_dict)
         logging.info('Filling up UUID of surplus pool consumption mix')
         sur_con_mix_dict = fill_default_provider_uuids(
             sur_con_mix_dict,
@@ -210,9 +227,14 @@ def main():
             generation_mix_dict,
             international_mix_dict
         )
-        sur_con_mix_dict = write_process_dicts_to_jsonld(sur_con_mix_dict)
+        sur_con_mix_dict = write_process_dicts_to_jsonld(True, sur_con_mix_dict)
         dist_dict = fill_default_provider_uuids(dist_dict, sur_con_mix_dict)
-        dist_dict = write_process_dicts_to_jsonld(dist_dict)
+        dist_dict = write_process_dicts_to_jsonld(True, dist_dict)
+
+    #
+    # TODO: add post-processes
+    # (e.g., product system creation, remove untracked flows)
+    #
 
     logging.info(
         'JSON-LD zip file has been saved in the "output" folder '
