@@ -139,12 +139,13 @@ def _read_bulk():
     DEMAND_ROWS = []
 
     try:
-        logging.info("Using existing bulk data download")
         z = zipfile.ZipFile(path, 'r')
     except FileNotFoundError:
         logging.info("Downloading new bulk data")
         download_EBA()
         z = zipfile.ZipFile(path, 'r')
+    else:
+        logging.info("Using existing bulk data download")
 
     logging.info("Loading bulk data to json")
     with z.open('EBA.txt') as f:
@@ -330,11 +331,11 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     """
     if year is None:
         year = model_specs.NETL_IO_trading_year
-    logging.info("Using trade year %d" % year)
 
     if subregion is None:
         subregion = model_specs.regional_aggregation
-    logging.info("Using trade aggregation level: %s" % subregion)
+    logging.info(
+        "Using trade year %d and aggregation level '%s'" % (year, subregion))
 
     if subregion not in ['BA', 'FERC','US']:
         raise ValueError(
