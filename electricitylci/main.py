@@ -80,8 +80,10 @@ def main():
 
     # There are essentially two paths - with and without upstream processes.
     if config.model_specs.include_upstream_processes is True:
-        # Create dataframe with all generation process data.
-        # This will also include upstream and Canadian data.
+        # Create dataframe with all generation process data; includes
+        # upstream and Canadian data.
+        # NOTE: Only nuclear ('NUC') stage codes have electricity data;
+        #       all others are nans.
         logging.info("get upstream process")
         upstream_df = get_upstream_process_df(config.model_specs.eia_gen_year)
         logging.info("write upstream process to dict")
@@ -94,7 +96,7 @@ def main():
         #       to write the output JSON-LD once.
         upstream_dict = write_process_dicts_to_jsonld(False, upstream_dict)
 
-        # NOTE: This method triggers an input request for EPA data API key
+        # NOTE: This method triggers an input request for EPA data API key;
         #       see https://github.com/USEPA/ElectricityLCI/issues/207
         # NOTE: This method runs aggregation and emission uncertainty
         #       calculations.
@@ -123,6 +125,8 @@ def main():
             generation_process_df, upstream_dict
         )
 
+    # These 333 processes are the fuel-technology electricity generation at BA
+    # for example, "Electricity - COAL - Tucson Electric Power"
     logging.info("write gen process to JSON-LD")
     generation_process_dict = write_process_dicts_to_jsonld(
         True, generation_process_dict)
