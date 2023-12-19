@@ -180,122 +180,44 @@ def write(processes, file_path, to_save=True):
     return processes
 
 
-def _save_to_json(json_file, e_dict):
-    """Write an entity dictionary to JSON-LD format.
+def _actor(name, dict_s):
+    """Generate a reference object to an actor.
 
     Parameters
     ----------
-    json_file : str
-        A file path to an existing or desired JSON-LD zip file.
-    e_dict : dict
-        An olca-schema entity dictionary where keys are entity names
-        (e.g., 'Actor' and 'Flow') and the values are dictionaries
-        containing lists of olca-schema objects (objs) and their universally
-        unique identifiers (ids).
+    name : str
+        Actor name
+    dict_s : dict
+        Dictionary with created olca schema root entities.
+
+    Returns
+    -------
+    tuple
+        olca_schema.Ref : Reference object to an Actor.
+        dict : The updated root entities dictionary, ``dict_s``.
     """
-    logging.info("Looking for %s" % os.path.basename(json_file))
-    try:
-        # Grab UUIDs and class objs from existing JSON-LD
-        logging.info("Found existing data in JSON-LD")
-        c_data = _read_jsonld(json_file, _root_entity_dict())
-    except OSError:
-        logging.info("No existing JSON-LD found")
-        c_data = _root_entity_dict()
+    # Skip unnamed or missing actors.
+    if not isinstance(name, str) or name == '':
+        return None
+
+    # Generate a standard UUID based on actor name:
+    uid = _uid(o.ModelType.ACTOR, name)
+
+    # Check to see if Actor is already recorded.
+    # If so, retrieve it; otherwise, make new and record it!
+    if uid in dict_s['Actor']['ids']:
+        idx = dict_s['Actor']['ids'].index(uid)
+        actor = dict_s['Actor']['objs'][idx]
+        logging.debug("Found existing actor, %s" % actor.name)
     else:
-        logging.info("Successfully read data from previous JSON-LD")
-        logging.info("Removing old archive file")
-        os.remove(json_file)
-    finally:
-        # Update current data (c_data) with new (e_dict).
-        # If JSON-LD exists, then current data are those UUIDs and class
-        # objects from the file; otherwise, the current data is empty.
-        e_dict = _update_data(c_data, e_dict)
+        logging.debug("Creating new actor entity for '%s'" % name)
+        actor = o.Actor()
+        actor.id = uid
+        actor.name = name
+        dict_s['Actor']['ids'].append(uid)
+        dict_s['Actor']['objs'].append(actor)
 
-    logging.info("Writing to %s" % os.path.basename(json_file))
-    with zipio.ZipWriter(json_file) as writer:
-        for k in e_dict.keys():
-            logging.info("Writing %d %s" % (len(e_dict[k]['ids']), k))
-            for k_obj in e_dict[k]['objs']:
-                # Last chance to fix Ref's and it's not perfect.
-                if isinstance(k_obj, o.Ref):
-                    logging.warning("Found Ref object in JSON-LD writer!")
-                    logging.debug("%s Ref (%s)" % (k, k_obj.id))
-                    k_type = k_obj.ref_type.value
-                    k_dict = k_obj.to_dict()
-                    k_obj = e_dict[k_type]['class'].from_dict(k_dict)
-
-                logging.debug("Writing %s entity (%s)" % (k, k_obj.id))
-                writer.write(k_obj)
-
-
-def _update_data(cur_data, new_data):
-    """Update a current data dictionary with new values.
-
-    Parameters
-    ----------
-    cur_data : dict
-        A data dictionary with UUIDs (ids) and olca root entities (objs) read
-        from a JSON-LD zip archive (i.e., current data).
-    new_data : dict
-        A data dictionary with UUIDs (ids) and olca root entities (objs)
-        processed by electricitylci.main; it may be the same or new values as
-        already written to JSON-LD.
-
-    Returns
-    -------
-    dict
-        The current data updated with new values (i.e., overwrites existing
-        values and appends new).
-    """
-    for k in cur_data.keys():
-        # Make ids/obj lists to dict and update current data with new.
-        d_cur = _make_entity_dict(cur_data, k)
-        d_new = _make_entity_dict(new_data, k)
-        d_cur.update(d_new)
-
-        # Plop the new lists back into the data dictionary
-        ids = []
-        objs = []
-        for uid, obj in d_cur.items():
-            ids.append(uid)
-            objs.append(obj)
-        new_data[k]['ids'] = ids
-        new_data[k]['objs'] = objs
-
-    return new_data
-
-
-def _make_entity_dict(e_dict, e_key):
-    """Convenience function to convert two lists into a single dictionary.
-
-    Parameters
-    ----------
-    e_dict : dict
-        A data dictionary containing olca schema UUIDs (ids) and their respective class objects (objs)
-    e_key : str
-        The data dictionary key to convert into a dictionary; corresponds to olca root entity names (e.g., 'Actor' or 'Flow')
-
-    Returns
-    -------
-    dict
-        A dictionary of UUID keys and their class objects as values.
-    """
-    r_dict = {}
-    num_ids = len(e_dict[e_key]['ids'])
-    for i in range(num_ids):
-        uid = e_dict[e_key]['ids'][i]
-        try:
-            obj = e_dict[e_key]['objs'][i]
-        except IndexError:
-            # Happens, for example, if current data dictionary was
-            # created with IDs only (i.e., no objects). Since we
-            # don't have the object data, it isn't getting copied!
-            logging.warning("Skipping %s (%s)! Missing class info!" % (
-                e_key, uid))
-        else:
-            r_dict[uid] = obj
-
-    return r_dict
+    return (actor.to_ref(), dict_s)
 
 
 def _add_unit_groups(spec_map):
@@ -339,191 +261,6 @@ def _add_unit_groups(spec_map):
     return spec_map
 
 
-def _find_ref_exchange(p):
-    """Return the exchange class object associated as the quantitative
-    reference.
-
-    Note that there should be only one in a list of exchanges for a single
-    process.
-
-    Parameters
-    ----------
-    p : o.Process
-        An olca_schema.Process class.
-
-    Returns
-    -------
-    o.Exchange
-        An olca_schema.Exchange object (or NoneType if not found)
-    """
-    e_obj = None
-    if p.exchanges is None or len(p.exchanges) == 0:
-        pass
-    else:
-        for e in p.exchanges:
-            if e.is_quantitative_reference:
-                e_obj = e
-    return e_obj
-
-
-def _process(dict_d, dict_s):
-    """Generate a new Process object.
-
-    If the process includes exchanges, and one of the exchanges is marked
-    as a quantitative reference, then that exchange object is also returned.
-
-    Parameters
-    ----------
-    dict_d : dict
-        Process data dictionary.
-    dict_s : dict
-        olca-schema root entity dictionary.
-
-    Returns
-    -------
-    tuple
-        olca_schema.Process or NoneType : the process object
-        dict : the root entity dictionary, updated
-        olca_schema.Exchange or NoneType : quantitative reference exchange
-    """
-    if not isinstance(dict_d, dict):
-        return (None, dict_s, None)
-
-    uid = _val(dict_d, '@id')
-    name = _val(dict_d, 'name')
-    category = _val(dict_d, 'category', default='')
-    location_code = _val(dict_d, 'location', 'name', default='')
-
-    # Generate the standardized UUID, if absent
-    if uid is None:
-        logging.debug("Generating new process UUID for '%s'" % name)
-        uid = _uid(
-            o.ModelType.PROCESS,
-            category,
-            location_code,
-            name)
-
-    # Check for process existence:
-    if uid in dict_s['Process']['ids']:
-        idx = dict_s['Process']['ids'].index(uid)
-        p = dict_s['Process']['objs'][idx]
-        logging.debug("Found existing process, %s" % p.name)
-        # HOTFIX: add missing e_ref from existing process
-        e_ref = _find_ref_exchange(p)
-    else:
-        logging.debug("Creating new Process entity for '%s'" % name)
-        p = o.new_process(name=name)
-        p.id = uid
-        p.category = category
-        p.version = _val(dict_d, 'version', default=VERSION)
-        p.description = _val(dict_d, 'description')
-
-        # The olca_schema.new_process() defaults to UNIT PROCESS.
-        # Check for other type (i.e., LCI result)
-        p_type = _val(dict_d, 'processType', default='UNIT_PROCESS')
-        if p_type != "UNIT_PROCESS":
-            logging.debug("Setting process type to LCI RESULT")
-            p.process_type = o.ProcessType.LCI_RESULT
-
-        # No location will return a none-type.
-        p.location, dict_s = _location(_val(dict_d, 'location'), dict_s)
-        p.process_documentation, dict_s = _process_doc(
-            _val(dict_d, 'processDocumentation'),
-            dict_s
-        )
-
-        # DQSystems have pre-defined UUIDs (v.4);
-        #   see process_dictionary_writer.py
-        p.dq_entry = _dq_entry(dict_d)
-        p.dq_system, dict_s = _dq_system(dict_d, dict_s, 'dqSystem')
-        p.exchange_dq_system, dict_s = _dq_system(
-            dict_d, dict_s, 'exchangeDqSystem'
-        )
-
-        p.exchanges, dict_s, e_ref = _exchange_list(dict_d, dict_s)
-
-    return (p, dict_s, e_ref)
-
-
-def _read_fedefl():
-    """Return list of GreenDelta's unit group and flow property objects.
-
-    A local copy of the LCA Commons' Federal Elementary Flow List unit groups
-    is either accessed (in eLCI's data directory) or created (using requests).
-
-    Notes
-    -----
-    This method writes up to two files in electricitylci's data directory:
-
-    -   flow_properties.json
-    -   unit_groups.json
-
-    Returns
-    -------
-    tuple
-        A tuple of length two.
-        First item is a list of 27 olca-schema UnitGroup objects.
-        Second item is a list of 33 olca-schema FlowProperty objects.
-    """
-    url = (
-        "https://www.lcacommons.gov/"
-        "lca-collaboration/ws/public/download/json/"
-        "repository_Federal_LCA_Commons@elementary_flow_list"
-    )
-    u_file = "unit_groups.json"
-    u_path = os.path.join(data_dir, u_file)
-    u_list = []
-
-    # HOTFIX: add flow properties
-    p_file = "flow_properties.json"
-    p_path = os.path.join(data_dir, p_file)
-    p_list = []
-
-    if not os.path.exists(u_path) or not os.path.exists(p_path):
-        # Pull from Federal Elementary Flow List
-        logging.info("Reading data from Federal LCA Commons")
-        r = requests.get(url, stream=True)
-        with ZipFile(io.BytesIO(r.content)) as zippy:
-            # Find the unit groups, convert them to UnitGroup class
-            for name in zippy.namelist():
-                # Note there are only three folders in the zip file:
-                # 'flow_properties', 'flows', and 'unit_groups';
-                # we want the 27 JSON files under unit_groups
-                # and the 33 JSON files under flow_properties.
-                if name.startswith("unit") and name.endswith("json"):
-                    u_dict = json.loads(zippy.read(name))
-                    u_obj = o.UnitGroup.from_dict(u_dict)
-                    u_list.append(u_obj)
-                elif name.startswith("flow_") and name.endswith("json"):
-                    p_dict = json.loads(zippy.read(name))
-                    p_obj = o.FlowProperty.from_dict(p_dict)
-                    p_list.append(p_obj)
-
-        # Archive to avoid running requests again.
-        _archive_json(u_list, u_path)
-        logging.info("Saved unit groups from LCA Commons to JSON")
-
-        _archive_json(p_list, p_path)
-        logging.info("Saved flow properties from LCA Commons to JSON")
-
-    # Only read locally if needed (i.e., if data wasn't just downloaded)
-    if os.path.exists(u_path) and len(u_list) == 0:
-        logging.info("Reading unit groups from local JSON")
-        with open(u_path, 'r') as f:
-            my_list = json.load(f)
-        for my_item in my_list:
-            u_list.append(o.UnitGroup.from_dict(my_item))
-
-    if os.path.exists(p_path) and len(p_list) == 0:
-        logging.info("Reading flow properties from local JSON")
-        with open(p_path, 'r') as f:
-            my_list = json.load(f)
-        for my_item in my_list:
-            p_list.append(o.FlowProperty.from_dict(my_item))
-
-    return (u_list, p_list)
-
-
 def _archive_json(data_list, file_path):
     """Write a list of dictionaries to a JSON file.
 
@@ -541,28 +278,65 @@ def _archive_json(data_list, file_path):
         f.write(out_str)
 
 
-def _find_dq(dict_d, dict_key):
-    """Search a process dictionary (and its documentation) for a given data
-    quality attribute.
+def _check_source_year(s_year):
+    """Checks value as valid year.
+
+    Implements two basic checks:
+
+    1. Type check (i.e., integer)
+    2. Range check (values between 0 and current year + 1)
 
     Parameters
     ----------
-    dict_d : dict
-        Process (or processDocumentation) dictionary.
-    dict_key : str
-        Data quality key (e.g., 'dqEntry', 'dqSystem' or 'exchageDqSystem')
+    s_year : str, int
+        A year.
 
     Returns
     -------
-    str, dict
-        Data quality value.
+    int
+        Year.
+        Defaults to current year for invalid parameters.
     """
-    dq = _val(dict_d, dict_key)
-    if isinstance(dict_d, dict) and not dq:
-        # NOTE: dq attributes may be found under processDocumentation!
-        logging.debug("Searching process documentation for data quality key!")
-        dq = _find_dq(_val(dict_d, 'processDocumentation'), dict_key)
-    return dq
+    try:
+        int(s_year)
+    except:
+        logging.warning("Invalid source year, defaulting to current year.")
+        r_year = _current_year()
+    else:
+        r_year = int(s_year)
+        if (r_year < 0) or (r_year > _current_year() + 1):
+            logging.warning(
+                "Source year out of range! Default to current year.")
+            r_year = _current_year()
+    finally:
+        return r_year
+
+
+def _current_time():
+    """Return a ISO-formatted time stamp for right now.
+
+    Returns
+    -------
+    str
+        Time stamp in ISO format.
+
+    Examples
+    --------
+    >>> _current_time()
+    '2023-10-25T21:06:19.200675+00:00'
+    """
+    return datetime.datetime.now(pytz.utc).isoformat()
+
+
+def _current_year():
+    """Return today's calendar year.
+
+    Returns
+    -------
+    int
+        Year.
+    """
+    return datetime.datetime.now(pytz.utc).year
 
 
 def _dq_entry(dict_d):
@@ -654,43 +428,6 @@ def _dq_system(dict_d, dict_s, dq_type):
     return (dq_obj.to_ref(), dict_s)
 
 
-def _exchange_list(dict_d, dict_s):
-    """Generates a list of exchanges.
-
-    Parameters
-    ----------
-    dict_d : dict
-        Data dictionary for a process.
-        Expected key is 'exchanges', which should return a list of
-        dictionaries, where each dictionary describes an exchange.
-    dict_s : dict
-        Data dictionary for storing olca-schema root entities.
-
-    Returns
-    -------
-    tuple
-        list : List of Exchange objects
-        dict : The olca-schema root entity dictionary, updated
-        olca_schema.Exchange or NoneType : quantitative reference exchange
-    """
-    r_list = []
-    last_id = 0
-    q_ref = None
-    for e in _val(dict_d, 'exchanges', default=[]):
-        ex_obj, dict_s = _exchange(e, dict_s)
-        if ex_obj is not None:
-            last_id += 1
-            ex_obj.internal_id = last_id
-            r_list.append(ex_obj)
-
-            # NOTE: there should be at most one quantitative reference in an
-            # exchange list; if there is more than one, then the last
-            # instance is returned.
-            if ex_obj.is_quantitative_reference:
-                q_ref = ex_obj
-    return (r_list, dict_s, q_ref)
-
-
 def _exchange(dict_d, dict_s):
     """Generate an Exchange object.
 
@@ -771,39 +508,164 @@ def _exchange(dict_d, dict_s):
     return (e, dict_s)
 
 
-def _unit(unit_name):
-    """Get the ID of the openLCA reference unit with the given name.
-
-    Notes
-    -----
-    The version 4 UUIDs provided in this module are the same as those provided
-    by GreenDelta's olca_schema.units sub-package, so it was replaced with
-    their unit-reference method.
+def _exchange_list(dict_d, dict_s):
+    """Generates a list of exchanges.
 
     Parameters
     ----------
-    unit_name : str, dict
-        If unit name is passed as a dictionary, it should have a key, "name"
-        with a string value for the unit name (e.g., "MJ").
+    dict_d : dict
+        Data dictionary for a process.
+        Expected key is 'exchanges', which should return a list of
+        dictionaries, where each dictionary describes an exchange.
+    dict_s : dict
+        Data dictionary for storing olca-schema root entities.
 
     Returns
     -------
-    olca_schema.Ref
-        A reference object for a Unit class.
-
+    tuple
+        list : List of Exchange objects
+        dict : The olca-schema root entity dictionary, updated
+        olca_schema.Exchange or NoneType : quantitative reference exchange
     """
-    if isinstance(unit_name, dict):
-        try:
-            unit_name = unit_name["name"]
-        except KeyError:
-            unit_name = ""
-            logging.error(
-                'dict passed as unit_name but does not contain name key')
-    logging.debug("Creating unit, '%s'" % unit_name)
-    r_obj = o_units.unit_ref(unit_name)
-    if r_obj is None:
-        logging.error("unknown unit, '%s'; no unit reference" % unit_name)
-    return r_obj
+    r_list = []
+    last_id = 0
+    q_ref = None
+    for e in _val(dict_d, 'exchanges', default=[]):
+        ex_obj, dict_s = _exchange(e, dict_s)
+        if ex_obj is not None:
+            last_id += 1
+            ex_obj.internal_id = last_id
+            r_list.append(ex_obj)
+
+            # NOTE: there should be at most one quantitative reference in an
+            # exchange list; if there is more than one, then the last
+            # instance is returned.
+            if ex_obj.is_quantitative_reference:
+                q_ref = ex_obj
+    return (r_list, dict_s, q_ref)
+
+
+def _find_dq(dict_d, dict_key):
+    """Search a process dictionary (and its documentation) for a given data
+    quality attribute.
+
+    Parameters
+    ----------
+    dict_d : dict
+        Process (or processDocumentation) dictionary.
+    dict_key : str
+        Data quality key (e.g., 'dqEntry', 'dqSystem' or 'exchageDqSystem')
+
+    Returns
+    -------
+    str, dict
+        Data quality value.
+    """
+    dq = _val(dict_d, dict_key)
+    if isinstance(dict_d, dict) and not dq:
+        # NOTE: dq attributes may be found under processDocumentation!
+        logging.debug("Searching process documentation for data quality key!")
+        dq = _find_dq(_val(dict_d, 'processDocumentation'), dict_key)
+    return dq
+
+
+def _find_ref_exchange(p):
+    """Return the exchange class object associated as the quantitative
+    reference.
+
+    Note that there should be only one in a list of exchanges for a single
+    process.
+
+    Parameters
+    ----------
+    p : o.Process
+        An olca_schema.Process class.
+
+    Returns
+    -------
+    o.Exchange
+        An olca_schema.Exchange object (or NoneType if not found)
+    """
+    e_obj = None
+    if p.exchanges is None or len(p.exchanges) == 0:
+        pass
+    else:
+        for e in p.exchanges:
+            if e.is_quantitative_reference:
+                e_obj = e
+    return e_obj
+
+
+def _find_unused_flows(file_path):
+    # IN PROGRESS
+    flow_list = []
+    try:
+        data = _read_jsonld(file_path, _root_entity_dict())
+    except OSError:
+        data = {}
+
+
+def _flow(dict_d, flowprop, dict_s):
+    """Generate a reference to a flow object.
+
+    Called by :func:`_exchange`.
+
+    Parameters
+    ----------
+    dict_d : dict
+        Flow data dictionary.
+    flowprop : olca_schema.FlowProperty or olca_schema.Ref
+        FlowProperty or Ref to a FlowProperty object.
+    dict_s : dict
+        Dictionary with olca_schema root entities.
+
+    Returns
+    -------
+    tuple
+        olca_schema.Ref : Reference to a flow object.
+        dict : Updated dictionary with olca_schema root entities.
+    """
+    if not isinstance(dict_d, dict):
+        logging.warning("No flow data received!")
+        return (None, dict_s)
+
+    uid = _val(dict_d, 'id', '@id')
+    name = _val(dict_d, 'name')
+    category_path = _val(dict_d, 'category', default='')
+    is_waste = "waste" in category_path.lower()
+    # HOTFIX: remove technosphere/3rd party flow check;
+    # it duplicates every waste flow in the JSON-LD [2023-12-05; TWD]
+
+    # Check for flow existence
+    if uid in dict_s['Flow']['ids']:
+        idx = dict_s['Flow']['ids'].index(uid)
+        flow = dict_s['Flow']['objs'][idx]
+        logging.debug("Found previous flow, '%s'" % flow.name)
+    else:
+        logging.debug("Creating new flow for, '%s' (%s)" % (name, uid))
+        if _uid_is_valid(uid, 3) or _uid_is_valid(uid, 4):
+            # Keep the good UUID
+            pass
+        else:
+            # Generate new v3 ID based on standard format
+            logging.debug("Generating new UUID for flow, '%s'" % name)
+            uid = _uid(o.ModelType.FLOW, category_path, name)
+
+        # Correct the default flow type for waste flows.
+        def_type = "ELEMENTARY_FLOW"
+        if is_waste:
+            dict_d['flowType'] = "WASTE_FLOW"
+            def_type = "WASTE_FLOW"
+
+        f_type = _flow_type(_val(dict_d, 'flowType', default=def_type))
+        flow = o.new_flow(name, f_type, flowprop)
+        flow.id = uid
+        flow.category = category_path
+
+        # Update master list
+        dict_s['Flow']['ids'].append(uid)
+        dict_s['Flow']['objs'].append(flow)
+    return (flow.to_ref(), dict_s)
 
 
 def _flow_property(unit_name, dict_s):
@@ -903,67 +765,117 @@ def _flow_type(f_type):
     return None
 
 
-def _flow(dict_d, flowprop, dict_s):
-    """Generate a reference to a flow object.
-
-    Called by :func:`_exchange`.
+def _format_date(entry):
+    """Convert traditional M/D/YYYY date string to ISO format.
 
     Parameters
     ----------
-    dict_d : dict
-        Flow data dictionary.
-    flowprop : olca_schema.FlowProperty or olca_schema.Ref
-        FlowProperty or Ref to a FlowProperty object.
-    dict_s : dict
-        Dictionary with olca_schema root entities.
+    entry : str
+        Date string in the format: month/day/year.
 
     Returns
     -------
-    tuple
-        olca_schema.Ref : Reference to a flow object.
-        dict : Updated dictionary with olca_schema root entities.
+    str
+        ISO-formatted date string, 'YYYY-MM-DDZHH:MM:SS'.
+         returns NoneType.
     """
-    if not isinstance(dict_d, dict):
-        logging.warning("No flow data received!")
-        return (None, dict_s)
-
-    uid = _val(dict_d, 'id', '@id')
-    name = _val(dict_d, 'name')
-    category_path = _val(dict_d, 'category', default='')
-    is_waste = "waste" in category_path.lower()
-    # HOTFIX: remove technosphere/3rd party flow check;
-    # it duplicates every waste flow in the JSON-LD [2023-12-05; TWD]
-
-    # Check for flow existence
-    if uid in dict_s['Flow']['ids']:
-        idx = dict_s['Flow']['ids'].index(uid)
-        flow = dict_s['Flow']['objs'][idx]
-        logging.debug("Found previous flow, '%s'" % flow.name)
+    try:
+        d_obj = datetime.datetime.strptime(entry, '%m/%d/%Y')
+    except TypeError:
+        logging.warning("Expected date as string, found %s" % type(entry))
+        return None
+    except ValueError:
+        logging.warning(
+            "Received unexpected date format (M/D/YYYY): '%s'" % entry)
+        return None
+    except Exception as e:
+        logging.warning("Encountered an unexpected error. %s" % str(e))
+        return None
     else:
-        logging.debug("Creating new flow for, '%s' (%s)" % (name, uid))
-        if _uid_is_valid(uid, 3) or _uid_is_valid(uid, 4):
-            # Keep the good UUID
-            pass
+        return d_obj.isoformat()
+
+
+def _format_dq_entry(entry):
+    """Format data quality entries.
+
+    Parameters
+    ----------
+    entry : str
+        Data quality entry, like (1;2;5;3).
+
+    Returns
+    -------
+    str
+        Data quality entry where floating point numbers are converted to ints.
+        Returns NoneType if an invalid parameter is encountered.
+
+    Notes
+    -----
+    For more information on data quality strings, see
+    https://greendelta.github.io/olca-schema/classes/Process.html#dqentry
+    """
+    if not isinstance(entry, str):
+        return None
+    e = entry.strip()
+    if len(e) < 2:
+        return None
+    e = e.rstrip(')').lstrip('(')
+    nums = e.split(';')
+    for i in range(len(nums)):
+        if ((nums[i] == 'n.a.') or (nums[i] == "nan")):
+            continue
         else:
-            # Generate new v3 ID based on standard format
-            logging.debug("Generating new UUID for flow, '%s'" % name)
-            uid = _uid(o.ModelType.FLOW, category_path, name)
+            nums[i] = str(round(float(nums[i])))
+    return '(%s)' % ';'.join(nums)
 
-        # Correct the default flow type for waste flows.
-        def_type = "ELEMENTARY_FLOW"
-        if is_waste:
-            dict_d['flowType'] = "WASTE_FLOW"
-            def_type = "WASTE_FLOW"
 
-        f_type = _flow_type(_val(dict_d, 'flowType', default=def_type))
-        flow = o.new_flow(name, f_type, flowprop)
-        flow.id = uid
-        flow.category = category_path
+def _init_root_entities(json_file):
+    """Generate dictionary for each openLCA schema root entity.
 
-        # Update master list
-        dict_s['Flow']['ids'].append(uid)
-        dict_s['Flow']['objs'].append(flow)
-    return (flow.to_ref(), dict_s)
+    Check for JSON-LD file existence and read root entities from file;
+    otherwise, pre-populate with GreenDelta's UnitGroups and FlowProperties.
+
+    Returns
+    -------
+    dict
+        Dictionary with primary keys for each root entity (camel-case).
+        The values are dictionaries with three keys: 'class', 'objs', and 'ids'.
+        The 'ids' list is for quick referencing and 'objs' list is for actual
+        writing to file. The 'class' is value added (if needed).
+    """
+    # Create the empty dictionary for each olca schema root entity
+    # (these are the ones that need to be writted to the JSON-LD zip file)
+    r_dict = _root_entity_dict()
+
+    # Check to see if the JSON-LD file was already written to;
+    # if so, read the old root entity data; otherwise, add unit group and
+    # flow properties data.
+    if os.path.exists(json_file):
+        r_dict = _read_jsonld(json_file, r_dict)
+    else:
+        r_dict = _add_unit_groups(r_dict)
+
+    return r_dict
+
+
+def _isnum(n):
+    """Type checking for number.
+
+    Performs no type casting of number strings (e.g., '23' is not a number).
+
+    Parameters
+    ----------
+    n : Any
+        A Python object (e.g., str, int, float) to be tested as numeric.
+
+    Returns
+    -------
+    bool
+        Whether the argument is a number.
+    """
+    if not isinstance(n, (float, int)):
+        return False
+    return not math.isnan(n)
 
 
 def _location(dict_d, dict_s):
@@ -1031,6 +943,118 @@ def _location(dict_d, dict_s):
         dict_s['Location']['ids'].append(uid)
         dict_s['Location']['objs'].append(location)
     return (location.to_ref(), dict_s)
+
+
+def _make_entity_dict(e_dict, e_key):
+    """Convenience function to convert two lists into a single dictionary.
+
+    Parameters
+    ----------
+    e_dict : dict
+        A data dictionary containing olca schema UUIDs (ids) and their respective class objects (objs)
+    e_key : str
+        The data dictionary key to convert into a dictionary; corresponds to olca root entity names (e.g., 'Actor' or 'Flow')
+
+    Returns
+    -------
+    dict
+        A dictionary of UUID keys and their class objects as values.
+    """
+    r_dict = {}
+    num_ids = len(e_dict[e_key]['ids'])
+    for i in range(num_ids):
+        uid = e_dict[e_key]['ids'][i]
+        try:
+            obj = e_dict[e_key]['objs'][i]
+        except IndexError:
+            # Happens, for example, if current data dictionary was
+            # created with IDs only (i.e., no objects). Since we
+            # don't have the object data, it isn't getting copied!
+            logging.warning("Skipping %s (%s)! Missing class info!" % (
+                e_key, uid))
+        else:
+            r_dict[uid] = obj
+
+    return r_dict
+
+
+def _process(dict_d, dict_s):
+    """Generate a new Process object.
+
+    If the process includes exchanges, and one of the exchanges is marked
+    as a quantitative reference, then that exchange object is also returned.
+
+    Parameters
+    ----------
+    dict_d : dict
+        Process data dictionary.
+    dict_s : dict
+        olca-schema root entity dictionary.
+
+    Returns
+    -------
+    tuple
+        olca_schema.Process or NoneType : the process object
+        dict : the root entity dictionary, updated
+        olca_schema.Exchange or NoneType : quantitative reference exchange
+    """
+    if not isinstance(dict_d, dict):
+        return (None, dict_s, None)
+
+    uid = _val(dict_d, '@id')
+    name = _val(dict_d, 'name')
+    category = _val(dict_d, 'category', default='')
+    location_code = _val(dict_d, 'location', 'name', default='')
+
+    # Generate the standardized UUID, if absent
+    if uid is None:
+        logging.debug("Generating new process UUID for '%s'" % name)
+        uid = _uid(
+            o.ModelType.PROCESS,
+            category,
+            location_code,
+            name)
+
+    # Check for process existence:
+    if uid in dict_s['Process']['ids']:
+        idx = dict_s['Process']['ids'].index(uid)
+        p = dict_s['Process']['objs'][idx]
+        logging.debug("Found existing process, %s" % p.name)
+        # HOTFIX: add missing e_ref from existing process
+        e_ref = _find_ref_exchange(p)
+    else:
+        logging.debug("Creating new Process entity for '%s'" % name)
+        p = o.new_process(name=name)
+        p.id = uid
+        p.category = category
+        p.version = _val(dict_d, 'version', default=VERSION)
+        p.description = _val(dict_d, 'description')
+
+        # The olca_schema.new_process() defaults to UNIT PROCESS.
+        # Check for other type (i.e., LCI result)
+        p_type = _val(dict_d, 'processType', default='UNIT_PROCESS')
+        if p_type != "UNIT_PROCESS":
+            logging.debug("Setting process type to LCI RESULT")
+            p.process_type = o.ProcessType.LCI_RESULT
+
+        # No location will return a none-type.
+        p.location, dict_s = _location(_val(dict_d, 'location'), dict_s)
+        p.process_documentation, dict_s = _process_doc(
+            _val(dict_d, 'processDocumentation'),
+            dict_s
+        )
+
+        # DQSystems have pre-defined UUIDs (v.4);
+        #   see process_dictionary_writer.py
+        p.dq_entry = _dq_entry(dict_d)
+        p.dq_system, dict_s = _dq_system(dict_d, dict_s, 'dqSystem')
+        p.exchange_dq_system, dict_s = _dq_system(
+            dict_d, dict_s, 'exchangeDqSystem'
+        )
+
+        p.exchanges, dict_s, e_ref = _exchange_list(dict_d, dict_s)
+
+    return (p, dict_s, e_ref)
 
 
 def _process_doc(dict_d, dict_s):
@@ -1110,472 +1134,83 @@ def _process_doc(dict_d, dict_s):
     return (doc, dict_s)
 
 
-def _actor(name, dict_s):
-    """Generate a reference object to an actor.
+def _read_fedefl():
+    """Return list of GreenDelta's unit group and flow property objects.
 
-    Parameters
-    ----------
-    name : str
-        Actor name
-    dict_s : dict
-        Dictionary with created olca schema root entities.
+    A local copy of the LCA Commons' Federal Elementary Flow List unit groups
+    is either accessed (in eLCI's data directory) or created (using requests).
+
+    Notes
+    -----
+    This method writes up to two files in electricitylci's data directory:
+
+    -   flow_properties.json
+    -   unit_groups.json
 
     Returns
     -------
     tuple
-        olca_schema.Ref : Reference object to an Actor.
-        dict : The updated root entities dictionary, ``dict_s``.
+        A tuple of length two.
+        First item is a list of 27 olca-schema UnitGroup objects.
+        Second item is a list of 33 olca-schema FlowProperty objects.
     """
-    # Skip unnamed or missing actors.
-    if not isinstance(name, str) or name == '':
-        return None
-
-    # Generate a standard UUID based on actor name:
-    uid = _uid(o.ModelType.ACTOR, name)
-
-    # Check to see if Actor is already recorded.
-    # If so, retrieve it; otherwise, make new and record it!
-    if uid in dict_s['Actor']['ids']:
-        idx = dict_s['Actor']['ids'].index(uid)
-        actor = dict_s['Actor']['objs'][idx]
-        logging.debug("Found existing actor, %s" % actor.name)
-    else:
-        logging.debug("Creating new actor entity for '%s'" % name)
-        actor = o.Actor()
-        actor.id = uid
-        actor.name = name
-        dict_s['Actor']['ids'].append(uid)
-        dict_s['Actor']['objs'].append(actor)
-
-    return (actor.to_ref(), dict_s)
-
-
-def _source(src_data, dict_s):
-    """Generate a reference to a source object.
-
-    Parameters
-    ----------
-    src_data : dict
-        Source data dictionary.
-    dict_s : dict
-        Dictionary with created olca schema root entities.
-
-    Returns
-    -------
-    tuple
-        olca_schema.Ref : Reference object to Source (or NoneType).
-        dict : Root entities dictionary, updated (``dict_s``).
-
-    Notes
-    -----
-    For explanation of source object keys, see:
-    https://greendelta.github.io/olca-schema/classes/Source.html
-    """
-    # If no source data retrieved, skip it!
-    if not isinstance(src_data, dict):
-        return (None, dict_s)
-    if "Name" not in src_data.keys() or src_data['Name'] == '':
-        return (None, dict_s)
-
-    # Search for category and use it in conjunction with name for UUID
-    # NOTE: categories are forward-slash separated strings, see:
-    # https://greendelta.github.io/olca-schema/classes/RootEntity.html#category
-    try:
-        if isinstance(src_data['Category'], list):
-            category = "/".join(src_data['Category'])
-        elif isinstance(src_data["Category"], str):
-            category = src_data["Category"]
-        else:
-            category = ''
-    except KeyError:
-        category = ''
-    finally:
-        uid = _uid(o.ModelType.SOURCE, category, src_data["Name"])
-
-    # Check if source already exists.
-    # If so, retrieve it; otherwise, create new source and record it!
-    if uid in dict_s['Source']['ids']:
-        idx = dict_s['Source']['ids'].index(uid)
-        source = dict_s['Source']['objs'][idx]
-        logging.debug("Found existing source, %s" % source.name)
-    else:
-        logging.debug("Creating new source entity for '%s'" % src_data['Name'])
-        source = o.Source()
-        source.id = uid
-        source.category = category
-        source.name = src_data["Name"]
-        source.url = _val(src_data, "Url", default=None)
-        source.version = _val(src_data, "Version", default=VERSION)
-        source.text_reference = _val(
-            src_data, "TextReference", default=src_data['Name'])
-        source.year = _check_source_year(_val(src_data, "Year"))
-        dict_s['Source']['ids'].append(uid)
-        dict_s['Source']['objs'].append(source)
-
-    return (source.to_ref(), dict_s)
-
-
-def _source_list(s_data, dict_s):
-    """Process all sources within a source list.
-
-    Parameters
-    ----------
-    s_data : list
-        A list of source dictionaries.
-    dict_s : dict
-        Dictionary of olca-schema root entities.
-
-    Returns
-    -------
-    tuple
-        list : List of source reference objects.
-        dict : Updated dictionary of olca-schema entities, ``dict_s``.
-    """
-    r_list = []
-    if not isinstance(s_data, list) or len(s_data) == 0:
-        logging.warning("No source data provided!")
-    else:
-        for d in s_data:
-            s_ref, dict_s = _source(d, dict_s)
-            # skip missing references
-            if s_ref:
-                r_list.append(s_ref)
-    return (r_list, dict_s)
-
-
-def _val(dict_d, *path, **kvargs):
-    """Return value from a dictionary.
-
-    If a valid key (path) is provided to a given dictionary (dict_d), the
-    respective value of the dictionary is returned; otherwise, kvargs is
-    checked for a default value. If a default value is present, then it is
-    returned; otherwise, NoneType is returned.
-
-    Parameters
-    ----------
-    dict_d : dict
-    path : tuple, optional
-        A tuple of dictionary keys (str).
-        Note: there should only ever be one path; for multiple paths only
-        the first key will be accessed.
-    kvargs : dict
-        Used to store default values.
-        See key 'default'.
-
-    Returns
-    -------
-    Variable
-        The value from a given key to a given dictionary.
-        If not found, a NoneType is returned.
-
-    Examples
-    --------
-    >>> d = {'a': 1, 'b': 2, 'c': 3}
-    >>> _val(d, 'a') # single key value
-    1
-    >>> _val(d,'x') # NoneType for missing key
-    None
-    >>> _val(d, 'x', 'y' 'z', 'a', 'b', 'c') # firs real key's value
-    1
-    >>> _val(d, 'z', default=4) # default for missing key
-    4
-    """
-    r_val = None
-    if isinstance(dict_d, dict) and path:
-        for p in path:
-            if p in dict_d.keys():
-                r_val = dict_d[p]
-                break  # HOTFIX: stop on first found key
-    if r_val is None and 'default' in kvargs:
-        r_val = kvargs['default']
-    return r_val
-
-
-def _uncertainty(dict_d):
-    """Generate an uncertainty object.
-
-    Creates an uncertainty object with a log-normal distribution with
-    geometric mean and geometric standard deviation provided by the data
-    dictionary.
-
-    Parameters
-    ----------
-    dict_d : dict
-        Uncertainty data dictionary.
-        See uncertainty_table_creation in process_dictionary_writer.py.
-
-    Returns
-    -------
-    olca_schema.Uncertainty
-        A log-normal distribution uncertainty object.
-        Returns NoneType for missing or invalid types.
-    """
-    if not isinstance(dict_d, dict):
-        return None
-
-    dt = _val(dict_d, 'distributionType')
-    if dt != 'Logarithmic Normal Distribution':
-        logging.debug("Found invalid uncertainty method, '%s'" % dt)
-        return None
-
-    gmean = _val(dict_d, 'geomMean')
-    if isinstance(gmean, str):
-        gmean = float(gmean)
-
-    gsd = _val(dict_d, 'geomSd')
-    if isinstance(gsd, str):
-        gsd = float(gsd)
-
-    if not _isnum(gmean) or not _isnum(gsd):
-        logging.debug("Found invalid geometric mean/standard deviation!")
-        return None
-
-    u = o.Uncertainty.from_dict({
-        'distributionType': o.UncertaintyType.LOG_NORMAL_DISTRIBUTION,
-        'geomMean': gmean,
-        'geomSd': gsd
-    })
-
-    return u
-
-
-def _isnum(n):
-    """Type checking for number.
-
-    Performs no type casting of number strings (e.g., '23' is not a number).
-
-    Parameters
-    ----------
-    n : Any
-        A Python object (e.g., str, int, float) to be tested as numeric.
-
-    Returns
-    -------
-    bool
-        Whether the argument is a number.
-    """
-    if not isinstance(n, (float, int)):
-        return False
-    return not math.isnan(n)
-
-
-def _format_dq_entry(entry):
-    """Format data quality entries.
-
-    Parameters
-    ----------
-    entry : str
-        Data quality entry, like (1;2;5;3).
-
-    Returns
-    -------
-    str
-        Data quality entry where floating point numbers are converted to ints.
-        Returns NoneType if an invalid parameter is encountered.
-
-    Notes
-    -----
-    For more information on data quality strings, see
-    https://greendelta.github.io/olca-schema/classes/Process.html#dqentry
-    """
-    if not isinstance(entry, str):
-        return None
-    e = entry.strip()
-    if len(e) < 2:
-        return None
-    e = e.rstrip(')').lstrip('(')
-    nums = e.split(';')
-    for i in range(len(nums)):
-        if ((nums[i] == 'n.a.') or (nums[i] == "nan")):
-            continue
-        else:
-            nums[i] = str(round(float(nums[i])))
-    return '(%s)' % ';'.join(nums)
-
-
-def _format_date(entry):
-    """Convert traditional M/D/YYYY date string to ISO format.
-
-    Parameters
-    ----------
-    entry : str
-        Date string in the format: month/day/year.
-
-    Returns
-    -------
-    str
-        ISO-formatted date string, 'YYYY-MM-DDZHH:MM:SS'.
-         returns NoneType.
-    """
-    try:
-        d_obj = datetime.datetime.strptime(entry, '%m/%d/%Y')
-    except TypeError:
-        logging.warning("Expected date as string, found %s" % type(entry))
-        return None
-    except ValueError:
-        logging.warning(
-            "Received unexpected date format (M/D/YYYY): '%s'" % entry)
-        return None
-    except Exception as e:
-        logging.warning("Encountered an unexpected error. %s" % str(e))
-        return None
-    else:
-        return d_obj.isoformat()
-
-
-def _check_source_year(s_year):
-    """Checks value as valid year.
-
-    Implements two basic checks:
-
-    1. Type check (i.e., integer)
-    2. Range check (values between 0 and current year + 1)
-
-    Parameters
-    ----------
-    s_year : str, int
-        A year.
-
-    Returns
-    -------
-    int
-        Year.
-        Defaults to current year for invalid parameters.
-    """
-    try:
-        int(s_year)
-    except:
-        logging.warning("Invalid source year, defaulting to current year.")
-        r_year = _current_year()
-    else:
-        r_year = int(s_year)
-        if (r_year < 0) or (r_year > _current_year() + 1):
-            logging.warning(
-                "Source year out of range! Default to current year.")
-            r_year = _current_year()
-    finally:
-        return r_year
-
-
-def _current_time():
-    """Return a ISO-formatted time stamp for right now.
-
-    Returns
-    -------
-    str
-        Time stamp in ISO format.
-
-    Examples
-    --------
-    >>> _current_time()
-    '2023-10-25T21:06:19.200675+00:00'
-    """
-    return datetime.datetime.now(pytz.utc).isoformat()
-
-
-def _current_year():
-    """Return today's calendar year.
-
-    Returns
-    -------
-    int
-        Year.
-    """
-    return datetime.datetime.now(pytz.utc).year
-
-
-def _uid(*args):
-    """Generate UUID from the MD5 hash of a namespace identifier and a name.
-
-    This method uses OID namespace, which assumes that the name is an ISO OID.
-    Essentially, two strings are hashed together to create a UUID and, if the
-    same namespace and path are given again, the same UUID would be returned.
-
-    Warning
-    -------
-    The UUIDs generated by this method are version 3, which is different
-    from standard processes defined elsewhere (e.g., DQSystems and Units).
-
-    Parameters
-    ----------
-    args : tuple
-        A tuple of key words representing a path (order matters).
-        The path is a string with each argument separated by a forward slash.
-        For flows, the path is 'modeltype.flow', flow name, compartment, and
-        unit.
-        For processes, the path is 'modeltype.process', process category,
-        location, and name.
-
-    Returns
-    -------
-    str
-        A version 3 universally unique identifier (UUID)
-    """
-    path = '/'.join([str(arg).strip() for arg in args]).lower()
-    logging.debug(path)
-    return str(uuid.uuid3(uuid.NAMESPACE_OID, path))
-
-
-def _uid_is_valid(uuid_str, version=3):
-    """Check if string is a valid UUID.
-
-    Parameters
-    ----------
-    uuid_str : str
-    version : {1, 2, 3, 4}
-
-    Returns
-    -------
-    bool
-        `True` if uuid_str is a valid UUID, otherwise `False`.
-
-    Examples
-    --------
-    >>> _uid_is_valid('c9bf9e57-1685-4c89-bafb-ff5af830be8a', 4)
-    True
-    >>> _uid_is_valid('c9bf9e58')
-    False
-
-    Notes
-    -----
-    Code snipped by Rafael (2020). CC-BY-SA 4.0. Online:
-    https://stackoverflow.com/a/33245493
-    """
-    # HOTFIX: deal with non-strings (e.g., nan) [2023-11-14; TWD]
-    try:
-        uuid_obj = uuid.UUID(uuid_str, version=version)
-    except (TypeError, ValueError, AttributeError):
-        return False
-    return str(uuid_obj) == uuid_str
-
-
-def _init_root_entities(json_file):
-    """Generate dictionary for each openLCA schema root entity.
-
-    Check for JSON-LD file existence and read root entities from file;
-    otherwise, pre-populate with GreenDelta's UnitGroups and FlowProperties.
-
-    Returns
-    -------
-    dict
-        Dictionary with primary keys for each root entity (camel-case).
-        The values are dictionaries with three keys: 'class', 'objs', and 'ids'.
-        The 'ids' list is for quick referencing and 'objs' list is for actual
-        writing to file. The 'class' is value added (if needed).
-    """
-    # Create the empty dictionary for each olca schema root entity
-    # (these are the ones that need to be writted to the JSON-LD zip file)
-    r_dict = _root_entity_dict()
-
-    # Check to see if the JSON-LD file was already written to;
-    # if so, read the old root entity data; otherwise, add unit group and
-    # flow properties data.
-    if os.path.exists(json_file):
-        r_dict = _read_jsonld(json_file, r_dict)
-    else:
-        r_dict = _add_unit_groups(r_dict)
-
-    return r_dict
+    url = (
+        "https://www.lcacommons.gov/"
+        "lca-collaboration/ws/public/download/json/"
+        "repository_Federal_LCA_Commons@elementary_flow_list"
+    )
+    u_file = "unit_groups.json"
+    u_path = os.path.join(data_dir, u_file)
+    u_list = []
+
+    # HOTFIX: add flow properties
+    p_file = "flow_properties.json"
+    p_path = os.path.join(data_dir, p_file)
+    p_list = []
+
+    if not os.path.exists(u_path) or not os.path.exists(p_path):
+        # Pull from Federal Elementary Flow List
+        logging.info("Reading data from Federal LCA Commons")
+        r = requests.get(url, stream=True)
+        with ZipFile(io.BytesIO(r.content)) as zippy:
+            # Find the unit groups, convert them to UnitGroup class
+            for name in zippy.namelist():
+                # Note there are only three folders in the zip file:
+                # 'flow_properties', 'flows', and 'unit_groups';
+                # we want the 27 JSON files under unit_groups
+                # and the 33 JSON files under flow_properties.
+                if name.startswith("unit") and name.endswith("json"):
+                    u_dict = json.loads(zippy.read(name))
+                    u_obj = o.UnitGroup.from_dict(u_dict)
+                    u_list.append(u_obj)
+                elif name.startswith("flow_") and name.endswith("json"):
+                    p_dict = json.loads(zippy.read(name))
+                    p_obj = o.FlowProperty.from_dict(p_dict)
+                    p_list.append(p_obj)
+
+        # Archive to avoid running requests again.
+        _archive_json(u_list, u_path)
+        logging.info("Saved unit groups from LCA Commons to JSON")
+
+        _archive_json(p_list, p_path)
+        logging.info("Saved flow properties from LCA Commons to JSON")
+
+    # Only read locally if needed (i.e., if data wasn't just downloaded)
+    if os.path.exists(u_path) and len(u_list) == 0:
+        logging.info("Reading unit groups from local JSON")
+        with open(u_path, 'r') as f:
+            my_list = json.load(f)
+        for my_item in my_list:
+            u_list.append(o.UnitGroup.from_dict(my_item))
+
+    if os.path.exists(p_path) and len(p_list) == 0:
+        logging.info("Reading flow properties from local JSON")
+        with open(p_path, 'r') as f:
+            my_list = json.load(f)
+        for my_item in my_list:
+            p_list.append(o.FlowProperty.from_dict(my_item))
+
+    return (u_list, p_list)
 
 
 def _read_jsonld(json_file, root_dict, id_only=False):
@@ -1745,3 +1380,377 @@ def _root_entity_dict():
             'objs': [],
             'ids': []}
     }
+
+
+def _save_to_json(json_file, e_dict):
+    """Write an entity dictionary to JSON-LD format.
+
+    Parameters
+    ----------
+    json_file : str
+        A file path to an existing or desired JSON-LD zip file.
+    e_dict : dict
+        An olca-schema entity dictionary where keys are entity names
+        (e.g., 'Actor' and 'Flow') and the values are dictionaries
+        containing lists of olca-schema objects (objs) and their universally
+        unique identifiers (ids).
+    """
+    logging.info("Looking for %s" % os.path.basename(json_file))
+    try:
+        # Grab UUIDs and class objs from existing JSON-LD
+        logging.info("Found existing data in JSON-LD")
+        c_data = _read_jsonld(json_file, _root_entity_dict())
+    except OSError:
+        logging.info("No existing JSON-LD found")
+        c_data = _root_entity_dict()
+    else:
+        logging.info("Successfully read data from previous JSON-LD")
+        logging.info("Removing old archive file")
+        os.remove(json_file)
+    finally:
+        # Update current data (c_data) with new (e_dict).
+        # If JSON-LD exists, then current data are those UUIDs and class
+        # objects from the file; otherwise, the current data is empty.
+        e_dict = _update_data(c_data, e_dict)
+
+    logging.info("Writing to %s" % os.path.basename(json_file))
+    with zipio.ZipWriter(json_file) as writer:
+        for k in e_dict.keys():
+            logging.info("Writing %d %s" % (len(e_dict[k]['ids']), k))
+            for k_obj in e_dict[k]['objs']:
+                # Last chance to fix Ref's and it's not perfect.
+                if isinstance(k_obj, o.Ref):
+                    logging.warning("Found Ref object in JSON-LD writer!")
+                    logging.debug("%s Ref (%s)" % (k, k_obj.id))
+                    k_type = k_obj.ref_type.value
+                    k_dict = k_obj.to_dict()
+                    k_obj = e_dict[k_type]['class'].from_dict(k_dict)
+
+                logging.debug("Writing %s entity (%s)" % (k, k_obj.id))
+                writer.write(k_obj)
+
+
+def _source(src_data, dict_s):
+    """Generate a reference to a source object.
+
+    Parameters
+    ----------
+    src_data : dict
+        Source data dictionary.
+    dict_s : dict
+        Dictionary with created olca schema root entities.
+
+    Returns
+    -------
+    tuple
+        olca_schema.Ref : Reference object to Source (or NoneType).
+        dict : Root entities dictionary, updated (``dict_s``).
+
+    Notes
+    -----
+    For explanation of source object keys, see:
+    https://greendelta.github.io/olca-schema/classes/Source.html
+    """
+    # If no source data retrieved, skip it!
+    if not isinstance(src_data, dict):
+        return (None, dict_s)
+    if "Name" not in src_data.keys() or src_data['Name'] == '':
+        return (None, dict_s)
+
+    # Search for category and use it in conjunction with name for UUID
+    # NOTE: categories are forward-slash separated strings, see:
+    # https://greendelta.github.io/olca-schema/classes/RootEntity.html#category
+    try:
+        if isinstance(src_data['Category'], list):
+            category = "/".join(src_data['Category'])
+        elif isinstance(src_data["Category"], str):
+            category = src_data["Category"]
+        else:
+            category = ''
+    except KeyError:
+        category = ''
+    finally:
+        uid = _uid(o.ModelType.SOURCE, category, src_data["Name"])
+
+    # Check if source already exists.
+    # If so, retrieve it; otherwise, create new source and record it!
+    if uid in dict_s['Source']['ids']:
+        idx = dict_s['Source']['ids'].index(uid)
+        source = dict_s['Source']['objs'][idx]
+        logging.debug("Found existing source, %s" % source.name)
+    else:
+        logging.debug("Creating new source entity for '%s'" % src_data['Name'])
+        source = o.Source()
+        source.id = uid
+        source.category = category
+        source.name = src_data["Name"]
+        source.url = _val(src_data, "Url", default=None)
+        source.version = _val(src_data, "Version", default=VERSION)
+        source.text_reference = _val(
+            src_data, "TextReference", default=src_data['Name'])
+        source.year = _check_source_year(_val(src_data, "Year"))
+        dict_s['Source']['ids'].append(uid)
+        dict_s['Source']['objs'].append(source)
+
+    return (source.to_ref(), dict_s)
+
+
+def _source_list(s_data, dict_s):
+    """Process all sources within a source list.
+
+    Parameters
+    ----------
+    s_data : list
+        A list of source dictionaries.
+    dict_s : dict
+        Dictionary of olca-schema root entities.
+
+    Returns
+    -------
+    tuple
+        list : List of source reference objects.
+        dict : Updated dictionary of olca-schema entities, ``dict_s``.
+    """
+    r_list = []
+    if not isinstance(s_data, list) or len(s_data) == 0:
+        logging.warning("No source data provided!")
+    else:
+        for d in s_data:
+            s_ref, dict_s = _source(d, dict_s)
+            # skip missing references
+            if s_ref:
+                r_list.append(s_ref)
+    return (r_list, dict_s)
+
+
+def _uid(*args):
+    """Generate UUID from the MD5 hash of a namespace identifier and a name.
+
+    This method uses OID namespace, which assumes that the name is an ISO OID.
+    Essentially, two strings are hashed together to create a UUID and, if the
+    same namespace and path are given again, the same UUID would be returned.
+
+    Warning
+    -------
+    The UUIDs generated by this method are version 3, which is different
+    from standard processes defined elsewhere (e.g., DQSystems and Units).
+
+    Parameters
+    ----------
+    args : tuple
+        A tuple of key words representing a path (order matters).
+        The path is a string with each argument separated by a forward slash.
+        For flows, the path is 'modeltype.flow', flow name, compartment, and
+        unit.
+        For processes, the path is 'modeltype.process', process category,
+        location, and name.
+
+    Returns
+    -------
+    str
+        A version 3 universally unique identifier (UUID)
+    """
+    path = '/'.join([str(arg).strip() for arg in args]).lower()
+    logging.debug(path)
+    return str(uuid.uuid3(uuid.NAMESPACE_OID, path))
+
+
+def _uid_is_valid(uuid_str, version=3):
+    """Check if string is a valid UUID.
+
+    Parameters
+    ----------
+    uuid_str : str
+    version : {1, 2, 3, 4}
+
+    Returns
+    -------
+    bool
+        `True` if uuid_str is a valid UUID, otherwise `False`.
+
+    Examples
+    --------
+    >>> _uid_is_valid('c9bf9e57-1685-4c89-bafb-ff5af830be8a', 4)
+    True
+    >>> _uid_is_valid('c9bf9e58')
+    False
+
+    Notes
+    -----
+    Code snipped by Rafael (2020). CC-BY-SA 4.0. Online:
+    https://stackoverflow.com/a/33245493
+    """
+    # HOTFIX: deal with non-strings (e.g., nan) [2023-11-14; TWD]
+    try:
+        uuid_obj = uuid.UUID(uuid_str, version=version)
+    except (TypeError, ValueError, AttributeError):
+        return False
+    return str(uuid_obj) == uuid_str
+
+
+def _uncertainty(dict_d):
+    """Generate an uncertainty object.
+
+    Creates an uncertainty object with a log-normal distribution with
+    geometric mean and geometric standard deviation provided by the data
+    dictionary.
+
+    Parameters
+    ----------
+    dict_d : dict
+        Uncertainty data dictionary.
+        See uncertainty_table_creation in process_dictionary_writer.py.
+
+    Returns
+    -------
+    olca_schema.Uncertainty
+        A log-normal distribution uncertainty object.
+        Returns NoneType for missing or invalid types.
+    """
+    if not isinstance(dict_d, dict):
+        return None
+
+    dt = _val(dict_d, 'distributionType')
+    if dt != 'Logarithmic Normal Distribution':
+        logging.debug("Found invalid uncertainty method, '%s'" % dt)
+        return None
+
+    gmean = _val(dict_d, 'geomMean')
+    if isinstance(gmean, str):
+        gmean = float(gmean)
+
+    gsd = _val(dict_d, 'geomSd')
+    if isinstance(gsd, str):
+        gsd = float(gsd)
+
+    if not _isnum(gmean) or not _isnum(gsd):
+        logging.debug("Found invalid geometric mean/standard deviation!")
+        return None
+
+    u = o.Uncertainty.from_dict({
+        'distributionType': o.UncertaintyType.LOG_NORMAL_DISTRIBUTION,
+        'geomMean': gmean,
+        'geomSd': gsd
+    })
+
+    return u
+
+
+def _unit(unit_name):
+    """Get the ID of the openLCA reference unit with the given name.
+
+    Notes
+    -----
+    The version 4 UUIDs provided in this module are the same as those provided
+    by GreenDelta's olca_schema.units sub-package, so it was replaced with
+    their unit-reference method.
+
+    Parameters
+    ----------
+    unit_name : str, dict
+        If unit name is passed as a dictionary, it should have a key, "name"
+        with a string value for the unit name (e.g., "MJ").
+
+    Returns
+    -------
+    olca_schema.Ref
+        A reference object for a Unit class.
+
+    """
+    if isinstance(unit_name, dict):
+        try:
+            unit_name = unit_name["name"]
+        except KeyError:
+            unit_name = ""
+            logging.error(
+                'dict passed as unit_name but does not contain name key')
+    logging.debug("Creating unit, '%s'" % unit_name)
+    r_obj = o_units.unit_ref(unit_name)
+    if r_obj is None:
+        logging.error("unknown unit, '%s'; no unit reference" % unit_name)
+    return r_obj
+
+
+def _update_data(cur_data, new_data):
+    """Update a current data dictionary with new values.
+
+    Parameters
+    ----------
+    cur_data : dict
+        A data dictionary with UUIDs (ids) and olca root entities (objs) read
+        from a JSON-LD zip archive (i.e., current data).
+    new_data : dict
+        A data dictionary with UUIDs (ids) and olca root entities (objs)
+        processed by electricitylci.main; it may be the same or new values as
+        already written to JSON-LD.
+
+    Returns
+    -------
+    dict
+        The current data updated with new values (i.e., overwrites existing
+        values and appends new).
+    """
+    for k in cur_data.keys():
+        # Make ids/obj lists to dict and update current data with new.
+        d_cur = _make_entity_dict(cur_data, k)
+        d_new = _make_entity_dict(new_data, k)
+        d_cur.update(d_new)
+
+        # Plop the new lists back into the data dictionary
+        ids = []
+        objs = []
+        for uid, obj in d_cur.items():
+            ids.append(uid)
+            objs.append(obj)
+        new_data[k]['ids'] = ids
+        new_data[k]['objs'] = objs
+
+    return new_data
+
+
+def _val(dict_d, *path, **kvargs):
+    """Return value from a dictionary.
+
+    If a valid key (path) is provided to a given dictionary (dict_d), the
+    respective value of the dictionary is returned; otherwise, kvargs is
+    checked for a default value. If a default value is present, then it is
+    returned; otherwise, NoneType is returned.
+
+    Parameters
+    ----------
+    dict_d : dict
+    path : tuple, optional
+        A tuple of dictionary keys (str).
+        Note: there should only ever be one path; for multiple paths only
+        the first key will be accessed.
+    kvargs : dict
+        Used to store default values.
+        See key 'default'.
+
+    Returns
+    -------
+    Variable
+        The value from a given key to a given dictionary.
+        If not found, a NoneType is returned.
+
+    Examples
+    --------
+    >>> d = {'a': 1, 'b': 2, 'c': 3}
+    >>> _val(d, 'a') # single key value
+    1
+    >>> _val(d,'x') # NoneType for missing key
+    None
+    >>> _val(d, 'x', 'y' 'z', 'a', 'b', 'c') # firs real key's value
+    1
+    >>> _val(d, 'z', default=4) # default for missing key
+    4
+    """
+    r_val = None
+    if isinstance(dict_d, dict) and path:
+        for p in path:
+            if p in dict_d.keys():
+                r_val = dict_d[p]
+                break  # HOTFIX: stop on first found key
+    if r_val is None and 'default' in kvargs:
+        r_val = kvargs['default']
+    return r_val
