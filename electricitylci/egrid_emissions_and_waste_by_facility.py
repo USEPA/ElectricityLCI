@@ -32,7 +32,7 @@ immediately upon import, which may cause some unexpected delays if the CSV file
 is not present.
 
 Last edited:
-    2023-12-01
+    2023-12-19
 """
 __all__ = [
     'base_inventory',
@@ -71,10 +71,13 @@ if emissions_and_wastes_by_facility is None:
     elif "RCRAInfo" in model_specs.inventories_of_interest.keys():
         base_inventory = "RCRAInfo"
 
+    # HOTFIX: work-around ParseError [2023-12-19; TWD]
+    # Ref: https://github.com/USEPA/standardizedinventories/issues/151
     emissions_and_wastes_by_facility = cbi(
         base_inventory,
         model_specs.inventories_of_interest,
-        filter_for_LCI=True
+        filter_for_LCI=True,
+        download_if_missing=True,
     )
     # Drop SRS fields
     emissions_and_wastes_by_facility = emissions_and_wastes_by_facility.drop(
