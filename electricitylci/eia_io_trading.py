@@ -317,6 +317,14 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     A candidate for parsing out the long list of methods into their own
     separate functions.
 
+    Warning
+    -------
+    This method has a habit of requiring a lot of memory. A test run of
+    ELCI_1 maxed at 11.1 GB during the call to :func:`ba_exchange_to_df`.
+    If you are hitting Python segmentation faults, try restarting your
+    computer and re-running the model with limited other applications running.
+    You may just need more memory.
+
     Examples
     --------
     >>> d = ba_io_trading_model()  # uses modelconfig values
