@@ -6,15 +6,17 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
-import pandas as pd
-import os
-from electricitylci.globals import EIA860_BASE_URL, paths
-from electricitylci.utils import (
-    download_unzip,
-    find_file_in_folder,
-    create_ba_region_map,
-)
 import logging
+import os
+
+import pandas as pd
+
+from electricitylci.globals import paths
+from electricitylci.globals import EIA860_BASE_URL
+
+from electricitylci.utils import download_unzip
+from electricitylci.utils import find_file_in_folder
+from electricitylci.utils import create_ba_region_map
 
 
 ##############################################################################
@@ -27,7 +29,7 @@ authority, and primary fuel type.
 For now, this module is using most of the code from eia923_generation.py.
 It could be combined and generalized in the future.
 
-Last updated: 2023-11-03
+Last updated: 2023-12-20
 """
 
 
@@ -192,17 +194,13 @@ def eia860_balancing_authority(year, regional_aggregation=None):
     return eia_plant_ba_match
 
 
-def eia860_primary_capacity(year):
-    """Add docstring."""
-    pass
-
-
 def eia860_EnviroAssoc_so2(year):
     """Return a data frame containing the SO2-related environmental controls
     for the power plants.
 
     This data is used in ampd_plant_emissions.py to calculate SO2 emission
-    factors."""
+    factors.
+    """
     expected_860_folder = os.path.join(
         paths.local_path, "eia860_{}".format(year))
 
