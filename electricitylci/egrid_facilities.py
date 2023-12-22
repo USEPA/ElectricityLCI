@@ -31,7 +31,7 @@ returned after merging the primary percentage into it.
 Model specs (in model_config) must be defined before calling this module.
 
 Last updated:
-    2023-11-20
+    2023-12-22
 """
 __all__ = [
     "egrid_subregions",
@@ -176,7 +176,9 @@ egrid_subregions = list(pd.unique(egrid_facilities['Subregion']))
 '''list : List of unique subregions for eGRID facilities.'''
 
 # Remove nan if present
-egrid_subregions = [x for x in egrid_subregions if str(x) != 'nan']
+# HOTFIX: remove None from list [2023-12-21; TWD]
+egrid_subregions = [
+    x for x in egrid_subregions if str(x) != 'nan' and x is not None]
 # Sanity check: len(egrid_subregions) = 26 (2016)
 
 egrid_primary_fuel_categories = sorted(
