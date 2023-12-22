@@ -24,7 +24,6 @@ from electricitylci.dqi import data_collection_lower_bound_to_dqi
 from electricitylci.dqi import lookup_score_with_bound_key
 from electricitylci.dqi import technological_correlation_lower_bound_to_dqi
 from electricitylci.dqi import temporal_correlation_lower_bound_to_dqi
-from electricitylci.egrid_facilities import egrid_facilities
 from electricitylci.eia860_facilities import eia860_balancing_authority
 from electricitylci.eia923_generation import build_generation_data
 from electricitylci.eia923_generation import eia923_primary_fuel
@@ -579,6 +578,8 @@ def create_generation_process_df():
     facility-level emissions. Most important inputs to this process come
     from the model configuration file.
 
+    Maps balancing authorities to FERC and EIA regions.
+
     Returns
     ----------
     pandas.DataFrame
@@ -677,28 +678,29 @@ def create_generation_process_df():
         # Load list; only works when not replacing eGRID!
         from electricitylci.generation_mix import egrid_facilities_w_fuel_region
 
-        facilities_w_fuel_region = egrid_facilities[[
-            'FacilityID',
-            'Subregion',
-            'PrimaryFuel',
-            'FuelCategory',
-            'NERC',
-            'PercentGenerationfromDesignatedFuelCategory',
-            'Balancing Authority Name',
-            'Balancing Authority Code'
-        ]]
+        # HOTFIX: avoid overwriting the global variable by using a copy
+        # NOTE: egrid_facilities_with_fuel_region is the same as
+        # egrid_facilities
+        facilities_w_fuel_region = egrid_facilities_w_fuel_region.copy()
         facilities_w_fuel_region["FacilityID"] = \
-            egrid_facilities_w_fuel_region["FacilityID"].astype(int)
+            facilities_w_fuel_region["FacilityID"].astype(int)
         facilities_w_fuel_region.rename(
-            columns={'FacilityID': 'eGRID_ID'}, inplace=True)
-        generation_data = electricity_for_selected_egrid_facilities
+            columns={'FacilityID': 'eGRID_ID'},
+            inplace=True)
+
+        generation_data = electricity_for_selected_egrid_facilities.copy()
         generation_data["Year"] = model_specs.egrid_year
         generation_data["FacilityID"] = \
             generation_data["FacilityID"].astype(int)
-        emissions_df = emissions_and_waste_for_selected_egrid_facilities
+
+        emissions_df = emissions_and_waste_for_selected_egrid_facilities.copy()
         emissions_df["eGRID_ID"] = emissions_df["eGRID_ID"].astype(int)
 
+    # HOTFIX: ValueError w/ Year as string and integer [2023-12-22; TWD]
+    emissions_df['Year'] = emissions_df['Year'].astype(int)
+    generation_data['Year'] = generation_data['Year'].astype(int)
     generation_data.rename(columns={'FacilityID': 'eGRID_ID'}, inplace=True)
+
     final_database = pd.merge(
         left=emissions_df,
         right=generation_data,
@@ -712,6 +714,7 @@ def create_generation_process_df():
         how="left",
         suffixes=["", "_right"],
     )
+
     if model_specs.replace_egrid:
         primary_fuel_df = eia923_primary_fuel(year=model_specs.eia_gen_year)
         primary_fuel_df.rename(columns={'Plant Id':"eGRID_ID"},inplace=True)
@@ -770,6 +773,7 @@ def create_generation_process_df():
     final_database["DataCollection"] = 5
     final_database["GeographicalCorrelation"] = 1
 
+    # For surety sake
     final_database["eGRID_ID"] = final_database["eGRID_ID"].astype(int)
 
     final_database.sort_values(

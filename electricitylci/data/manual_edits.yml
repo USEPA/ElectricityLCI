@@ -17,7 +17,7 @@ generation.py:
               Source:
                 - "NEI"
               Year:
-                - "2016"
+                - 2016
         entry_2:
           edit_type: "reassign"
           data_source: "yaml"
@@ -33,7 +33,7 @@ generation.py:
                 - "RCRA"
                 - "TRI"
               Year:
-                  - "2016"
+                  - 2016
         entry_3:
           edit_type: "reassign"
           data_source: "yaml"
@@ -44,7 +44,7 @@ generation.py:
               Source:
                 - "NEI"
               Year:
-                - "2016"
+                - 2016
         entry_4:
           edit_type: "reassign"
           data_source: "yaml"
@@ -58,8 +58,8 @@ generation.py:
                 - "RCRA"
                 - "TRI"
               Year:
-                - "2016"
-                - "2015"
+                - 2016
+                - 2015
         entry_5:
           edit_type: "reassign"
           data_source: "yaml"
@@ -70,7 +70,7 @@ generation.py:
               Source:
                 - "NEI"
               Year:
-                - "2016"
+                - 2016
         entry_6:
           edit_type: "reassign"
           data_source: "yaml"
@@ -84,8 +84,8 @@ generation.py:
                 - "RCRA"
                 - "TRI"
               Year:
-                - "2016"
-                - "2015"
+                - 2016
+                - 2015
 #This is in response to issue #77. This plant had 0 generation
 #in 2016 which is causing issues. See
 #https://github.com/USEPA/ElectricityLCI/issues/77 for more info.
@@ -96,4 +96,4 @@ generation.py:
             eGRID_ID:
               - 60880
             Year:
-              - "2016"
+              - 2016
