@@ -59,7 +59,6 @@ Changelog:
     -   New flow property generator based on olca-schema.units module
     -   Fix locations that are just strings (not a data dictionary)
     -   Fix UUID validation for nan
-    -   Add save option as parameter in write method
     -   Add openLCA's unit group and flow property lists based on the
         Federal LCA Commons's Federal Elementary Flow List
     -   New method for reading JSON-LD that fixes repeated .json entries
@@ -67,9 +66,10 @@ Changelog:
         updates with new data, then re-zips (proper handling of zip archive).
 
 Last edited:
-    2023-12-07
+    2023-12-20
 """
 __all__ = [
+    "clean_json",
     "write",
 ]
 
@@ -77,6 +77,69 @@ __all__ = [
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
+def clean_json(file_path):
+    """Perform clean-up steps on JSON-LD including:
+
+    1.  Removal of zero-valued product flows from processes.
+    2.  Removal of untracked flows (i.e., not found in a process exchange).
+
+    Parameters
+    ----------
+    file_path : str
+        A file path to an existing JSON-LD zip archive.
+    """
+    try:
+        data = _read_jsonld(file_path, _root_entity_dict())
+    except OSError:
+        logging.warning("Failed to read JSON-LD file, %s" % file_path)
+    else:
+        logging.info("Cleaning JSON-LD")
+
+        # Pull full flow list
+        f_list = sorted(data["Flow"]['ids'])
+
+        # Pull flows from each process's exchange list; remove zero product
+        # flows along the way.
+        # https://github.com/USEPA/ElectricityLCI/issues/217
+        e_list = []
+        for p in data["Process"]['objs']:
+            for e in p.exchanges:
+                # Get the flow type
+                fid = data["Flow"]['ids'].index(e.flow.id)
+                f_type = data["Flow"]['objs'][fid]
+                # Remove if flow is a product flow with zero exchange value
+                # NOTE: don't add as an exchange flow!
+                if e.amount == 0 and f_type != o.FlowType.ELEMENTARY_FLOW:
+                    logging.debug(
+                        "Removing zero product flow, %s, from %s" % (
+                            e.flow.name, p.name))
+                    p.exchanges.remove(e)
+                else:
+                    e_list.append(e.flow.id)
+
+            # Loop through exchanges a second time and re-number their
+            # internal IDs to a consecutive order.
+            p.last_internal_id = 0
+            for e in p.exchanges:
+                p.last_internal_id += 1
+                e.internal_id = p.last_internal_id
+
+        # Sort unique values to speed up search
+        e_list = sorted(list(set(e_list)))
+
+        # Remove untracked flows (i.e., any flows that aren't in an exchange)
+        # This is purely to reduce the size of the database.
+        u_list = [x for x in f_list if x not in e_list]
+        logging.debug("Removing %d untracked flows" % len(u_list))
+        for u_id in u_list:
+            idx = data["Flow"]['ids'].index(u_id)
+            data['Flow']['ids'].pop(idx)
+            data['Flow']['objs'].pop(idx)
+
+        # Overwrite
+        _save_to_json(file_path, data)
+
+
 def write(processes, file_path, to_save=True):
     """Write a process dictionary as a olca-schema zip file to the given path.
 
@@ -108,9 +171,9 @@ def write(processes, file_path, to_save=True):
 
     To allow for editing of root entities (assuming any new information is
     good information), and because this method is called (again and again) in
-    electricity.main, in each method call the JSON-LD file is examined, its
+    electricity.main, in each method call, the JSON-LD file is examined, its
     data extracted and updated with the latest data, and re-zipped to the same
-    JSON-LD archive (delting the old version in the processes).
+    JSON-LD archive (delting the old version in the process).
 
     The same methodology is adopted in NetlOlca Python class for interfacing
     with openLCA v2 projects. This is the way.
@@ -594,15 +657,6 @@ def _find_ref_exchange(p):
             if e.is_quantitative_reference:
                 e_obj = e
     return e_obj
-
-
-def _find_unused_flows(file_path):
-    # IN PROGRESS
-    flow_list = []
-    try:
-        data = _read_jsonld(file_path, _root_entity_dict())
-    except OSError:
-        data = {}
 
 
 def _flow(dict_d, flowprop, dict_s):
