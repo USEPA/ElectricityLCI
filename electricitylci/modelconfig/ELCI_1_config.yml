@@ -70,21 +70,21 @@ filter_non_egrid_emission_on_NAICS: True
 # used and what losses from electricity distribution are included in the
 # results.
 
-# Should this be transmission grid?
+# Used to compute the loss factor for transmission and distribution
+# (i.e., 1/efficiency).
 efficiency_of_distribution_grid: 0.95
 
 # Electricity trading can be calculated using a method from EPA (with or
 # without a surplus trading pool) that is based on eGRID regions or a method
 # from NETL that uses an input-output approach using exchange data between
 # balancing authorities from EIA.
-
 EPA_eGRID_trading: False
+
+# Select between net trading (true) or gross trading (false) between NERC and
+# eGRID regions for consumption mix calculations.
 net_trading: False
 
-
 NETL_IO_trading_year: 2016
-
-
 
 # OTHER PARAMETERS
 
