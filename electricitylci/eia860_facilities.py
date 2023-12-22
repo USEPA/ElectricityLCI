@@ -29,7 +29,8 @@ authority, and primary fuel type.
 For now, this module is using most of the code from eia923_generation.py.
 It could be combined and generalized in the future.
 
-Last updated: 2023-12-20
+Last updated:
+    2023-12-22
 """
 
 
@@ -453,7 +454,8 @@ def eia860_generator_info(year):
                 "Loading {} EIA-860 plant data from csv file".format(year))
             fn = csv_file[0]
             csv_path = os.path.join(expected_860_folder, fn)
-            eia = pd.read_csv(csv_path, dtype={"Plant Id": str},low_memory=False)
+            eia = pd.read_csv(
+                csv_path, dtype={"Plant Id": str}, low_memory=False)
 
         else:
             logging.info("Loading data from previously downloaded excel file")
@@ -468,6 +470,7 @@ def eia860_generator_info(year):
             csv_path = os.path.join(expected_860_folder, csv_fn)
             eia.to_csv(csv_path, index=False)
     eia = _clean_columns(eia)
+
     return eia
 
 
