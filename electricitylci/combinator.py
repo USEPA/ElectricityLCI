@@ -205,6 +205,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         "TargetFlowContext": "Compartment",
         "TargetUnit": "Unit",
     }
+    # NOTE: input has no compartment
     compartment_mapping = {
         "air": "emission/air",
         "water": "emission/water",
@@ -217,15 +218,17 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     module_logger.info(
         f"Concatenating and flow-mapping {len(arg)} upstream databases.")
     upstream_df_list = list()
-    for df in arg:
+    # HOTFIX: index out data frames from tuple before mutate [2023-12-21; TWD]
+    for i in range(len(arg)):
+        df = arg[i]
         if isinstance(df, pd.DataFrame):
             if "Compartment_path" not in df.columns:
-                df["Compartment_path"] = float("nan")
-                df["Compartment_path"].fillna(
-                    df["Compartment"].map(compartment_mapping), inplace=True
-                )
+                # HOTFIX: simplify new column definition [2023-12-21; TWD]
+                df["Compartment_path"] = df.loc[:, "Compartment"].map(
+                    compartment_mapping)
             upstream_df_list.append(df)
     upstream_df = pd.concat(upstream_df_list, ignore_index=True, sort=False)
+
     module_logger.info("Creating flow mapping database")
     flow_mapping = fedefl.get_flowmapping('eLCI')
     flow_mapping["SourceFlowName"] = flow_mapping["SourceFlowName"].str.lower()
@@ -242,7 +245,10 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     upstream_df["Compartment_path"] = (
         upstream_df["Compartment_path"].str.lower().str.rstrip()
     )
-    upstream_columns=upstream_df.columns
+    upstream_df["Unit"].fillna("<blank>", inplace=True)
+    upstream_columns = upstream_df.columns
+
+    module_logger.info("Grouping upstream database")
     groupby_cols = [
         "fuel_type",
         "stage_code",
@@ -256,8 +262,6 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         "Compartment_path_orig",
         "Unit_orig",
     ]
-    upstream_df["Unit"].fillna("<blank>", inplace=True)
-    module_logger.info("Grouping upstream database")
     upstream_df["FlowAmount"] = upstream_df["FlowAmount"].astype(float)
     if "Electricity" in upstream_df.columns:
         upstream_df_grp = upstream_df.groupby(
