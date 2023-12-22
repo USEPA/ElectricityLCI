@@ -9,23 +9,17 @@
 import argparse
 import logging
 
-from electricitylci import get_consumption_mix_df
-from electricitylci import get_distribution_mix_df
 from electricitylci import get_generation_mix_process_df
 from electricitylci import get_generation_process_df
 from electricitylci import get_upstream_process_df
-from electricitylci import write_consumption_mix_to_dict
-from electricitylci import write_distribution_dict
-from electricitylci import write_distribution_mix_to_dict
-from electricitylci import write_fuel_mix_database_to_dict
+from electricitylci import run_epa_trade
+from electricitylci import run_netl_trade
+from electricitylci import run_post_processes
 from electricitylci import write_gen_fuel_database_to_dict
 from electricitylci import write_generation_mix_database_to_dict
-from electricitylci import write_international_mix_database_to_dict
 from electricitylci import write_process_dicts_to_jsonld
-from electricitylci import write_surplus_pool_and_consumption_mix_dict
 from electricitylci import write_upstream_process_database_to_dict
 import electricitylci.model_config as config
-from electricitylci.utils import fill_default_provider_uuids
 
 
 ##############################################################################
@@ -34,23 +28,24 @@ from electricitylci.utils import fill_default_provider_uuids
 __doc__ = """This module is intended to be the main program run by a user to
 automatically generate a JSON-LD file for importing into openLCA. The options
 for the analysis are contained in the configuration YAML files. This module
-will perform the functions necessary to generate the JSON-LD according to
-those options. The selection of configuration file will occur after the start
-of this script.
+performs the functions necessary to generate the JSON-LD according to those
+options. The selection of configuration file will occur after the start
+of this script or it may be passed following the command-line argument, '-c'.
 
 Last updated:
-    2023-11-17
+    2023-12-20
 
 Changelog:
     -   Remove 'write_upstream_dicts_to_jsonld' as a separate function; it
         simply is a redirect to 'write_process_dicts_to_jsonld,' which is
         used consistently throughout the rest of :func:`main`.
-    -   Add "to_save" boolean to write-to-JSON-LD calls (limits the number
-        of writes).
-
+    -   Add first-level abstraction by separating out runs for generation and
+        distribution; creates parallel structure with new run post-processes.
 """
 __all__ = [
     "main",
+    "run_distribution",
+    "run_generation",
 ]
 
 
@@ -62,15 +57,26 @@ def main():
     inventory for US power plants based on the settings in the user-specified
     configuration file. The basic workflow is as follows:
 
-    1.  Generate upstream processes (if requested) and convert them to olca
-        dictionary objects.
-    2.  Generate facility-level processes, including renewables and water use,
-        append with upstream processes, aggregate to the requested region
-        (e.g., balancing authority or FERC), and convert them to olca
-        dictionary objects .
-    3.  Create the three-layered unit processes: generation mix, consumption
-        mix (at grid), and consumption mix (at user); the latter is also called
-        the distribution mix.
+    1.  Run generation to:
+
+        -   Generate upstream processes (if requested) and convert them to
+            openLCA dictionary objects.
+        -   Generate facility-level processes, including renewables and water
+            use, append with upstream processes, aggregate to the requested
+            region (e.g., balancing authority or FERC), and convert them to
+            openLCA dictionary objects.
+
+    2.  Run distribution to create the three-layered unit processes:
+
+        -   generation mix (at balancing authority level),
+        -   consumption mix (at grid), and
+        -   consumption mix (at user); aka the distribution mix.
+
+    3.  Run post-processes to:
+
+        -   Remove zero-valued product flows from process exchanges.
+        -   Remove untracked flows (i.e., flows not in a process exchange).
+        -   Generate product systems for consumption mix (at user) processes.
     """
     if config.model_specs is None:
         # Prompt user to select configuration option.
@@ -78,6 +84,79 @@ def main():
         # eLCI package; you might have to search site-packages under lib.
         config.model_specs = config.build_model_class()
 
+    gen_df, gen_dict = run_generation()
+    run_distribution(gen_df, gen_dict)
+    run_post_processes()
+
+
+def run_distribution(generation_process_df, generation_process_dict):
+    """Run the consumption and distribution data processes.
+
+    This utilizes the generation data for matching regions and linking
+    openLCA processes, flows, and other connections (e.g., locations, actors).
+
+    Parameters
+    ----------
+    generation_process_df : pandas.DataFrame
+        A data frame of aggregated upstream and plant-level emissions.
+    generation_process_dict : dict
+        The same data found in the data frame, but formatted and updated with
+        universally unique identifiers for use in openLCA.
+
+    Returns
+    -------
+    dict
+        The regionalized distribution mix processes in openLCA schema format.
+    """
+    # Force the generation of BA aggregation if doing FERC, US, or BA regions.
+    # This is because the consumption mixes are based on imports from
+    # balancing authority areas.
+    logging.info("get gen mix process")
+    if config.model_specs.regional_aggregation in ["FERC", "US"]:
+        generation_mix_df = get_generation_mix_process_df("BA")
+    else:
+        generation_mix_df = get_generation_mix_process_df()
+
+    logging.info("write gen mix to dict")
+    # BUG: generation_mix_df missing 'Generation_Ratio' column
+    generation_mix_dict = write_generation_mix_database_to_dict(
+        generation_mix_df, generation_process_dict,
+    )
+
+    logging.info("write gen mix to jsonld")
+    generation_mix_dict = write_process_dicts_to_jsonld(
+        generation_mix_dict)
+
+    # At this point the two methods diverge
+    if config.model_specs.EPA_eGRID_trading is False:
+        # ELCI_1 & ELCI_2
+        dist_dict = run_netl_trade(generation_process_df, generation_mix_dict)
+    else:
+        # ELC1_3
+        # NOTE: replace eGRID configuration must be true
+        dist_dict = run_epa_trade(
+            generation_mix_df, generation_mix_dict, generation_process_dict)
+
+    return dist_dict
+
+
+def run_generation():
+    """Run the upstream and plant-level generation data processes.
+
+    The facility-level emissions are aggregated to the specified region
+    (e.g., balancing authority) as defined in the YAML of the configuration
+    model selected (e.g., ELCI_1).
+
+    Returns
+    -------
+    tuple
+        A tuple of length two.
+
+        -   pandas.DataFrame : Aggregated generation data (including
+            upstream and renewables) by region and fuel type.
+        -   dict : The same information as in the data frame, but formatted
+            for openLCA.
+    """
     # There are essentially two paths - with and without upstream processes.
     if config.model_specs.include_upstream_processes is True:
         # Create dataframe with all generation process data; includes
@@ -94,15 +173,12 @@ def main():
         #       going to be included in the final outputs.
         # NOTE: Use the parameter, to_save, in olca_jsonld_writer.write,
         #       to write the output JSON-LD once.
-        upstream_dict = write_process_dicts_to_jsonld(False, upstream_dict)
+        upstream_dict = write_process_dicts_to_jsonld(upstream_dict)
 
         # NOTE: This method triggers an input request for EPA data API key;
         #       see https://github.com/USEPA/ElectricityLCI/issues/207
         # NOTE: This method runs aggregation and emission uncertainty
         #       calculations.
-        # BUG   KeyError: add_fuel_inputs in combinator.py
-        #       --> expand_fuel_df["q_reference_name"]
-        #       Ran model a second time and it went away...
         logging.info("get aggregated generation process")
         generation_process_df = get_generation_process_df(
             upstream_df=upstream_df,
@@ -129,121 +205,9 @@ def main():
     # for example, "Electricity - COAL - Tucson Electric Power"
     logging.info("write gen process to JSON-LD")
     generation_process_dict = write_process_dicts_to_jsonld(
-        True, generation_process_dict)
+        generation_process_dict)
 
-    # Force the generation of BA aggregation if doing FERC, US, or BA regions.
-    # This is because the consumption mixes are based on imports from
-    # balancing authority areas.
-    logging.info("get gen mix process")
-    if config.model_specs.regional_aggregation in ["FERC","US"]:
-        generation_mix_df = get_generation_mix_process_df("BA")
-    else:
-        generation_mix_df = get_generation_mix_process_df()
-
-    logging.info("write gen mix to dict")
-    generation_mix_dict = write_generation_mix_database_to_dict(
-        generation_mix_df, generation_process_dict
-    )
-
-    logging.info("write gen mix to jsonld")
-    generation_mix_dict = write_process_dicts_to_jsonld(
-        True, generation_mix_dict)
-
-    # At this point the two methods diverge from underlying functions enough
-    # that it's just easier to split here.
-    if config.model_specs.EPA_eGRID_trading is False:
-        logging.info("using alt gen method for consumption mix")
-        regions_to_keep = list(generation_mix_dict.keys())
-        cons_mix_df_dict = get_consumption_mix_df(
-            regions_to_keep=regions_to_keep
-        )
-
-        logging.info("write consumption mix to dict")
-        cons_mix_dicts={}
-        for subreg in cons_mix_df_dict.keys():
-            cons_mix_dicts[subreg] = write_consumption_mix_to_dict(
-                cons_mix_df_dict[subreg],
-                generation_mix_dict,
-                subregion=subreg
-            )
-
-        logging.info("write consumption mix to jsonld")
-        for subreg in cons_mix_dicts.keys():
-            cons_mix_dicts[subreg] = write_process_dicts_to_jsonld(
-                True, cons_mix_dicts[subreg]
-            )
-
-        logging.info("get distribution mix")
-        dist_mix_df_dict = {}
-        for subreg in cons_mix_dicts.keys():
-            dist_mix_df_dict[subreg] = get_distribution_mix_df(
-                generation_process_df,
-                subregion=subreg
-            )
-
-        logging.info("write dist mix to dict")
-        dist_mix_dicts = {}
-        for subreg in dist_mix_df_dict.keys():
-            dist_mix_dicts[subreg] = write_distribution_mix_to_dict(
-                dist_mix_df_dict[subreg],
-                cons_mix_dicts[subreg],
-                subregion=subreg
-            )
-
-        logging.info("write dist mix to jsonld")
-        for subreg in dist_mix_dicts.keys():
-            dist_mix_dicts[subreg] = write_process_dicts_to_jsonld(
-                True, dist_mix_dicts[subreg]
-            )
-    else:
-        # UNTESTED
-        logging.info("us average mix to dict")
-        usavegfuel_mix_dict = write_fuel_mix_database_to_dict(
-            generation_mix_df,
-            generation_process_dict
-        )
-        logging.info("write us average mix to jsonld")
-        usavegfuel_mix_dict = write_process_dicts_to_jsonld(
-            True, usavegfuel_mix_dict
-        )
-        logging.info("international average mix to dict")
-        international_mix_dict = write_international_mix_database_to_dict(
-            generation_mix_df,
-            usavegfuel_mix_dict
-        )
-        international_mix_dict = write_process_dicts_to_jsonld(
-            True, international_mix_dict
-        )
-        # Get surplus and consumption mix dictionary
-        sur_con_mix_dict = write_surplus_pool_and_consumption_mix_dict()
-        # Get dist dictionary
-        dist_dict = write_distribution_dict()
-        generation_mix_dict = write_process_dicts_to_jsonld(
-            True, generation_mix_dict
-        )
-        logging.info('write surplus pool consumption mix to jsonld')
-        sur_con_mix_dict = write_process_dicts_to_jsonld(
-            False, sur_con_mix_dict)
-        logging.info('Filling up UUID of surplus pool consumption mix')
-        sur_con_mix_dict = fill_default_provider_uuids(
-            sur_con_mix_dict,
-            sur_con_mix_dict,
-            generation_mix_dict,
-            international_mix_dict
-        )
-        sur_con_mix_dict = write_process_dicts_to_jsonld(True, sur_con_mix_dict)
-        dist_dict = fill_default_provider_uuids(dist_dict, sur_con_mix_dict)
-        dist_dict = write_process_dicts_to_jsonld(True, dist_dict)
-
-    #
-    # TODO: add post-processes
-    # (e.g., product system creation, remove untracked flows)
-    #
-
-    logging.info(
-        'JSON-LD zip file has been saved in the "output" folder '
-        f'with the full path {config.model_specs.namestr}'
-    )
+    return (generation_process_df, generation_process_dict)
 
 
 ##############################################################################
@@ -261,6 +225,7 @@ if __name__ == "__main__":
     root_logger.addHandler(root_handler)
     root_logger.setLevel("INFO")
 
+    # Define argument parser and process specified configuration model
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-c", "--model_config", help="specify model configuration", default="")

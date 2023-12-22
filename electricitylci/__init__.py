@@ -12,14 +12,17 @@ import pandas as pd
 
 import electricitylci.model_config as config
 from electricitylci.globals import elci_version
+from electricitylci.utils import fill_default_provider_uuids
 
 
 ##############################################################################
 # MODULE DOCUMENTATION
 ##############################################################################
-__doc__ = """This module contains the main API functions to be used by the end user.
+__doc__ = """This module contains the main API functions to be used by the
+end user.
 
-Last updated: 2023-12-19
+Last updated:
+    2023-12-19
 """
 __version__ = elci_version
 
@@ -461,7 +464,96 @@ def get_upstream_process_df(eia_gen_year):
     return upstream_df
 
 
-def post_process_jsonld():
+def run_epa_trade(gen_mix_df, gen_mix_dict, gen_process_dict):
+    logging.info("us average mix to dict")
+    usavegfuel_mix_dict = write_fuel_mix_database_to_dict(
+        gen_mix_df,
+        gen_process_dict
+    )
+    logging.info("write us average mix to jsonld")
+    usavegfuel_mix_dict = write_process_dicts_to_jsonld(
+        usavegfuel_mix_dict
+    )
+    logging.info("international average mix to dict")
+    international_mix_dict = write_international_mix_database_to_dict(
+        gen_mix_df,
+        usavegfuel_mix_dict
+    )
+    international_mix_dict = write_process_dicts_to_jsonld(
+        international_mix_dict
+    )
+    # Get surplus and consumption mix dictionary
+    sur_con_mix_dict = write_surplus_pool_and_consumption_mix_dict()
+    # Get dist dictionary
+    dist_dict = write_distribution_dict()
+
+    logging.info('write surplus pool consumption mix to jsonld')
+    sur_con_mix_dict = write_process_dicts_to_jsonld(sur_con_mix_dict)
+
+    logging.info('set default providers in surplus pool consumption mix')
+    # BUG: KeyError, 'input' for exch
+    sur_con_mix_dict = fill_default_provider_uuids(
+        sur_con_mix_dict,
+        sur_con_mix_dict,
+        gen_mix_dict,
+        international_mix_dict
+    )
+    sur_con_mix_dict = write_process_dicts_to_jsonld(sur_con_mix_dict)
+    dist_dict = fill_default_provider_uuids(dist_dict, sur_con_mix_dict)
+    dist_dict = write_process_dicts_to_jsonld(dist_dict)
+
+    return dist_dict
+
+
+def run_netl_trade(generation_process_df, generation_mix_dict):
+    logging.info("using alt gen method for consumption mix")
+    regions_to_keep = list(generation_mix_dict.keys())
+    cons_mix_df_dict = get_consumption_mix_df(
+        regions_to_keep=regions_to_keep
+    )
+
+    logging.info("write consumption mix to dict")
+    cons_mix_dicts={}
+    for subreg in cons_mix_df_dict.keys():
+        cons_mix_dicts[subreg] = write_consumption_mix_to_dict(
+            cons_mix_df_dict[subreg],
+            generation_mix_dict,
+            subregion=subreg
+        )
+
+    logging.info("write consumption mix to jsonld")
+    for subreg in cons_mix_dicts.keys():
+        cons_mix_dicts[subreg] = write_process_dicts_to_jsonld(
+            cons_mix_dicts[subreg]
+        )
+
+    logging.info("get distribution mix")
+    dist_mix_df_dict = {}
+    for subreg in cons_mix_dicts.keys():
+        dist_mix_df_dict[subreg] = get_distribution_mix_df(
+            generation_process_df,
+            subregion=subreg
+        )
+
+    logging.info("write dist mix to dict")
+    dist_mix_dicts = {}
+    for subreg in dist_mix_df_dict.keys():
+        dist_mix_dicts[subreg] = write_distribution_mix_to_dict(
+            dist_mix_df_dict[subreg],
+            cons_mix_dicts[subreg],
+            subregion=subreg
+        )
+
+    logging.info("write dist mix to jsonld")
+    for subreg in dist_mix_dicts.keys():
+        dist_mix_dicts[subreg] = write_process_dicts_to_jsonld(
+            dist_mix_dicts[subreg]
+        )
+
+    return dist_mix_dicts
+
+
+def run_post_processes():
     # There is no easy way of editing files archived in a zip and no
     # easy way of remove files from a zip without just creating a new zip,
     # so that's what's done here.
@@ -474,7 +566,9 @@ def post_process_jsonld():
     #    https://github.com/USEPA/ElectricityLCI/issues/217
     # 4. Add NETL TRACI 2.1 characterization factors (impact category)
     # 5. Create product systems for select processes (@user, consumption mixes)
-    pass
+    from electricitylci.olca_jsonld_writer import clean_json
+
+    clean_json(config.model_specs.namestr)
 
 
 def write_consumption_mix_to_dict(cons_mix_df, dist_mix_dict, subregion=None):
@@ -490,6 +584,17 @@ def write_consumption_mix_to_dict(cons_mix_df, dist_mix_dict, subregion=None):
 
 
 def write_distribution_dict():
+    """Create an openLCA schema dictionary of consumption mix processes for
+    each eGRID subregion that accounts for electricity losses during
+    transmission and distribution based on the YAML-configured value of
+    'efficiency of distribution grid.'
+
+    Returns
+    -------
+    dict
+        An openLCA formatted dictionary of distribution mix processes for each
+        eGRID subregion.
+    """
     from electricitylci.distribution import distribution_mix_dictionary
 
     return distribution_mix_dictionary()
@@ -640,14 +745,11 @@ def write_international_mix_database_to_dict(genmix_db, us_mix, regions=None):
     return international_dict
 
 
-def write_process_dicts_to_jsonld(to_save=True, *process_dicts):
+def write_process_dicts_to_jsonld(*process_dicts):
     """Send one or more process dictionaries to be written to JSON-LD.
 
     Parameters
     ----------
-    to_save : bool, optional
-        Whether to write to JSON-LD zip file.
-        Defaults to true.
     process_dicts : tuple
         Unpacked variable arguments.
         Each instance of process_dicts should be a dictionary.
@@ -667,9 +769,8 @@ def write_process_dicts_to_jsonld(to_save=True, *process_dicts):
         # dictionaries into a tuple of dictionaries, and here we are putting
         # it all back to a single dictionary!
         all_process_dicts = {**all_process_dicts, **d}
-    olca_dicts = write(all_process_dicts, config.model_specs.namestr, to_save)
-    if to_save:
-        logging.info("Wrote JSON-LD to %s" % config.model_specs.namestr)
+    olca_dicts = write(all_process_dicts, config.model_specs.namestr)
+    logging.info("Wrote JSON-LD to %s" % config.model_specs.namestr)
     return olca_dicts
 
 
