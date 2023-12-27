@@ -131,36 +131,13 @@ def load_eia923_excel(eia923_path, page="1"):
         "Plant State", "State", regex=False
     )
 
-    # colstokeep = [
-    #     'Plant Id',
-    #     'Plant Name',
-    #     'State',
-    #     'Reported Prime Mover',
-    #     'Reported Fuel Type Code',
-    #     'Total Fuel Consumption MMBtu',
-    #     'Net Generation (Megawatthours)',
-    #     'YEAR'
-    # ]
-    # eia = eia.loc[:, colstokeep]
-
     return eia
 
 
 # This function is called multiple times by the various upstream modules.
 # lru_cache allows us to only read from the csv only once.
 @lru_cache(maxsize=10)
-def eia923_download_extract(
-    year,
-    group_cols=[
-        "Plant Id",
-        "Plant Name",
-        "State",
-        "NAICS Code",
-        "Reported Prime Mover",
-        "Reported Fuel Type Code",
-        "YEAR",
-    ],
-):
+def eia923_download_extract(year, group_cols=None):
     """
     Download (if necessary) and extract a single year of generation/fuel
     consumption data from EIA-923.
@@ -174,10 +151,21 @@ def eia923_download_extract(
     group_cols : list, optional
         The columns from EIA923 generation and fuel sheet to use when grouping
         generation and fuel consumption data.
-
+        Defaults to none.
     """
-    expected_923_folder = join(paths.local_path, "f923_{}".format(year))
+    # HOTFIX long default list in function parameter [2023-12-27; TWD]
+    if group_cols is None:
+        group_cols = [
+            "Plant Id",
+            "Plant Name",
+            "State",
+            "NAICS Code",
+            "Reported Prime Mover",
+            "Reported Fuel Type Code",
+            "YEAR",
+        ]
 
+    expected_923_folder = join(paths.local_path, "f923_{}".format(year))
     if not os.path.exists(expected_923_folder):
         logger.info("Downloading EIA-923 files")
         eia923_download(year=year, save_path=expected_923_folder)
@@ -187,17 +175,6 @@ def eia923_download_extract(
             file_pattern_match=["2_3_4_5"],
             return_name=True,
         )
-        # eia923_files = os.listdir(expected_923_folder)
-
-        # # would be more elegent with glob but this works to identify the
-        # # Schedule_2_3_4_5 file
-        # for f in eia923_files:
-        #     if '2_3_4_5' in f:
-        #         gen_file = f
-
-        # eia923_path = join(expected_923_folder, gen_file)
-
-        # colstokeep = group_cols + sum_cols
         eia = load_eia923_excel(eia923_path)
 
         # Save as csv for easier access in future
@@ -226,53 +203,39 @@ def eia923_download_extract(
                 dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
                 low_memory=False,
             )
-
         else:
-
             eia923_path, eia923_name = find_file_in_folder(
                 folder_path=expected_923_folder,
                 file_pattern_match=["2_3_4_5", "xlsx"],
                 return_name=True,
             )
-
-            # # would be more elegent with glob but this works to identify the
-            # # Schedule_2_3_4_5 file
-            # for f in all_files:
-            #     if '2_3_4_5' in f:
-            #         gen_file = f
-            # eia923_path = join(expected_923_folder, gen_file)
             eia = load_eia923_excel(eia923_path)
 
             csv_fn = eia923_name.split(".")[0] + "_page_1.csv"
             csv_path = join(expected_923_folder, csv_fn)
             eia.to_csv(csv_path, index=False)
 
-    # EIA_923 = eia
     # Grouping similar facilities together.
-    # group_cols = ['Plant Id', 'Plant Name', 'State', 'YEAR']
     sum_cols = [
         "Total Fuel Consumption MMBtu",
         "Net Generation (Megawatthours)",
     ]
     EIA_923_generation_data = eia.groupby(group_cols, as_index=False)[
-        sum_cols
-    ].sum()
+        sum_cols].sum()
 
     return EIA_923_generation_data
 
 
 def group_fuel_categories(df):
-    """Add docstring."""
+    """Map EIA Form 923 reported fuel types to their fuel category code."""
     new_fuel_categories = df["Reported Fuel Type Code"].map(FUEL_CAT_CODES)
 
     return new_fuel_categories
 
 
-def eia923_primary_fuel(
-    eia923_gen_fuel=None,
-    year=None,
-    method_col="Net Generation (Megawatthours)",
-):
+def eia923_primary_fuel(eia923_gen_fuel=None,
+                        year=None,
+                        method_col="Net Generation (Megawatthours)"):
     """
     Determine the primary fuel for each power plant. Include the NAICS code
     for each plant in output.
@@ -295,24 +258,20 @@ def eia923_primary_fuel(
     """
     if year:
         eia923_gen_fuel = eia923_download_extract(year)
-    # eia923_gen_fuel['FuelCategory'] = group_fuel_categories(eia923_gen_fuel)
-    # eia923_gen_fuel.rename(columns={'Reported Fuel Type Code'})
 
     group_cols = ["Plant Id", "NAICS Code", "Reported Fuel Type Code"]
-
     sum_cols = [
         "Net Generation (Megawatthours)",
         "Total Fuel Consumption MMBtu",
     ]
-    plant_fuel_total = eia923_gen_fuel.groupby(group_cols, as_index=False)[
-        sum_cols
-    ].sum()
+    plant_fuel_total = eia923_gen_fuel.groupby(
+        group_cols,
+        as_index=False)[sum_cols].sum()
 
     # Find the dataframe index for the fuel with the most gen at each plant
     # Use this to slice the dataframe and return plant code and primary fuel
-    primary_fuel_idx = plant_fuel_total.groupby("Plant Id")[
-        method_col
-    ].idxmax()
+    primary_fuel_idx = plant_fuel_total.groupby(
+        "Plant Id")[method_col].idxmax()
 
     data_cols = [
         "Plant Id",
@@ -324,11 +283,12 @@ def eia923_primary_fuel(
 
     # Also going to include the percent of total generation from primary
     # fuel
-    total_gen_plant = eia923_gen_fuel.groupby("Plant Id", as_index=False)[
-        "Net Generation (Megawatthours)"
-    ].sum()
+    total_gen_plant = eia923_gen_fuel.groupby(
+        "Plant Id",
+        as_index=False)["Net Generation (Megawatthours)"].sum()
     total_gen_plant.rename(
-        columns={"Net Generation (Megawatthours)": "total_gen"}, inplace=True
+        columns={"Net Generation (Megawatthours)": "total_gen"},
+        inplace=True
     )
     primary_fuel = primary_fuel.merge(total_gen_plant, on="Plant Id")
     primary_fuel["primary fuel percent gen"] = (
@@ -370,7 +330,12 @@ def eia923_primary_fuel(
 
 
 def calculate_plant_efficiency(gen_fuel_data):
-    """Add docstring."""
+    """Calculate plant efficiency (percentage).
+
+    Plant efficiency is the ratio of net generation to total fuel
+    consumption. British thermal unit to watt-hour conversion factor,
+    3.412 is used.
+    """
     plant_total = gen_fuel_data.groupby("Plant Id", as_index=False).sum()
     plant_total["efficiency"] = (
         plant_total["Net Generation (Megawatthours)"]
@@ -382,7 +347,8 @@ def calculate_plant_efficiency(gen_fuel_data):
 
 
 def efficiency_filter(df, egrid_facility_efficiency_filters):
-    """Add docstring."""
+    """Return a slice of a data frame based on the values and
+    upper/lower limits for plant efficiency."""
     upper = egrid_facility_efficiency_filters["upper_efficiency"]
     lower = egrid_facility_efficiency_filters["lower_efficiency"]
 
@@ -448,11 +414,6 @@ def build_generation_data(
                     >= model_specs.min_plant_percent_generation_from_primary_fuel_category,
                     :,
                 ]
-            # if filter_non_egrid_emission_on_NAICS:
-            #     # Check with Wes to see what the filter here is supposed to be
-            #     final_gen_df = final_gen_df.loc[
-            #         final_gen_df['NAICS Code'] == '22', :
-            #     ]
         else:
             final_gen_df = final_gen_df.loc[
                 final_gen_df["Plant Id"].isin(egrid_facilities_to_include), :
@@ -519,24 +480,17 @@ def eia923_generation_and_fuel(year):
                 low_memory=False,
             )
         else:
-
             eia923_path, eia923_name = find_file_in_folder(
                 folder_path=expected_923_folder,
                 file_pattern_match=["2_3_4_5", "xlsx"],
                 return_name=True,
             )
-
-            # # would be more elegent with glob but this works to identify the
-            # # Schedule_2_3_4_5 file
-            # for f in all_files:
-            #     if '2_3_4_5' in f:
-            #         gen_file = f
-            # eia923_path = join(expected_923_folder, gen_file)
             eia = load_eia923_excel(eia923_path, page="1")
             csv_fn = eia923_name.split(".")[0] + "_page_1.csv"
             csv_path = join(expected_923_folder, csv_fn)
             eia.to_csv(csv_path, index=False)
     eia = _clean_columns(eia)
+
     return eia
 
 
@@ -585,18 +539,12 @@ def eia923_boiler_fuel(year):
                 file_pattern_match=["2_3_4_5", "xlsx"],
                 return_name=True,
             )
-
-            # # would be more elegent with glob but this works to identify the
-            # # Schedule_2_3_4_5 file
-            # for f in all_files:
-            #     if '2_3_4_5' in f:
-            #         gen_file = f
-            # eia923_path = join(expected_923_folder, gen_file)
             eia = load_eia923_excel(eia923_path, page="3")
             csv_fn = eia923_name.split(".")[0] + "_page_3.csv"
             csv_path = join(expected_923_folder, csv_fn)
             eia.to_csv(csv_path, index=False)
     eia = _clean_columns(eia)
+
     return eia
 
 
@@ -639,24 +587,17 @@ def eia923_sched8_aec(year):
                 low_memory=False,
             )
         else:
-
             eia923_path, eia923_name = find_file_in_folder(
                 folder_path=expected_923_folder,
                 file_pattern_match=["Schedule_8", "xlsx"],
                 return_name=True,
             )
-
-            # # would be more elegent with glob but this works to identify the
-            # # Schedule_2_3_4_5 file
-            # for f in all_files:
-            #     if '2_3_4_5' in f:
-            #         gen_file = f
-            # eia923_path = join(expected_923_folder, gen_file)
             eia = load_eia923_excel(eia923_path, page="8c")
             csv_fn = eia923_name.split(".")[0] + "_page_8c.csv"
             csv_path = join(expected_923_folder, csv_fn)
             eia.to_csv(csv_path, index=False)
     eia = _clean_columns(eia)
+
     return eia
 
 
