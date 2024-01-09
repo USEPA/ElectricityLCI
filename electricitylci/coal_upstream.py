@@ -16,13 +16,11 @@ import requests
 from ast import literal_eval
 from electricitylci.globals import paths
 from electricitylci.globals import data_dir
-from electricitylci.globals import output_dir
 from electricitylci.eia923_generation import eia923_download
 from electricitylci.utils import find_file_in_folder
 import electricitylci.PhysicalQuantities as pq
 from electricitylci.globals import STATE_ABBREV
 from electricitylci.eia923_generation import eia923_generation_and_fuel
-import electricitylci.model_config as config
 
 
 ##############################################################################
@@ -545,8 +543,9 @@ def generate_upstream_coal(year):
     coal_mining_inventory["Compartment"] = coal_mining_inventory[
         "Compartment"].str.join("/")
     coal_mining_inventory["Compartment"] = coal_mining_inventory[
-        "Compartment"].str.replace("Elementary Flows/", "",regex=False)
-    coal_mining_inventory["ElementaryFlowPrimeContext"] = float("nan")
+        "Compartment"].str.replace("Elementary Flows/", "", regex=False)
+    # HOTFIX data type incompatibility [2024-01-09; TWD]
+    coal_mining_inventory["ElementaryFlowPrimeContext"] = ""
     coal_mining_inventory.loc[
         coal_mining_inventory["Compartment"].str.contains("emission/"),
         "ElementaryFlowPrimeContext"
@@ -794,6 +793,7 @@ def generate_upstream_coal(year):
 # MAIN
 ##############################################################################
 if __name__=='__main__':
+    from electricitylci.globals import output_dir
     import electricitylci.model_config as config
     config.model_specs = config.build_model_class()
 
