@@ -6,16 +6,19 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+import logging
+
 import pandas as pd
 import numpy as np
-from electricitylci.globals import data_dir, output_dir
+
+from electricitylci.globals import data_dir
 import electricitylci.PhysicalQuantities as pq
 import electricitylci.cems_data as cems
 import electricitylci.eia923_generation as eia923
 import electricitylci.eia860_facilities as eia860
 from electricitylci.model_config import model_specs
 
-import logging
+
 logger = logging.getLogger("ampd_plant_emissions")
 
 
@@ -36,7 +39,8 @@ downloads data (as necessary), completes all calculations and comparisons,
 and returns a data frame ready for concatenation with other facility-level
 emissions.
 
-Last updated: 2023-10-25
+Last updated:
+    2024-01-09
 """
 __all__ = [
     "generate_plant_emissions",
@@ -1528,5 +1532,7 @@ def generate_plant_emissions(year):
 # MAIN
 ##############################################################################
 if __name__ == "__main__":
+    from electricitylci.globals import output_dir
+
     netl_harmonized_melt = generate_plant_emissions(2016)
     netl_harmonized_melt.to_csv(f"{output_dir}/netl_harmonized.csv")
