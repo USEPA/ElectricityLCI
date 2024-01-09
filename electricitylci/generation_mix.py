@@ -42,8 +42,12 @@ Last edited: 2023-10-25
 if not model_specs.replace_egrid:
     from electricitylci.egrid_facilities import egrid_facilities
     from electricitylci.egrid_facilities import egrid_subregions
+    from electricitylci.egrid_energy import (
+        ref_egrid_subregion_generation_by_fuelcategory,
+    )
 
-    egrid_facilities_w_fuel_region = egrid_facilities[[
+    # HOTFIX: make copy rather than slice [2023-12-21; TWD]
+    egrid_facilities_w_fuel_region = egrid_facilities.loc[:, [
         "FacilityID",
         "Subregion",
         "PrimaryFuel",
@@ -52,13 +56,9 @@ if not model_specs.replace_egrid:
         "PercentGenerationfromDesignatedFuelCategory",
         "Balancing Authority Name",
         "Balancing Authority Code",
-    ]]
+    ]].copy()
 
     # Get reference regional generation data by fuel type, add in NERC
-    from electricitylci.egrid_energy import (
-        ref_egrid_subregion_generation_by_fuelcategory,
-    )
-
     egrid_subregions_NERC = egrid_facilities[
         ["Subregion", "FuelCategory", "NERC"]]
     egrid_subregions_NERC = egrid_subregions_NERC.drop_duplicates()

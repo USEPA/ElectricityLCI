@@ -28,7 +28,7 @@ from electricitylci.egrid_FRS_matches import list_FRS_ids_filtered_for_NAICS
 
 
 ##############################################################################
-# GLOBALS
+# MODULE DOCUMENTATION
 ##############################################################################
 __doc__ = """Responsible for producing a data frame that contains emissions and
 waste flows for eGRID facilities. This data frame is organized by flow type and
@@ -61,6 +61,10 @@ __all__ = [
     "emissions_and_waste_for_selected_egrid_facilities",
 ]
 
+
+##############################################################################
+# GLOBALS
+##############################################################################
 # Get lists of egrid facilities
 all_egrid_facility_ids = list(egrid_facilities['FacilityID'])
 # Sanity check: len(all_egrid_facility_ids) for ELCI_1: 9709
@@ -102,16 +106,17 @@ egrid_facilities_to_include = list(
 # Sanity check: len(egrid_facilities_to_include) for ELCI_1:7001
 
 # Get the generation data for these facilities only
-electricity_for_selected_egrid_facilities = egrid_net_generation[
-    egrid_net_generation['FacilityID'].isin(egrid_facilities_to_include)
-]
+# HOTFIX: make this a dataframe, not a slice [2023-12-21; TWD]
+electricity_for_selected_egrid_facilities = egrid_net_generation.loc[
+    egrid_net_generation['FacilityID'].isin(egrid_facilities_to_include),
+    :].copy()
 
 # Emissions and wastes filtering
 # Start with all emissions and wastes; these are in this file
-emissions_and_waste_for_selected_egrid_facilities = emissions_and_wastes_by_facility[
+emissions_and_waste_for_selected_egrid_facilities = emissions_and_wastes_by_facility.loc[
     emissions_and_wastes_by_facility['eGRID_ID'].isin(
-        egrid_facilities_to_include)
-]
+        egrid_facilities_to_include),
+    :].copy()
 
 # NAICS Filtering
 # Apply only to the non-egrid data
