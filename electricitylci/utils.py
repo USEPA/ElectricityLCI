@@ -193,6 +193,7 @@ def fill_default_provider_uuids(dict_to_fill, *args):
     if all(list_of_dicts):
         for key in dict_to_fill.keys():
             for exch in dict_to_fill[key]['exchanges']:
+                # BUG: no key, input; is this "is_input"?
                 if exch['input'] is True and isinstance(exch['provider'],dict):
                     found = False
                     for src_dict in args:

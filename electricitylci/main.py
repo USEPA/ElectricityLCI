@@ -134,6 +134,7 @@ def run_distribution(generation_process_df, generation_process_dict):
     else:
         # ELC1_3
         # NOTE: replace eGRID configuration must be true
+        # BUG:  keyerror in fill_default_provider_uuids in utils.py
         dist_dict = run_epa_trade(
             generation_mix_df, generation_mix_dict, generation_process_dict)
 
