@@ -77,7 +77,7 @@ if emissions_and_wastes_by_facility is None:
         base_inventory,
         model_specs.inventories_of_interest,
         filter_for_LCI=True,
-        download_if_missing=True,
+        #download_if_missing=True,
     )
     # Drop SRS fields
     emissions_and_wastes_by_facility = emissions_and_wastes_by_facility.drop(
@@ -94,7 +94,7 @@ if emissions_and_wastes_by_facility is None:
 
 
 ##############################################################################
-# GLOBALS
+# MAIN
 ##############################################################################
 if __name__ == "__main__":
     len(emissions_and_wastes_by_facility)
