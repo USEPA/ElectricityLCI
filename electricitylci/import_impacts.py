@@ -7,6 +7,7 @@
 # REQUIRED MODULES
 ##############################################################################
 import logging
+import os
 
 import pandas as pd
 
@@ -15,13 +16,31 @@ from electricitylci.model_config import model_specs
 
 
 ##############################################################################
-# FUNCTIONS
+# MODULE DOCUMENTATION
 ##############################################################################
+__doc__ = """This module uses aggregate U.S.-level inventory for each fuel
+category. These U.S. fuel category inventories are then used as proxies for
+Canadian generation. The inventories are weighted by the percent of that type
+of generation for the Canadian balancing authority area (e.g., if the BC
+Hydro & Power Authority generation mix includes 9 per-cent biomass, then U.S.
+-level biomass emissions are multiplied by 0.09. The result is a dataframe
+that includes balancing authority level inventories for Canadian imports.
+
+Last updated:
+    20242-01-10
+"""
+__all__ = [
+    "generate_canadian_mixes",
+]
+
+
 logger = logging.getLogger("import_impacts")
 
-def generate_canadian_mixes(us_inventory):
-    from electricitylci.combinator import ba_codes
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
+def generate_canadian_mixes(us_inventory):
     """
     Uses aggregate U.S.-level inventory to fuel category. These U.S. fuel
     category inventories are then used as proxies for Canadian generation. The
@@ -39,8 +58,9 @@ def generate_canadian_mixes(us_inventory):
 
     Returns
     ----------
-    dataframe
+    pandas.DataFrame
     """
+    from electricitylci.combinator import ba_codes
 
     canadian_egrid_ids = {
         "BCHA": 9999991,
@@ -67,8 +87,12 @@ def generate_canadian_mixes(us_inventory):
         "New Brunswick": "NBSO",
         "Newfoundland and Labrador": "NEWL",
     }
+
     logger.info("Generating inventory for Canadian balancing authority areas")
-    import_mix = pd.read_csv(f"{data_dir}/International_Electricity_Mix.csv")
+    # NOTE: this file is also read by egrid_facilities.py
+    import_mix = pd.read_csv(
+        os.path.join(data_dir, "International_Electricity_Mix.csv"),
+    )
     import_mix = import_mix.loc[
         import_mix["Year"] == model_specs.eia_gen_year, :
     ]
@@ -85,8 +109,9 @@ def generate_canadian_mixes(us_inventory):
         },
         errors="ignore",
     )
-    canadian_mix=canadian_mix.drop(columns=["Electricity"],errors="ignore")
-    canadian_mix=canadian_mix.dropna(subset=["Code"])
+    canadian_mix = canadian_mix.drop(columns=["Electricity"],errors="ignore")
+    canadian_mix = canadian_mix.dropna(subset=["Code"])
+
     if "input" in us_inventory.columns:
         us_inventory.loc[us_inventory["input"].isna(), "input"] = us_inventory[
             "Compartment"
@@ -94,18 +119,15 @@ def generate_canadian_mixes(us_inventory):
     else:
         us_inventory["input"] = us_inventory["Compartment"].map(input_map)
 
-    # If there are no upstream inventories, then the quantity column will not exist.
-    # Let's create it.
+    # If there are no upstream inventories, then the quantity column will
+    # not exist, so let's create it.
     if "quantity" not in list(us_inventory.columns):
         us_inventory["quantity"] = float("nan")
     us_inventory_summary = us_inventory.groupby(
         by=[
             "FuelCategory",
-            #                    'Compartment',
             "FlowName",
-            #                    'ElementaryFlowPrimeContext',
             "FlowUUID",
-            #                    'stage_code',
         ]
     )[["FlowAmount", "quantity"]].sum()
     us_inventory_electricity = (
@@ -121,11 +143,8 @@ def generate_canadian_mixes(us_inventory):
         .groupby(
             by=[
                 "FuelCategory",
-                #                    'Compartment',
                 "FlowName",
-                #                    'ElementaryFlowPrimeContext',
                 "FlowUUID",
-                #                    'stage_code',
             ]
         )["Electricity"]
         .sum()
@@ -135,11 +154,13 @@ def generate_canadian_mixes(us_inventory):
     )
     us_inventory_summary = us_inventory_summary.reset_index()
     flowuuid_compartment_df = (
-        us_inventory[
-            ["FlowUUID", "Compartment", "input", "Compartment_path", "Unit"]
-        ]
-        .drop_duplicates(subset=["FlowUUID"])
-        .set_index("FlowUUID")
+        us_inventory[[
+            "FlowUUID",
+            "Compartment",
+            "input",
+            "Compartment_path",
+            "Unit"
+        ]].drop_duplicates(subset=["FlowUUID"]).set_index("FlowUUID")
     )
     us_inventory_summary["Compartment"] = us_inventory_summary["FlowUUID"].map(
         flowuuid_compartment_df["Compartment"]
@@ -153,6 +174,7 @@ def generate_canadian_mixes(us_inventory):
     us_inventory_summary["Compartment_path"] = us_inventory_summary[
         "FlowUUID"
     ].map(flowuuid_compartment_df["Compartment_path"])
+
     ca_mix_list = list()
     for baa_code in baa_codes:
         filter_crit = canadian_mix["Code"] == baa_code
@@ -167,8 +189,8 @@ def generate_canadian_mixes(us_inventory):
         ca_inventory.dropna(subset=["FuelCategory_fraction"], inplace=True)
         ca_mix_list.append(ca_inventory)
     blank_df = pd.DataFrame(columns=us_inventory.columns)
-    ca_mix_inventory = pd.concat(ca_mix_list + [blank_df], ignore_index=True)
 
+    ca_mix_inventory = pd.concat(ca_mix_list + [blank_df], ignore_index=True)
     ca_mix_inventory[
         ["Electricity", "FlowAmount", "quantity"]
     ] = ca_mix_inventory[["Electricity", "FlowAmount", "quantity"]].multiply(
@@ -209,4 +231,5 @@ def generate_canadian_mixes(us_inventory):
     ca_mix_inventory["EIA_Region"] = ca_mix_inventory[
         "Balancing Authority Code"
     ].map(ba_codes["EIA_Region"])
+
     return ca_mix_inventory
