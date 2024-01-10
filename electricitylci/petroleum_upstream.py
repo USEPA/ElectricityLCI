@@ -41,11 +41,11 @@ Data used for this purpose include:
 Last updated:
     2023-12-27
 """
+__all__ = [
+    "generate_petroleum_upstream",
+]
 
 
-##############################################################################
-# GLOBALS
-##############################################################################
 module_logger = logging.getLogger("petroleum_upstream.py")
 
 
