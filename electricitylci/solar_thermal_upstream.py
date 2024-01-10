@@ -6,12 +6,29 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
-"""Add docstring."""
+import os
 
-import pandas as pd
-from electricitylci.globals import data_dir
 import numpy as np
+import pandas as pd
+
+from electricitylci.globals import data_dir
 from electricitylci.eia923_generation import eia923_download_extract
+
+
+##############################################################################
+# MODULE DOCUMENTATION
+##############################################################################
+__doc__ = """This module generates the annual emissions of each flow type
+for the construction of each solar facility included in EIA 923 based on
+solely the upstream contributions. Emissions from the construction of panels
+are accounted for elsewhere.
+
+Last updated:
+    2024-01-09
+"""
+__all__ = [
+    "generate_upstream_solarthermal",
+]
 
 
 ##############################################################################
@@ -26,6 +43,12 @@ def generate_upstream_solarthermal(year):
     entire power plant over its assumed 30 year life. So the emissions returned
     below represent 1/30th of the total site construction emissions.
 
+    Notes
+    -----
+    Depends on the data file, solar_thermal_inventory.csv, which contains
+    emissions and waste streams for each facility in the United States as of
+    2016.
+
     Parameters
     ----------
     year: int
@@ -33,47 +56,54 @@ def generate_upstream_solarthermal(year):
 
     Returns
     ----------
-    dataframe
+    pandas.DataFrame
     """
     eia_generation_data = eia923_download_extract(year)
-    eia_generation_data['Plant Id']=eia_generation_data['Plant Id'].astype(int)
+    eia_generation_data['Plant Id'] = eia_generation_data[
+        'Plant Id'].astype(int)
+
     column_filt = (eia_generation_data['Reported Fuel Type Code'] == 'SUN')
-    solar_generation_data=eia_generation_data.loc[column_filt,:]
+    solar_generation_data = eia_generation_data.loc[column_filt, :]
     solar_df = pd.read_csv(
-        f'{data_dir}/solar_thermal_inventory.csv',
-        header=[0,1]
+        os.path.join(data_dir, "solar_thermal_inventory.csv"),
+        header=[0, 1]
     )
+
     columns = pd.DataFrame(solar_df.columns.tolist())
     columns.loc[columns[0].str.startswith('Unnamed:'), 0] = np.nan
-    columns[0] = columns[0].fillna(method='ffill')
-    solar_df.columns = pd.MultiIndex.from_tuples(columns.to_records(index=False).tolist())
-    solar_df_t=solar_df.transpose()
-    solar_df_t=solar_df_t.reset_index()
+    columns[0] = columns[0].ffill()
+
+    solar_df.columns = pd.MultiIndex.from_tuples(
+        columns.to_records(index=False).tolist())
+    solar_df_t = solar_df.transpose()
+    solar_df_t = solar_df_t.reset_index()
+
     new_columns = solar_df_t.loc[0,:].tolist()
-    new_columns[0]='Compartment'
-    new_columns[1]='FlowName'
-    solar_df_t.columns=new_columns
+    new_columns[0] = 'Compartment'
+    new_columns[1] = 'FlowName'
+    solar_df_t.columns = new_columns
     solar_df_t.drop(index=0, inplace=True)
+
     solar_df_t_melt=solar_df_t.melt(
-            id_vars=['Compartment','FlowName'],
-            var_name='plant_id',
-            value_name='FlowAmount'
+        id_vars=['Compartment','FlowName'],
+        var_name='plant_id',
+        value_name='FlowAmount'
     )
     solar_df_t_melt = solar_df_t_melt.astype({'plant_id' : int})
-    solarthermal_upstream=solar_df_t_melt.merge(
-            right=solar_generation_data,
-            left_on='plant_id',
-            right_on='Plant Id',
-            how='left'
+
+    solarthermal_upstream = solar_df_t_melt.merge(
+        right=solar_generation_data,
+        left_on='plant_id',
+        right_on='Plant Id',
+        how='left'
     )
-    solarthermal_upstream.rename(columns=
-            {
-                    'Net Generation (Megawatthours)':'Electricity',
-            },
-            inplace=True
+    solarthermal_upstream.rename(
+        columns={'Net Generation (Megawatthours)': 'Electricity'},
+        inplace=True
     )
-    solarthermal_upstream["quantity"]=solarthermal_upstream["Electricity"]
-    solarthermal_upstream.drop(columns=[
+    solarthermal_upstream["quantity"] = solarthermal_upstream["Electricity"]
+    solarthermal_upstream.drop(
+        columns=[
             'Plant Id',
             'NAICS Code',
             'Reported Fuel Type Code',
@@ -81,19 +111,23 @@ def generate_upstream_solarthermal(year):
             'Total Fuel Consumption MMBtu',
             'State',
             'Plant Name',
-            ],inplace=True)
+        ],
+        inplace=True
+    )
     # These emissions will later be aggregated with any inventory power plant
     # emissions because each facility has its own construction impacts.
-    solarthermal_upstream['stage_code']="Power plant"
-    solarthermal_upstream['fuel_type']='SOLARTHERMAL'
-    compartment_map={
-            'Air':'air',
-            'Water':'water',
-            'Energy':'input'
+    solarthermal_upstream['stage_code'] = "Power plant"
+    solarthermal_upstream['fuel_type'] = 'SOLARTHERMAL'
+    compartment_map = {
+        'Air':'air',
+        'Water':'water',
+        'Energy':'input'
     }
-    solarthermal_upstream['Compartment']=solarthermal_upstream['Compartment'].map(compartment_map)
-    solarthermal_upstream["Unit"]="kg"
-    solarthermal_upstream["input"]=False
+    solarthermal_upstream['Compartment'] = solarthermal_upstream[
+        'Compartment'].map(compartment_map)
+    solarthermal_upstream["Unit"] = "kg"
+    solarthermal_upstream["input"] = False
+
     return solarthermal_upstream
 
 
