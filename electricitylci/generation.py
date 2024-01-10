@@ -39,10 +39,6 @@ from electricitylci.process_dictionary_writer import uncertainty_table_creation
 from electricitylci.process_dictionary_writer import unit
 from electricitylci.utils import make_valid_version_num
 from electricitylci.utils import set_dir
-from electricitylci.egrid_filter import (
-    electricity_for_selected_egrid_facilities,
-    emissions_and_waste_for_selected_egrid_facilities,
-)
 from electricitylci.egrid_emissions_and_waste_by_facility import (
     emissions_and_wastes_by_facility,
 )
@@ -78,7 +74,7 @@ CHANGELOG
 Created:
     2019-06-04
 Last edited:
-    2023-12-18
+    2024-01-10
 """
 __all__ = [
     "add_data_collection_score",
@@ -677,6 +673,10 @@ def create_generation_process_df():
     else:
         # Load list; only works when not replacing eGRID!
         from electricitylci.generation_mix import egrid_facilities_w_fuel_region
+        from electricitylci.egrid_filter import (
+            electricity_for_selected_egrid_facilities,
+            emissions_and_waste_for_selected_egrid_facilities,
+        )
 
         # HOTFIX: avoid overwriting the global variable by using a copy
         # NOTE: egrid_facilities_with_fuel_region is the same as
