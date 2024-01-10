@@ -6,13 +6,30 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
-"""Add docstring."""
+import os
 
 import pandas as pd
 
 from electricitylci.globals import data_dir
 import electricitylci.PhysicalQuantities as pq
 from electricitylci.eia923_generation import eia923_download_extract
+
+
+##############################################################################
+# MODULE DOCUMENTATION
+##############################################################################
+__doc__ = """This module uses data from an NETL water use analysis to
+generate water withdrawal and discharge flows for power plants. The
+underlying data represents an analysis of water use in 2016. The water
+intensities are used to generate annual amounts of water use using
+generation data from the given year.
+
+Last updated:
+    2024-01-10
+"""
+__all__ = [
+    "generate_plant_water_use",
+]
 
 
 ##############################################################################
@@ -27,6 +44,10 @@ def generate_plant_water_use(year):
     2016. The water intensities are used to generate annual amounts of water use
     using generation data from the given year.
 
+    Notes
+    -----
+    Depends on NETL-EIA_powerplants_water_withdraw_consume_data_2016.csv data file, which represents an analysis of water use in 2016.
+
     Parameters
     ----------
     year : int
@@ -34,7 +55,7 @@ def generate_plant_water_use(year):
 
     Returns
     -------
-    dataframe:
+    pandas.DataFrame:
         Dataframe ready to be appended to the generation database. Includes
         federal elementary flow name and uuids for the different water flows.
     """
@@ -90,11 +111,13 @@ def generate_plant_water_use(year):
         "discharge_annual": "water",
     }
     eia_generation_data = eia923_download_extract(year)
-    eia_generation_data["Plant Id"] = eia_generation_data["Plant Id"].astype(
-        int
-    )
+    eia_generation_data["Plant Id"] = eia_generation_data[
+        "Plant Id"].astype(int)
+
     water_df = pd.read_csv(
-        f"{data_dir}/{DATA_FILE}", index_col=0, low_memory=False
+        os.path.join(data_dir, DATA_FILE),
+        index_col=0,
+        low_memory=False
     )
     water_df["annual_withdrawal"] = (
         water_df["Water Withdrawal Intensity Adjusted (gal/MWh)"]
@@ -159,15 +182,13 @@ def generate_plant_water_use(year):
     merged_water["alloc_net_generation_eia"] = (
         merged_water["net_generation_eia"] * merged_water["fraction_gen"]
     )
-    clean_merged_water = merged_water[
-        [
-            "Plant Id",
-            "Water Type",
-            "withdrawal_intensity",
-            "discharge_intensity",
-            "alloc_net_generation_eia",
-        ]
-    ].copy()
+    clean_merged_water = merged_water[[
+        "Plant Id",
+        "Water Type",
+        "withdrawal_intensity",
+        "discharge_intensity",
+        "alloc_net_generation_eia",
+    ]].copy()
     clean_merged_water.loc[:, "withdrawal_annual"] = (
         clean_merged_water["withdrawal_intensity"]
         * clean_merged_water["alloc_net_generation_eia"]
@@ -177,7 +198,8 @@ def generate_plant_water_use(year):
         * clean_merged_water["alloc_net_generation_eia"]
     )
     clean_merged_water.drop(
-        columns=["withdrawal_intensity", "discharge_intensity"], inplace=True
+        columns=["withdrawal_intensity", "discharge_intensity"],
+        inplace=True
     )
     final_water = clean_merged_water.melt(
         id_vars=["Plant Id", "Water Type", "alloc_net_generation_eia"],
@@ -188,7 +210,8 @@ def generate_plant_water_use(year):
     final_water["Compartment_path"] = final_water["direction"].map(
         WATER_FLOW_COMPARTMENTPATH
     )
-    final_water["Compartment"] = final_water["direction"].map(WATER_FLOW_COMPARTMENT)
+    final_water["Compartment"] = final_water["direction"].map(
+        WATER_FLOW_COMPARTMENT)
     resource_filter = final_water["Compartment_path"] == "resource/water"
     final_water.loc[resource_filter, "FlowDict"] = final_water[
         "Water Type"
@@ -210,7 +233,7 @@ def generate_plant_water_use(year):
         },
         inplace=True,
     )
-    final_water["plant_id"]=final_water["FacilityID"]
+    final_water["plant_id"] = final_water["FacilityID"]
     final_water["eGRID_ID"] = final_water["FacilityID"]
     final_water["Year"] = year
     final_water["Source"] = "netl"
@@ -222,9 +245,14 @@ def generate_plant_water_use(year):
     final_water["DataCollection"] = 5
     final_water["DataReliability"] = 1
     final_water["input"]=True
-    final_water["ElementaryFlowPrimeContext"]="input"
-    final_water.loc[final_water["Compartment_path"].str.contains("emission"),"input"]=False
-    final_water.loc[final_water["Compartment_path"].str.contains("emission"),"ElementaryFlowPrimeContext"]="emission"
+    final_water["ElementaryFlowPrimeContext"] = "input"
+    final_water.loc[
+        final_water["Compartment_path"].str.contains("emission"),
+        "input"] = False
+    final_water.loc[
+        final_water["Compartment_path"].str.contains("emission"),
+        "ElementaryFlowPrimeContext"] = "emission"
+
     return final_water
 
 
