@@ -28,8 +28,12 @@ openLCA-schema dictionary that will produce processes that account for the
 electricity lost during transmission and distribution.
 
 Last updated:
-    2023-12-21
+    2024-01-09
 """
+__all__ = [
+    "distribution_mix_dictionary",
+]
+
 
 ##############################################################################
 # FUNCTIONS
