@@ -37,8 +37,40 @@ JSON-LD format as prescribed by OpenLCA software.
 
 Portions of this code were cleaned using ChatGPTv3.5.
 
-Last updated: 2023-10-27
+Last updated:
+    2024-01-10
 """
+__all__ = [
+    'con_process_ref',
+    'electricity_at_grid_flow',
+    'electricity_at_user_flow',
+    'exchange',
+    'exchangeDqsystem',
+    'exchange_table_creation_input',
+    'exchange_table_creation_input_con_mix',
+    'exchange_table_creation_input_genmix',
+    'exchange_table_creation_input_international_mix',
+    'exchange_table_creation_input_usaverage',
+    'exchange_table_creation_output',
+    'exchange_table_creation_ref',
+    'exchange_table_creation_ref_cons',
+    'flow_table_creation',
+    'gen_process_ref',
+    'location',
+    'lookup_location_uuid',
+    'processDqsystem',
+    'process_description_creation',
+    'process_doc_creation',
+    'process_table_creation_con_mix',
+    'process_table_creation_distribution',
+    'process_table_creation_gen',
+    'process_table_creation_genmix',
+    'process_table_creation_surplus',
+    'process_table_creation_usaverage',
+    'ref_exchange_creator',
+    'uncertainty_table_creation',
+    'unit'
+]
 
 
 ##############################################################################
@@ -46,7 +78,9 @@ Last updated: 2023-10-27
 ##############################################################################
 module_logger = logging.getLogger("process_dictionary_writer.py")
 
-international = pd.read_csv(data_dir+'/International_Electricity_Mix.csv')
+international = pd.read_csv(
+    os.path.join(data_dir, "International_Electricity_Mix.csv")
+)
 international_reg = list(pd.unique(international['Subregion']))
 
 # Read in general metadata to be used by all processes
@@ -139,6 +173,7 @@ VALID_FUEL_CATS=[
     "coal_transport_upstream",
     "construction_upstream"
 ]
+
 
 ##############################################################################
 # FUNCTIONS
