@@ -106,17 +106,17 @@ egrid_facilities_to_include = list(
 # Sanity check: len(egrid_facilities_to_include) for ELCI_1:7001
 
 # Get the generation data for these facilities only
-# HOTFIX: make this a dataframe, not a slice [2023-12-21; TWD]
-electricity_for_selected_egrid_facilities = egrid_net_generation.loc[
-    egrid_net_generation['FacilityID'].isin(egrid_facilities_to_include),
-    :].copy()
+# TO FIX: make this a dataframe, not a slice? [2023-12-21; TWD]
+electricity_for_selected_egrid_facilities = egrid_net_generation[
+     egrid_net_generation['FacilityID'].isin(egrid_facilities_to_include)
+ ]
 
 # Emissions and wastes filtering
 # Start with all emissions and wastes; these are in this file
-emissions_and_waste_for_selected_egrid_facilities = emissions_and_wastes_by_facility.loc[
-    emissions_and_wastes_by_facility['eGRID_ID'].isin(
-        egrid_facilities_to_include),
-    :].copy()
+emissions_and_waste_for_selected_egrid_facilities = emissions_and_wastes_by_facility[
+     emissions_and_wastes_by_facility['eGRID_ID'].isin(
+         egrid_facilities_to_include)
+ ]
 
 # NAICS Filtering
 # Apply only to the non-egrid data
