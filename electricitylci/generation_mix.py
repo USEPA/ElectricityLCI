@@ -47,7 +47,7 @@ if not model_specs.replace_egrid:
     )
 
     # HOTFIX: make copy rather than slice [2023-12-21; TWD]
-    egrid_facilities_w_fuel_region = egrid_facilities.loc[:, [
+    egrid_facilities_w_fuel_region = egrid_facilities[[
         "FacilityID",
         "Subregion",
         "PrimaryFuel",
@@ -56,7 +56,7 @@ if not model_specs.replace_egrid:
         "PercentGenerationfromDesignatedFuelCategory",
         "Balancing Authority Name",
         "Balancing Authority Code",
-    ]].copy()
+    ]]
 
     # Get reference regional generation data by fuel type, add in NERC
     egrid_subregions_NERC = egrid_facilities[
