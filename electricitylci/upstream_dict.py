@@ -6,8 +6,6 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
-
-"""Add docstring."""
 import logging
 
 from electricitylci.coal_upstream import (
@@ -17,8 +15,6 @@ from electricitylci.coal_upstream import (
 )
 from electricitylci import write_process_dicts_to_jsonld
 from electricitylci.process_dictionary_writer import (
-        exchangeDqsystem,
-        processDqsystem,
         process_doc_creation,
         process_description_creation
 )
@@ -26,12 +22,12 @@ from electricitylci.utils import make_valid_version_num
 from electricitylci.globals import elci_version
 
 
-##############################################################################
-# FUNCTIONS
-##############################################################################
 module_logger=logging.getLogger("upstream_dict.py")
 
 
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def _unit(unt):
     ar = dict()
     ar["internalId"] = ""
