@@ -26,7 +26,7 @@ A Python virtual environment (v 3.11 or higher) is required with the following p
         + certifi-2023.7.22
         + charset-normalizer-3.3.0
         + esupy-0.3.2
-        + fedelemflowlist-1.2.0
+        + fedelemflowlist-1.2.2
         + idna-3.4
         + jmespath-1.0.1
         + numpy-1.26.0
