@@ -9,14 +9,40 @@
 import datetime
 import logging
 import os
-import yaml
 
+import yaml
 import pandas as pd
 
 from electricitylci.globals import modulepath
 from electricitylci.globals import list_model_names_in_config
 from electricitylci.globals import data_dir
 from electricitylci.globals import output_dir
+
+
+##############################################################################
+# MODULE DOCUMENTATION
+##############################################################################
+__doc__ = """This module defines a class for specifying the baseline model
+to be used, which can read the configuration settings from the associated
+Model Config file (found in the modelconfig directory). Methods are available
+for checking the validity of a Model Config YAML file and building the
+ModelSpecs class.
+
+This class is attached to the module, model_config, which, when imported by
+all other modules, is accessible (but not mutable). Therefore, model
+configuration settings are set once and shared with the rest of the Python
+package. To change configuration settings, restart Python.
+
+Last edited:
+    2024-01-24
+"""
+__all__ = [
+    "ConfigurationError",
+    "ModelSpecs",
+    "assign_model_name",
+    "build_model_class",
+    "check_model_specs",
+]
 
 
 ##############################################################################
