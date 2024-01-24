@@ -22,7 +22,7 @@ __doc__ = """This module contains the main API functions to be used by the
 end user.
 
 Last updated:
-    2023-12-19
+    2024-01-24
 """
 __version__ = elci_version
 
@@ -257,8 +257,8 @@ def get_generation_mix_process_df(regions=None):
     -------
     pandas.DataFrame
         A data frame of electricity generation by subregion by fuel category.
-        Columns include: 'Subregion', 'FuelCategory', 'Electricity', and
-        'Generation_Ratio'.
+        Columns include: 'Subregion' (str), 'FuelCategory' (str),
+        'Electricity' (float), and 'Generation_Ratio' (float).
 
     Examples
     --------
@@ -505,7 +505,30 @@ def run_epa_trade(gen_mix_df, gen_mix_dict, gen_process_dict):
     return dist_dict
 
 
-def run_netl_trade(generation_process_df, generation_mix_dict):
+def run_net_trade(generation_process_df, generation_mix_dict):
+    """Net trading method.
+
+    Uses EIA trading data between balancing authority areas to calculate
+    net trades based on an annual basis.
+
+    Parameters
+    ----------
+    generation_process_df : pandas.DataFrame
+        Data frame created by running :func:`get_generation_process_df`.
+    generation_mix_dict : dict
+        Dictionary created by :func:`write_generation_mix_database_to_dict`.
+
+    Returns
+    -------
+    dict
+        A dictionary of three keys, "BA", "FERC", and "US".
+        Each key's value represents its regions (e.g., 54 BAs, 10 FERC,
+        and 1 US) as a dictionary. Each of the values of these keys is
+        another dictionary, which represents an olca-schema process for
+        the consumption mix representing electricity distribution to the
+        end user within the named region with a 1 MWh of electricity as
+        its product flow.
+    """
     logging.info("using alt gen method for consumption mix")
     regions_to_keep = list(generation_mix_dict.keys())
     cons_mix_df_dict = get_consumption_mix_df(

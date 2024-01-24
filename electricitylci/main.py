@@ -13,7 +13,7 @@ from electricitylci import get_generation_mix_process_df
 from electricitylci import get_generation_process_df
 from electricitylci import get_upstream_process_df
 from electricitylci import run_epa_trade
-from electricitylci import run_netl_trade
+from electricitylci import run_net_trade
 from electricitylci import run_post_processes
 from electricitylci import write_gen_fuel_database_to_dict
 from electricitylci import write_generation_mix_database_to_dict
@@ -33,7 +33,7 @@ options. The selection of configuration file will occur after the start
 of this script or it may be passed following the command-line argument, '-c'.
 
 Last updated:
-    2023-12-20
+    2024-01-24
 
 Changelog:
     -   Remove 'write_upstream_dicts_to_jsonld' as a separate function; it
@@ -128,7 +128,6 @@ def run_distribution(generation_process_df, generation_process_dict):
         generation_mix_df = get_generation_mix_process_df()
 
     logging.info("write gen mix to dict")
-    # BUG: generation_mix_df missing 'Generation_Ratio' column
     generation_mix_dict = write_generation_mix_database_to_dict(
         generation_mix_df, generation_process_dict,
     )
@@ -140,7 +139,7 @@ def run_distribution(generation_process_df, generation_process_dict):
     # At this point the two methods diverge
     if config.model_specs.EPA_eGRID_trading is False:
         # ELCI_1 & ELCI_2
-        dist_dict = run_netl_trade(generation_process_df, generation_mix_dict)
+        dist_dict = run_net_trade(generation_process_df, generation_mix_dict)
     else:
         # ELC1_3
         # NOTE: replace eGRID configuration must be true
