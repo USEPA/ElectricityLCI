@@ -9,8 +9,8 @@
 import logging
 import os
 import time
-import yaml
 
+import yaml
 import pandas as pd
 
 from electricitylci.globals import (
