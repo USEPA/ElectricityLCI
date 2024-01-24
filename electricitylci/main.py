@@ -77,6 +77,16 @@ def main():
         -   Remove zero-valued product flows from process exchanges.
         -   Remove untracked flows (i.e., flows not in a process exchange).
         -   Generate product systems for consumption mix (at user) processes.
+
+    Examples
+    --------
+    >>> # To show where data files are exported:
+    >>> from electricitylci.globals import output_dir
+    >>> print(output_dir)
+    >>> # To show the name of the JSON-LD export file:
+    >>> import electricitylci.model_config as config
+    >>> config.model_specs = config.build_model_class()
+    >>> print(config.model_specs.namestr)
     """
     if config.model_specs is None:
         # Prompt user to select configuration option.
