@@ -149,6 +149,9 @@ def make_egrid_subregion_ref(year):
 egrid_facilities = stewi.getInventoryFacilities("eGRID", model_specs.egrid_year)
 '''pandas.DataFrame : eGRID facility-level information.'''
 
+# BUG:  'Plant primary coal/oil/gas/ other fossil fuel category' not found
+#       in eGRID 2020 data; needs fix in Stewi.
+#       See https://github.com/USEPA/standardizedinventories/issues/153
 egrid_facilities.rename(columns={
     'Plant primary coal/oil/gas/ other fossil fuel category': 'FuelCategory',
     'Plant primary fuel': 'PrimaryFuel',
