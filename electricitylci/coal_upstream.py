@@ -16,11 +16,11 @@ import requests
 from ast import literal_eval
 from electricitylci.globals import paths
 from electricitylci.globals import data_dir
-from electricitylci.eia923_generation import eia923_download
-from electricitylci.utils import find_file_in_folder
-import electricitylci.PhysicalQuantities as pq
 from electricitylci.globals import STATE_ABBREV
+from electricitylci.eia923_generation import eia923_download  # +model_specs
 from electricitylci.eia923_generation import eia923_generation_and_fuel
+import electricitylci.PhysicalQuantities as pq
+from electricitylci.utils import find_file_in_folder
 
 
 ##############################################################################
@@ -244,6 +244,29 @@ def generate_upstream_coal_map(year):
         - coal_source_code (str)
         - quantity (float)
         - heat_input (float)
+
+    Notes
+    -----
+    This function relies on several data files, namely:
+
+    -   coal_state_to_basin.csv
+
+        Includes columns for 'state' (two-letter abbreviation), base_name
+        (forward slash concatenated basin list), 'basin1' (EIA basin name),
+        'basin2' (secondary basin name). States not listed have no basin.
+
+    -   eia_to_netl_basin.csv
+
+        Includes columns to match 'eia_basin' names to 'netl_basin' names.
+
+    -   fips_codes.csv
+
+        Includes columns for 'State Abbreviation' (two-letter state
+        abbreviation), 'State FIPS Code' (two-digit, zero-padded state FIPS
+        code), 'County FIPS Code' (three-digit, zero-padded county FIPS code),
+        'FIPS Entity Code' (five-digit zero-padded entity FIPS code), 'ANSI
+        Code' (eight-digit, zero-padded ANSI code), 'GU Name', and 'Entity
+        Description' (e.g., borough, city, town, County)
     """
     eia_fuel_receipts_df = read_eia923_fuel_receipts(year)
     expected_7a_folder = os.path.join(paths.local_path, 'f7a_{}'.format(year))
@@ -301,11 +324,11 @@ def generate_upstream_coal_map(year):
         "county_fips_code"].astype(str).str.replace(".0", "", regex=False)
 
     county_basin = county_basin.merge(
-            right=fips_codes[[
-                "state_abbreviation", "county_fips_code", "gu_name"]],
-            left_on=["mine_state_abv", "mine_county"],
-            right_on=["state_abbreviation", "gu_name"],
-            how="left"
+        right=fips_codes[[
+            "state_abbreviation", "county_fips_code", "gu_name"]],
+        left_on=["mine_state_abv", "mine_county"],
+        right_on=["state_abbreviation", "gu_name"],
+        how="left"
     )
     county_basin.drop_duplicates(
         subset=["mine_state_abv", "county_fips_code"],

@@ -66,7 +66,19 @@ def generate_power_plant_construction(year):
     -------
     pandas.DataFrame
         This dataframe provides construction inventory for each power plant
-        reporting to EIA.
+        reporting to EIA. Columns include:
+
+        - 'plant_id' (int): EIA860 plant identifier
+        - 'technology' (str): coal, nat. gas, petroleum, or other plant type
+        - 'quantity' (float): nameplate capacity, MW
+        - 'FlowAmount' (float): flow amount
+        - 'Unit' (str): units of flow
+        - 'Compartment_path' (str): resource or emission path
+        - 'FlowName' (str): flow name
+        - 'Compartment' (str): resource, air, water, or soil
+        - 'stage_code' (str): 'coal_const' or 'ngcc_const'
+        - 'input' (bool): true for resources; false otherwise
+        - 'fuel_type' (str): 'Construction'
     """
     gen_df = eia860_generator_info(year)
     gen_columns=[
@@ -162,6 +174,8 @@ def generate_power_plant_construction(year):
     ).rename(
         columns={0:"Compartment", 1:"delete"}).drop(columns="delete")
 
+    # Get the coal power plant emissions, divide by capacity (550 MW) and
+    # lifetime (30 yr)
     scpc_inventory = inventory[[
         'SCPC_550_MW',
         'Unit',
@@ -174,6 +188,8 @@ def generate_power_plant_construction(year):
     scpc_inventory.rename(columns={"SCPC_550_MW":"FlowAmount"}, inplace=True)
     scpc_inventory["FlowAmount"] = scpc_inventory["FlowAmount"]/30/550
 
+    # Get the natural gas plant emissions, divide by capacity (630 MW) and
+    # lifetime (30 yr)
     ngcc_inventory = inventory[[
         'NGCC_630_MW',
         'Unit',
@@ -198,6 +214,8 @@ def generate_power_plant_construction(year):
         on="const_type",
         how="left"
     )
+
+    # Scale emissions to each individual facility (actual/modeled)
     construction_df["FlowAmount"] = construction_df[
         "FlowAmount"] * construction_df["nameplate_capacity_mw"]
     construction_df.rename(
