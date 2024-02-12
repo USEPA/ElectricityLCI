@@ -16,43 +16,43 @@ Any reference to specific commercial products, processes, or services by service
 or otherwise, does not constitute or imply their endorsement, recommendation or favoring by EPA or NETL.
 
 # Setup
-A Python virtual environment (v 3.11 or higher) is required with the following packages installed, which are the latest as of writing (October 2023).
+A Python virtual environment (v 3.11 or higher) is required with the following packages installed, which are the latest as of writing (February 2024).
 
 + `pip install git+https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List#egg=fedelemflowlist`
     * Successfully installs:
         + appdirs-1.4.4
-        + boto3-1.28.60
-        + botocore-1.31.60
-        + certifi-2023.7.22
-        + charset-normalizer-3.3.0
+        + boto3-1.34.40
+        + botocore-1.34.40
+        + certifi-2024.2.2
+        + charset-normalizer-3.3.2
         + esupy-0.3.2
         + fedelemflowlist-1.2.2
-        + idna-3.4
+        + idna-3.6
         + jmespath-1.0.1
-        + numpy-1.26.0
+        + numpy-1.26.4
         + olca-schema-0.0.12
-        + pandas-2.1.1
-        + pyarrow-13.0.0
+        + pandas-2.2.0
+        + pyarrow-15.0.0
         + python-dateutil-2.8.2
-        + pytz-2023.3.post1
+        + pytz-2024.1
         + pyyaml-6.0.1
         + requests-2.31.0
-        + requests_ftp-0.3.1
-        + s3transfer-0.7.0
+        + requests_ftp-0.3.1 s
+        + 3transfer-0.10.0
         + six-1.16.0
-        + tzdata-2023.3
-        + urllib3-1.26.17
+        + tzdata-2024.1
+        + urllib3-2.0.7
 + `pip install git+https://github.com/USEPA/standardizedinventories#egg=StEWI`
     * Successfully installed:
         + StEWI-1.1.2
-        + beautifulsoup4-4.12.2
+        + beautifulsoup4-4.12.3
         + et-xmlfile-1.1.0
         + openpyxl-3.1.2
         + soupsieve-2.5
         + xlrd-2.0.1
 + `pip install scipy`
     * Successfully installs:
-        + scipy-1.11.3
+        + scipy-1.12.0
 
 
 # Use
@@ -87,9 +87,10 @@ To run from within a cloned repository:
     - See GitHub [Issue #215](https://github.com/USEPA/ElectricityLCI/issues/215)
 
 # Troubleshooting
-If GitHub-hosted packages fail to clone and install, manually downloading the zip files and setting up within package folders also works (see snippet below for example for older version of fedelemflowlist).
+If GitHub-hosted packages fail to clone and install, manually downloading the zip files, extracting them, and running the pip install command within package folder also works (see snippet below for example for older version of fedelemflowlist).
 
 ```bash
+# Download the correct version of the repo
 wget https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List/archive/refs/tags/v1.1.2.zip
 unzip v1.1.2.zip
 cd cd Federal-LCA-Commons-Elementary-Flow-List-1.1.2/
@@ -98,3 +99,10 @@ pip install .
 
 # Data
 This package downloads a significant amount of background and inventory data in order to process electricity baselines.
+
+To see where the data are saved on your machine, try running the following:
+
+```python
+>>> from electricitylci.globals import output_dir
+>>> print(output_dir)
+```
