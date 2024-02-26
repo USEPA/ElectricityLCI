@@ -272,7 +272,8 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     upstream_df["Compartment_path"] = (
         upstream_df["Compartment_path"].str.lower().str.rstrip()
     )
-    upstream_df["Unit"].fillna("<blank>", inplace=True)
+    # HOTFIX: new pandas syntax [TWD; 2024-02-26]
+    upstream_df.fillna({"Unit": "<blank>"}, inplace=True)
     upstream_columns = upstream_df.columns
 
     module_logger.info("Grouping upstream database")
