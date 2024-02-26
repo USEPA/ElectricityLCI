@@ -822,4 +822,5 @@ if __name__=='__main__':
 
     year=2020
     df = generate_upstream_coal(year)
-    df.to_csv(output_dir+'/coal_emissions_{}.csv'.format(year))
+    if os.path.isdir(output_dir):
+        df.to_csv(output_dir+'/coal_emissions_{}.csv'.format(year))
