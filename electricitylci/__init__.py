@@ -127,6 +127,7 @@ def combine_upstream_and_gen_df(gen_df, upstream_df):
 
     logging.info("Combining upstream and generation inventories")
     combined_df = combine.concat_clean_upstream_and_plant(gen_df, upstream_df)
+    # BUG: KeyError in 2021 data
     canadian_gen = import_impacts.generate_canadian_mixes(combined_df)
     combined_df = pd.concat([combined_df, canadian_gen], ignore_index=True)
     return combined_df, canadian_gen
@@ -393,6 +394,7 @@ def get_generation_process_df(regions=None, **kwargs):
                 "include_upstream_processes is true."
             )
         # Get Canadian generation
+        # BUG: KeyError in 2021 data
         _, canadian_gen = combine_upstream_and_gen_df(
             generation_process_df, upstream_df
         )
@@ -588,10 +590,16 @@ def run_post_processes():
     # 3. Remove zero flows from quantitative reference exchanges
     #    https://github.com/USEPA/ElectricityLCI/issues/217
     # 4. Add NETL TRACI 2.1 characterization factors (impact category)
+    #    NOT TO BE ADDED TO BASELINES
     # 5. Create product systems for select processes (@user, consumption mixes)
+    from electricitylci.olca_jsonld_writer import build_product_systems
     from electricitylci.olca_jsonld_writer import clean_json
 
     clean_json(config.model_specs.namestr)
+    build_product_systems(
+        file_path=config.model_specs.namestr,
+        elci_config=config.model_specs.model_name
+    )
 
 
 def write_consumption_mix_to_dict(cons_mix_df, dist_mix_dict, subregion=None):
