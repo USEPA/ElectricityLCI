@@ -77,7 +77,7 @@ Error log:
         and 1781 process links. Could there be a new schema?
 
 Last edited:
-    2024-02-27
+    2024-03-01
 """
 __all__ = [
     "build_product_systems",
@@ -90,6 +90,19 @@ __all__ = [
 # FUNCTIONS
 ##############################################################################
 def build_product_systems(file_path, elci_config):
+    """Generates product systems for electricity at user consumption mixes.
+
+    Parameters
+    ----------
+    file_path : str
+        A file path to an existing JSON-LD file with process data saved.
+    elci_config : str
+        The model configuration used to make the inventory (e.g., "ELCI_1")
+
+    Notes
+    -----
+    This method overwrites the existing JSON-LD with the new product systems.
+    """
     try:
         # Read all JSON-LD data in order to overwrite.
         data = _read_jsonld(file_path, _root_entity_dict())
@@ -97,10 +110,6 @@ def build_product_systems(file_path, elci_config):
         logging.warning("Failed to read JSON-LD file, %s" % file_path)
     else:
         logging.info("Building product systems in JSON-LD")
-
-    # Create file handle to take advantage of ``read`` method; otherwise,
-    # could just use the data dictionary.
-    f = zipio.ZipReader(file_path)
 
     # Find all processes for 'at user' consumption mixes
     q1 = re.compile("^Electricity; at user; consumption mix - (.*) - BA$")
@@ -123,32 +132,14 @@ def build_product_systems(file_path, elci_config):
     )
 
     for pid in r:
-        p_obj = f.read(o.Process, pid)
-        r_ex = _find_ref_exchange(p_obj)
-
-        # Create a new product system
-        # https://greendelta.github.io/olca-schema/classes/ProductSystem.html
-        # NOTE: ``last_change`` automatically set to current date/time
-        ps_obj = o.ProductSystem(
-            description=d_txt,
-            name=p_obj.name,
-            ref_exchange=o.ExchangeRef(r_ex.internal_id),
-            ref_process=p_obj.to_ref(),
-            target_amount=r_ex.amount,
-            target_flow_property=r_ex.flow_property,
-            target_unit=r_ex.unit,
-            version=p_obj.version
-        )
-
-        # Build processLinks and processes
-        ex_list, pd_list = _build_supply_chain(f, pid)
-        ps_obj.processes = [
-            _make_process_ref(f.read(o.Process, x)) for x in pd_list]
-        ps_obj.process_links = ex_list
+        p_idx = data['Process']['ids'].index(pid)
+        p_obj = data['Process']['objs'][p_idx]
+        ps_obj = _make_product_system(file_path, p_obj, d_txt)
 
         # Update master data dictionary
         data['ProductSystem']['objs'].append(ps_obj)
         data['ProductSystem']['ids'].append(ps_obj.id)
+        logging.debug("Created %s" % ps_obj.name)
 
     # Overwrite JSON-LD
     _save_to_json(file_path, data)
@@ -194,6 +185,14 @@ def clean_json(file_path):
                     p.exchanges.remove(e)
                 else:
                     e_list.append(e.flow.id)
+
+                # TODO: check to see if output exchange is labeled as a
+                # resource flow
+                # https://github.com/USEPA/ElectricityLCI/issues/233
+                if not e.is_input and 'resource' in f_type.category.lower():
+                    logging.warning(
+                        "Found resource flow in output exchange! "
+                        "'%s' in %s (%s)" % (f_type.name, p.name, p.id))
 
             # Loop through exchanges a second time and re-number their
             # internal IDs to a consecutive order.
@@ -451,6 +450,7 @@ def _build_supply_chain(zh, pid, e_list=[], p_list=[]):
     # Pull process object from JSON-LD and add to the processes list.
     p_obj = zh.read(o.Process, pid)
     if p_obj and (pid not in p_list):
+        logging.debug("Adding process, '%s'" % p_obj.name)
         p_list.append(pid)
         # Iterate over input exchanges w/ default providers.
         for ex in p_obj.exchanges:
@@ -1163,6 +1163,53 @@ def _make_entity_dict(e_dict, e_key):
     return r_dict
 
 
+def _make_product_system(f_path, process, description=""):
+    """Generate a product system for a given process.
+
+    Parameters
+    ----------
+    f_path : str
+        A file path to an existing JSON-LD file with all process data saved.
+    process : olca-schema.Process
+        A Process object to be converted to a Product System.
+    description : str, optional
+        The product system description text, by default ""
+
+    Returns
+    -------
+    olca-schema.ProductSystem
+        A product system build on default providers for the given process.
+    """
+    # Find the reference process
+    r_ex = _find_ref_exchange(process)
+
+    # Create a new product system
+    # https://greendelta.github.io/olca-schema/classes/ProductSystem.html
+    # NOTE: ``last_change`` automatically set to current date/time
+    product = o.ProductSystem(
+        description=description,
+        name=process.name,
+        ref_exchange=o.ExchangeRef(r_ex.internal_id),
+        ref_process=process.to_ref(),
+        target_amount=r_ex.amount,
+        target_flow_property=r_ex.flow_property,
+        target_unit=r_ex.unit,
+        version=process.version
+    )
+
+    f = zipio.ZipReader(f_path)
+
+    # Build processLinks and processes; hotfix w/ empty lists
+    ex_list, pd_list = _build_supply_chain(f, process.id, [], [])
+    product.processes = [
+        _make_process_ref(f.read(o.Process, x)) for x in pd_list]
+    product.process_links = ex_list
+
+    f.close()
+
+    return product
+
+
 def _make_process_ref(p_obj):
     """Generate a Ref object for a given process, preserving as much
     metadata as possible.
@@ -1210,6 +1257,11 @@ def _match_process_names(p_list, q):
     -------
     list
         A list of process universally unique identifiers (str)
+
+    Notes
+    -----
+    This should also work on other root entities with a name and id
+    attribute (e.g., ProductSystem).
     """
     r_list = []
     for ref in p_list:
