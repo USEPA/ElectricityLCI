@@ -66,18 +66,19 @@ Changelog:
     -   New save method that checks for existing JSON-LD, extracts its data,
         updates with new data, then re-zips (proper handling of zip archive).
     -   New build product systems method
+    -   Fix memory leak in ``_make_product_system`` call to
+        ``_build_supply_chain``
+    -   Add missing 'Electricity; at user; consumption mix - US - US' process
+        to product system generation
 
 Error log:
 
     -   There are two instances of 'elementary flow used as input and output
         of process': "Water, fresh" and "Water, saline". Find these resources
         and label them as emissions.
-    -   The product systems are failing to connect.
-        Under 'Statistics' for each product system, there are 579 processes
-        and 1781 process links. Could there be a new schema?
 
 Last edited:
-    2024-03-01
+    2024-03-04
 """
 __all__ = [
     "build_product_systems",
@@ -114,9 +115,11 @@ def build_product_systems(file_path, elci_config):
     # Find all processes for 'at user' consumption mixes
     q1 = re.compile("^Electricity; at user; consumption mix - (.*) - BA$")
     q2 = re.compile("^Electricity; at user; consumption mix - (.*) - FERC$")
+    q3 = re.compile("^Electricity; at user; consumption mix - US - US$")
     r1 = _match_process_names(data['Process']['objs'], q1)
     r2 = _match_process_names(data['Process']['objs'], q2)
-    r = r1 + r2
+    r3 = _match_process_names(data['Process']['objs'], q3)
+    r = r1 + r2 + r3
     logging.info("Processing %d product systems" % len(r))
 
     # Create a common description text
