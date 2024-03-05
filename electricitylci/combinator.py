@@ -16,6 +16,7 @@ from electricitylci.globals import output_dir
 from electricitylci.model_config import model_specs
 from electricitylci.eia860_facilities import eia860_balancing_authority
 from electricitylci.generation import add_temporal_correlation_score
+from electricitylci.utils import read_ba_codes
 import fedelemflowlist as fedefl
 
 
@@ -30,11 +31,11 @@ nuclear fuel cycle), and maps emissions based on the Federal LCA Commons
 Elementary Flow List in order to provide life cycle inventory.
 
 Last edited:
-    2024-01-09
+    2024-03-05
 """
 __all__ = [
+    "BA_CODES",
     "add_fuel_inputs",
-    "ba_codes",
     "concat_map_upstream_databases",
     "concat_clean_upstream_and_plant",
     "fill_nans",
@@ -46,32 +47,8 @@ __all__ = [
 ##############################################################################
 module_logger = logging.getLogger("combinator.py")
 
-# This was added to populate a ba_codes variable that could be used
-# by other modules without having to re-read the excel files. The purpose
-# is to try and provide a common source for balancing authority names, as well
-# as FERC an EIA region names.
-ba_codes = pd.concat([
-    pd.read_excel(
-        os.path.join(data_dir, "BA_Codes_930.xlsx"),
-        header=4,
-        sheet_name="US"
-    ),
-    pd.read_excel(
-        os.path.join(data_dir, "BA_Codes_930.xlsx"),
-        header=4,
-        sheet_name="Canada"
-    ),
-])
-ba_codes.rename(
-    columns={
-        "etag ID": "BA_Acronym",
-        "Entity Name": "BA_Name",
-        "NCR_ID#": "NRC_ID",
-        "Region": "Region",
-    },
-    inplace=True,
-)
-ba_codes.set_index("BA_Acronym", inplace=True)
+BA_CODES = read_ba_codes()
+'''pandas.DataFrame : Balancing authority, FERC, and EIA region data'''
 
 
 ##############################################################################
@@ -438,12 +415,12 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
     combined_df = pd.concat([pl_df, up_df], ignore_index=True)
     combined_df["Balancing Authority Name"] = combined_df[
         "Balancing Authority Code"
-    ].map(ba_codes["BA_Name"])
+    ].map(BA_CODES["BA_Name"])
     combined_df["FERC_Region"] = combined_df["Balancing Authority Code"].map(
-        ba_codes["FERC_Region"]
+        BA_CODES["FERC_Region"]
     )
     combined_df["EIA_Region"] = combined_df["Balancing Authority Code"].map(
-        ba_codes["EIA_Region"]
+        BA_CODES["EIA_Region"]
     )
     categories_to_delete = [
         "plant_id",

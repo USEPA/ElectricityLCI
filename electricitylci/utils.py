@@ -24,7 +24,7 @@ from electricitylci.globals import data_dir
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2023-12-21
+    2024-03-05
 """
 
 
@@ -234,6 +234,53 @@ def make_valid_version_num(foo):
     """
     result = re.sub('[^0-9,.]', '', foo)
     return result
+
+
+def read_ba_codes():
+    """Create a data frame of balancing authority names and codes.
+
+    Provides a common source for balancing authority names, as well as
+    FERC an EIA region names.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Index is set to 'BA_Acronym'. Columns include:
+
+        - 'BA_Name' (str)
+        - 'NCR ID#' (str)
+        - 'EIA_Region' (str)
+        - 'FERC_Region' (str)
+        - 'EIA_Region_Abbr' (str)
+        - 'FERC_Region_Abbr' (str)
+    """
+    #
+    # See EIA 930 Reference Tables for updated list of BA codes
+    # https://www.eia.gov/electricity/gridmonitor/about
+    ba_codes = pd.concat([
+        pd.read_excel(
+            os.path.join(data_dir, "BA_Codes_930.xlsx"),
+            header=4,
+            sheet_name="US"
+        ),
+        pd.read_excel(
+            os.path.join(data_dir, "BA_Codes_930.xlsx"),
+            header=4,
+            sheet_name="Canada"
+        ),
+    ])
+    ba_codes.rename(
+        columns={
+            "etag ID": "BA_Acronym",
+            "Entity Name": "BA_Name",
+            "NCR_ID#": "NRC_ID",
+            "Region": "Region",
+        },
+        inplace=True,
+    )
+    ba_codes.set_index("BA_Acronym", inplace=True)
+
+    return ba_codes
 
 
 def set_dir(directory):

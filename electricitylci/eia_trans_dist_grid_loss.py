@@ -20,7 +20,7 @@ from electricitylci.globals import output_dir
 from electricitylci.globals import paths
 from electricitylci.globals import STATE_ABBREV
 from electricitylci.eia923_generation import build_generation_data
-from electricitylci.combinator import ba_codes
+from electricitylci.combinator import BA_CODES
 import electricitylci.model_config as config
 from electricitylci.generation import eia_facility_fuel_region
 from electricitylci.egrid_facilities import egrid_facilities
@@ -209,11 +209,11 @@ def generate_regional_grid_loss(year, subregion="all"):
             how="left"
         )
     plant_generation["Balancing Authority Name"] = plant_generation[
-        "Balancing Authority Code"].map(ba_codes["BA_Name"])
+        "Balancing Authority Code"].map(BA_CODES["BA_Name"])
     plant_generation["FERC_Region"] = plant_generation[
-        "Balancing Authority Code"].map(ba_codes["FERC_Region"])
+        "Balancing Authority Code"].map(BA_CODES["FERC_Region"])
     plant_generation["EIA_Region"] = plant_generation[
-        "Balancing Authority Code"].map(ba_codes["EIA_Region"])
+        "Balancing Authority Code"].map(BA_CODES["EIA_Region"])
 
     td_rates = eia_trans_dist_download_extract(f"{year}")
     td_by_plant = pd.merge(

@@ -24,6 +24,7 @@ from electricitylci.bulk_eia_data import ba_exchange_to_df
 from electricitylci.model_config import model_specs
 import electricitylci.eia923_generation as eia923
 import electricitylci.eia860_facilities as eia860
+from electricitylci.utils import read_ba_codes
 from electricitylci.process_dictionary_writer import (
     exchange,
     process_table_creation_con_mix,
@@ -41,7 +42,8 @@ or Federal Energy Regulatory Commission (FERC) regions. These electricity
 flows are then used to generate the consumption mix for a given region or
 balancing authority area.
 
-Last updated: 2023-11-17
+Last updated:
+    2024-03-05
 """
 __all__ = [
     "ba_io_trading_model",
@@ -74,38 +76,11 @@ def _read_ba():
         - list : U.S. Balancing Authority abbreviation codes
         - list : U.S. FERC region codes
     """
-    # Read in BAA file that contains the names and abbreviations
-    df_BA = pd.read_excel(
-        data_dir + '/BA_Codes_930.xlsx',
-        sheet_name='US',
-        header=4
-    )
-    df_BA.rename(
-        columns={
-            'etag ID': 'BA_Acronym',
-            'Entity Name': 'BA_Name',
-            'NCR_ID#': 'NRC_ID',
-            'Region': 'Region'},
-        inplace=True
-    )
-    US_BA_acronyms = df_BA['BA_Acronym'].tolist()
-
-    # Original df_BA does not include the Canadian balancing authorities
-    # Import and concatenate to make a single df_BAA_NA (North America).
-    df_BA_CA = pd.read_excel(
-        data_dir + '/BA_Codes_930.xlsx',
-        sheet_name='Canada',
-        header=4
-    )
-    df_BA_CA.rename(
-        columns={
-            'etag ID': 'BA_Acronym',
-            'Entity Name': 'BA_Name',
-            'NCR_ID#': 'NRC_ID',
-            'Region': 'Region'},
-        inplace=True
-    )
-    df_BA_NA = pd.concat([df_BA, df_BA_CA])
+    ba_df = read_ba_codes()
+    US_BA_acronyms = sorted(list(
+        ba_df.query("EIA_Region != 'Canada'").index.values
+    ))
+    df_BA_NA = ba_df.reset_index()
     ferc_list = df_BA_NA['FERC_Region_Abbr'].unique().tolist()
 
     return df_BA_NA, US_BA_acronyms, ferc_list

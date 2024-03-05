@@ -581,7 +581,7 @@ def create_generation_process_df():
     pandas.DataFrame
         Data frame includes all facility-level emissions.
     """
-    from electricitylci.combinator import ba_codes
+    from electricitylci.combinator import BA_CODES
 
     COMPARTMENT_DICT = {
         "emission/air": "air",
@@ -785,11 +785,11 @@ def create_generation_process_df():
         COMPARTMENT_DICT
     )
     final_database["Balancing Authority Name"] = final_database[
-        "Balancing Authority Code"].map(ba_codes["BA_Name"])
+        "Balancing Authority Code"].map(BA_CODES["BA_Name"])
     final_database["EIA_Region"] = final_database[
-        "Balancing Authority Code"].map(ba_codes["EIA_Region"])
+        "Balancing Authority Code"].map(BA_CODES["EIA_Region"])
     final_database["FERC_Region"] = final_database[
-        "Balancing Authority Code"].map(ba_codes["FERC_Region"])
+        "Balancing Authority Code"].map(BA_CODES["FERC_Region"])
 
     # Apply the "manual edits"
     # See GitHub issues #212, #121, and #77.

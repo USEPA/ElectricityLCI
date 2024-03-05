@@ -101,7 +101,7 @@ def create_generation_mix_process_df_from_model_generation_data(
     -------
     pandas.DataFrame
     """
-    from electricitylci.combinator import ba_codes
+    from electricitylci.combinator import BA_CODES
     from electricitylci.generation import eia_facility_fuel_region
 
     if subregion is None:
@@ -128,11 +128,11 @@ def create_generation_mix_process_df_from_model_generation_data(
             generation_data, egrid_facilities_w_fuel_region, on="FacilityID"
         )
     database_for_genmix_final["Balancing Authority Name"] = database_for_genmix_final[
-        "Balancing Authority Code"].map(ba_codes["BA_Name"])
+        "Balancing Authority Code"].map(BA_CODES["BA_Name"])
     database_for_genmix_final["FERC_Region"] = database_for_genmix_final[
-        "Balancing Authority Code"].map(ba_codes["FERC_Region"])
+        "Balancing Authority Code"].map(BA_CODES["FERC_Region"])
     database_for_genmix_final["EIA_Region"] = database_for_genmix_final[
-        "Balancing Authority Code"].map(ba_codes["EIA_Region"])
+        "Balancing Authority Code"].map(BA_CODES["EIA_Region"])
 
     # Changing the structure of this function so that it uses pandas groupby
     if subregion == "NERC":

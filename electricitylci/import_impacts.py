@@ -23,11 +23,11 @@ category. These U.S. fuel category inventories are then used as proxies for
 Canadian generation. The inventories are weighted by the percent of that type
 of generation for the Canadian balancing authority area (e.g., if the BC
 Hydro & Power Authority generation mix includes 9 per-cent biomass, then U.S.
--level biomass emissions are multiplied by 0.09. The result is a dataframe
+-level biomass emissions are multiplied by 0.09. The result is a data frame
 that includes balancing authority level inventories for Canadian imports.
 
 Last updated:
-    20242-01-10
+    2024-03-05
 """
 __all__ = [
     "generate_canadian_mixes",
@@ -41,26 +41,29 @@ logger = logging.getLogger("import_impacts")
 # FUNCTIONS
 ##############################################################################
 def generate_canadian_mixes(us_inventory):
-    """
-    Uses aggregate U.S.-level inventory to fuel category. These U.S. fuel
-    category inventories are then used as proxies for Canadian generation. The
-    inventories are weighted by the percent of that type of generation for the
-    Canadian balancing authority area (e.g., if the BC Hydro & Power Authority
-    generation mix includes 9% biomass, then U.S.-level biomass emissions are
-    multiplied by 0.09. The result is a dataframe that includes balancing
-    authority level inventories for Canadian imports.
+    """Create the Canadian balancing authority inventory data frame.
+
+    The inventories are weighted by the percent of each fuel type of
+    generation for the Canadian balancing authority area. The aggregate U.S.
+    inventory fuel categories and inventories are used as a proxy for
+    Canadian generation.
+
+    For example, if the BC Hydro & Power Authority generation mix includes
+    9% biomass, then U.S.-level biomass emissions are multiplied by 0.09.
+    The result is a data frame that includes balancing authority level
+    inventories for Canadian imports.
 
     Parameters
     ----------
-    us_inventory: dataframe
-        A dataframe containing flow-level inventory for all fuel categories in
-        the United States.
+    us_inventory: pandas.DataFrame
+        A data frame containing flow-level inventory for all fuel categories
+        in the United States.
 
     Returns
     ----------
     pandas.DataFrame
     """
-    from electricitylci.combinator import ba_codes
+    from electricitylci.combinator import BA_CODES
 
     canadian_egrid_ids = {
         "BCHA": 9999991,
@@ -93,6 +96,7 @@ def generate_canadian_mixes(us_inventory):
     import_mix = pd.read_csv(
         os.path.join(data_dir, "International_Electricity_Mix.csv"),
     )
+    # BUG: missing 2021 and beyond data.
     import_mix = import_mix.loc[
         import_mix["Year"] == model_specs.eia_gen_year, :
     ]
@@ -100,7 +104,7 @@ def generate_canadian_mixes(us_inventory):
     canadian_mix["Code"] = canadian_mix["Subregion"].map(canada_subregion_map)
     baa_codes = list(canadian_mix["Code"].unique())
     canadian_mix["Balancing Authority Name"] = canadian_mix["Code"].map(
-        ba_codes["BA_Name"]
+        BA_CODES["BA_Name"]
     )
     canadian_mix = canadian_mix.rename(
         columns={
@@ -227,9 +231,9 @@ def generate_canadian_mixes(us_inventory):
     ].map(canadian_egrid_ids)
     ca_mix_inventory["FERC_Region"] = ca_mix_inventory[
         "Balancing Authority Code"
-    ].map(ba_codes["FERC_Region"])
+    ].map(BA_CODES["FERC_Region"])
     ca_mix_inventory["EIA_Region"] = ca_mix_inventory[
         "Balancing Authority Code"
-    ].map(ba_codes["EIA_Region"])
+    ].map(BA_CODES["EIA_Region"])
 
     return ca_mix_inventory
