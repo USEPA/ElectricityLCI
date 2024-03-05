@@ -31,76 +31,6 @@ Last updated:
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def download_unzip(url, unzip_path):
-    """
-    Download and extract contents from a .zip file from a given url to a given
-    path.
-
-    Parameters
-    ----------
-    url : str
-        Valid URL to download the zip file
-    unzip_path : str or path object
-        Destination to unzip the data
-    """
-    r = requests.get(url)
-    content_type = r.headers["Content-Type"]
-    if "zip" not in content_type and "-stream" not in content_type:
-        logging.error(content_type)
-        raise ValueError("URL does not point to valid zip file")
-
-    z = zipfile.ZipFile(io.BytesIO(r.content))
-    z.extractall(path=unzip_path)
-
-
-def find_file_in_folder(folder_path, file_pattern_match, return_name=True):
-    """Search a folder for files matching a pattern.
-
-    Parameters
-    ----------
-    folder_path : str
-        An existing directory path.
-    file_pattern_match : list
-        A list of keywords used to match a file name.
-    return_name : bool, optional
-        Whether to return the filename identified in addition to the full path,
-        by default True
-
-    Returns
-    -------
-    str or tuple
-        The file path or, if `return_name` is true, a tuple of the file path
-        and its basename.
-
-    Examples
-    --------
-    >>> import os
-    >>> from electricitylci.globals import paths
-    >>> my_dir = os.path.join(paths.local_folder, 'f923_2016')
-    >>> find_file_in_folder(my_dir, ['2_3_4_5', 'csv'])
-    (
-      '~/electricitylci/f923_2016/                                 \
-       EIA923_Schedules_2_3_4_5_M_12_2016_Final_Revision_page_1.csv',
-      'EIA923_Schedules_2_3_4_5_M_12_2016_Final_Revision_page_1.csv')
-    """
-    files = os.listdir(folder_path)
-
-    # Would be more elegant with glob but this works to identify the
-    # file in question.
-    for f in files:
-        # modified this so that we can search for multiple strings in the
-        # file name - mostly to support different pages of csv files from 923.
-        if all(a in f for a in file_pattern_match):
-            file_name = f
-
-    file_path = os.path.join(folder_path, file_name)
-
-    if not return_name:
-        return file_path
-    else:
-        return (file_path, file_name)
-
-
 def create_ba_region_map(match_fn="BA code match.csv",
                          region_col="ferc_region"):
     """Generate a pandas series for mapping a region to balancing authority.
@@ -161,6 +91,28 @@ def create_ba_region_map(match_fn="BA code match.csv",
     return map_series
 
 
+def download_unzip(url, unzip_path):
+    """
+    Download and extract contents from a .zip file from a given url to a given
+    path.
+
+    Parameters
+    ----------
+    url : str
+        Valid URL to download the zip file
+    unzip_path : str or path object
+        Destination to unzip the data
+    """
+    r = requests.get(url)
+    content_type = r.headers["Content-Type"]
+    if "zip" not in content_type and "-stream" not in content_type:
+        logging.error(content_type)
+        raise ValueError("URL does not point to valid zip file")
+
+    z = zipfile.ZipFile(io.BytesIO(r.content))
+    z.extractall(path=unzip_path)
+
+
 def fill_default_provider_uuids(dict_to_fill, *args):
     """
     Fill UUIDs for default providers.
@@ -211,6 +163,88 @@ def fill_default_provider_uuids(dict_to_fill, *args):
     else:
         logging.warning(f"All arguments into function must be dictionaries")
     return dict_to_fill
+
+
+def find_file_in_folder(folder_path, file_pattern_match, return_name=True):
+    """Search a folder for files matching a pattern.
+
+    Parameters
+    ----------
+    folder_path : str
+        An existing directory path.
+    file_pattern_match : list
+        A list of keywords used to match a file name.
+    return_name : bool, optional
+        Whether to return the filename identified in addition to the full path,
+        by default True
+
+    Returns
+    -------
+    str or tuple
+        The file path or, if `return_name` is true, a tuple of the file path
+        and its basename.
+
+    Examples
+    --------
+    >>> import os
+    >>> from electricitylci.globals import paths
+    >>> my_dir = os.path.join(paths.local_folder, 'f923_2016')
+    >>> find_file_in_folder(my_dir, ['2_3_4_5', 'csv'])
+    (
+      '~/electricitylci/f923_2016/                                 \
+       EIA923_Schedules_2_3_4_5_M_12_2016_Final_Revision_page_1.csv',
+      'EIA923_Schedules_2_3_4_5_M_12_2016_Final_Revision_page_1.csv')
+    """
+    files = os.listdir(folder_path)
+
+    # Would be more elegant with glob but this works to identify the
+    # file in question.
+    for f in files:
+        # modified this so that we can search for multiple strings in the
+        # file name - mostly to support different pages of csv files from 923.
+        if all(a in f for a in file_pattern_match):
+            file_name = f
+
+    file_path = os.path.join(folder_path, file_name)
+
+    if not return_name:
+        return file_path
+    else:
+        return (file_path, file_name)
+
+
+def join_with_underscore(items):
+    """A helper method to concatenate items together using an underscore.
+
+    If the items are not strings, they are cast to strings.
+    If the items are a dictionary, only the keys are concatenated.
+
+    Parameters
+    ----------
+    items : list, tuple
+        An iterable object with values to be concatenated.
+
+    Returns
+    -------
+    str
+        An underscore joined string of values.
+
+    Examples
+    --------
+    >>> join_with_underscore(['a', 'b', 'c'])
+    'a_b_c'
+    >>> join_with_underscore({'a': 1, 'b': 2, 'c': 3})
+    'a_b_c'
+    >>> join_with_underscore([i for i in range(10)])
+    '0_1_2_3_4_5_6_7_8_9'
+    """
+    type_cast_to_str = False
+    for x in items:
+        if not isinstance(x, str):
+            type_cast_to_str = True
+    if type_cast_to_str:
+        items = [str(x) for x in items]
+    return "_".join(items)
 
 
 def make_valid_version_num(foo):
@@ -303,37 +337,3 @@ def set_dir(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
     return directory
-
-
-def join_with_underscore(items):
-    """A helper method to concatenate items together using an underscore.
-
-    If the items are not strings, they are cast to strings.
-    If the items are a dictionary, only the keys are concatenated.
-
-    Parameters
-    ----------
-    items : list, tuple
-        An iterable object with values to be concatenated.
-
-    Returns
-    -------
-    str
-        An underscore joined string of values.
-
-    Examples
-    --------
-    >>> join_with_underscore(['a', 'b', 'c'])
-    'a_b_c'
-    >>> join_with_underscore({'a': 1, 'b': 2, 'c': 3})
-    'a_b_c'
-    >>> join_with_underscore([i for i in range(10)])
-    '0_1_2_3_4_5_6_7_8_9'
-    """
-    type_cast_to_str = False
-    for x in items:
-        if not isinstance(x, str):
-            type_cast_to_str = True
-    if type_cast_to_str:
-        items = [str(x) for x in items]
-    return "_".join(items)
