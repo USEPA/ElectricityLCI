@@ -224,9 +224,20 @@ def run_generation():
 # MAIN
 ##############################################################################
 if __name__ == "__main__":
+    import os
+    from electricitylci.globals import output_dir
+
     # Define a logger
+    log_to_file = True
     root_logger = logging.getLogger()
-    root_handler = logging.StreamHandler()
+
+    if log_to_file:
+        log_filename = "elci.log"
+        log_path = os.path.join(output_dir, log_filename)
+        root_handler = logging.handlers.RotatingFileHandler(
+            log_path, backupCount=9)
+    else:
+        root_handler = logging.StreamHandler()
     rec_format = (
         "%(asctime)s.%(msecs)03d:%(levelname)s:%(module)s:%(funcName)s:"
         "%(message)s")
