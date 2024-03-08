@@ -74,7 +74,7 @@ CHANGELOG
 Created:
     2019-06-04
 Last edited:
-    2024-01-10
+    2024-03-08
 """
 __all__ = [
     "add_data_collection_score",
@@ -550,8 +550,9 @@ def calculate_electricity_by_source(db, subregion="BA"):
         ]
         sub_db = db.loc[src_filter, :].copy()
         sub_db.drop_duplicates(subset=fuel_agg + ["eGRID_ID"], inplace=True)
+        # HOTFIX: fix pandas futurewarning syntax [2024-03-08; TWD]
         sub_db_group = sub_db.groupby(elec_groupby_cols, as_index=False).agg(
-            {"Electricity": [np.sum, np.mean], "eGRID_ID": "count"}
+            {"Electricity": ["sum", "mean"], "eGRID_ID": "count"}
         )
         sub_db_group.columns = elec_groupby_cols + [
             "electricity_sum",
@@ -1170,7 +1171,11 @@ def aggregate_data(total_db, subregion="BA"):
 
     # Inject a false flow amount for "uncertainty" calculations
     false_gen = 1e-15
-    total_db["FlowAmount"].replace(to_replace=0, value=false_gen, inplace=True)
+    # HOTFIX: pandas futurewarning syntax [2024-03-08; TWD]
+    total_db["FlowAmount"] = total_db["FlowAmount"].replace(
+        to_replace=0,
+        value=false_gen
+    )
     total_db = add_data_collection_score(total_db, electricity_df, subregion)
     total_db["facility_emission_factor"] = (
         total_db["FlowAmount"] / total_db["Electricity"]

@@ -376,6 +376,8 @@ def process_cems_dfs(df_list):
         - 'co2_mass_tons'
         - 'heat_content_mmbtu'
     """
+    # TODO: pandas futurewarning for all empty or all NaN data frames;
+    # consider removing them from the list before concatenation.
     df = pd.concat(df_list)
     df.rename(columns=CEMS_COL_NAMES, inplace=True)
     cols_to_sum = [

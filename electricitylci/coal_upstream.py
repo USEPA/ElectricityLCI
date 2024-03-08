@@ -281,6 +281,8 @@ def generate_upstream_coal_map(year):
             folder_path=expected_7a_folder,
             file_pattern_match=['coalpublic'],
             return_name=False)
+    # If you're here, then see the following for hotfix:
+    # https://github.com/USEPA/ElectricityLCI/issues/230
     eia7a_df = pd.read_excel(
         eia7a_path,
         sheet_name='Hist_Coal_Prod',
