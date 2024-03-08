@@ -12,6 +12,10 @@ import os
 import pandas as pd
 
 from electricitylci.globals import data_dir
+from electricitylci.globals import paths
+from electricitylci.utils import check_output_dir
+from electricitylci.utils import download
+from electricitylci.utils import read_ba_codes
 
 
 ##############################################################################
@@ -25,15 +29,26 @@ Hydro & Power Authority generation mix includes 9 per-cent biomass, then U.S.
 -level biomass emissions are multiplied by 0.09. The result is a data frame
 that includes balancing authority level inventories for Canadian imports.
 
+See https://github.com/USEPA/ElectricityLCI/issues/231 for details and
+references.
+
 Last updated:
     2024-03-08
 """
 __all__ = [
     "generate_canadian_mixes",
+    "get_canadian_mix_file",
+    "read_canadian_mix",
 ]
 
 
-logger = logging.getLogger("import_impacts")
+##############################################################################
+# GLOBALS
+##############################################################################
+CA_ENERGY_FUTURES_URL = (
+    "https://www.cer-rec.gc.ca/open/energy/energyfutures2023/"
+    "electricity-generation-2023.csv")
+'''str: The 2017 onward CSV resource for Canadian mixes.'''
 
 
 ##############################################################################
@@ -64,7 +79,7 @@ def generate_canadian_mixes(us_inventory, gen_year):
     ----------
     pandas.DataFrame
     """
-    from electricitylci.combinator import BA_CODES
+    BA_CODES = read_ba_codes()
 
     canadian_egrid_ids = {
         "BCHA": 9999991,
@@ -83,37 +98,10 @@ def generate_canadian_mixes(us_inventory, gen_year):
         "ground": False,
     }
 
-    canada_subregion_map = {
-        "British Columbia": "BCHA",
-        "Quebec": "HQT",
-        "Ontario": "IESO",
-        "Manitoba": "MHEB",
-        "New Brunswick": "NBSO",
-        "Newfoundland and Labrador": "NEWL",
-    }
-
-    logger.info("Generating inventory for Canadian balancing authority areas")
-    # NOTE: this file is also read by egrid_facilities.py
-    import_mix = pd.read_csv(
-        os.path.join(data_dir, "International_Electricity_Mix.csv"),
-    )
-    # BUG: missing 2021 and beyond data.
-    import_mix = import_mix.loc[import_mix["Year"] == gen_year, :]
-    canadian_mix = import_mix
-    canadian_mix["Code"] = canadian_mix["Subregion"].map(canada_subregion_map)
-    baa_codes = list(canadian_mix["Code"].unique())
-    canadian_mix["Balancing Authority Name"] = canadian_mix["Code"].map(
-        BA_CODES["BA_Name"]
-    )
-    canadian_mix = canadian_mix.rename(
-        columns={
-            "Subregion": "Province",
-            "Generation_Ratio": "FuelCategory_fraction",
-        },
-        errors="ignore",
-    )
-    canadian_mix = canadian_mix.drop(columns=["Electricity"],errors="ignore")
-    canadian_mix = canadian_mix.dropna(subset=["Code"])
+    logging.info("Generating inventory for Canadian balancing authority areas")
+    canadian_csv, to_p = get_canadian_mix_file(gen_year)
+    canadian_mix = read_canadian_mix(canadian_csv, to_p)
+    canadian_mix = canadian_mix.query("Year == %d" % gen_year).copy()
 
     if "input" in us_inventory.columns:
         us_inventory.loc[us_inventory["input"].isna(), "input"] = us_inventory[
@@ -156,6 +144,7 @@ def generate_canadian_mixes(us_inventory, gen_year):
         [us_inventory_summary, us_inventory_electricity], axis=1
     )
     us_inventory_summary = us_inventory_summary.reset_index()
+
     flowuuid_compartment_df = (
         us_inventory[[
             "FlowUUID",
@@ -179,7 +168,7 @@ def generate_canadian_mixes(us_inventory, gen_year):
     ].map(flowuuid_compartment_df["Compartment_path"])
 
     ca_mix_list = list()
-    for baa_code in baa_codes:
+    for baa_code in canadian_mix["Code"].unique():
         filter_crit = canadian_mix["Code"] == baa_code
         ca_inventory = pd.merge(
             left=us_inventory_summary,
@@ -238,35 +227,125 @@ def generate_canadian_mixes(us_inventory, gen_year):
     return ca_mix_inventory
 
 
+def get_canadian_mix_file(gen_year):
+    """Return the Canadian electricity generation mix file for a given
+    generation year.
+
+    Parameters
+    ----------
+    gen_year : int
+        Generation year
+
+    Returns
+    -------
+    tuple
+        str :
+            File path to the Canadian electricity generation CSV.
+            Note for 2016 and earlier, the International_Electricity_Mix.csv
+            data file is used. For later generation years, the Canadian
+            Future Energy CSV is downloaded based on the global parameter,
+            CA_ENERGY_FUTURES_URL.
+        bool :
+            Whether the file requires a pre-processing step in the
+            :func:`read_canadian_mix` method.
+    """
+    # Define CSV
+    if gen_year <= 2016:
+        # NOTE: this file is also read by egrid_facilities.py
+        ca_csv = os.path.join(data_dir, "International_Electricity_Mix.csv")
+        process = False
+    else:
+        # Use the Canadian Energy Futures URL
+        f_name = os.path.basename(CA_ENERGY_FUTURES_URL)
+        out_dir = os.path.join(paths.local_path, "energyfutures")
+        is_dir = check_output_dir(out_dir)
+
+        process = True
+        if is_dir:
+            ca_csv = os.path.join(out_dir, f_name)
+            if not os.path.exists(ca_csv):
+                # Download CSV if not available
+                r = download(CA_ENERGY_FUTURES_URL, ca_csv)
+                if r:
+                    logging.info("Downloaded Canadian Energy Futures CSV")
+                else:
+                    logging.error(
+                        "Failed to download Canadian Energy Future "
+                        "CSV: %s" % CA_ENERGY_FUTURES_URL)
+        else:
+            # Sub-directory does not exist and fails to create...
+            ca_csv = os.path.join(paths.local_path, f_name)
+            logging.warning("Writing Canadian mix to %s" % ca_csv)
+
+    return (ca_csv, process)
+
+
 def read_canadian_mix(file_path, pre_process=False):
-    # IN PROGRESS
-    # The original International_ELectricity_Mix.csv has five columns and
-    # need no preprocessing.
-    # - Subregion (str)
-    # - FuelCategory (str)
-    # - Electricity (empty)
-    # - Generation_Ratio (float)
-    # - Year (int)
-    #
-    # If downloading raw from Canadian Energy Futures website,
-    # then it has the following columns and need pre-processing.
-    # - Scenario (str)
-    # - Region (str)
-    # - Variable (str): fuel categories
-    # - Type (str): "PrimaryFuel"
-    # - Year (int)
-    # - Value (float)
-    # - (Unit) only for 2021, should be GWh but we're calculating mix percents
-    #
+    """Return a data frame read from a given CSV file.
+
+    Parameters
+    ----------
+    file_path : str
+        The source CSV file for Canadian electricity generation mixes.
+    pre_process : bool, optional
+        Whether to run pre-processing (for Canada Energy Futures CSV files)
+        , by default False
+
+    Returns
+    -------
+    pandas.DataFrame
+        A data frame of annual, regional Canadian electricity mixes.
+        Columns include:
+
+        - 'Province' (str): Canadian province name (e.g. 'Quebec')
+        - 'FuelCategory' (str): The eLCI primary fuel code (e.g. 'COAL')
+        - 'FuelCategory_fraction' (float): Generation mix fraction
+        - 'Year' (int): The generation year
+        - 'Code' (str): The balancing authority abbreviation
+        - 'Balancing Authority Name' (str): The balancing authority name
+
+    Raises
+    ------
+    OSError
+        Failed to find the CSV file sent.
+    ValueError
+        Failed to find the scenario column in the CSV file.
+
+    Notes
+    -----
+    The original International_ELectricity_Mix.csv file has five columns
+    and needs no preprocessing. These columns include:
+
+    - Subregion (str)
+    - FuelCategory (str)
+    - Electricity (empty)
+    - Generation_Ratio (float)
+    - Year (int)
+
+    If downloading raw from Canadian Energy Futures website,
+    then it has the following columns and need pre-processing:
+
+    - Scenario (str)
+    - Region (str)
+    - Variable (str): fuel categories
+    - Type (str): "PrimaryFuel"
+    - Year (int)
+    - Value (float)
+    - (Unit) only for 2021, should be GWh but we're calculating mix percents
+
+    Other Canadian Energy Future CSV files may be found here:
+    - `2020 <https://www.cer-rec.gc.ca/open/energy/energyfutures2020/electricity-generation-2020.csv>`_
+    - `2021 <https://www.cer-rec.gc.ca/open/energy/energyfutures2021/electricity-generation-2021.csv>`_
+    """
     if not os.path.isfile(file_path):
         raise OSError("Canadian mix file not found! %s" % file_path)
 
     df = pd.read_csv(file_path)
     if pre_process:
-        # These steps are taken from NETL workbook, where a pivot table was
+        # These steps are taken from NETL workbook,
+        # electricity-generation-2021.xlsx, where a pivot table was
         # implemented to calculate the electricity mix percentages for each
-        # variable (fuel category) from each year and region
-        df = pd.read_csv(file_path)
+        # variable (fuel category) from each year and region.
 
         # Filter the scenario
         if 'Current Policy' in df['Scenario'].values:
@@ -282,49 +361,77 @@ def read_canadian_mix(file_path, pre_process=False):
             raise ValueError("Failed to find reference scenario!")
         df = df.query("Scenario == '%s'" % q_val).copy()
 
+        # Fix the variable column name (found in 2019 CSV)
+        df = df.rename(columns={'Variable_English': 'Variable'})
+
         # Calculate the generation ratio
-        # The fuel sums
+        # the fuel sums
         a = df.groupby(by=['Year', 'Region', 'Variable']).agg({'Value': "sum"})
-        # The region sums
+        # the region sums
         b = df.groupby(by=['Year', 'Region']).agg({'Value': "sum"})
         b = b.rename(columns={'Value': 'Total'})
-        # Add region sums to region+fuel sums
+        # add region sums to region+fuel sums
         a = a.merge(b, left_index=True, right_index=True)
-        # Calculate percentages
+        # calculate percentages
         a['Generation_Ratio'] = a['Value']/a['Total']
+        a = a.reset_index()
 
-        # TODO:
-        # map fuel category names
-        # map balancing authority names
+        # Map fuel category names
+        f_cat_map = {
+            'Biomass / Geothermal': 'BIOMASS',
+            'Coal & Coke': 'COAL',
+            'Hydro / Wave / Tidal': 'HYDRO',
+            'Natural Gas':  'GAS',
+            'Oil':  'OIL',
+            'Solar': 'SOLAR',
+            'Uranium':  'NUCLEAR',
+            'Wind': 'WIND',
+        }
+        a['FuelCategory'] = a["Variable"].map(f_cat_map)
+        if a['FuelCategory'].isna().sum() > 0:
+            logging.warning("Failed to match all Canadian fuel categories!")
 
+        # Clean-up unused columns:
+        a = a.drop(columns="Variable")
+        if "Value" in a.columns:
+            a = a.drop(columns="Value")
+        if "Total" in a.columns:
+            a = a.drop(columns="Total")
+        df = a.rename(columns={'Region': 'Subregion'}).copy()
 
-if __name__ == '__main__':
-    #
-    # Because it is assumed that these data files are model results,
-    # the most recent is probably the best option, even for historical
-    # mixes.
-    url20 = "https://www.cer-rec.gc.ca/open/energy/energyfutures2020/electricity-generation-2020.csv"
-    url21 = "https://www.cer-rec.gc.ca/open/energy/energyfutures2021/electricity-generation-2021.csv"
-    url23 = "https://www.cer-rec.gc.ca/open/energy/energyfutures2023/electricity-generation-2023.csv"
+    # Map subregion to BA codes
+    # NOTE: Alberta, Saskatchewan (and Mexico and others) are not paired
+    #       to a BA because they do not show up in the trading.
+    # NOTE: 'Newfoundland and Labrador' has no BA name in BA_Codes.xlsx
+    canada_subregion_map = {
+        "British Columbia": "BCHA",
+        "Quebec": "HQT",
+        "Ontario": "IESO",
+        "Manitoba": "MHEB",
+        "New Brunswick": "NBSO",
+        "Newfoundland and Labrador": "NEWL",
+    }
+    df['Code'] = df["Subregion"].map(canada_subregion_map)
+    if df['Code'].isna().sum() > 0:
+        m_regions = df[df["Code"].isna()]["Subregion"].unique()
+        m_regions = [x for x in m_regions]
+        m_regions = ", ".join(m_regions)
+        logging.warning(
+            "Failed to match Canadian regions (%s) to BA code!" % m_regions)
 
-    from electricitylci.globals import paths
-    from electricitylci.utils import download
-    from electricitylci.utils import check_output_dir
+    # Map BA codes to their names.
+    ba_codes = read_ba_codes()
+    df["Balancing Authority Name"] = df["Code"].map(ba_codes["BA_Name"])
 
-    # User selects one of the URLs
-    url = url23
-    f_name = os.path.basename(url)
-    out_dir = os.path.join(paths.local_path, "energyfutures")
-    is_dir = check_output_dir(out_dir)
-    if is_dir:
-        out_path = os.path.join(out_dir, f_name)
-        if not os.path.exists(out_path):
-            # Download CSV if not available
-            r = download(url, out_path)
-            if r:
-                logging.info("Downloaded Canadian Energy Futures CSV")
-            else:
-                logging.error(
-                    "Failed to download Canadian Energy Future CSV: %s" % url)
-        if os.path.exists(out_path):
-            df = pd.read_csv(out_path)
+    # Clean-up step: rename columns, drop unused columns, and drop missing rows
+    df = df.rename(
+        columns={
+            "Subregion": "Province",
+            "Generation_Ratio": "FuelCategory_fraction",
+        },
+    )
+    if "Electricity" in df.columns:
+        df = df.drop(columns=["Electricity"])
+    df = df.dropna(subset=["Code"])
+
+    return df

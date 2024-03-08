@@ -24,13 +24,47 @@ from electricitylci.globals import data_dir
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2024-03-05
+    2024-03-08
 """
 
 
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
+def check_output_dir(out_dir):
+    """Helper method to ensure a directory exists.
+
+    If a given directory does not exist, this method attempts to create it.
+
+    Parameters
+    ----------
+    out_dir : str
+        A path to a directory.
+
+    Returns
+    -------
+    bool
+        Whether the directory exists.
+    """
+    if not os.path.isdir(out_dir):
+        try:
+            # Start with super mkdir
+            os.makedirs(out_dir)
+        except:
+            logging.warning("Failed to create folder %s!" % out_dir)
+            try:
+                # Revert to simple mkdir
+                os.mkdir(out_dir)
+            except:
+                logging.error("Could not create folder, %s" % out_dir)
+            else:
+                logging.info("Created %s" % out_dir)
+        else:
+            logging.info("Created %s" % out_dir)
+
+    return os.path.isdir(out_dir)
+
+
 def create_ba_region_map(match_fn="BA code match.csv",
                          region_col="ferc_region"):
     """Generate a pandas series for mapping a region to balancing authority.
@@ -89,6 +123,32 @@ def create_ba_region_map(match_fn="BA code match.csv",
         map_series = region_match[region_col]
 
     return map_series
+
+
+def download(url, file_path):
+    """Helper method to download a file from a URL.
+
+    Parameters
+    ----------
+    url : str
+        Universal resource locator
+    file_path : str
+        A local file path where the URL resource should be saved.
+
+    Returns
+    -------
+    bool
+        Whether the resource file was downloaded successfully.
+    """
+    is_success = True
+    r = requests.get(url)
+    if r.ok:
+        with open(file_path, 'bw') as f:
+            f.write(r.content)
+    else:
+        is_success = False
+
+    return is_success
 
 
 def download_unzip(url, unzip_path):
