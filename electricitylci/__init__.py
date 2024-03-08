@@ -22,7 +22,7 @@ __doc__ = """This module contains the main API functions to be used by the
 end user.
 
 Last updated:
-    2024-01-24
+    2024-03-08
 """
 __version__ = elci_version
 
@@ -128,7 +128,9 @@ def combine_upstream_and_gen_df(gen_df, upstream_df):
     logging.info("Combining upstream and generation inventories")
     combined_df = combine.concat_clean_upstream_and_plant(gen_df, upstream_df)
     # BUG: KeyError in 2021 data
-    canadian_gen = import_impacts.generate_canadian_mixes(combined_df)
+    canadian_gen = import_impacts.generate_canadian_mixes(
+        combined_df,
+        config.model_specs.eia_gen_year)
     combined_df = pd.concat([combined_df, canadian_gen], ignore_index=True)
     return combined_df, canadian_gen
 
@@ -412,7 +414,8 @@ def get_generation_process_df(regions=None, **kwargs):
         # consumption mix. Or it could be possible but would require running
         # through aggregate twice.
         canadian_gen_df = import_impacts.generate_canadian_mixes(
-            generation_process_df)
+            generation_process_df,
+            config.model_specs.eia_gen_year)
         generation_process_df = pd.concat(
             [generation_process_df, canadian_gen_df], ignore_index=True)
         gen_plus_fuels = generation_process_df

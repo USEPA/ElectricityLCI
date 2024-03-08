@@ -7,11 +7,9 @@
 # REQUIRED MODULES
 ##############################################################################
 import logging
-import os
 
 import pandas as pd
 
-from electricitylci.globals import data_dir
 from electricitylci.globals import output_dir
 from electricitylci.model_config import model_specs
 from electricitylci.eia860_facilities import eia860_balancing_authority
@@ -31,7 +29,7 @@ nuclear fuel cycle), and maps emissions based on the Federal LCA Commons
 Elementary Flow List in order to provide life cycle inventory.
 
 Last edited:
-    2024-03-05
+    2024-03-08
 """
 __all__ = [
     "BA_CODES",
@@ -571,7 +569,7 @@ if __name__ == "__main__":
     module_logger.info(plant_df.columns)
     module_logger.info(upstream_df.columns)
     combined_df = concat_clean_upstream_and_plant(plant_df, upstream_df)
-    canadian_inventory = generate_canadian_mixes(combined_df)
+    canadian_inventory = generate_canadian_mixes(combined_df, 2016)
     combined_df = pd.concat([combined_df, canadian_inventory])
     combined_df.sort_values(
         by=["eGRID_ID", "Compartment", "FlowName", "stage_code"], inplace=True
