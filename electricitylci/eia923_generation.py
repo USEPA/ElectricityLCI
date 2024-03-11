@@ -16,7 +16,6 @@ import pandas as pd
 from electricitylci.eia860_facilities import eia860_balancing_authority
 from electricitylci.globals import EIA923_BASE_URL
 from electricitylci.globals import FUEL_CAT_CODES
-from electricitylci.globals import output_dir
 from electricitylci.globals import paths
 from electricitylci.utils import download_unzip
 from electricitylci.utils import find_file_in_folder
@@ -33,7 +32,8 @@ except ImportError:
 __doc__ = """Download and import EIA 923 data, which primarily includes electricity generated and fuel used by facility. This module will download the data as needed and provides functions to access different pages of the Excel workbook.
 
 
-Last edited: 2023-10-02
+Last edited:
+    2024-03-08
 """
 
 logger = logging.getLogger("eia923_generation")
@@ -152,6 +152,21 @@ def eia923_download_extract(year, group_cols=None):
         The columns from EIA923 generation and fuel sheet to use when grouping
         generation and fuel consumption data.
         Defaults to none.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Columns include:
+
+        - 'Plant Id' (str): Plant identifier (e.g., '1')
+        - 'Plant Name' (str): Plant name (e.g., 'Sand Point')
+        - 'State' (str): Two-letter state abbreviation (e.g., 'AL')
+        - 'NAICS Code' (str): Industry code (e.g. '22')
+        - 'Reported Prime Mover' (str): Prime mover code (e.g., 'IC')
+        - 'Reported Fuel Type Code' (str): Fuel code (e.g., 'BIT')
+        - 'YEAR' (str): EIA Form 923 year (e.g., '2021')
+        - 'Total Fuel Consumption MMBtu' (int)
+        - 'Net Generation (Megawatthours)' (float)
     """
     # HOTFIX long default list in function parameter [2023-12-27; TWD]
     if group_cols is None:
@@ -296,7 +311,9 @@ def eia923_primary_fuel(eia923_gen_fuel=None,
         / primary_fuel["total_gen"]
         * 100
     )
-    primary_fuel["primary fuel percent gen"].fillna(value=0, inplace=True)
+    # HOTFIX: pandas FutureWarning syntax [2024-03-08; TWD]
+    primary_fuel["primary fuel percent gen"] = primary_fuel[
+        "primary fuel percent gen"].fillna(0)
     primary_fuel["FuelCategory"] = group_fuel_categories(primary_fuel)
     if model_specs.keep_mixed_plant_category:
         primary_fuel.loc[
@@ -605,6 +622,8 @@ def eia923_sched8_aec(year):
 # MAIN
 ##############################################################################
 if __name__ == "__main__":
+    from electricitylci.globals import output_dir
+
     gen_and_fuel_df = eia923_generation_and_fuel(2020)
     gen_and_fuel_df.to_csv(
         f"{output_dir}/gen_and_fuel_df_2020.csv",
