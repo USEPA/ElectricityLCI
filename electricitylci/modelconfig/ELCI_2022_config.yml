@@ -19,7 +19,7 @@ regional_aggregation: 'BA'
 # to True. This will trigger the use of EPA CEMS and EIA data as substitutes
 # for eGRID. Replacing eGRID will also use EIA generation data to determine
 # the generation mix.
-egrid_year: 2022
+egrid_year: 2021
 eia_gen_year: 2022
 replace_egrid: True
 
@@ -55,9 +55,9 @@ filter_on_min_plant_percent_generation_from_primary_fuel: True
 min_plant_percent_generation_from_primary_fuel_category: 90
 
 #If the parameter above is set to True, one may still want to keep the plants
-#do not meet the threshhold. This setting will mark those power plants as 
+#do not meet the threshhold. This setting will mark those power plants as
 #MIXED and generate life cycle processes for them. Note that the definition
-#of mixed is purposefully ambiguous and will mean different things depending 
+#of mixed is purposefully ambiguous and will mean different things depending
 #on the region of aggregation.
 keep_mixed_plant_category: True
 
