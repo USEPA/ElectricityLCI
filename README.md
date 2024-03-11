@@ -80,6 +80,15 @@ To run from within a cloned repository:
 ```
 
 # Known Issues
+* `Enter EPA API key: ` prompt encountered during 2020–2022 baseline runs.
+    - The CEMS data are no longer available via the old FTP.
+    - See https://github.com/USEPA/ElectricityLCI/issues/207
+    - In the short-term, a free-to-register EPA Data API key is required (https://www.epa.gov/power-sector/cam-api-portal#/api-key-signup)
+    - Copy and paste the API key (a long string of numbers and letters) to the prompt and hit Enter to download the missing data.
+    - The missing data are archived in state-based zip files the epacems2020, epacems2021, and epacems2022 folders found in the `paths.local_path` location (as defined in electricitylci.globals.py).
+* `ValueError` encountered during 2021 and 2022 baseline runs.
+    - The 'coalpublic2021.xls' and 'coalpublic2022.xls' files downloaded to your f7a_2021 and f7a_2022 folders (in the `paths.local_path` location found in electricitylci.globals.py) are actually XML spreadsheets.
+    - The simple fix is to open these files in Microsoft Excel and "Save as" Microsoft Excel 95 Workbook, replacing the previous file with the new (do not leave both copies in the folder!)
 * The data quality indicators used for flows and processes (dqi.py) may deviate from the standards:
     - [Flow Pedigree](https://www.lcacommons.gov/lca-collaboration/National_Renewable_Energy_Laboratory/USLCI_Database_Public/dataset/DQ_SYSTEM/d13b2bc4-5e84-4cc8-a6be-9101ebb252ff)
     - [Process Pedigree](https://www.lcacommons.gov/lca-collaboration/National_Renewable_Energy_Laboratory/USLCI_Database_Public/dataset/DQ_SYSTEM/70bf370f-9912-4ec1-baa3-fbd4eaf85a10)
