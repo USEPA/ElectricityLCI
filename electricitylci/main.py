@@ -230,7 +230,6 @@ if __name__ == "__main__":
     # Define a logger
     log_to_file = True
     root_logger = logging.getLogger()
-
     if log_to_file:
         log_filename = "elci.log"
         log_path = os.path.join(output_dir, log_filename)
@@ -255,4 +254,14 @@ if __name__ == "__main__":
         config.model_specs = config.build_model_class(args.model_config)
     else:
         config.model_specs = None
-    main()
+
+    # Execute main
+    try:
+        main()
+    except Exception as e:
+        root_logger.error("Crashed on main!\n%s" % str(e))
+    else:
+        root_logger.info("Finished!")
+    finally:
+        if log_to_file:
+            root_logger.handlers[0].doRollover()
