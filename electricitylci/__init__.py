@@ -22,7 +22,7 @@ __doc__ = """This module contains the main API functions to be used by the
 end user.
 
 Last updated:
-    2024-03-08
+    2024-03-11
 """
 __version__ = elci_version
 
@@ -173,7 +173,20 @@ def get_consumption_mix_df(subregion=None, regions_to_keep=None):
     return io_trade_df
 
 
-def get_distribution_mix_df(combined_df, subregion=None):
+def get_distribution_mix_df(subregion=None):
+    """Generate transmission and distribution losses aggregated by subregion.
+
+    Parameters
+    ----------
+    subregion : str, optional
+        Subregion name, by default None
+
+    Returns
+    -------
+    pandas.DataFrame
+        A dataframe of transmission and distribution loss rates as a
+        fraction.
+    """
     import electricitylci.eia_trans_dist_grid_loss as tnd
 
     if subregion is None:
@@ -558,10 +571,7 @@ def run_net_trade(generation_process_df, generation_mix_dict):
     logging.info("get distribution mix")
     dist_mix_df_dict = {}
     for subreg in cons_mix_dicts.keys():
-        dist_mix_df_dict[subreg] = get_distribution_mix_df(
-            generation_process_df,
-            subregion=subreg
-        )
+        dist_mix_df_dict[subreg] = get_distribution_mix_df(subregion=subreg)
 
     logging.info("write dist mix to dict")
     dist_mix_dicts = {}
