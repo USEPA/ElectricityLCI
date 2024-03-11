@@ -43,7 +43,8 @@ state-wide transmission and distribution losses for the user-specified year.
 
 See also: https://www.eia.gov/tools/faqs/faq.php?id=105&t=3
 
-Last updated: 2023-11-17
+Last updated:
+    2024-03-11
 """
 __all__ = [
     "eia_trans_dist_download_extract",
@@ -95,26 +96,30 @@ def eia_trans_dist_download_extract(year):
         filename = f"{STATE_ABBREV[key]}.xlsx"
         if not os.path.exists(filename):
             logging.info(f"Downloading archive data for {STATE_ABBREV[key]}")
+            # HOTFIX: URLs for two-word states have space omitted.
             url_a = (
                 "https://www.eia.gov/electricity/state/archive/"
                 + year
                 + "/"
-                + key
+                + key.replace(" ", "")
                 + "/xls/"
                 + filename
             )
             url_b = (
                 "https://www.eia.gov/electricity/state/"
-                + key
+                + key.replace(" ", "")
                 + "/xls/"
                 + filename
             )
+            # HOTFIX: https://github.com/USEPA/ElectricityLCI/issues/235
             r = requests.get(url_a)
-            if not r.ok:
+            r_head = r.headers.get("Content-Type", "")
+            if not r.ok or r_head.startswith("text"):
                 logging.info(f"Trying alternative site {STATE_ABBREV[key]}")
                 r = requests.get(url_b)
+                r_head = r.headers.get("Content-Type", "")
 
-            if r.ok:
+            if r.ok and not r_head.startswith("text"):
                 with open(filename, 'wb') as f:
                     f.write(r.content)
             else:
@@ -176,19 +181,20 @@ def generate_regional_grid_loss(year, subregion="all"):
         for transmission and distribution to match the regionally-
         aggregated emissions unit processes.
     """
-    logging.info("Generating factors for transmission and distribution losses")
+    logging.info(
+        "Generating %d factors for transmission and distribution losses" % year)
     plant_generation = build_generation_data(generation_years=[year])
-    plant_generation["FacilityID"]=plant_generation["FacilityID"].astype(int)
+    plant_generation["FacilityID"] = plant_generation["FacilityID"].astype(int)
     if config.model_specs.replace_egrid:
         plant_data = eia_facility_fuel_region(year)
-        plant_data["FacilityID"]=plant_data["FacilityID"].astype(int)
-        plant_generation=pd.merge(
+        plant_data["FacilityID"] = plant_data["FacilityID"].astype(int)
+        plant_generation = pd.merge(
             left=plant_generation,
             right=plant_data,
             on="FacilityID",
             how="left",
         )
-    if not config.model_specs.replace_egrid:
+    else:
         egrid_facilities_w_fuel_region = egrid_facilities[[
             "FacilityID",
             "Subregion",
@@ -208,6 +214,7 @@ def generate_regional_grid_loss(year, subregion="all"):
             on=["FacilityID"],
             how="left"
         )
+
     plant_generation["Balancing Authority Name"] = plant_generation[
         "Balancing Authority Code"].map(BA_CODES["BA_Name"])
     plant_generation["FERC_Region"] = plant_generation[

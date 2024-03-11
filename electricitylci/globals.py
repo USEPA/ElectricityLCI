@@ -20,7 +20,7 @@ __doc__ = """Define paths, variables, and functions used across several
 modules.
 
 Last updated:
-    2023-11-21
+    2024-03-11
 """
 
 
@@ -194,8 +194,8 @@ STATE_ABBREV = {
     "nevada": "nv",
     "new hampshire": "nh",
     "new jersey": "nj",
-    "newmexico": "nm",
-    "newyork": "ny",
+    "new mexico": "nm",
+    "new york": "ny",
     "north carolina": "nc",
     "north dakota": "nd",
     "ohio": "oh",
