@@ -7,6 +7,7 @@
 # REQUIRED MODULES
 ##############################################################################
 import io
+import json
 import logging
 import os
 import re
@@ -24,8 +25,21 @@ from electricitylci.globals import data_dir
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2024-03-08
+    2024-03-12
 """
+__all__ = [
+    "check_output_dir",
+    "create_ba_region_map",
+    "download",
+    "download_unzip",
+    "fill_default_provider_uuids",
+    "find_file_in_folder",
+    "join_with_underscore",
+    "make_valid_version_num",
+    "read_ba_codes",
+    "read_json",
+    "set_dir",
+]
 
 
 ##############################################################################
@@ -375,6 +389,36 @@ def read_ba_codes():
     ba_codes.set_index("BA_Acronym", inplace=True)
 
     return ba_codes
+
+
+def read_json(json_path):
+    """Read a JSON-formatted file into a Python dictionary.
+
+    Parameters
+    ----------
+    json_path : str
+        A file path to a JSON-formatted file.
+
+    Returns
+    -------
+    dict
+        A dictionary-formatted version of the file.
+        If any errors are encountered, or if the file does not exist,
+        then an empty dictionary is returned.
+    """
+    r_dict = {}
+    if isinstance(json_path, str) and os.path.isfile(json_path):
+        try:
+            with open(json_path, 'r') as f:
+                r_dict = json.load(f)
+        except:
+            logging.error("Failed to read dictionary from %s" % json_path)
+        else:
+            logging.info("Read file to JSON")
+    else:
+        logging.warning("Expected file, received %s" % type(json_path))
+
+    return r_dict
 
 
 def set_dir(directory):

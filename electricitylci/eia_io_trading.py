@@ -21,6 +21,7 @@ from electricitylci.globals import paths
 from electricitylci.bulk_eia_data import download_EBA
 from electricitylci.bulk_eia_data import row_to_df
 from electricitylci.bulk_eia_data import ba_exchange_to_df
+from electricitylci.bulk_eia_data import check_EBA_vintage
 from electricitylci.model_config import model_specs
 import electricitylci.eia923_generation as eia923
 import electricitylci.eia860_facilities as eia860
@@ -112,6 +113,9 @@ def _read_bulk():
     NET_GEN_ROWS = []
     BA_TO_BA_ROWS = []
     DEMAND_ROWS = []
+
+    # HOTFIX: Check file vintage [2024-03-12; TWD]
+    check_EBA_vintage()
 
     try:
         z = zipfile.ZipFile(path, 'r')
@@ -960,6 +964,8 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
 
         exchanges_list = []
 
+        # TODO: pandas futurewarning
+        #       Should this reference 'database' and not 'database_reg'?
         database_filt = database['fraction'] > 0
         database_reg = database_reg[database_filt]
 

@@ -24,15 +24,18 @@ eia_gen_year: 2020
 replace_egrid: True
 
 # NETL has developed profiles for renewable generation to capture construction
-# impacts (e.g., solar PV menufacturing).
+# impacts (e.g., solar PV manufacturing). Set to true to include these impacts.
 include_renewable_generation: True
 
 # NETL has developed profiles for power plant water use.
+# Set to true to include these impacts.
 include_netl_water: True
 
 # Upstream data from NETL can be included in the outputs.
 include_upstream_processes: True
 
+# Inventory vintages taken from StEWI.
+# https://github.com/USEPA/standardizedinventories
 inventories_of_interest:
   eGRID: 2020
   TRI: 2020
@@ -55,13 +58,17 @@ filter_on_min_plant_percent_generation_from_primary_fuel: True
 min_plant_percent_generation_from_primary_fuel_category: 90
 
 # If the parameter above is set to true, one may still want to keep the plants
-# that do not meet the threshhold. This setting will mark those power plants as
+# that do not meet the threshold. This setting will mark those power plants as
 # MIXED and generate life cycle processes for them. Note that the definition
 # of mixed is purposefully ambiguous and will mean different things depending
 # on the region of aggregation.
 keep_mixed_plant_category: True
 
-# NEEDS A GOOD DESCRIPTION OF THIS PARAMETER
+# To ensure consistency with eGRID, the model applies a filter to remove
+# industrial cogeneration facilities from the EIA Form 923 data based on
+# their NAICS code (i.e., code 22: Electricity Utilities and Independent
+# Power Producers) and by EIA sector numbers 1 and 2. This filter is
+# designed to reproduce the same power plants that are listed in eGRID.
 filter_non_egrid_emission_on_NAICS: True
 
 
@@ -84,7 +91,7 @@ EPA_eGRID_trading: False
 # eGRID regions for consumption mix calculations.
 net_trading: False
 
-NETL_IO_trading_year: 2016
+NETL_IO_trading_year: 2020
 
 # OTHER PARAMETERS
 
