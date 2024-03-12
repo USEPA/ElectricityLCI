@@ -79,6 +79,36 @@ To run from within a cloned repository:
 >>> exec(open("electricitylci/main.py").read())
 ```
 
+The `main()` method has four steps:
+
+1. `build_model_config()`
+    - Prompts the user to select one of the model configurations.
+    - The 2016 baseline configurations are:
+        * ELCI_1
+        * ELCI_2
+        * ELCI_3
+    - The latest baselines are built from 'ELCI_1' and include:
+        * ELCI_2020
+        * ELCI_2021
+        * ELCI_2022
+    - These configurations statically change the module, model_config.py, which is an object read by other modules.
+    - To change configuration values, edit the YAML before running the code.
+2. `run_generation()`
+    - Pulls upstream inventories for coal, natural gas, petroleum, nuclear, and plant construction
+    - Creates generation processes
+        * Optionally includes renewables (e.g., geothermal, wind, solar PV, solar thermal, and hydroelectric)
+        * Optionally includes plant water use
+        * Adds Canadian mixes
+        * Aggregates to regions of interest (e.g., balancing authority areas or FERC regions)
+3. `run_distribution(gen_data, gen_dict)`
+    - Creates the at-grid generation mix processes
+    - Creates the at-grid consumption mix processes (following one of two trade models)
+    - Creates the at-user consumption mix processes (based on calculated transmission and distribution losses)
+4. `run_post_processes()`
+    - Cleans the JSON-LD files (e.g., removing zero-value product flows, removing untracked flows, and creating consecutive internal exchange IDs)
+    - Builds the product systems for balancing authority areas, FERC regions, and US.
+
+
 # Known Issues
 * `Enter EPA API key: ` prompt encountered during 2020–2022 baseline runs.
     - The CEMS data are no longer available via the old FTP.
