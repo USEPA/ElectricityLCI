@@ -137,7 +137,10 @@ def generate_upstream_geo(year):
         columns={"compartment": "Compartment", "Plant Id": "plant_id"},
         inplace=True,
     )
-    geo_merged["Compartment"].fillna(geo_merged["Directionality"],inplace=True)
+    # HOTFIX: pandas.FutureWarning [2024-03-12; TWD]
+    geo_merged["Compartment"] = geo_merged["Compartment"].fillna(
+        geo_merged["Directionality"]
+    )
     input_dict={"emission":False,"resource":True}
     geo_merged["Directionality"]=geo_merged["Directionality"].map(input_dict)
     geo_merged.rename(columns={"Directionality":"input"},inplace=True)

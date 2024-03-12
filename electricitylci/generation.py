@@ -658,8 +658,9 @@ def create_generation_process_df():
             inplace=True
         )
         ewf_df["FacilityID"] = ewf_df["PGM_SYS_ID"].astype(int)
+        # HOTFIX: SettingWithCopyWarning [2024-03-12; TWD]
         emissions_and_waste_for_selected_eia_facilities = ewf_df[
-            ewf_df["FacilityID"].isin(eia_facilities_to_include)]
+            ewf_df["FacilityID"].isin(eia_facilities_to_include)].copy()
         emissions_and_waste_for_selected_eia_facilities.rename(
             columns={"FacilityID": "eGRID_ID"}, inplace=True)
         cems_df = ampd.generate_plant_emissions(model_specs.eia_gen_year)
