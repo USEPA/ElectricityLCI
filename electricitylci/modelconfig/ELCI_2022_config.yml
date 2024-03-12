@@ -84,17 +84,16 @@ efficiency_of_distribution_grid: 0.95
 # Electricity trading can be calculated using a method from EPA (with or
 # without a surplus trading pool) that is based on eGRID regions or a method
 # from NETL that uses an input-output approach using exchange data between
-# balancing authorities from EIA.
+# balancing authorities from EIA. If false, net trading is used.
 EPA_eGRID_trading: False
 
-# Select between net trading (true) or gross trading (false) between NERC and
-# eGRID regions for consumption mix calculations.
+# For net trading, select between two options for for consumption mix
+# calculations: net trading (true) or gross trading (false) between NERC
+# and eGRID regions.
 net_trading: False
 
-
+# Trading year for EIA data used for net trading.
 NETL_IO_trading_year: 2022
-
-
 
 # OTHER PARAMETERS
 

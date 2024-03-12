@@ -44,7 +44,7 @@ flows are then used to generate the consumption mix for a given region or
 balancing authority area.
 
 Last updated:
-    2024-03-05
+    2024-03-12
 """
 __all__ = [
     "ba_io_trading_model",
