@@ -179,10 +179,17 @@ def generate_canadian_mixes(us_inventory, gen_year):
             suffixes=["","ca_elec"]
         )
         ca_inventory.dropna(subset=["FuelCategory_fraction"], inplace=True)
-        ca_mix_list.append(ca_inventory)
-    blank_df = pd.DataFrame(columns=us_inventory.columns)
+        # HOTFIX: don't append empty data frames [2024-03-12; TWD]
+        if len(ca_inventory) > 0:
+            ca_mix_list.append(ca_inventory)
 
-    ca_mix_inventory = pd.concat(ca_mix_list + [blank_df], ignore_index=True)
+    # HOTFIX: check if ca_mix_list is empty, if so, ca_mix_inventory is just
+    # blank_df; otherwise, concatenate the data frames.
+    if len(ca_mix_list) == 0:
+        ca_mix_inventory = pd.DataFrame(columns=us_inventory.columns)
+    else:
+        ca_mix_inventory = pd.concat(ca_mix_list, ignore_index=True)
+
     ca_mix_inventory[
         ["Electricity", "FlowAmount", "quantity"]
     ] = ca_mix_inventory[["Electricity", "FlowAmount", "quantity"]].multiply(

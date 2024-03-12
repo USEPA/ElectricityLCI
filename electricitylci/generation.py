@@ -1173,10 +1173,7 @@ def aggregate_data(total_db, subregion="BA"):
     # Inject a false flow amount for "uncertainty" calculations
     false_gen = 1e-15
     # HOTFIX: pandas futurewarning syntax [2024-03-08; TWD]
-    total_db["FlowAmount"] = total_db["FlowAmount"].replace(
-        to_replace=0,
-        value=false_gen
-    )
+    total_db = total_db.replace({"FlowAmount": 0}, false_gen)
     total_db = add_data_collection_score(total_db, electricity_df, subregion)
     total_db["facility_emission_factor"] = (
         total_db["FlowAmount"] / total_db["Electricity"]
