@@ -33,7 +33,7 @@ options. The selection of configuration file will occur after the start
 of this script or it may be passed following the command-line argument, '-c'.
 
 Last updated:
-    2024-01-24
+    2024-03-12
 
 Changelog:
     -   Remove 'write_upstream_dicts_to_jsonld' as a separate function; it
@@ -41,6 +41,7 @@ Changelog:
         used consistently throughout the rest of :func:`main`.
     -   Add first-level abstraction by separating out runs for generation and
         distribution; creates parallel structure with new run post-processes.
+    -   Move `get_generation_process_df` from if-else for clarity.
 """
 __all__ = [
     "main",
@@ -139,7 +140,7 @@ def run_distribution(generation_process_df, generation_process_dict):
     # At this point the two methods diverge
     if config.model_specs.EPA_eGRID_trading is False:
         # ELCI_1 & ELCI_2
-        dist_dict = run_net_trade(generation_process_df, generation_mix_dict)
+        dist_dict = run_net_trade(generation_mix_dict)
     else:
         # ELC1_3
         # NOTE: replace eGRID configuration must be true
@@ -181,25 +182,21 @@ def run_generation():
         # NOTE: UUID's for upstream processes are created when converting to
         #       JSON-LD. This has to be done here if the information is
         #       going to be included in the final outputs.
-        # NOTE: Use the parameter, to_save, in olca_jsonld_writer.write,
-        #       to write the output JSON-LD once.
         upstream_dict = write_process_dicts_to_jsonld(upstream_dict)
-
-        # NOTE: This method triggers an input request for EPA data API key;
-        #       see https://github.com/USEPA/ElectricityLCI/issues/207
-        # NOTE: This method runs aggregation and emission uncertainty
-        #       calculations.
-        logging.info("get aggregated generation process")
-        generation_process_df = get_generation_process_df(
-            upstream_df=upstream_df,
-            upstream_dict=upstream_dict
-        )
     else:
-        # Create dataframe with only generation process data.
+        # Create data frame with only generation process data.
         upstream_dict = {}
         upstream_df = None
-        logging.info("get aggregated generation process")
-        generation_process_df = get_generation_process_df()
+
+    # NOTE: This method triggers an input request for EPA data API key;
+    #       see https://github.com/USEPA/ElectricityLCI/issues/207
+    # NOTE: This method runs aggregation and emission uncertainty
+    #       calculations.
+    logging.info("get aggregated generation process")
+    generation_process_df = get_generation_process_df(
+        upstream_df=upstream_df,
+        upstream_dict=upstream_dict
+    )
 
     logging.info("write generation process to dict")
     if config.model_specs.regional_aggregation in ["FERC", "US"]:

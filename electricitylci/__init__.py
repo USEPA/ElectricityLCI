@@ -22,7 +22,7 @@ __doc__ = """This module contains the main API functions to be used by the
 end user.
 
 Last updated:
-    2024-03-11
+    2024-03-12
 """
 __version__ = elci_version
 
@@ -409,7 +409,6 @@ def get_generation_process_df(regions=None, **kwargs):
                 "include_upstream_processes is true."
             )
         # Get Canadian generation
-        # BUG: KeyError in 2021 data
         _, canadian_gen = combine_upstream_and_gen_df(
             generation_process_df, upstream_df
         )
@@ -428,7 +427,8 @@ def get_generation_process_df(regions=None, **kwargs):
         # through aggregate twice.
         canadian_gen_df = import_impacts.generate_canadian_mixes(
             generation_process_df,
-            config.model_specs.eia_gen_year)
+            config.model_specs.eia_gen_year
+        )
         generation_process_df = pd.concat(
             [generation_process_df, canadian_gen_df], ignore_index=True)
         gen_plus_fuels = generation_process_df
@@ -523,7 +523,7 @@ def run_epa_trade(gen_mix_df, gen_mix_dict, gen_process_dict):
     return dist_dict
 
 
-def run_net_trade(generation_process_df, generation_mix_dict):
+def run_net_trade(generation_mix_dict):
     """Net trading method.
 
     Uses EIA trading data between balancing authority areas to calculate
@@ -531,8 +531,6 @@ def run_net_trade(generation_process_df, generation_mix_dict):
 
     Parameters
     ----------
-    generation_process_df : pandas.DataFrame
-        Data frame created by running :func:`get_generation_process_df`.
     generation_mix_dict : dict
         Dictionary created by :func:`write_generation_mix_database_to_dict`.
 
@@ -549,9 +547,7 @@ def run_net_trade(generation_process_df, generation_mix_dict):
     """
     logging.info("using alt gen method for consumption mix")
     regions_to_keep = list(generation_mix_dict.keys())
-    cons_mix_df_dict = get_consumption_mix_df(
-        regions_to_keep=regions_to_keep
-    )
+    cons_mix_df_dict = get_consumption_mix_df(regions_to_keep=regions_to_keep)
 
     logging.info("write consumption mix to dict")
     cons_mix_dicts={}
