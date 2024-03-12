@@ -43,7 +43,7 @@ inventory is if a particular plant began receiving coal of a different type,
 from a different type of mine, or from a different location.
 
 Last updated:
-    2023-12-22
+    2024-03-12
 """
 
 
@@ -291,6 +291,7 @@ def generate_upstream_coal_map(year):
     eia7a_df = _clean_columns(eia7a_df)
     coal_criteria = eia_fuel_receipts_df['fuel_group']=='Coal'
     eia_fuel_receipts_df = eia_fuel_receipts_df.loc[coal_criteria, :]
+    # Add coal supply region
     eia_fuel_receipts_df = eia_fuel_receipts_df.merge(
         eia7a_df[['msha_id', 'coal_supply_region']],
         how='left',
@@ -302,6 +303,7 @@ def generate_upstream_coal_map(year):
         columns={'coal_supply_region': 'eia_coal_supply_region'},
         inplace=True
     )
+    # Find where coal supply regions failed to match
     eia_fuel_receipts_na = eia_fuel_receipts_df.loc[
         eia_fuel_receipts_df["eia_coal_supply_region"].isnull(), :]
     eia_fuel_receipts_good = eia_fuel_receipts_df.loc[
@@ -311,20 +313,25 @@ def generate_upstream_coal_map(year):
         by=["mine_state", "mine_county", "coal_supply_region"],
         as_index=False
     )["production_short_tons"].count()
+    # Remove region or coal type specifiers from state names.
+    # NOTE: There are six entries with state called 'Refuse Recovery'
+    #       that are 'Refuse' mines in VA, PA, WV, and CO.
     county_basin["mine_state"] = county_basin["mine_state"].str.replace(
         r" \(.*\)", "", regex=True
     )
+    # Only 'Refuse Recovery' is unmatched.
     county_basin["mine_state_abv"] = county_basin[
         "mine_state"].str.lower().map(STATE_ABBREV).str.upper()
     county_basin["mine_county"] = county_basin["mine_county"].str.lower()
 
-
     fips_codes = pd.read_csv(os.path.join(data_dir, "fips_codes.csv"))
     fips_codes = _clean_columns(fips_codes)
     fips_codes["gu_name"] = fips_codes["gu_name"].str.lower()
+    # Convert county FIPS code to string
     fips_codes["county_fips_code"] = fips_codes[
         "county_fips_code"].astype(str).str.replace(".0", "", regex=False)
 
+    # Match state-county names
     county_basin = county_basin.merge(
         right=fips_codes[[
             "state_abbreviation", "county_fips_code", "gu_name"]],
