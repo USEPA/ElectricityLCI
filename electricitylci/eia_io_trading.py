@@ -296,6 +296,12 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     A candidate for parsing out the long list of methods into their own
     separate functions.
 
+    Relies on data files:
+
+    -   CA_Imports_Gen.csv
+    -   CA_Imports_Cols.csv
+    -   CA_Imports_Rows.csv
+
     Warning
     -------
     This method has a habit of requiring a lot of memory. A test run of
@@ -352,25 +358,33 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     del(NET_GEN_ROWS)
 
     # Sum values in each column
+    # Creates a data frame with one column, rows are BA codes, values are
+    # annual sums of net generation.
     df_net_gen_sum = df_net_gen.sum(axis=0).to_frame()
 
-    # Add Canadian import data to the net generation dataset,
-    # concatenate and put in alpha order
+    # Read Canadian import data. Based on annual aggregated Canadian export
+    # sales (in MWh) between Canadian and US balancing authorities.
+    # https://www.cer-rec.gc.ca/en/data-analysis/energy-commodities/    \
+    # electricity/statistics/electricity-trade-summary/
+    # The data frame has annual net trades from CA to US, pull series for
+    # this trade year.
     logging.info("Reading canadian import data")
     df_CA_Imports_Gen = pd.read_csv(
-        data_dir + '/CA_Imports_Gen.csv', index_col=0
+        os.path.join(data_dir, "CA_Imports_Gen.csv"),
+        index_col=0
     )
     df_CA_Imports_Gen = df_CA_Imports_Gen[str(year)]
 
+    # Add Canadian import data to the net generation dataset,
+    # concatenate, convert to data frame, and put in alpha order
     logging.info("Combining US and Canadian net gen data")
     df_net_gen_sum = pd.concat([df_net_gen_sum,df_CA_Imports_Gen]).sum(axis=1)
     df_net_gen_sum = df_net_gen_sum.to_frame()
     df_net_gen_sum = df_net_gen_sum.sort_index(axis=0)
 
-    # Check the net generation of each Balancing Authority against EIA 923 data.
-    # If the percent change of a given area is greater than the mean absolute
-    # difference of all of the areas, it will be treated as an error and
-    # replaced with the value in EIA923.
+    # Concatenate. Now, for each BA there are two columns:
+    #    0: EIA bulk net generation + Canadian export data
+    #    'Electricity': EIA 923 generation data
     logging.info("Checking against EIA 923 generation data")
     net_gen_check = df_net_gen_sum.merge(
         right=eia_gen_ba,
@@ -379,6 +393,10 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
         how="left"
     ).reset_index()
 
+    # Check the net generation of each Balancing Authority against EIA 923 data.
+    # If the percent change of a given area is greater than the mean absolute
+    # difference of all of the areas, it will be treated as an error and
+    # replaced with the value in EIA923.
     net_gen_check["diff"] = abs(
         net_gen_check["Electricity"] - net_gen_check[0]) / net_gen_check[0]
 
