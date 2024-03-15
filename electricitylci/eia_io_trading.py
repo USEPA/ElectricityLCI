@@ -622,6 +622,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     for i in trade_row_diff:
         df_trade_pivot.loc[i,:] = 0
 
+    # Square matrix with US BA codes as indexes and column names
     df_trade_pivot = df_trade_pivot.sort_index(axis=0)
 
     # Add Canadian Imports to the trading matrix
@@ -636,16 +637,23 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     df_CA_Imports_Rows = df_CA_Imports_Rows.pivot(
         columns='us_ba', values=str(year))
 
+    # Append rows for CA to US balancing authority exports.
+    # rows=74, cols=68
     df_concat_trade_CA = pd.concat([df_trade_pivot, df_CA_Imports_Rows])
+
+    # Append CA BA codes to cols, making it a square matrix.
+    # rows=74, cols=74
     df_concat_trade_CA = pd.concat(
         [df_concat_trade_CA, df_CA_Imports_Cols], axis=1)
     df_concat_trade_CA.fillna(0, inplace=True)
     df_trade_pivot = df_concat_trade_CA
+
+    # Alphabetize the BA codes to match index and column names.
     df_trade_pivot = df_trade_pivot.sort_index(axis=0)
     df_trade_pivot = df_trade_pivot.sort_index(axis=1)
 
     # Perform trading calculations as provided in Qu et al (2018) to
-    # determine the composition of a BA consumption mix
+    # determine the composition of a BA consumption mix.
 
     # Create total inflow vector x and then convert to a diagonal matrix x-hat
     logging.info("Inflow vector")
