@@ -26,6 +26,8 @@ from electricitylci.model_config import model_specs
 import electricitylci.eia923_generation as eia923
 import electricitylci.eia860_facilities as eia860
 from electricitylci.utils import read_ba_codes
+from electricitylci.utils import check_output_dir
+from electricitylci.utils import download
 from electricitylci.process_dictionary_writer import (
     exchange,
     process_table_creation_con_mix,
@@ -44,7 +46,7 @@ flows are then used to generate the consumption mix for a given region or
 balancing authority area.
 
 Last updated:
-    2024-03-12
+    2024-03-15
 """
 __all__ = [
     "ba_io_trading_model",
@@ -168,7 +170,7 @@ def _read_eia_gen(year):
         A tuple of length two.
 
         - pandas.DataFrame : EIA generation data with two columns:
-          "Balacing Authority Code" and "Electricity".
+          "Balancing Authority Code" and "Electricity".
         - list : EIA 860 balancing authority abbreviation codes
     """
     eia923_gen = eia923.build_generation_data(generation_years=[year])
@@ -207,8 +209,8 @@ def _make_net_gen(year, ba_cols, ng_json_list):
     -------
     pandas.DataFrame
         A data frame of net generation values with columns for each balancing
-        authority code and a row index of time stamps associated with the given
-        year.
+        authority code and a row index of hourly time stamps associated with
+        the given year.
 
     Examples
     --------
@@ -285,7 +287,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     Returns
     -------
     dict
-        A dictionary of dataframes. Each with import region, export region,
+        A dictionary of data frames. Each with import region, export region,
         transaction amount, total imports for import region, and fraction of
         total.
 
@@ -357,10 +359,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     # Add Canadian import data to the net generation dataset,
     # concatenate and put in alpha order
     logging.info("Reading canadian import data")
-    df_CA_Imports_Gen = pd.read_csv(
-        data_dir + '/CA_Imports_Gen.csv', index_col=0
-    )
-    df_CA_Imports_Gen = df_CA_Imports_Gen[str(year)]
+    df_CA_Imports_Gen = _read_ca_imports(year)
 
     logging.info("Combining US and Canadian net gen data")
     df_net_gen_sum = pd.concat([df_net_gen_sum,df_CA_Imports_Gen]).sum(axis=1)
@@ -378,13 +377,19 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
         right_on=["Balancing Authority Code"],
         how="left"
     ).reset_index()
+    # Zero-fill any mis-matches in the merge.
+    net_gen_check = net_gen_check.fillna({0: 0, 'Electricity': 0})
 
+    # HOTFIX: add a tiny bit to denom.; avoid zero division [2024-03-14; TWD]
     net_gen_check["diff"] = abs(
-        net_gen_check["Electricity"] - net_gen_check[0]) / net_gen_check[0]
+        net_gen_check["Electricity"] - net_gen_check[0]) / (
+            1e-9 + net_gen_check[0]
+        )
 
     # HOTFIX: no more mad() [2023-11-14; TWD]
     # Write-out the mean absolute difference equation
     # https://github.com/pandas-dev/pandas/blob/2cb96529396d93b46abab7bbc73a208e708c642e/pandas/core/generic.py#L10817
+    # NOTE: susceptible to outliers (e.g., GRIS BA)
     diff_mad = net_gen_check["diff"] - net_gen_check["diff"].mean()
     diff_mad = abs(diff_mad).mean()
 
@@ -393,20 +398,20 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
         ["Balancing Authority Code", "Electricity"]
     ].set_index("Balancing Authority Code")
 
-    df_net_gen_sum.loc[net_gen_swap.index,[0]] = np.nan
-    net_gen_swap.rename(columns={"Electricity":0}, inplace=True)
+    df_net_gen_sum.loc[net_gen_swap.index, [0]] = np.nan
+    net_gen_swap.rename(columns={"Electricity": 0}, inplace=True)
     df_net_gen_sum = df_net_gen_sum.combine_first(net_gen_swap)
 
     # First work on the trading data from the 'df_trade_all_stack_2016' frame
     # This does the following:
     # 1. reformats the data to an annual basis
     # 2. formats the BA names in the corresponding columns
-    # 3. evalutes the trade values from both BA perspectives
+    # 3. evaluates the trade values from both BA perspectives
     #    (e.g. BA1 as exporter and importer in a transaction with BA2)
     # 4. evaluates the trading data for any results that don't make sense
     #    a. both BAs designate as importers (negative value)
     #    b. both BAs designate as exporters (positive value)
-    #    c. one of the BAs in the transation reports a zero value and the
+    #    c. one of the BAs in the transaction reports a zero value and the
     #       other is nonzero
     # 5. calculate the percent difference in the transaction values reports
     #    by BAs
@@ -419,7 +424,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     # columns representing importing BAs, and values for the traded amount.
 
     # Group and resample trading data so that it is on an annual basis
-    logging.info("Creating trading dataframe")
+    logging.info("Creating trading data frame")
     df_ba_trade = ba_exchange_to_df(BA_TO_BA_ROWS, data_type='ba_to_ba')
     del(BA_TO_BA_ROWS)
 
@@ -430,7 +435,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     # Keep only the columns that match the balancing authority names, there are
     # several other columns included in the dataset that represent states
     # (e.g., TEX, NY, FL) and other areas (US48)
-    logging.info("Filtering trading dataframe")
+    logging.info("Filtering trading data frame")
     filt1 = df_ba_trade['from_region'].isin(ba_cols)
     filt2 = df_ba_trade['to_region'].isin(ba_cols)
     filt = filt1 & filt2
@@ -444,7 +449,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     df_ba_trade_pivot = df_ba_trade_pivot.loc[start_datetime:end_datetime]
 
     # Sum columns - represents the net transacted amount between the two BAs
-    df_ba_trade_sum = df_ba_trade_pivot.sum(axis = 0).to_frame()
+    df_ba_trade_sum = df_ba_trade_pivot.sum(axis=0).to_frame()
     df_ba_trade_sum = df_ba_trade_sum.reset_index()
     df_ba_trade_sum.columns = ['BAAs','Exchange']
 
@@ -525,13 +530,14 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
         'Exchange_1_2_abs', 'Exchange_2_1_abs']].mean(axis=1)
 
     # Percent diff equations creates NaN where both values are 0, fill with 0
-    df_concat_trade['Percent_Diff_Avg'].fillna(0, inplace=True)
+    df_concat_trade['Percent_Diff_Avg'] = df_concat_trade[
+        'Percent_Diff_Avg'].fillna(0)
 
     # Final exchange value based on logic;
     # if percent diff is less than 20%, take mean,
     # if not use the value as reported by the exporting BAA.
     # First figure out which BAA is the exporter by checking the value of the
-    # Exchance_1_2. If that value is positive, it indicates that BAA1 is
+    # Exchange_1_2. If that value is positive, it indicates that BAA1 is
     # exported to BAA2; if negative, use the value from Exchange_2_1.
     df_concat_trade['Final_Exchange'] = np.where(
         df_concat_trade['Percent_Diff_Avg'].abs() < 0.2,
