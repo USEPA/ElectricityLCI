@@ -57,6 +57,152 @@ __all__ = [
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
+def _get_ca_imports(just_read=False):
+    """Return net annual Canadian exports and net annual exports to US
+    balancing authorities based on www.cer-rec.gc.ca electricity export
+    sales workbook.
+
+    Canadian province and US region to balancing authority mapping provided
+    by NETL.
+
+    Workbook source is https://www.cer-rec.gc.ca/en/index.html (last accessed
+    March 13, 2024).
+
+    Parameters
+    ----------
+    just_read : bool, optional
+        Helper to read existing Excel workbook (skips download), by default False
+
+    Returns
+    -------
+    tuple
+        Length two.
+
+        -   pandas.DataFrame: net annual exports by Canadian balancing
+            authority (MWh)
+        -   pandas.DataFrame: net annual exports by Canadian balancing
+            authority to US balancing authority (MWh)
+
+    Raises
+    ------
+    OSError
+        If Excel workbook is unreachable or the output directory cannot be
+        created to save the workbook.
+    """
+    # Source:
+    # Data and analysis > Energy commodities > Electricity and renewables >
+    # Electricity Trade Summary
+    url = (
+        "https://www.cer-rec.gc.ca/en"
+        "/data-analysis/energy-commodities/electricity/statistics"
+        "/electricity-trade-summary"
+        "/electricity-trade-summary-resume-echanges-commerciaux"
+        "-electricite.xlsx"
+    )
+    # Map taken from 'CA_ExportSalesSummaryReport.xlsx' developed by NETL.
+    CA_BA_MAP = {
+        "Alberta":  "AESO",
+        "British Columbia": "BCHA",
+        "Québec": "HQT",
+        "Manitoba": "MHEB",
+        "New Brunswick": "NBSO",
+        "Nova Scotia": "NSPI",
+        "Ontario": "IESO",
+        "Saskatchewan": "SPC",
+        "Newfoundland and Labrador": "NEWL",
+    }
+    US_BA_MAP = {
+        "Alaska": "BPAT",
+        "Arizona": "BPAT",
+        "California": "BPAT",
+        "Colorado": "BPAT",
+        "Idaho": "BPAT",
+        "Indiana": "MISO",
+        "Kansas": "MISO",
+        "Maine": "ISNE",
+        "Massachusetts": "ISNE",
+        "Michigan": "MISO",
+        "Minn / N. Dakota": "MISO",
+        "Minnesota": "MISO",
+        "Mississippi": "MISO",
+        "Montana": "BPAT",
+        "Nebraska": "MISO",
+        "Nevada": "BPAT",
+        "New England-ISO": "ISNE",
+        "New Jersey": "PJM",
+        "New Mexico": "BPAT",
+        "New York": "NYIS",
+        "North Dakota": "MISO",
+        "Ohio": "PJM",
+        "Oregon": "BPAT",
+        "Pennsylvania": "PJM",
+        "Pennsylvania Jersey Maryland Power Pool": "PJM",
+        "Texas": "MISO",
+        "Utah": "BPAT",
+        "Vermont": "ISNE",
+        "Washington": "BPAT",
+        "Wyoming": "BPAT",
+        "New Hampshire": "ISNE",
+        "Florida": "FPL",
+        # HOTFIX: missing state maps [2024-03-14; TWD]
+        # https://github.com/USEPA/ElectricityLCI/issues/236
+        'Illinois': 'MISO',
+        'Missouri': 'AECI',
+        'South Dakota': 'SWPP',
+        'Oklahoma': 'SWPP',
+        'Maryland': 'PJM',
+        'Arkansas': 'MISO',
+    }
+
+    file_name = os.path.basename(url)
+    out_dir = os.path.join(paths.local_path, "cer_rec")
+    if check_output_dir(out_dir):
+        file_path = os.path.join(out_dir, file_name)
+        # Allow user to by-pass the download if it exists.
+        if just_read and os.path.isfile(file_path):
+            pass
+        else:
+            download(url, file_path)
+
+        if os.path.isfile(file_path):
+            # Read into data frame, which includes six columns:
+            # - 'Date' (int): year
+            # - 'Volume (MW.h)' (float): exchange amount
+            # - 'Province (Eng. / Ang.)' (str): Canadian province
+            # - 'Destination (Eng. / Ang.)' (str): US destination
+            # - 'Province (Fra.)' (str): Canadian province
+            # - 'Destination (Fra.)' (str): US destination
+            df = pd.read_excel(file_path, sheet_name='Fig. 2')
+            df = df.rename(columns={
+                'Volume (MW.h)': 'Volume',
+                'Province (Eng. / Ang.)': 'Province',
+                'Destination (Eng. / Ang.)': 'Destination',
+            })
+
+            # Map balancing authority codes to regions.
+            # NOTE: In the Excel workbook from March 2024, there were two
+            #       US provinces: Michigan and New York.
+            df['ca_ba'] = df['Province'].map(CA_BA_MAP)
+            # NOTE: 'Ontario' destination is unmatched, March 2024.
+            df['us_ba'] = df['Destination'].map(US_BA_MAP)
+
+            # Aggregate export volumes between CA and US by year
+            agg_df = df.groupby(by=['ca_ba', 'us_ba', 'Date']).agg(
+                {'Volume': 'sum'})
+            agg_df = agg_df.reset_index()
+
+            # Aggregate export volumes by CA by year
+            agg_ca = df.groupby(by=['ca_ba', 'Date']).agg({'Volume': 'sum'})
+            agg_ca = agg_ca.reset_index()
+
+            logging.info("Read Canadian exports from https://www.cer-rec.gc.ca")
+            return (agg_df, agg_ca)
+        else:
+            raise OSError("Failed to access file, %s" % file_path)
+    else:
+        raise OSError("Failed to create output directory, %s" % out_dir)
+
+
 def _read_ba():
     """Generate the Balancing Authority data frame and acronym and FERC lists.
 
@@ -152,6 +298,97 @@ def _read_bulk():
     logging.debug(f"Demand rows:{len(DEMAND_ROWS)}")
 
     return (NET_GEN_ROWS, BA_TO_BA_ROWS, DEMAND_ROWS)
+
+
+def _read_ca_imports(year):
+    """Return the Canadian import data frames based on Canadian electricity
+    sales data (either from eLCI data hub or from source).
+
+    For year 2005-2020, data are from provided CSV files:
+
+    -   CA_Imports_Gen.csv
+    -   CA_Imports_Rows.csv
+
+    These CSV files were developed using Canadian electricity export sales.
+    The methods are captured in :func:`get_ca_imports`, which includes years
+    past 2020.
+
+    Parameters
+    ----------
+    year : int
+        The trading year (e.g., 2020).
+
+    Returns
+    -------
+    tuple
+        Length two.
+
+        -   pandas.Series: Net annual Canadian export sales (MWh).
+            Indices are balancing authority codes and the values are the
+            trade amounts for the given trade year.
+        -   pandas.DataFrame: Net annual Canadian exports to US balancing
+            authorities (MWh)
+    """
+    # The Canadian annual export data from 2014-2020 is available w/ eLCI.
+    # The content is broken across the following CSV files.
+    data_file = os.path.join(data_dir, "CA_Imports_Gen.csv")
+    rows_file = os.path.join(data_dir, "CA_Imports_Rows.csv")
+
+    # Initialize return data frames
+    df = None
+    rf = None
+
+    # Ensure year is integer and yr is the string version.
+    year = int(year)
+    yr = str(year)
+
+    # Read net annual Canadian exports.
+    if os.path.isfile(data_file):
+        df = pd.read_csv(data_file, index_col=0)
+        if yr in df.columns:
+            # The CSV exists and the trading year is available.
+            logging.info("Read Canadian net exports from %s" % data_file)
+            df = df[yr].copy()
+        else:
+            df = None
+
+    # Read net annual Canadian exports to their US BA destinations.
+    if os.path.isfile(rows_file):
+        rf = pd.read_csv(rows_file, index_col=0)
+        if yr in rf.columns and 'us_ba' in rf.columns:
+            # The CSV exists and the trading year is available.
+            logging.info("Read Canadian-to-US exports from %s" % rows_file)
+            rf = rf[['us_ba', yr]].copy()
+            rf = rf.pivot(columns='us_ba', values=yr)
+        else:
+            rf = None
+
+    # If, for any reason, the net exports or Canadian-US export data are not
+    # available, then use the CER-rec data download.
+    if df is None or rf is None:
+        # Either the CSV is gone or the trading year is not available.
+        #  ca_us (pandas.DataFrame): Canadian-to-US BA exchanges by year
+        #  ca_df (pandas.DataFrame): Canadian BA net exchanges (MWh) by year
+        ca_us, ca_df = _get_ca_imports()
+
+        # Create series w/ ca_ba as the index and year as the name.
+        ca_df = ca_df.query("Date == %d" % year).copy()
+        df = ca_df['Volume'].copy()
+        df.name = str(year)
+        df.index = ca_df['ca_ba']
+
+        # Create data frame of CA-US exports
+        # NOTE: this data frame is not square.
+        rf = ca_us.query("Date == %d" % year).copy()
+        rf.index = rf['ca_ba'].copy()
+        rf = rf.pivot(columns='us_ba', values='Volume')
+        rf = rf.fillna(0)
+
+    # NOTE: this could return an empty series if the year is not found!
+    if len(df) == 0:
+        logging.warning("Failed to find %d in Canadian export data!" % year)
+
+    return (df, rf)
 
 
 def _read_eia_gen(year):
@@ -269,76 +506,174 @@ def _make_net_gen(year, ba_cols, ng_json_list):
     return df_net_gen
 
 
-def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
-    """Use EIA trading data to calculate the consumption mix for
-    balancing authority area, FERC region, and U.S. national levels.
+def _make_net_gen_sum(net_trade, eia_gen, ca_gen):
+    """Combine net trades with annual CA exports and EIA net generation.
 
     Parameters
     ----------
-    year : int, optional
-        Specified year to pull transaction data between balancing authorities.
-    subregion : str, optional
-        Description of a group of regions. Options include 'FERC' for all FERC
-        market regions, 'BA' for all balancing authorities.
-    regions_to_keep : list, optional
-        A list of balancing authority names of interest.
-        Otherwise, returns all balancing authorities.
+    net_trade : pandas.DataFrame
+        Hourly generation trade table for each US balancing authority, see :func:`_make_net_gen`.
+    eia_gen : pandas.DataFrame
+        Net annual generation for each US balancing authority.
+    ca_gen : pandas.Series
+        Net annual electricity exports from Canadian balancing authorities, see :func:`_read_ca_imports`.
 
     Returns
     -------
-    dict
-        A dictionary of data frames. Each with import region, export region,
-        transaction amount, total imports for import region, and fraction of
-        total.
-
-        The dictionary keys are the level of aggregation: "BA", "FERC", "US".
-
-    Notes
-    -----
-    A candidate for parsing out the long list of methods into their own
-    separate functions.
-
-    Relies on data files:
-
-    -   CA_Imports_Gen.csv
-    -   CA_Imports_Cols.csv
-    -   CA_Imports_Rows.csv
-
-    Warning
-    -------
-    This method has a habit of requiring a lot of memory. A test run of
-    ELCI_1 maxed at 11.1 GB during the call to :func:`ba_exchange_to_df`.
-    If you are hitting Python segmentation faults, try restarting your
-    computer and re-running the model with limited other applications running.
-    You may just need more memory.
-
-    Examples
-    --------
-    >>> d = ba_io_trading_model()  # uses modelconfig values
-    >>> ferc_final_trade = d['FERC']
-    >>> ferc_final_trade.head()
-    import ferc region export ferc region         value         total  fraction
-0              CAISO              CAISO  2.662827e+08  3.225829e+08  0.825471
-1              CAISO             Canada  1.119572e+06  3.225829e+08  0.003471
-2              CAISO              ERCOT  0.000000e+00  3.225829e+08  0.000000
-3              CAISO             ISO-NE  0.000000e+00  3.225829e+08  0.000000
-4              CAISO               MISO  0.000000e+00  3.225829e+08  0.000000
+    pandas.DataFrame
+        Net annual generation amounts for both US and Canada balancing
+        authorities. Corrected using EIA 923 generation data. Assumes
+        Canadian exports to US are equal to generation amounts.
     """
-    if year is None:
-        year = model_specs.NETL_IO_trading_year
+    # Sum values in each column
+    # Creates a data frame with one column, rows are BA codes, values are
+    # annual sums of net generation.
+    df_net_gen_sum = net_trade.sum(axis=0).to_frame()
 
-    if subregion is None:
-        subregion = model_specs.regional_aggregation
-    logging.info(
-        "Using trade year %d and aggregation level '%s'" % (year, subregion))
+    # Add Canadian import data to the net generation dataset,
+    # concatenate, convert to data frame, and put in alpha order
+    logging.info("Combining US and Canadian net gen data")
+    df_net_gen_sum = pd.concat([df_net_gen_sum, ca_gen]).sum(axis=1)
+    df_net_gen_sum = df_net_gen_sum.to_frame()
+    df_net_gen_sum = df_net_gen_sum.sort_index(axis=0)
 
-    if subregion not in ['BA', 'FERC','US']:
-        raise ValueError(
-            'Subregion or regional_aggregation must have a value of "BA" '
-            'or "FERC" when calculating trading with input-output, '
-            f'not {subregion}'
+    # Merge with EIA generation. Now, for each BA there are two columns:
+    #    0: bulk net trade generation + Canadian export data
+    #    'Electricity': EIA 923 generation data
+    logging.info("Checking against EIA 923 generation data")
+    net_gen_check = df_net_gen_sum.merge(
+        right=eia_gen,
+        left_index=True,
+        right_on=["Balancing Authority Code"],
+        how="left"
+    ).reset_index()
+
+    # Zero-fill any mis-matches in the merge.
+    net_gen_check = net_gen_check.fillna({0: 0, 'Electricity': 0})
+
+    # Calculate percent difference between EIA generation and net trades.
+    # HOTFIX: add a tiny bit to denom.; avoid zero division [2024-03-14; TWD]
+    net_gen_check["diff"] = abs(
+        net_gen_check["Electricity"] - net_gen_check[0]) / (
+            1e-9 + net_gen_check[0]
         )
+    # Calculated the mean absolute difference (MAD)
+    # HOTFIX: no more mad() [2023-11-14; TWD]
+    # https://github.com/pandas-dev/pandas/blob/2cb96529396d93b46abab7bbc73a208e708c642e/pandas/core/generic.py#L10817
+    # NOTE: susceptible to outliers (e.g., GRIS BA)
+    diff_mad = net_gen_check["diff"] - net_gen_check["diff"].mean()
+    diff_mad = abs(diff_mad).mean()
 
+    # Find the balancing authorities where the EIA generation is vastly
+    # different from the net trades, using MAD as the cutoff criteria.
+    net_gen_swap = net_gen_check.loc[
+        net_gen_check["diff"] > diff_mad,
+        ["Balancing Authority Code", "Electricity"]
+    ].set_index("Balancing Authority Code")
+
+    # Swap trades with EIA generation, when generation is vastly larger.
+    df_net_gen_sum.loc[net_gen_swap.index, [0]] = np.nan
+    net_gen_swap.rename(columns={"Electricity": 0}, inplace=True)
+    df_net_gen_sum = df_net_gen_sum.combine_first(net_gen_swap)
+
+    return df_net_gen_sum
+
+
+def _make_square_pivot(df, names):
+    """Make a pivot table square using the list of expected row/col names.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        A data frame meant to be a square matrix with the same names for
+        rows (index) and columns.
+    names : list
+        List of row (index) and column names.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The same data frame sent, but with extra rows and columns added
+        to match the list of names provided.
+    """
+    # Find missing rows/cols - need to add them so we have a square matrix.
+    trade_cols = list(df.columns.values)
+    trade_rows = list(df.index.values)
+
+    trade_cols_set = set(trade_cols)
+    trade_rows_set = set(trade_rows)
+    trade_ba_ref_set = set(names)
+
+    trade_col_diff = list(trade_ba_ref_set - trade_cols_set)
+    trade_col_diff.sort(key=str.upper)
+
+    trade_row_diff = list(trade_ba_ref_set - trade_rows_set)
+    trade_row_diff.sort(key=str.upper)
+
+    # Add in missing columns, then sort in alphabetical order
+    for i in trade_col_diff:
+        df[i] = 0
+
+    df = df.sort_index(axis=1)
+
+    # Add in missing rows, then sort in alphabetical order
+    for i in trade_row_diff:
+        df.loc[i,:] = 0
+
+    # Square matrix with US BA codes as indexes and column names
+    df = df.sort_index(axis=0)
+
+    return df
+
+
+def _make_trade_pivot(year, ba_cols, trade_df):
+    """Create pivot table with rows representing exporting balancing
+    authorities and columns representing importing balancing authorities.
+
+    This function does the following:
+
+    1.  Reformat the data to an annual basis.
+    2.  Format the BA names in the corresponding columns.
+    3.  Evaluate the trade values from both BA perspectives
+        (e.g. BA1 as exporter and importer in a transaction with BA2).
+    4.  Evaluate the trading data for any results that don't make sense
+
+        -   both BAs designate as importers (negative value)
+        -   both BAs designate as exporters (positive value)
+        -   one of the BAs in the transaction reports a zero value and the
+            other is nonzero
+
+    5.  Calculate the percent difference in the transaction values reports
+        by BAs.
+    6.  Final exchange value based on the following logic:
+
+        -   if percent diff is less than 20%, take mean,
+        -   if not, use the value as reported by the exporting BAA
+        -   designate each BA in the transaction either as the importer or
+            exporter
+
+    Parameters
+    ----------
+    year : int
+        The trade year (e.g., 2020).
+    ba_cols : list
+        A list of balancing authority codes, see :func:`_read_ba_codes`,
+        used to filter trade regions.
+    trade_df : pandas.DataFrame
+        A data frame of BA-to-BA trades with columns
+
+        - 'from_region' (str)
+        - 'to_region' (str)
+        - 'datetime' (numpy.datetime64)
+        - 'ba_to_ba' (float)
+
+    Returns
+    -------
+    pandas.DataFrame
+        A a pivot with index ('Exporting_BAA') representing exporting BAs and
+        columns ('Importing_BAA') representing importing BAs, and values for
+        the traded amount.
+    """
     # Subset for specified eia_gen_year
     start_datetime = '{}-01-01 00:00:00+00:00'.format(year)
     end_datetime = '{}-12-31 23:00:00+00:00'.format(year)
@@ -346,117 +681,22 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     start_datetime = datetime.strptime(start_datetime, '%Y-%m-%d %H:%M:%S%z')
     end_datetime = datetime.strptime(end_datetime, '%Y-%m-%d %H:%M:%S%z')
 
-    # Import US and CA BA into single North America data frame.
-    df_BA_NA, ba_cols, ferc_list = _read_ba()
-
-    # Read necessary data from EIA's bulk data download.
-    NET_GEN_ROWS, BA_TO_BA_ROWS, DEMAND_ROWS = _read_bulk()
-
-    # Create EIA generation dataset and Form 860 balancing authority list.
-    eia_gen_ba, eia860_ba_list = _read_eia_gen(year)
-
-    # Net Generation Data Import
-    df_net_gen = _make_net_gen(year, ba_cols, NET_GEN_ROWS)
-    del(NET_GEN_ROWS)
-
-    # Sum values in each column
-    # Creates a data frame with one column, rows are BA codes, values are
-    # annual sums of net generation.
-    df_net_gen_sum = df_net_gen.sum(axis=0).to_frame()
-
-    # Read Canadian import data. Based on annual aggregated Canadian export
-    # sales (in MWh) between Canadian and US balancing authorities.
-    # https://www.cer-rec.gc.ca/en/data-analysis/energy-commodities/    \
-    # electricity/statistics/electricity-trade-summary/
-    # The data frame has annual net trades from CA to US, pull series for
-    # this trade year.
-    logging.info("Reading canadian import data")
-    df_CA_Imports_Gen = _read_ca_imports(year)
-
-    # Add Canadian import data to the net generation dataset,
-    # concatenate, convert to data frame, and put in alpha order
-    logging.info("Combining US and Canadian net gen data")
-    df_net_gen_sum = pd.concat([df_net_gen_sum,df_CA_Imports_Gen]).sum(axis=1)
-    df_net_gen_sum = df_net_gen_sum.to_frame()
-    df_net_gen_sum = df_net_gen_sum.sort_index(axis=0)
-
-    # Concatenate. Now, for each BA there are two columns:
-    #    0: EIA bulk net generation + Canadian export data
-    #    'Electricity': EIA 923 generation data
-    logging.info("Checking against EIA 923 generation data")
-    net_gen_check = df_net_gen_sum.merge(
-        right=eia_gen_ba,
-        left_index=True,
-        right_on=["Balancing Authority Code"],
-        how="left"
-    ).reset_index()
-    # Zero-fill any mis-matches in the merge.
-    net_gen_check = net_gen_check.fillna({0: 0, 'Electricity': 0})
-
-    # HOTFIX: add a tiny bit to denom.; avoid zero division [2024-03-14; TWD]
-    net_gen_check["diff"] = abs(
-        net_gen_check["Electricity"] - net_gen_check[0]) / (
-            1e-9 + net_gen_check[0]
-        )
-
-    # HOTFIX: no more mad() [2023-11-14; TWD]
-    # Write-out the mean absolute difference equation
-    # https://github.com/pandas-dev/pandas/blob/2cb96529396d93b46abab7bbc73a208e708c642e/pandas/core/generic.py#L10817
-    # NOTE: susceptible to outliers (e.g., GRIS BA)
-    diff_mad = net_gen_check["diff"] - net_gen_check["diff"].mean()
-    diff_mad = abs(diff_mad).mean()
-
-    net_gen_swap = net_gen_check.loc[
-        net_gen_check["diff"] > diff_mad,
-        ["Balancing Authority Code", "Electricity"]
-    ].set_index("Balancing Authority Code")
-
-    df_net_gen_sum.loc[net_gen_swap.index, [0]] = np.nan
-    net_gen_swap.rename(columns={"Electricity": 0}, inplace=True)
-    df_net_gen_sum = df_net_gen_sum.combine_first(net_gen_swap)
-
-    # First work on the trading data from the 'df_trade_all_stack_2016' frame
-    # This does the following:
-    # 1. reformats the data to an annual basis
-    # 2. formats the BA names in the corresponding columns
-    # 3. evaluates the trade values from both BA perspectives
-    #    (e.g. BA1 as exporter and importer in a transaction with BA2)
-    # 4. evaluates the trading data for any results that don't make sense
-    #    a. both BAs designate as importers (negative value)
-    #    b. both BAs designate as exporters (positive value)
-    #    c. one of the BAs in the transaction reports a zero value and the
-    #       other is nonzero
-    # 5. calculate the percent difference in the transaction values reports
-    #    by BAs
-    # 6. final exchange value based on logic;
-    #    a. if percent diff is less than 20%, take mean,
-    #    b. if not use the value as reported by the exporting BAA
-    #    c. designate each BA in the transaction either as the importer or
-    #       exporter
-    # Output is a pivot with index (rows) representing exporting BAs,
-    # columns representing importing BAs, and values for the traded amount.
-
-    # Group and resample trading data so that it is on an annual basis
-    logging.info("Creating trading data frame")
-    df_ba_trade = ba_exchange_to_df(BA_TO_BA_ROWS, data_type='ba_to_ba')
-    del(BA_TO_BA_ROWS)
-
-    df_ba_trade = df_ba_trade.set_index('datetime')
-    df_ba_trade['transacting regions'] = (
-        df_ba_trade['from_region'] + '-' + df_ba_trade['to_region'])
+    ba_trade = trade_df.set_index('datetime')
+    ba_trade['transacting regions'] = (
+        ba_trade['from_region'] + '-' + ba_trade['to_region'])
 
     # Keep only the columns that match the balancing authority names, there are
     # several other columns included in the dataset that represent states
     # (e.g., TEX, NY, FL) and other areas (US48)
     logging.info("Filtering trading data frame")
-    filt1 = df_ba_trade['from_region'].isin(ba_cols)
-    filt2 = df_ba_trade['to_region'].isin(ba_cols)
+    filt1 = ba_trade['from_region'].isin(ba_cols)
+    filt2 = ba_trade['to_region'].isin(ba_cols)
     filt = filt1 & filt2
-    df_ba_trade = df_ba_trade[filt]
+    ba_trade = ba_trade[filt]
 
     # Subset for eia_gen_year, need to pivot first because of non-unique
-    # datetime index
-    df_ba_trade_pivot = df_ba_trade.pivot(
+    # datetime index.
+    df_ba_trade_pivot = ba_trade.pivot(
         columns='transacting regions', values='ba_to_ba'
     )
     df_ba_trade_pivot = df_ba_trade_pivot.loc[start_datetime:end_datetime]
@@ -592,66 +832,144 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     df_concat_trade_subset.columns = [
         'Exporting_BAA', 'Importing_BAA', 'Amount']
 
-    df_trade_pivot = df_concat_trade_subset.pivot_table(
+    trade_pivot = df_concat_trade_subset.pivot_table(
         index='Exporting_BAA',
         columns='Importing_BAA',
         values='Amount').fillna(0)
 
-    # Continue formatting the df_trade
-    # Find missing BAs - need to add them in so that we have a square matrix
-    # Not all BAs are involved in transactions
-    trade_cols = list(df_trade_pivot.columns.values)
-    trade_rows = list(df_trade_pivot.index.values)
+    return trade_pivot
 
-    trade_cols_set = set(trade_cols)
-    trade_rows_set = set(trade_rows)
-    trade_ba_ref_set = set(ba_cols)
 
-    trade_col_diff = list(trade_ba_ref_set - trade_cols_set)
-    trade_col_diff.sort(key = str.upper)
+def _match_df_cols(base_df, return_df):
+    to_cols = list(return_df.columns.values)
+    from_cols = list(base_df.columns.values)
 
-    trade_row_diff = list(trade_ba_ref_set - trade_rows_set)
-    trade_row_diff.sort(key=str.upper)
+    to_set = set(to_cols)
+    ref_set = set(from_cols)
 
-    # Add in missing columns, then sort in alphabetical order
-    for i in trade_col_diff:
-        df_trade_pivot[i] = 0
+    col_diff = list(ref_set - to_set)
+    col_diff.sort(key=str.upper)
 
-    df_trade_pivot = df_trade_pivot.sort_index(axis=1)
+    # Add in missing columns,
+    for i in col_diff:
+        return_df[i] = 0
 
-    # Add in missing rows, then sort in alphabetical order
-    for i in trade_row_diff:
-        df_trade_pivot.loc[i,:] = 0
+    # Sort in alphabetical order
+    return_df = return_df.sort_index(axis=1)
 
-    # Square matrix with US BA codes as indexes and column names
-    df_trade_pivot = df_trade_pivot.sort_index(axis=0)
+    return (return_df)
+
+
+def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
+    """Use EIA trading data to calculate the consumption mix for
+    balancing authority area, FERC region, and U.S. national levels.
+
+    Parameters
+    ----------
+    year : int, optional
+        Specified year to pull transaction data between balancing authorities.
+    subregion : str, optional
+        Description of a group of regions. Options include 'FERC' for all FERC
+        market regions, 'BA' for all balancing authorities.
+    regions_to_keep : list, optional
+        A list of balancing authority names of interest.
+        Otherwise, returns all balancing authorities.
+
+    Returns
+    -------
+    dict
+        A dictionary of data frames. Each with import region, export region,
+        transaction amount, total imports for import region, and fraction of
+        total.
+
+        The dictionary keys are the level of aggregation: "BA", "FERC", "US".
+
+    Notes
+    -----
+    A candidate for parsing out the long list of methods into their own
+    separate functions.
+
+    Warning
+    -------
+    This method has a habit of requiring a lot of memory. A test run of
+    ELCI_1 maxed at 11.1 GB during the call to :func:`ba_exchange_to_df`.
+    If you are hitting Python segmentation faults, try restarting your
+    computer and re-running the model with limited other applications running.
+    You may just need more memory.
+
+    Examples
+    --------
+    >>> d = ba_io_trading_model()  # uses modelconfig values
+    >>> ferc_final_trade = d['FERC']
+    >>> ferc_final_trade.head()
+    import ferc region export ferc region         value         total  fraction
+0              CAISO              CAISO  2.662827e+08  3.225829e+08  0.825471
+1              CAISO             Canada  1.119572e+06  3.225829e+08  0.003471
+2              CAISO              ERCOT  0.000000e+00  3.225829e+08  0.000000
+3              CAISO             ISO-NE  0.000000e+00  3.225829e+08  0.000000
+4              CAISO               MISO  0.000000e+00  3.225829e+08  0.000000
+    """
+    if year is None:
+        year = model_specs.NETL_IO_trading_year
+
+    if subregion is None:
+        subregion = model_specs.regional_aggregation
+    logging.info(
+        "Using trade year %d and aggregation level '%s'" % (year, subregion))
+
+    if subregion not in ['BA', 'FERC','US']:
+        raise ValueError(
+            'Subregion or regional_aggregation must have a value of "BA" '
+            'or "FERC" when calculating trading with input-output, '
+            f'not {subregion}'
+        )
+
+    # Import US and CA BA into single North America data frame.
+    df_BA_NA, ba_cols, ferc_list = _read_ba()
+
+    # Read necessary data from EIA's bulk data download.
+    NET_GEN_ROWS, BA_TO_BA_ROWS, DEMAND_ROWS = _read_bulk()
+
+    # Create EIA generation dataset and Form 860 balancing authority list.
+    eia_gen_ba, eia860_ba_list = _read_eia_gen(year)
+
+    # Read Canadian import data. Based on annual aggregated Canadian export
+    # sales (in MWh) between Canadian and US balancing authorities.
+    # https://www.cer-rec.gc.ca/en/data-analysis/energy-commodities/    \
+    # electricity/statistics/electricity-trade-summary/
+    # The first data frame has annual net trades from CA to US,
+    # the second data frame has CA exports to US balancing authorities;
+    # both are for this trade year.
+    logging.info("Reading canadian import data")
+    df_CA_Imports_Gen, df_CA_Imports_Rows = _read_ca_imports(year)
+
+    # Net Generation Data Import
+    df_net_gen = _make_net_gen(year, ba_cols, NET_GEN_ROWS)
+    del(NET_GEN_ROWS)
+
+    # Combine and correct net generation data frame with Canada.
+    df_net_gen_sum = _make_net_gen_sum(
+        df_net_gen, eia_gen_ba, df_CA_Imports_Gen)
+
+    # Group and resample trading data so that it is on an annual basis
+    logging.info("Creating trading data frame")
+    df_ba_trade = ba_exchange_to_df(BA_TO_BA_ROWS, data_type='ba_to_ba')
+    del(BA_TO_BA_ROWS)
+
+    # Make export-import trade pivot table, make it square.
+    df_trade_pivot = _make_trade_pivot(year, ba_cols, df_ba_trade)
+    df_trade_pivot = _make_square_pivot(df_trade_pivot, ba_cols)
 
     # Add Canadian Imports to the trading matrix
-    # --> CA imports are specified in an external file
-    df_CA_Imports_Cols = pd.read_csv(
-        data_dir + '/CA_Imports_Cols.csv', index_col=0)
-
-    df_CA_Imports_Rows = pd.read_csv(
-        data_dir + '/CA_Imports_Rows.csv', index_col=0)
-
-    df_CA_Imports_Rows = df_CA_Imports_Rows[['us_ba', str(year)]]
-    df_CA_Imports_Rows = df_CA_Imports_Rows.pivot(
-        columns='us_ba', values=str(year))
-
-    # Append rows for CA to US balancing authority exports.
-    # rows=74, cols=68
+    df_CA_Imports_Rows = _match_df_cols(df_trade_pivot, df_CA_Imports_Rows)
     df_concat_trade_CA = pd.concat([df_trade_pivot, df_CA_Imports_Rows])
 
-    # Append CA BA codes to cols, making it a square matrix.
-    # rows=74, cols=74
-    df_concat_trade_CA = pd.concat(
-        [df_concat_trade_CA, df_CA_Imports_Cols], axis=1)
-    df_concat_trade_CA.fillna(0, inplace=True)
+    # Make it square.
+    all_baa = list(df_concat_trade_CA.index.values)
+    df_concat_trade_CA = _make_square_pivot(df_concat_trade_CA, all_baa)
     df_trade_pivot = df_concat_trade_CA
 
-    # Alphabetize the BA codes to match index and column names.
-    df_trade_pivot = df_trade_pivot.sort_index(axis=0)
-    df_trade_pivot = df_trade_pivot.sort_index(axis=1)
+    ## TODO PICK UP HERE.
 
     # Perform trading calculations as provided in Qu et al (2018) to
     # determine the composition of a BA consumption mix.
