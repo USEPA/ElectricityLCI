@@ -29,7 +29,7 @@ Commission regions. This electricity trading ultimately decides the
 consumption mix for a given region.
 
 Last updated:
-    2024-03-12
+    2024-03-20
 """
 __all__ = [
     "ba_exchange_to_df",
@@ -85,22 +85,27 @@ def download_EBA_manifest(out_file):
         A file path to write the manifest text to.
         It should be a plain text file format (e.g., ends with .txt)
     """
-    r = requests.get(MANIFEST_URL)
-    if r.ok:
-        if isinstance(out_file, str):
-            output = open(out_file, 'wb')
-        else:
-            # See also, tempfile
-            output = out_file
-        try:
-            output.write(r.content)
-        except:
-            logging.error("Failed to write manifest to file!")
-        else:
-            logging.debug("Wrote manifest to text.")
-            output.close()
+    try:
+        r = requests.get(MANIFEST_URL)
+    except:
+        # Gets no internet errors (e.g., NameResolutionError, MaxRetryError)
+        logging.error("Failed to access remote manifest.txt!")
     else:
-        logging.error("Failed to download EIA bulk data manifest!")
+        if r.ok:
+            if isinstance(out_file, str):
+                output = open(out_file, 'wb')
+            else:
+                # See also, tempfile
+                output = out_file
+            try:
+                output.write(r.content)
+            except:
+                logging.error("Failed to write manifest to file!")
+            else:
+                logging.debug("Wrote manifest to text.")
+                output.close()
+        else:
+            logging.error("Failed to download EIA bulk data manifest!")
 
 
 def download_EBA():
@@ -134,6 +139,7 @@ def read_local_manifest_last_update():
         US Electric System Operating Data (EBA) bulk data.
     """
     m_file = os.path.join(paths.local_path, 'bulk_data', 'manifest.txt')
+    # :func:`read_json` returns empty dict even if file does not exist
     d = read_json(m_file)
     d = d.get("dataset", {})
     d = d.get("EBA", {})
