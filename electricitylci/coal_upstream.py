@@ -50,8 +50,6 @@ Last updated:
 ##############################################################################
 # GLOBALS
 ##############################################################################
-logger = logging.getLogger("coal_upstream")
-
 coal_type_codes = {
     'BIT': 'B',
     'LIG': 'L',
@@ -139,15 +137,13 @@ def eia_7a_download(year, save_path):
     url = eia7a_base_url + name
     try:
         os.makedirs(save_path)
-        logger.info('Downloading EIA 7-A data...')
+        logging.info('Downloading EIA 7-A data...')
         eia_7a_file = requests.get(url)
         file_path = os.path.join(save_path, name)
         open(file_path, 'wb').write(eia_7a_file.content)
     except:
-        logger.info(
-            'Error downloading eia-7a: try manually downloading from: %s' % (
-                url)
-        )
+        logging.info(
+            'Error downloading eia-7a: try manually downloading from %s' % url)
 
 
 def read_eia923_fuel_receipts(year):
@@ -179,7 +175,7 @@ def read_eia923_fuel_receipts(year):
     """
     expected_923_folder = os.path.join(paths.local_path, 'f923_{}'.format(year))
     if not os.path.exists(expected_923_folder):
-        logger.info('Downloading EIA-923 files')
+        logging.info('Downloading EIA-923 files')
         eia923_download(year=year, save_path=expected_923_folder)
         eia923_path, eia923_name = find_file_in_folder(
             folder_path=expected_923_folder,
@@ -197,7 +193,7 @@ def read_eia923_fuel_receipts(year):
     else:
         # Check for both csv and year<_Final> in case multiple years
         # or other csv files exist
-        logger.info('Loading data from previously downloaded excel file')
+        logging.info('Loading data from previously downloaded excel file')
         all_files = os.listdir(expected_923_folder)
         # Check for both csv and year<_Final> in case multiple years
         # or other csv files exist

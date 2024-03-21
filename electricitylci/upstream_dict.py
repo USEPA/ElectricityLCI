@@ -22,9 +22,6 @@ from electricitylci.utils import make_valid_version_num
 from electricitylci.globals import elci_version
 
 
-module_logger=logging.getLogger("upstream_dict.py")
-
-
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
@@ -51,7 +48,7 @@ def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
     ar["exchanges"] = exchanges_list
     ar["location"] = ""  # location(region)
     ar["parameters"] = ""
-    module_logger.info(f"passing {fuel_type.lower()}_upstream to process_doc_creation")
+    logging.info(f"passing {fuel_type.lower()}_upstream to process_doc_creation")
     ar['processDocumentation']=process_doc_creation(process_type=f"{fuel_type.lower()}_upstream")
     ar["processType"] = "LCI_RESULT"
     ar["name"] = process_name
@@ -275,7 +272,7 @@ def olcaschema_genupstream_processes(merged):
 
     upstream_process_dict = dict()
     for upstream in upstream_list:
-        module_logger.info(f"Building dictionary for {upstream}")
+        logging.info(f"Building dictionary for {upstream}")
         exchanges_list = list()
         upstream_filter = merged_summary["stage_code"] == upstream
         merged_summary_filter = merged_summary.loc[upstream_filter, :].copy()

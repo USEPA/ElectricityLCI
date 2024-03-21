@@ -76,8 +76,6 @@ __all__ = [
 ##############################################################################
 # GLOBALS
 ##############################################################################
-module_logger = logging.getLogger("process_dictionary_writer.py")
-
 international = pd.read_csv(
     os.path.join(data_dir, "International_Electricity_Mix.csv")
 )
@@ -857,17 +855,17 @@ def process_doc_creation(process_type="default"):
             try:
                 ar[key] = metadata[process_type][OLCA_TO_METADATA[key]]
             except KeyError:
-                module_logger.debug(
+                logging.debug(
                     f"Failed first key ({key}), trying subkey: {subkey}")
                 try:
                     ar[key] = metadata[process_type][subkey][OLCA_TO_METADATA[key]]
-                    module_logger.debug(
+                    logging.debug(
                         "Failed subkey, likely no entry in metadata for "
                         f"{process_type}:{key}")
                 except KeyError:
                     ar[key] = metadata["default"][OLCA_TO_METADATA[key]]
             except TypeError:
-                module_logger.debug(
+                logging.debug(
                     "Failed first key, likely no metadata defined for "
                     f"{process_type}")
                 process_type = "default"
@@ -931,17 +929,17 @@ def process_description_creation(process_type="fossil"):
     try:
         desc_string = metadata[process_type][key]
     except KeyError:
-        module_logger.debug(
+        logging.debug(
             f"Failed first key ({key}), trying subkey: {subkey}")
         try:
             desc_string = metadata[process_type][subkey][key]
-            module_logger.debug(
+            logging.debug(
                 "Failed subkey, likely no entry in metadata for "
                 f"{process_type}:{key}")
         except KeyError:
             desc_string = metadata["default"][key]
     except TypeError:
-        module_logger.debug(
+        logging.debug(
             f"Failed first key, likely no metadata defined for {process_type}")
         process_type = "default"
         desc_string = metadata[process_type][key]

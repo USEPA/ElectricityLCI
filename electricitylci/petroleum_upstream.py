@@ -46,9 +46,6 @@ __all__ = [
 ]
 
 
-module_logger = logging.getLogger("petroleum_upstream.py")
-
-
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
@@ -132,7 +129,7 @@ def generate_petroleum_upstream(year):
     for fuel in fuels:
         for padd in padds:
             fn = f'PRELIM_Mixer__{fuel}___PADD_{padd}_.xlsx'
-            module_logger.info(f"Reading petroleum inventory: {fn}")
+            logging.info(f"Reading petroleum inventory: {fn}")
             path = os.path.join(data_dir, expected_lci_folder, fn)
             key = f'{fuels_map[fuel]}_{padd}'
             petrol_excel = pd.ExcelFile(path)

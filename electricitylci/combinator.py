@@ -43,8 +43,6 @@ __all__ = [
 ##############################################################################
 # GLOBALS
 ##############################################################################
-module_logger = logging.getLogger("combinator.py")
-
 BA_CODES = read_ba_codes()
 '''pandas.DataFrame : Balancing authority, FERC, and EIA region data'''
 
@@ -217,7 +215,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         "NETL database/emissions": "NETL database/emissions",
         "NETL database/resources": "NETL database/resources",
     }
-    module_logger.info(
+    logging.info(
         f"Concatenating and flow-mapping {len(arg)} upstream databases.")
     upstream_df_list = list()
     # HOTFIX: index out data frames from tuple before mutate [2023-12-21; TWD]
@@ -231,11 +229,11 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
             upstream_df_list.append(df)
     upstream_df = pd.concat(upstream_df_list, ignore_index=True, sort=False)
 
-    module_logger.info("Creating flow mapping database")
+    logging.info("Creating flow mapping database")
     flow_mapping = fedefl.get_flowmapping('eLCI')
     flow_mapping["SourceFlowName"] = flow_mapping["SourceFlowName"].str.lower()
 
-    module_logger.info("Preparing upstream df for merge")
+    logging.info("Preparing upstream df for merge")
     upstream_df["FlowName_orig"] = upstream_df["FlowName"]
     upstream_df["Compartment_orig"] = upstream_df["Compartment"]
     upstream_df["Compartment_path_orig"] = upstream_df["Compartment_path"]
@@ -251,7 +249,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     upstream_df.fillna({"Unit": "<blank>"}, inplace=True)
     upstream_columns = upstream_df.columns
 
-    module_logger.info("Grouping upstream database")
+    logging.info("Grouping upstream database")
     groupby_cols = [
         "fuel_type",
         "stage_code",
@@ -277,7 +275,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     upstream_df = upstream_df[
         ["FlowName_orig", "Compartment_path_orig", "stage_code"]
     ]
-    module_logger.info("Merging upstream database and flow mapping")
+    logging.info("Merging upstream database and flow mapping")
     upstream_mapped_df = pd.merge(
         left=upstream_df_grp,
         right=flow_mapping,
@@ -298,7 +296,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     )
     upstream_mapped_df.dropna(subset=["FlowName"], inplace=True)
 
-    module_logger.info("Applying conversion factors")
+    logging.info("Applying conversion factors")
     upstream_mapped_df["FlowAmount"] = (
         upstream_mapped_df["FlowAmount"]
         * upstream_mapped_df["ConversionFactor"]
@@ -342,7 +340,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     # I didn't want to get rid of it in case it comes in handy later.
     if kwargs != {}:
         if "group_name" in kwargs:
-            module_logger.info("kwarg group_name used: generating flows lists")
+            logging.info("kwarg group_name used: generating flows lists")
             unique_orig = upstream_df.groupby(
                 by=["FlowName_orig", "Compartment_path_orig"]
             ).groups
@@ -373,7 +371,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
                 for x in matched_list:
                     f.write(f"{x}\n")
                 f.close()
-            module_logger.info("Flow mapping results written to %s" % out_path)
+            logging.info("Flow mapping results written to %s" % out_path)
             upstream_mapped_df = upstream_mapped_df[final_columns]
             return upstream_mapped_df, unmatched_list, matched_list
     upstream_mapped_df = upstream_mapped_df[final_columns]
@@ -430,7 +428,7 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
         try:
             combined_df.drop(columns=[x], inplace=True)
         except KeyError:
-            module_logger.debug(f"Error deleting column {x}")
+            logging.debug(f"Error deleting column {x}")
     combined_df["FacilityID"] = combined_df["eGRID_ID"]
 
     # I think without the following, given the way the data is created for
@@ -511,9 +509,9 @@ def fill_nans(
         if x in df.columns:
             confirmed_target.append(x)
         else:
-            module_logger.debug(f"Column {x} is not in the dataframe")
+            logging.debug(f"Column {x} is not in the dataframe")
     if key_column not in df.columns:
-        module_logger.debug(
+        logging.debug(
             f"Key column '{key_column}' is not in the dataframe"
         )
         raise KeyError
@@ -566,8 +564,8 @@ if __name__ == "__main__":
     )
     plant_df = create_generation_process_df()
     plant_df["stage_code"] = "Power plant"
-    module_logger.info(plant_df.columns)
-    module_logger.info(upstream_df.columns)
+    logging.info(plant_df.columns)
+    logging.info(upstream_df.columns)
     combined_df = concat_clean_upstream_and_plant(plant_df, upstream_df)
     canadian_inventory = generate_canadian_mixes(combined_df, 2016)
     combined_df = pd.concat([combined_df, canadian_inventory])

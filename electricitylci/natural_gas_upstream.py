@@ -33,9 +33,6 @@ __all__ = [
 ]
 
 
-module_logger = logging.getLogger(name="natural_gas_upstream.py")
-
-
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
@@ -65,7 +62,7 @@ def generate_upstream_ng(year):
     ----------
     pandas.DataFrame
     """
-    module_logger.info("Generating natural gas inventory")
+    logging.info("Generating natural gas inventory")
 
     # Get the EIA generation data for the specified year, this dataset includes
     # the fuel consumption for generating electricity for each facility
