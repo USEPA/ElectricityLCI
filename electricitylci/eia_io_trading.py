@@ -28,6 +28,7 @@ import electricitylci.eia860_facilities as eia860
 from electricitylci.utils import read_ba_codes
 from electricitylci.utils import check_output_dir
 from electricitylci.utils import download
+from electricitylci.utils import write_csv_to_output
 from electricitylci.process_dictionary_writer import (
     exchange,
     process_table_creation_con_mix,
@@ -45,12 +46,26 @@ or Federal Energy Regulatory Commission (FERC) regions. These electricity
 flows are then used to generate the consumption mix for a given region or
 balancing authority area.
 
+The main trading model is based on the quasi-input-output model by
+Qu et al. (2017) and Qu et al. (2018).
+
+References:
+
+-   Qu, S. et al. (2017). A Quasi-Input-Output model to improve the
+    estimation of emission factors for purchased electricity from
+    interconnected grids. Applied Energy, 200, 249-259.
+    https://doi.org/10.1016/j.apenergy.2017.05.046
+-   Qu, S. et al. (2018). Virtual CO2 Emission Flows in the Global
+    Electricity Trade Network. Environmental Science & Technology,
+    52(11), 6666-6675. https://doi.org/10.1021/acs.est.7b05191
+
 Last updated:
-    2024-03-15
+    2024-03-21
 """
 __all__ = [
     "ba_io_trading_model",
     "olca_schema_consumption_mix",
+    "qio_model",
 ]
 
 
@@ -429,6 +444,63 @@ def _read_eia_gen(year):
     return (eia_gen_ba, eia860_ba_list)
 
 
+def _make_ferc_trade(df, import_list):
+    """Calculate the trades between balancing authority exporters and
+    FERC region importers.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        A data frame with exporting and importing balancing authority regions
+        and their trade values along with their associated FERC region names
+        and abbreviations.
+    import_list : list
+        A list of FERC region abbreviations used to filter the return data
+        frame's importers.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Fractions of the trade between exporting balancing authorities and
+        importing FERC regions. Columns include:
+
+        -   'import ferc region abbr' (str)
+        -   'import ferc region' (str)
+        -   'export BAA' (str)
+        -   'fraction' (float)
+    """
+    # Calculate the total trade per import FERC region.
+    ferc_import_grouped_tot = df.groupby(
+        ['import ferc region'])['value'].sum().reset_index()
+
+    ferc_trade = df.copy()
+    ferc_trade = ferc_trade.groupby([
+        'import ferc region abbr',
+        'import ferc region',
+        'export BAA'])['value'].sum().reset_index()
+    ferc_trade = ferc_trade.merge(
+        ferc_import_grouped_tot,
+        left_on='import ferc region',
+        right_on='import ferc region'
+    )
+    ferc_trade = ferc_trade.rename(
+        columns={
+            'value_x': 'value',
+            'value_y':'total'}
+    )
+    ferc_trade['fraction'] = ferc_trade['value']/ferc_trade['total']
+    ferc_trade = ferc_trade.fillna(value=0)
+    ferc_trade = ferc_trade.drop(columns=['value', 'total'])
+
+    # Remove Canadian entry in import list
+    ferc_list = [x for x in import_list if x != 'CAN']
+
+    ferc_filt = ferc_trade['import ferc region abbr'].isin(ferc_list)
+    ferc_trade = ferc_trade[ferc_filt].copy()
+
+    return ferc_trade
+
+
 def _make_net_gen(year, ba_cols, ng_json_list):
     """Convert EIA bulk net generation data into time series data frame.
 
@@ -548,11 +620,12 @@ def _make_net_gen_sum(net_trade, eia_gen, ca_gen):
         how="left"
     ).reset_index()
 
-    # Zero-fill any mis-matches in the merge.
+    # HOTFIX: Zero-fill any mis-matches in the merge.
     net_gen_check = net_gen_check.fillna({0: 0, 'Electricity': 0})
 
     # Calculate percent difference between EIA generation and net trades.
     # HOTFIX: add a tiny bit to denom.; avoid zero division [2024-03-14; TWD]
+    # Previously, diff_mad was calculated as inf and was useless.
     net_gen_check["diff"] = abs(
         net_gen_check["Electricity"] - net_gen_check[0]) / (
             1e-9 + net_gen_check[0]
@@ -731,7 +804,7 @@ def _make_trade_pivot(year, ba_cols, trade_df):
         'BAA2_2_1', 'BAA1_2_1','Transacting BAAs_2_1', 'Exchange_2_1']
 
     # Combine two grouped tables for comparison for exchange values
-    df_concat_trade = pd.concat([df_trade_sum_1_2,df_trade_sum_2_1], axis=1)
+    df_concat_trade = pd.concat([df_trade_sum_1_2, df_trade_sum_2_1], axis=1)
     df_concat_trade['Exchange_1_2_abs'] = df_concat_trade['Exchange_1_2'].abs()
     df_concat_trade['Exchange_2_1_abs'] = df_concat_trade['Exchange_2_1'].abs()
 
@@ -841,6 +914,21 @@ def _make_trade_pivot(year, ba_cols, trade_df):
 
 
 def _match_df_cols(base_df, return_df):
+    """Helper method to return a data frame with column names matching a
+    reference data frame (used for pandas.concat).
+
+    Parameters
+    ----------
+    base_df : pandas.DataFrame
+        A reference data frame with desired columns.
+    return_df : pandas.DataFrame
+        A data frame with a subset of the desired columns.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The return data frame with padded columns (values set to zero).
+    """
     to_cols = list(return_df.columns.values)
     from_cols = list(base_df.columns.values)
 
@@ -858,6 +946,185 @@ def _match_df_cols(base_df, return_df):
     return_df = return_df.sort_index(axis=1)
 
     return (return_df)
+
+
+def _make_ba_trade(trade_df, ba_list):
+    """Calculate the trade fractions between exporting and importing balancing authorities.
+
+    Parameters
+    ----------
+    trade_df : pandas.DataFrame
+        The export/import trade data between balancing authorities. Should include columns: 'export BAA', 'import BAA', and 'value' (e.g., the output from :func:`qio_model`).
+    ba_list : list
+        A list of all relevant balancing authority codes (used as a filter).
+
+    Returns
+    -------
+    pandas.DataFrame
+        Columns include:
+
+        -   'export BAA' (str: code)
+        -   'import BAA' (str: code)
+        -   'fraction' (float)
+    """
+    BAA_import_grouped_tot = trade_df.groupby(
+        ['import BAA'])['value'].sum().reset_index()
+    BAA_final_trade = trade_df.copy()
+    BAA_final_trade = BAA_final_trade.drop(
+        columns=[
+            'import ferc region',
+            'export ferc region',
+            'import ferc region abbr',
+            'export ferc region abbr']
+    )
+    BAA_final_trade = BAA_final_trade.merge(
+        BAA_import_grouped_tot,
+        left_on='import BAA',
+        right_on='import BAA'
+    )
+    BAA_final_trade = BAA_final_trade.rename(
+        columns={
+            'value_x': 'value',
+            'value_y': 'total'}
+    )
+    BAA_final_trade['fraction'] = (
+        BAA_final_trade['value'] / BAA_final_trade['total'])
+    BAA_final_trade = BAA_final_trade.fillna(value=0)
+    BAA_final_trade = BAA_final_trade.drop(columns=['value', 'total'])
+
+    # Remove Canadian BAs in import list
+    # BUG: This doesn't do what the comment above suggests.
+    #      ``ba_list`` includes Canadian balancing authority codes.
+    BAA_filt = BAA_final_trade['import BAA'].isin(ba_list)
+    BAA_final_trade = BAA_final_trade[BAA_filt].copy()
+
+    return BAA_final_trade
+
+
+def _make_us_trade(df):
+    """Calculate the U.S. fractions of trade by exporting balancing authority.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        A data frame with exporting and importing balancing authority regions
+        and their trade values along with the associated FERC region name and
+        abbreviation.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Fractions of US trade by exporting balancing authority.
+    """
+    us_import_grouped_tot = df['value'].sum()
+    us_trade = df.copy()
+    us_trade = us_trade.groupby(['export BAA'])['value'].sum().reset_index()
+    us_trade["fraction"] = us_trade["value"]/us_import_grouped_tot
+    us_trade = us_trade.fillna(value=0)
+    us_trade=us_trade.drop(columns=["value"])
+
+    return us_trade
+
+
+def _fix_final_trade(final_trade, z_traders, z_trade_w_demand, keep=False):
+    """Set fraction amounts between balancing authorities that show no imports
+    but show a demand to one and remove other zero importers with no demand
+    (if keep is false). If keep is true, zero importers with zero demand are
+    given a fraction near zero (i.e., 1e-9).
+
+    Parameters
+    ----------
+    final_trade : pandas.DataFrame
+        A data frame with export and import balancing authority codes and the
+        fraction of their trade amount.
+    z_traders : list
+        A list of balancing authority codes with zero trade.
+    z_trade_w_demand : list
+        A list of balancing authority codes with zero trade, but positive
+        demand.
+    keep : bool, optional
+        Whether to keep zero traders with no demand, by default False
+
+    Returns
+    -------
+    pandas.DataFrame
+        The same as `final_trade`, but with updated values and (optionally)
+        filtered rows.
+    """
+    # HOTFIX: use 'loc' to set values against boolean lists [2023-11-17; TWD]
+    for baa in z_trade_w_demand:
+        final_trade.loc[
+            (final_trade["import BAA"] == baa)
+            & (final_trade["export BAA"] == baa),
+            "fraction"
+        ] = 1
+
+    for baa in list(set(z_traders)-set(z_trade_w_demand)):
+        if keep:
+            # Set the value to something small to avoid zero errors.
+            final_trade.loc[
+                (final_trade["import BAA"] == baa)
+                & (final_trade["export BAA"]==baa),
+                "fraction"
+            ] = 1E-15
+        else:
+            # It was decided to not create consumption mixes for BAs that
+            # don't have imports. Remove BAA from import list.
+            final_trade.drop(
+                final_trade[final_trade["import BAA"] == baa].index,
+                inplace=True
+            )
+
+    return final_trade
+
+
+def _get_zero_traders(df):
+    """Return a list of balancing authority codes associated with no trading.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        A data frame with export and import balancing authority codes and the
+        fraction of their trade amounts. Must include columns, 'import BAA'
+        and 'fraction'.
+
+    Returns
+    -------
+    list
+        A list of balancing authority codes for importers with no trade.
+    """
+    r_list = [
+        x for x in list(df["import BAA"].unique())
+        if df.loc[df["import BAA"] == x, "fraction"].sum() == 0]
+    return r_list
+
+
+def _get_zero_traders_w_demand(z_traders, demand):
+    """Return a list of balancing authority codes with positive demand.
+
+    Parameters
+    ----------
+    z_traders : list
+        A list of balancing authority codes associated with zero traders.
+    demand : list
+        A list of dictionaries. Each dictionary contains the hourly demand
+        for a given region.
+
+    Returns
+    -------
+    list
+        A list of zero trader balancing authority codes that have positive
+        demand.
+    """
+    r_list = []
+    for d_row in demand:
+        ba_code = d_row["series_id"].split('.')[1].split('-')[0]
+        if ba_code in z_traders:
+            r_list.append(ba_code)
+
+    r_list = list(set(r_list))
+
+    return r_list
 
 
 def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
@@ -928,6 +1195,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     df_BA_NA, ba_cols, ferc_list = _read_ba()
 
     # Read necessary data from EIA's bulk data download.
+    # WARNING: this is a lot of data in memory!
     NET_GEN_ROWS, BA_TO_BA_ROWS, DEMAND_ROWS = _read_bulk()
 
     # Create EIA generation dataset and Form 860 balancing authority list.
@@ -952,6 +1220,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
         df_net_gen, eia_gen_ba, df_CA_Imports_Gen)
 
     # Group and resample trading data so that it is on an annual basis
+    # WARNING: Peaks around 11 GB of memory
     logging.info("Creating trading data frame")
     df_ba_trade = ba_exchange_to_df(BA_TO_BA_ROWS, data_type='ba_to_ba')
     del(BA_TO_BA_ROWS)
@@ -969,21 +1238,124 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     df_concat_trade_CA = _make_square_pivot(df_concat_trade_CA, all_baa)
     df_trade_pivot = df_concat_trade_CA
 
-    ## TODO PICK UP HERE.
+    # Create list of BA codes for EIA 860 data and run the QIO model.
+    eia860_bas = sorted(eia860_ba_list + list(df_CA_Imports_Rows.index))
 
-    # Perform trading calculations as provided in Qu et al (2018) to
-    # determine the composition of a BA consumption mix.
+    df_final_trade_out_filt_melted_merge = qio_model(
+        df_net_gen_sum,
+        df_trade_pivot,
+        df_BA_NA,
+        eia860_bas,
+        regions_to_keep,
+        thresh=0.00001)
 
+    # Develop final df for BAA
+    BAA_final_trade = _make_ba_trade(
+        df_final_trade_out_filt_melted_merge, eia860_bas)
+
+    # There are some BAs that will have 0 trade. Some of these are legitimate.
+    # Alcoa Yadkin has no demand (i.e., all power generation is exported)
+    # others seem to be errors. For those BAs with actual demand, we'll set
+    # the consumption mix to 100% from that BA. For those without demand,
+    # fraction will be set to near 0 just to make sure systems can be built
+    # in openLCA.
+
+    # Find the zero traders.
+    # TODO: combine w/ _fix_final_trade
+    BAA_zero_trade = _get_zero_traders(BAA_final_trade)
+
+    # Find zero traders w/ demand.
+    # TODO: combine w/ _fix_final_trade
+    BAAs_from_zero_trade_with_demand = _get_zero_traders_w_demand(
+        BAA_zero_trade, DEMAND_ROWS)
+    del(DEMAND_ROWS)
+
+    # Set these regions' fractions to 1
+    BAA_final_trade = _fix_final_trade(
+        BAA_final_trade, BAA_zero_trade, BAAs_from_zero_trade_with_demand)
+
+    # Write final trade table to CSV
+    out_file = 'BAA_final_trade_{}.csv'.format(year)
+    write_csv_to_output(out_file, BAA_final_trade)
+
+    # Add balancing authority names to final trade data frame.
+    BAA_final_trade["export_name"] = BAA_final_trade["export BAA"].map(
+        df_BA_NA[["BA_Acronym", "BA_Name"]].set_index("BA_Acronym")["BA_Name"])
+    BAA_final_trade["import_name"] = BAA_final_trade["import BAA"].map(
+        df_BA_NA[["BA_Acronym", "BA_Name"]].set_index("BA_Acronym")["BA_Name"])
+
+    # Calculate fractions of trade between BA and FERC regions.
+    ferc_final_trade = _make_ferc_trade(
+        df_final_trade_out_filt_melted_merge, ferc_list)
+
+    out_file = 'ferc_final_trade_{}.csv'.format(year)
+    write_csv_to_output(out_file, ferc_final_trade)
+
+    # Add balancing authority name to export regions.
+    ferc_final_trade["export_name"] = ferc_final_trade["export BAA"].map(
+        df_BA_NA[["BA_Acronym", "BA_Name"]].set_index("BA_Acronym")["BA_Name"])
+
+    # Calculate US trade fractions by exporting balancing authority.
+    us_final_trade = _make_us_trade(df_final_trade_out_filt_melted_merge)
+
+    # Add balancing authority name to export regions.
+    us_final_trade["export_name"] = us_final_trade["export BAA"].map(
+        df_BA_NA[["BA_Acronym", "BA_Name"]].set_index("BA_Acronym")["BA_Name"])
+
+    return {
+        'BA': BAA_final_trade,
+        'FERC': ferc_final_trade,
+        'US': us_final_trade}
+
+
+def qio_model(net_gen_df, trade_pivot, ba_map, ba_list, roi=None, thresh=1e-5):
+    """The quasi-input-output trading model.
+
+    Written by G. Cooney. This method perform trading calculations as provided in Qu et al (2018) to determine the composition of a BA consumption mix with the following qualities:
+
+    -   Input-output approach developed by Qu et al.
+    -   Transfer is enabled through infinite electricity supply chains
+    -   Virtual flows of emissions should follow the pattern of intergrid
+        electricity transfers.
+
+    Parameters
+    ----------
+    net_gen_df : pandas.DataFrame
+        A single-column data frame where row indices are the balancing authority codes and the values are the net generation amounts (MWh)
+    trade_pivot : pandas.DataFrame
+        A pivot table of trades (exported from row to column). The column names and row indices should match the indices of ``net_get_df``.
+    ba_map : pandas.DataFrame
+        A data frame mapping balancing authority codes to their names, EIA region, FERC region, and those regions' abbreviations.
+    ba_list : list
+        A list of balancing authority codes used as a filter for balancing authorities that are associated with EIA Form 860 plants.
+    roi : list, optional
+        A list of balancing authority names used to filter the rows in the return data frame, by default None
+    thresh : float, optional
+        A small floating point value used as a threshold to filter values in the final trading matrix, as there are lots of really small values as a result of the matrix calculate (e.g., 2.0e-15), by default 1e-5
+
+    Returns
+    -------
+    pandas.DataFrame
+        Columns include:
+
+        - 'export BAA' (str): Balancing authority code of exporter
+        - 'import BAA' (str): Balancing authority code of importer
+        - 'value' (float): Electricity trade (MWh)
+        - 'import ferc region' (str): FERC region name associated with import
+        - 'import ferc region abbr' (str): FERC importer abbreviation
+        - 'export ferc region' (str): FERC region name associated with export
+        - 'export ferc region abbr' (str): FERC exporter abbreviation
+    """
     # Create total inflow vector x and then convert to a diagonal matrix x-hat
     logging.info("Inflow vector")
     x = []
-    for i in range (len(df_net_gen_sum)):
-        x.append(df_net_gen_sum.iloc[i] + df_trade_pivot.sum(axis=0).iloc[i])
+    for i in range(len(net_gen_df)):
+        x.append(net_gen_df.iloc[i] + trade_pivot.sum(axis=0).iloc[i])
     x_np = np.array(x)
 
     # If values are zero, x_hat matrix will be singular,
     # set BAAs with 0 to small value (1)
-    df_x = pd.DataFrame(data=x_np, index=df_trade_pivot.index)
+    df_x = pd.DataFrame(data=x_np, index=trade_pivot.index)
     df_x = df_x.rename(columns={0: 'inflow'})
     df_x.loc[df_x['inflow'] == 0] = 1
 
@@ -994,22 +1366,21 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     # Calculate c based on x and T
     logging.info("consumption vector")
     c = []
-
-    for i in range(len(df_net_gen_sum)):
-        c.append(x[i] - df_trade_pivot.sum(axis = 1).iloc[i])
+    for i in range(len(net_gen_df)):
+        c.append(x[i] - trade_pivot.sum(axis=1).iloc[i])
 
     c_np = np.array(c)
     c_hat = np.diagflat(c_np)
 
     # Convert df_trade_pivot to matrix
-    T = df_trade_pivot.values
+    T = trade_pivot.values
 
     # Create matrix to split T into distinct interconnections -
     # i.e., prevent trading between eastern and western interconnects.
     # Connections between the western and eastern interconnects are through
     # SWPP and WAUE.
     logging.info("Matrix operations")
-    interconnect = df_trade_pivot.copy()
+    interconnect = trade_pivot.copy()
     interconnect[:] = 1
     interconnect.loc['SWPP',['EPE', 'PNM', 'PSCO', 'WACM']] = 0
     interconnect.loc['WAUE',['WAUW', 'WACM']] = 0
@@ -1019,47 +1390,39 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     # Matrix trading math (see Qu et al. 2018 ES&T paper)
     x_hat_inv = np.linalg.inv(x_hat)
     B = np.matmul(T_split, x_hat_inv)
-    I = np.identity(len(df_net_gen_sum))
+    I = np.identity(len(net_gen_df))
     diff_I_B = I - B
     G = np.linalg.inv(diff_I_B)
     H = np.matmul(G, c_hat, x_hat_inv)
     df_H = pd.DataFrame(H)
 
-    # Convert H to pandas dataframe, populate index and columns
+    # Convert H to pandas data frame, populate index and columns
     df_final_trade_out = df_H
-    df_final_trade_out.columns = df_net_gen_sum.index
-    df_final_trade_out.index = df_net_gen_sum.index
+    df_final_trade_out.columns = net_gen_df.index
+    df_final_trade_out.index = net_gen_df.index
 
     # Develop trading input for the eLCI code.
-    # Need to melt the dataframe to end up with a three column
-    # dataframe:Repeat for both possible aggregation levels -
+    # Need to melt the data frame to end up with a three column
+    # data frame: Repeat for both possible aggregation levels -
     #   BA and FERC market region.
-
-    # Establish a threshold of 0.00001 to be included in the final
-    # trading matrix.
-    # Lots of really small values as a result of the matrix calculate
-    # (e.g., 2.0e-15)
     df_final_trade_out_filt = df_final_trade_out.copy()
     col_list = df_final_trade_out.columns.tolist()
 
-    # Adding in a filter for balancing authorities that are not associated
+    # Filter for balancing authorities that are not associated
     # with any specific plants in EIA860 - there won't be any data for them in
-    # the emissions dataframes. We'll set their quantities to 0 so that the
-    # consumption mixes are made up of the rest of the incoming balancing
-    # authority areas.
-    eia860_bas = sorted(
-        eia860_ba_list + list(df_CA_Imports_Cols.columns)
-    )
-    keep_rows = [x for x in df_final_trade_out_filt.index if x in eia860_bas]
-    keep_cols = [x for x in df_final_trade_out_filt.columns if x in eia860_bas]
-
+    # the emissions data frames.
+    keep_rows = [x for x in df_final_trade_out_filt.index if x in ba_list]
+    keep_cols = [x for x in df_final_trade_out_filt.columns if x in ba_list]
     df_final_trade_out_filt = df_final_trade_out_filt.loc[keep_rows, keep_cols]
+
+    # Set their quantities to 0 so that the consumption mixes are made up
+    # of the rest of the incoming balancing authority areas.
     col_list = df_final_trade_out_filt.columns.tolist()
     for i in col_list:
         df_final_trade_out_filt[i] = np.where(
             (
                 df_final_trade_out_filt[i].abs()
-                / df_final_trade_out_filt[i].sum() < 0.00001
+                / df_final_trade_out_filt[i].sum() < thresh
             ),
             0,
             df_final_trade_out_filt[i].abs()
@@ -1081,7 +1444,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
 
     # Merge to bring in import region name matched with BAA
     df_final_trade_out_filt_melted_merge = df_final_trade_out_filt_melted.merge(
-        df_BA_NA,
+        ba_map,
         left_on='import BAA',
         right_on='BA_Acronym'
     )
@@ -1098,20 +1461,21 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
             'NCR ID#',
             'EIA_Region',
             'EIA_Region_Abbr'],
-        inplace = True
+        inplace=True
     )
 
     # Merge to bring in export region name matched with BAA
     df_final_trade_out_filt_melted_merge = df_final_trade_out_filt_melted_merge.merge(
-        df_BA_NA,
+        ba_map,
         left_on='export BAA',
         right_on='BA_Acronym'
     )
 
-    if regions_to_keep is not None:
+    # Region of interest filtering.
+    if roi is not None:
         df_final_trade_out_filt_melted_merge = df_final_trade_out_filt_melted_merge.loc[
-            df_final_trade_out_filt_melted_merge["BA_Name"].isin(regions_to_keep),
-            :]
+            df_final_trade_out_filt_melted_merge["BA_Name"].isin(roi), :]
+
     df_final_trade_out_filt_melted_merge.rename(
         columns={
             'FERC_Region': 'export ferc region',
@@ -1128,143 +1492,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
         inplace=True
     )
 
-    # Develop final df for BAA
-    BAA_import_grouped_tot = df_final_trade_out_filt_melted_merge.groupby(
-        ['import BAA'])['value'].sum().reset_index()
-    BAA_final_trade = df_final_trade_out_filt_melted_merge.copy()
-    BAA_final_trade = BAA_final_trade.drop(
-        columns=[
-            'import ferc region',
-            'export ferc region',
-            'import ferc region abbr',
-            'export ferc region abbr']
-    )
-    BAA_final_trade = BAA_final_trade.merge(
-        BAA_import_grouped_tot,
-        left_on='import BAA',
-        right_on='import BAA'
-    )
-    BAA_final_trade = BAA_final_trade.rename(
-        columns={
-            'value_x': 'value',
-            'value_y': 'total'}
-    )
-    BAA_final_trade['fraction'] = (
-        BAA_final_trade['value'] / BAA_final_trade['total'])
-    BAA_final_trade = BAA_final_trade.fillna(value=0)
-    BAA_final_trade = BAA_final_trade.drop(columns=['value', 'total'])
-
-    # Remove Canadian BAs in import list
-    BAA_filt = BAA_final_trade['import BAA'].isin(eia860_bas)
-    BAA_final_trade = BAA_final_trade[BAA_filt]
-
-    # There are some BAs that will have 0 trade. Some of these are legitimate
-    # Alcoa Yadkin has no demand (i.e., all power generation is exported) others
-    # seem to be errors. For those BAs with actual demand, we'll set the
-    # consumption mix to 100% from that BA. For those without demand,
-    # fraction will be set to near 0 just to make sure systems can be built
-    # in openLCA
-    BAA_zero_trade = [
-        x for x in list(BAA_final_trade["import BAA"].unique())
-        if (
-            BAA_final_trade.loc[
-                BAA_final_trade["import BAA"] == x, "fraction"].sum() == 0)]
-
-    BAAs_from_zero_trade_with_demand = []
-    for d_row in DEMAND_ROWS:
-        if d_row["series_id"].split('.')[1].split('-')[0] in BAA_zero_trade:
-            BAAs_from_zero_trade_with_demand.append(
-                d_row["series_id"].split('.')[1].split('-')[0])
-
-    BAAs_from_zero_trade_with_demand = list(
-        set(BAAs_from_zero_trade_with_demand))
-    del(DEMAND_ROWS)
-
-    # HOTFIX: use 'loc' not 'at' for setting values against boolean lists
-    # [2023-11-17; TWD]
-    for baa in BAAs_from_zero_trade_with_demand:
-        BAA_final_trade.loc[
-            (
-                (BAA_final_trade["import BAA"] == baa)
-                & (BAA_final_trade["export BAA"] == baa)
-            ), "fraction"
-        ] = 1
-
-    for baa in list(set(BAA_zero_trade)-set(BAAs_from_zero_trade_with_demand)):
-        BAA_final_trade.loc[
-            (
-                (BAA_final_trade["import BAA"] == baa)
-                & (BAA_final_trade["export BAA"]==baa)
-            ), "fraction"
-        ] = 1E-15
-        # It was later decided to not create consumption mixes for BAs that
-        # don't have imports.
-        BAA_final_trade.drop(
-            BAA_final_trade[BAA_final_trade["import BAA"] == baa].index,
-            inplace=True
-        )
-
-    f_trade_file = os.path.join(
-        output_dir, 'BAA_final_trade_{}.csv'.format(year))
-    logging.info("Writing final trade data to file, %s" % f_trade_file)
-    BAA_final_trade.to_csv(f_trade_file)
-
-    BAA_final_trade["export_name"] = BAA_final_trade["export BAA"].map(
-        df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
-    BAA_final_trade["import_name"] = BAA_final_trade["import BAA"].map(
-        df_BA_NA[["BA_Acronym","BA_Name"]].set_index("BA_Acronym")["BA_Name"])
-
-    ferc_import_grouped_tot = df_final_trade_out_filt_melted_merge.groupby(
-        ['import ferc region'])['value'].sum().reset_index()
-
-    # Develop final df for FERC Market Region
-    ferc_final_trade = df_final_trade_out_filt_melted_merge.copy()
-    ferc_final_trade = ferc_final_trade.groupby([
-        'import ferc region abbr',
-        'import ferc region',
-        'export BAA'])['value'].sum().reset_index()
-    ferc_final_trade = ferc_final_trade.merge(
-        ferc_import_grouped_tot,
-        left_on='import ferc region',
-        right_on='import ferc region'
-    )
-    ferc_final_trade = ferc_final_trade.rename(
-        columns={
-            'value_x': 'value',
-            'value_y':'total'}
-    )
-    ferc_final_trade['fraction'] = (
-        ferc_final_trade['value']/ferc_final_trade['total'])
-    ferc_final_trade = ferc_final_trade.fillna(value = 0)
-    ferc_final_trade = ferc_final_trade.drop(columns = ['value', 'total'])
-
-    # Remove Canadian entry in import list
-    ferc_list.remove('CAN')
-    ferc_filt = ferc_final_trade['import ferc region abbr'].isin(ferc_list)
-    ferc_final_trade = ferc_final_trade[ferc_filt]
-
-    f_trade_file = os.path.join(
-        output_dir, 'ferc_final_trade_{}.csv'.format(year))
-    logging.info("Writing FERC trade data to file, %s" % f_trade_file)
-    ferc_final_trade.to_csv(f_trade_file)
-
-    ferc_final_trade["export_name"] = ferc_final_trade["export BAA"].map(
-        df_BA_NA[["BA_Acronym", "BA_Name"]].set_index("BA_Acronym")["BA_Name"])
-
-    us_import_grouped_tot = df_final_trade_out_filt_melted_merge['value'].sum()
-    us_final_trade = df_final_trade_out_filt_melted_merge.copy()
-    us_final_trade = us_final_trade.groupby(
-        ['export BAA'])['value'].sum().reset_index()
-    us_final_trade["fraction"] = us_final_trade["value"] / us_import_grouped_tot
-    us_final_trade = us_final_trade.fillna(value = 0)
-    us_final_trade=us_final_trade.drop(columns = ["value"])
-    us_final_trade["export_name"] = us_final_trade["export BAA"].map(
-        df_BA_NA[["BA_Acronym", "BA_Name"]].set_index("BA_Acronym")["BA_Name"])
-
-    return {
-        'BA': BAA_final_trade,
-        'FERC': ferc_final_trade,
-        'US': us_final_trade}
+    return df_final_trade_out_filt_melted_merge
 
 
 def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
