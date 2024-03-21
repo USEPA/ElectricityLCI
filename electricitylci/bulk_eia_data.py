@@ -88,8 +88,10 @@ def download_EBA_manifest(out_file):
     try:
         r = requests.get(MANIFEST_URL)
     except:
-        # Gets no internet errors (e.g., NameResolutionError, MaxRetryError)
-        logging.error("Failed to access remote manifest.txt!")
+        # Gets 'no internet' errors (e.g., NameResolutionError, MaxRetryError)
+        logging.error(
+            "Failed to access remote manifest.txt! "
+            "Check your internet connection.")
     else:
         if r.ok:
             if isinstance(out_file, str):
