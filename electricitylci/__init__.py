@@ -545,6 +545,7 @@ def run_net_trade(generation_mix_dict):
         end user within the named region with a 1 MWh of electricity as
         its product flow.
     """
+    # Run ba_io_trading.
     logging.info("using alt gen method for consumption mix")
     regions_to_keep = list(generation_mix_dict.keys())
     cons_mix_df_dict = get_consumption_mix_df(regions_to_keep=regions_to_keep)
@@ -564,17 +565,18 @@ def run_net_trade(generation_mix_dict):
             cons_mix_dicts[subreg]
         )
 
-    logging.info("get distribution mix")
+    logging.info("get t&d losses")
     dist_mix_df_dict = {}
     for subreg in cons_mix_dicts.keys():
         dist_mix_df_dict[subreg] = get_distribution_mix_df(subregion=subreg)
 
+    # NOTE: fails to find 'New Smyrna Beach' and 'City of Homestead'
     logging.info("write dist mix to dict")
     dist_mix_dicts = {}
     for subreg in dist_mix_df_dict.keys():
         dist_mix_dicts[subreg] = write_distribution_mix_to_dict(
-            dist_mix_df_dict[subreg],
-            cons_mix_dicts[subreg],
+            dist_mix_df_dict,
+            cons_mix_dicts,
             subregion=subreg
         )
 
@@ -588,19 +590,22 @@ def run_net_trade(generation_mix_dict):
 
 
 def run_post_processes():
-    # There is no easy way of editing files archived in a zip and no
-    # easy way of remove files from a zip without just creating a new zip,
-    # so that's what's done here.
-    # 1. FIXED. There should be only one instance of each .json file;
-    #    addressed in the new _save_to_json (olca_jsonld_writer.py)
-    # 2. Remove flows/*.json that are not found in a process exchange.
-    #    See cleanup SQL queries in GitHub issue
-    #    https://github.com/USEPA/ElectricityLCI/issues/216
-    # 3. Remove zero flows from quantitative reference exchanges
-    #    https://github.com/USEPA/ElectricityLCI/issues/217
-    # 4. Add NETL TRACI 2.1 characterization factors (impact category)
-    #    NOT TO BE ADDED TO BASELINES
-    # 5. Create product systems for select processes (@user, consumption mixes)
+    """Run post processes on JSON-LD file.
+
+    There is no easy way of editing files archived in a zip and no
+    easy way of remove files from a zip without just creating a new zip,
+    so that's what's done here.
+
+    1. There should be only one instance of each .json file;
+       addressed in the new _save_to_json (olca_jsonld_writer.py)
+    2. Remove flows/*.json that are not found in a process exchange.
+       See cleanup SQL queries in GitHub issue
+       https://github.com/USEPA/ElectricityLCI/issues/216
+    3. Remove zero flows from quantitative reference exchanges
+       https://github.com/USEPA/ElectricityLCI/issues/217
+    4. DO NOT ADD NETL TRACI 2.1 characterization factors
+    5. Create product systems for select processes (user, consumption mixes)
+    """
     from electricitylci.olca_jsonld_writer import build_product_systems
     from electricitylci.olca_jsonld_writer import clean_json
 
@@ -640,14 +645,15 @@ def write_distribution_dict():
     return distribution_mix_dictionary()
 
 
-def write_distribution_mix_to_dict(dist_mix_df, gen_mix_dict, subregion=None):
+def write_distribution_mix_to_dict(dm_dict, gm_dict, subregion=None):
     import electricitylci.eia_trans_dist_grid_loss as tnd
 
     if subregion is None:
         subregion = config.model_specs.regional_aggregation
 
+    # HOTFIX: send full dicts to method, not region-specific [2024-03-21;TWD]
     dist_mix_dict = tnd.olca_schema_distribution_mix(
-        dist_mix_df, gen_mix_dict, subregion=subregion
+        dm_dict, gm_dict, subregion=subregion
     )
     return dist_mix_dict
 

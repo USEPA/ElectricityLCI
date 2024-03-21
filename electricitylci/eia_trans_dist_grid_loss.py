@@ -251,31 +251,61 @@ def generate_regional_grid_loss(year, subregion="all"):
 
 
 def olca_schema_distribution_mix(td_by_region, cons_mix_dict, subregion="BA"):
-    """Create dictionaries for openLCA"""
+    """Create dictionaries for openLCA
+
+    Parameters
+    ----------
+    td_by_region : dict
+    cons_mix_dict : dict
+    subregion : str
+
+    Returns
+    -------
+    dict
+
+    Notes
+    -----
+    This method was incorrectly using td_regions as the primary list of
+    balancing authority and FERC region names. It turns out this dataset
+    is not 100% matching with the regions that make up the processes in
+    cons_mix_dict; therefore, the cons_mix_dict regions should be the
+    region reference. These regions are searched within the correct subregion
+    data frame within td_by_region and, when not found, uses the US average.
+    """
     distribution_mix_dict = {}
-    if subregion == "all":
-        aggregation_column = "Subregion"
-        region = list(pd.unique(td_by_region[aggregation_column]))
-    elif subregion == "NERC":
-        aggregation_column = "NERC"
-        region = list(pd.unique(td_by_region[aggregation_column]))
-    elif subregion == "BA":
-        aggregation_column = "Balancing Authority Name"
-        region = list(pd.unique(td_by_region[aggregation_column]))
+    if subregion == "BA":
+        td_col = "Balancing Authority Name"
+        region = [
+            x.replace(" - BA", "") for x in cons_mix_dict[subregion].keys()]
     elif subregion == "FERC":
-        aggregation_column = "FERC_Region"
-        region = list(pd.unique(td_by_region[aggregation_column]))
+        td_col = "FERC_Region"
+        region = [
+            x.replace(" - FERC", "") for x in cons_mix_dict[subregion].keys()]
     else:
-        aggregation_column = None
+        td_col = None
+        subregion = "US"
         region = ["US"]
+
     for reg in region:
-        if aggregation_column is None:
-            database_reg = td_by_region
+        # Get the T&D losses for this region.
+        database_reg = td_by_region[subregion].copy()
+        if td_col is not None:
+            database_reg = database_reg.loc[database_reg[td_col] == reg, :]
+
+        if database_reg.empty:
+            logging.warning(
+                "Failed to find T&D losses for '%s', using US average." % reg)
+            td_val = td_by_region['US']['t_d_losses'].values[0]
+        elif len(database_reg) == 1:
+            td_val = database_reg['t_d_losses'].values[0]
         else:
-            database_reg = td_by_region.loc[
-                td_by_region[aggregation_column] == reg, :
-            ]
+            logging.warning(
+                "Found too many regions in T&D table for '%s'! "
+                "Using first value." % reg)
+            td_val = database_reg['t_d_losses'].values[0]
+
         exchanges_list = []
+
         # Creating the reference output
         exchange(
             ref_exchange_creator(electricity_flow=electricity_at_user_flow),
@@ -287,15 +317,17 @@ def olca_schema_distribution_mix(td_by_region, cons_mix_dict, subregion="BA"):
         )
         exchanges_list[1]["input"] = True
         exchanges_list[1]["quantitativeReference"] = False
-        exchanges_list[1]["amount"] = 1 + database_reg["t_d_losses"].values[0]
+        exchanges_list[1]["amount"] = 1 + td_val
+
         matching_dict = None
-        for cons_mix in cons_mix_dict:
+        for cons_mix in cons_mix_dict[subregion]:
             if (
-                cons_mix_dict[cons_mix]["name"]
+                cons_mix_dict[subregion][cons_mix]["name"]
                 == f"Electricity; at grid; consumption mix - {reg} - {subregion}"
             ):
-                matching_dict = cons_mix_dict[cons_mix]
+                matching_dict = cons_mix_dict[subregion][cons_mix]
                 break
+
         if matching_dict is None:
             logging.warning(
                 f"Trouble matching dictionary for {reg}. "
