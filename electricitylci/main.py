@@ -33,7 +33,7 @@ options. The selection of configuration file will occur after the start
 of this script or it may be passed following the command-line argument, '-c'.
 
 Last updated:
-    2024-03-12
+    2024-03-21
 
 Changelog:
     -   Remove 'write_upstream_dicts_to_jsonld' as a separate function; it
@@ -42,6 +42,7 @@ Changelog:
     -   Add first-level abstraction by separating out runs for generation and
         distribution; creates parallel structure with new run post-processes.
     -   Move `get_generation_process_df` from if-else for clarity.
+    -   Reduce parameters passed between methods (i.e, the data frame).
 """
 __all__ = [
     "main",
@@ -95,12 +96,12 @@ def main():
         # eLCI package; you might have to search site-packages under lib.
         config.model_specs = config.build_model_class()
 
-    gen_df, gen_dict = run_generation()
-    run_distribution(gen_df, gen_dict)
+    gen_dict = run_generation()
+    run_distribution(gen_dict)
     run_post_processes()
 
 
-def run_distribution(generation_process_df, generation_process_dict):
+def run_distribution(generation_process_dict):
     """Run the consumption and distribution data processes.
 
     This utilizes the generation data for matching regions and linking
@@ -108,8 +109,6 @@ def run_distribution(generation_process_df, generation_process_dict):
 
     Parameters
     ----------
-    generation_process_df : pandas.DataFrame
-        A data frame of aggregated upstream and plant-level emissions.
     generation_process_dict : dict
         The same data found in the data frame, but formatted and updated with
         universally unique identifiers for use in openLCA.
@@ -160,17 +159,13 @@ def run_generation():
 
     Returns
     -------
-    tuple
-        A tuple of length two.
-
-        -   pandas.DataFrame : Aggregated generation data (including
-            upstream and renewables) by region and fuel type.
-        -   dict : The same information as in the data frame, but formatted
-            for openLCA.
+    dict
+        Aggregated generation data (including upstream and renewables) by
+        region and fuel type formatted for openLCA.
     """
     # There are essentially two paths - with and without upstream processes.
     if config.model_specs.include_upstream_processes is True:
-        # Create dataframe with all generation process data; includes
+        # Create data frame with all generation process data; includes
         # upstream and Canadian data.
         # NOTE: Only nuclear ('NUC') stage codes have electricity data;
         #       all others are nans.
@@ -214,7 +209,7 @@ def run_generation():
     generation_process_dict = write_process_dicts_to_jsonld(
         generation_process_dict)
 
-    return (generation_process_df, generation_process_dict)
+    return generation_process_dict
 
 
 ##############################################################################
@@ -224,23 +219,32 @@ if __name__ == "__main__":
     import os
     from electricitylci.globals import output_dir
 
-    # Define a logger
-    log_to_file = True
-    root_logger = logging.getLogger()
-    if log_to_file:
-        log_filename = "elci.log"
-        log_path = os.path.join(output_dir, log_filename)
-        root_handler = logging.handlers.RotatingFileHandler(
-            log_path, backupCount=9)
-    else:
-        root_handler = logging.StreamHandler()
+    # Define a root logger at lowest logging level.
+    # Ref: https://stackoverflow.com/q/25187083
+    log = logging.getLogger()
+    log.setLevel("DEBUG")
+
+    # Define log format
     rec_format = (
         "%(asctime)s.%(msecs)03d:%(levelname)s:%(module)s:%(funcName)s:"
         "%(message)s")
     formatter = logging.Formatter(rec_format, datefmt='%Y-%m-%d %H:%M:%S')
-    root_handler.setFormatter(formatter)
-    root_logger.addHandler(root_handler)
-    root_logger.setLevel("INFO")
+
+    # Create stream handler for info messages
+    s_handler = logging.StreamHandler()
+    s_handler.setLevel("INFO")
+    s_handler.setFormatter(formatter)
+
+    # Create file handler for debug messages
+    log_filename = "elci.log"
+    log_path = os.path.join(output_dir, log_filename)
+    f_handler = logging.handlers.RotatingFileHandler(
+        log_path, backupCount=9)
+    f_handler.setLevel("DEBUG")
+    f_handler.setFormatter(formatter)
+
+    log.addHandler(f_handler)
+    log.addHandler(s_handler)
 
     # Define argument parser and process specified configuration model
     parser = argparse.ArgumentParser()
@@ -256,9 +260,8 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        root_logger.error("Crashed on main!\n%s" % str(e))
+        log.error("Crashed on main!\n%s" % str(e))
     else:
-        root_logger.info("Finished!")
+        log.info("Finished!")
     finally:
-        if log_to_file:
-            root_logger.handlers[0].doRollover()
+        log.handlers[0].doRollover()
