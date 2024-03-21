@@ -17,6 +17,7 @@ import requests
 import pandas as pd
 
 from electricitylci.globals import data_dir
+from electricitylci.globals import output_dir
 
 
 ##############################################################################
@@ -25,7 +26,7 @@ from electricitylci.globals import data_dir
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2024-03-12
+    2024-03-21
 """
 __all__ = [
     "check_output_dir",
@@ -441,3 +442,42 @@ def set_dir(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
     return directory
+
+
+def write_csv_to_output(f_name, data):
+    """Write data to CSV file in the outputs directory.
+
+    Parameters
+    ----------
+    f_name : str
+        A file name with '.csv' file extension.
+    data : str, pandas.DataFrame
+        A data object to be written to file.
+        A data frame is written using `to_csv` without index.
+        A string is written to a plain text file.
+
+    Raises
+    ------
+    TypeError : If the data type is not recognized.
+    """
+    f_path = os.path.join(output_dir, f_name)
+    if os.path.isfile(f_path):
+        logging.warn("File exists! Overwriting %s" % f_path)
+    if isinstance(data, pd.DataFrame):
+        try:
+            data.to_csv(f_path, index=False)
+        except:
+            logging.error("Failed to write '%s' to file" % f_path)
+        else:
+            logging.info("Wrote data to file, %s" % f_path)
+    elif isinstance(data, str):
+        try:
+            with open(f_path, 'w') as f:
+                f.write(data)
+        except:
+            logging.error("Failed to write '%s' to file" % f_path)
+        else:
+            logging.info("Wrote data to file, %s" % f_path)
+    else:
+        logging.error("Data type, %s, not recognized!" % type(data))
+        raise TypeError("Data type, %s, not recognized!" % type(data))
