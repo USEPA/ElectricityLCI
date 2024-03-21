@@ -74,7 +74,7 @@ CHANGELOG
 Created:
     2019-06-04
 Last edited:
-    2024-03-08
+    2024-03-21
 """
 __all__ = [
     "add_data_collection_score",
@@ -1051,9 +1051,16 @@ def aggregate_data(total_db, subregion="BA"):
                     df["Emission_factor"])
                 b = -2**0.5*erfinv(2*0.95-1)
                 a = 0.5
-                sd1 = (-b + (b**2 - 4*a*c)**0.5)/(2*a)
-                sd2 = (-b - (b**2 - 4*a*c)**0.5)/(2*a)
-                if sd1 is not float("nan") and sd2 is not float("nan"):
+                # HOTFIX: avoid invalid value encountered in scalar power;
+                # this happens when a square root is taken of a negative.
+                abc = (b**2 - 4*a*c)
+                sd1 = float("nan")
+                sd2 = float("nan")
+                if abc >= 0:
+                    sd1 = (-b + (b**2 - 4*a*c)**0.5)/(2*a)
+                    sd2 = (-b - (b**2 - 4*a*c)**0.5)/(2*a)
+                # HOTFIX: correct check for nan [2024-03-13; TWD]
+                if sd1 != sd1 or sd2 != sd2:
                     if sd1 < sd2:
                         geostd = np.exp(sd1)
                         geomean = np.exp(
@@ -1128,7 +1135,7 @@ def aggregate_data(total_db, subregion="BA"):
         groupby_cols = (
             region_agg
             + fuel_agg
-            + ["stage_code", "FlowName", "Compartment", "FlowUUID","Unit"]
+            + ["stage_code", "FlowName", "Compartment", "FlowUUID", "Unit"]
         )
         # NOTE: datatypes should be str, str, int, str
         elec_df_groupby_cols = (
@@ -1189,6 +1196,7 @@ def aggregate_data(total_db, subregion="BA"):
         "Aggregating flow amounts, dqi information, and calculating uncertainty"
     )
 
+    # NOTE: lots of runtime warnings
     database_f3 = total_db.groupby(
         groupby_cols + ["Year", "source_string"], as_index=False
     ).agg({
