@@ -1519,12 +1519,10 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
         aggregation_column = "import ferc region"
         region = list(pd.unique(database[aggregation_column]))
         export_column = 'export_name'
-
     elif subregion == "BA":
         aggregation_column = "import_name"  # "import BAA"
         region = list(pd.unique(database[aggregation_column]))
         export_column = "export_name"  # 'export BAA'
-
     elif subregion == "US":
         export_column = "export_name"
         region=["US"]
@@ -1537,11 +1535,9 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
 
         exchanges_list = []
 
-        # TODO: pandas futurewarning
-        #       Should this reference 'database' and not 'database_reg'?
-        database_filt = database['fraction'] > 0
-        database_reg = database_reg[database_filt]
-
+        # Filter regions for positive trade.
+        database_filt = database_reg['fraction'] > 0
+        database_reg = database_reg[database_filt].copy()
         exchange(exchange_table_creation_ref_cons(database_reg), exchanges_list)
 
         for export_region in list(database_reg[export_column].unique()):
@@ -1554,8 +1550,8 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
                 )
                 ra["quantitativeReference"] = False
                 ra['amount'] = database_reg.loc[
-                    database_reg[export_column] == export_region,'fraction'
-                    ].values[0]
+                    database_reg[export_column] == export_region,
+                    'fraction'].values[0]
                 matching_dict = None
                 for gen in gen_dict:
                     if (
@@ -1564,6 +1560,7 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
                     ):
                         matching_dict = gen_dict[export_region]
                         break
+
                 if matching_dict is None:
                     logging.warning(
                         f"Trouble matching dictionary for {export_region} "
