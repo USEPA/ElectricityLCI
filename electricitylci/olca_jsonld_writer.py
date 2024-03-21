@@ -78,10 +78,11 @@ Error log:
         and label them as emissions.
 
 Last edited:
-    2024-03-04
+    2024-03-21
 """
 __all__ = [
     "build_product_systems",
+    "check_exchanges",
     "clean_json",
     "write",
 ]
@@ -102,7 +103,10 @@ def build_product_systems(file_path, elci_config):
 
     Notes
     -----
-    This method overwrites the existing JSON-LD with the new product systems.
+    -   This method checks process exchange amounts for NaNs, which cause
+        openLCA to crash.
+    -   This method overwrites the existing JSON-LD with the new product
+        systems.
     """
     try:
         # Read all JSON-LD data in order to overwrite.
@@ -110,6 +114,7 @@ def build_product_systems(file_path, elci_config):
     except OSError:
         logging.warning("Failed to read JSON-LD file, %s" % file_path)
     else:
+        check_exchanges(data['Process']['objs'])
         logging.info("Building product systems in JSON-LD")
 
     # Find all processes for 'at user' consumption mixes
@@ -146,6 +151,32 @@ def build_product_systems(file_path, elci_config):
 
     # Overwrite JSON-LD
     _save_to_json(file_path, data)
+
+
+def check_exchanges(p_list):
+    """Iterate over process exchanges and log as error when an amount is nan.
+
+    This occurrence causes openLCA to crash on upload of JSON-LD.
+
+    Parameters
+    ----------
+    p_list : list
+        A list of olca-schema.Process objects.
+    """
+    logging.info("Checking process exchange amounts for NaNs")
+    for p in p_list:
+        for ex in p.exchanges:
+            if ex.amount != ex.amount:
+                e_str = "output"
+                if ex.is_input:
+                    e_str = "input"
+                logging.error(
+                    "Found nan for '%s' in %s exchange %d of process '%s'" % (
+                        ex.flow.name,
+                        e_str,
+                        ex.internal_id,
+                        p.name,
+                ))
 
 
 def clean_json(file_path):
