@@ -74,7 +74,7 @@ CHANGELOG
 Created:
     2019-06-04
 Last edited:
-    2024-03-21
+    2024-03-28
 """
 __all__ = [
     "add_data_collection_score",
@@ -924,6 +924,8 @@ def aggregate_data(total_db, subregion="BA"):
                 try:
                     log_data = np.log(data)
                 except (ArithmeticError, ValueError, FloatingPointError):
+                    # See Duke Energy Carolinas and Duke Energy Florida, Inc.
+                    #  - SOLAR - Power plant - Acid compounds
                     logging.debug("Problem with log function")
                     return None
 
@@ -937,6 +939,8 @@ def aggregate_data(total_db, subregion="BA"):
                     se = np.std(log_data)/np.sqrt(l)
                     sd2 = se**2
                 except (ArithmeticError, ValueError, FloatingPointError):
+                    # See Arizona Public Service Company - WIND
+                    # and California Independent System Operator - MIXED
                     logging.debug("Problem with std function")
                     return None
 
@@ -944,6 +948,7 @@ def aggregate_data(total_db, subregion="BA"):
                     # Hotfix syntax (alpha==confidence); 2023-11-06 [TWD]
                     _, pi2 = t.interval(0.90, df=l - 2, loc=mean, scale=se)
                 except (ArithmeticError, ValueError, FloatingPointError):
+                    # See California Independent Operator - GEOTHERMAL
                     logging.debug("Problem with t function")
                     return None
 
@@ -964,7 +969,6 @@ def aggregate_data(total_db, subregion="BA"):
                 try:
                     # NOTE:
                     # np.exp(mean) is the geometric mean of the series
-                    #
                     result = (np.exp(mean), 0, np.exp(upper_interval))
                 except (ArithmeticError, ValueError, FloatingPointError):
                     logging.debug("Unable to calculate geometric_mean")
@@ -997,13 +1001,15 @@ def aggregate_data(total_db, subregion="BA"):
         Returns
         -------
         tuple
-            Geometric mean : float or None
-            Geometric standard deviation : float or None
+            Geometric mean : string or None
+            Geometric standard deviation : string or None
 
         Notes
         -----
-        Depends on global variables (e.g, region_agg) defined within the
-        scope of :func:`aggregate_data`.
+        -   Values are returned as strings, not floats, in order to use
+            NoneType filtering.
+        -   Depends on global variables (e.g, region_agg) defined within the
+            scope of :func:`aggregate_data`.
         """
         if region_agg is not None:
             debug_string = (
@@ -1023,14 +1029,14 @@ def aggregate_data(total_db, subregion="BA"):
         try:
             length = len(df["uncertaintyLognormParams"])
         except TypeError:
-            logging.info(
+            logging.warning(
                 f"Error calculating length of uncertaintyLognormParams"
                 f"{df['uncertaintyLognormParams']}"
             )
             return (None, None)
 
         if length != 3:
-            logging.info(
+            logging.warning(
                 f"Error estimating standard deviation - length: {length}"
             )
         else:
@@ -1043,8 +1049,17 @@ def aggregate_data(total_db, subregion="BA"):
             # A more agressive approach would be to re-assign the emission
             # factor as well.
             if df["Emission_factor"] > df["uncertaintyLognormParams"][2]:
+                # NOTE: the majority of the values filtered out by this
+                # are only fractionally over the confidence interval.
+                # Exceptions include, Bonneville Power Administration -
+                # GEOTHERMAL - Coal, anthracite, with a value of 10 and
+                # a CI limit of 1.3e-5. Carbon dioxide emissions may be
+                # +100 over the CI limit (e.g., 869 > 739).
                 logging.warning(
-                    "Error factor exceeds confidence limit! %s" % debug_string)
+                    "Emission factor exceeds confidence limit! "
+                    "%s" % debug_string)
+                logging.debug("%s > %s" % (
+                    df['Emission_factor'], df["uncertaintyLognormParams"][2]))
                 return (None, None)
             else:
                 c = np.log(df["uncertaintyLognormParams"][2]) - np.log(
@@ -1057,10 +1072,10 @@ def aggregate_data(total_db, subregion="BA"):
                 sd1 = float("nan")
                 sd2 = float("nan")
                 if abc >= 0:
-                    sd1 = (-b + (b**2 - 4*a*c)**0.5)/(2*a)
-                    sd2 = (-b - (b**2 - 4*a*c)**0.5)/(2*a)
-                # HOTFIX: correct check for nan [2024-03-13; TWD]
-                if sd1 != sd1 or sd2 != sd2:
+                    sd1 = (-b + abc**0.5)/(2*a)
+                    sd2 = (-b - abc**0.5)/(2*a)
+                # HOTFIX: correct check for nan [2024-03-28; TWD]
+                if sd1 == sd1 and sd2 == sd2:
                     if sd1 < sd2:
                         geostd = np.exp(sd1)
                         geomean = np.exp(
@@ -1069,10 +1084,10 @@ def aggregate_data(total_db, subregion="BA"):
                         geostd = np.exp(sd2)
                         geomean = np.exp(
                             np.log(df["Emission_factor"]) - 0.5*sd2**2)
-                elif sd1 is not float("nan"):
+                elif sd1 == sd1 and sd2 != sd2:
                     geostd = np.exp(sd1)
                     geomean = np.exp(np.log(df["Emission_factor"]) - 0.5*sd1**2)
-                elif sd2 is not float("nan"):
+                elif sd2 == sd2 and sd1 != sd1:
                     geostd = np.exp(sd2)
                     geomean = np.exp(np.log(df["Emission_factor"]) - 0.5*sd2**2)
                 else:
@@ -1081,8 +1096,7 @@ def aggregate_data(total_db, subregion="BA"):
                 if (
                     (geostd is np.inf)
                     or (geostd is np.NINF)
-                    or (geostd is np.nan)
-                    or (geostd is float("nan"))
+                    or (geostd != geostd)  # HOTFIX: nan check [240328;TWD]
                     or str(geostd) == "nan"
                     or (geostd == 0)
                 ):
