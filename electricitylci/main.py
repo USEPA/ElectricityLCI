@@ -33,9 +33,10 @@ options. The selection of configuration file will occur after the start
 of this script or it may be passed following the command-line argument, '-c'.
 
 Last updated:
-    2024-03-21
+    2024-04-19
 
 Changelog:
+    -   Address logging handler import for Python 3.12 compatability.
     -   Remove 'write_upstream_dicts_to_jsonld' as a separate function; it
         simply is a redirect to 'write_process_dicts_to_jsonld,' which is
         used consistently throughout the rest of :func:`main`.
@@ -216,6 +217,7 @@ def run_generation():
 # MAIN
 ##############################################################################
 if __name__ == "__main__":
+    from logging.handlers import RotatingFileHandler
     import os
     from electricitylci.globals import output_dir
 
@@ -238,8 +240,7 @@ if __name__ == "__main__":
     # Create file handler for debug messages
     log_filename = "elci.log"
     log_path = os.path.join(output_dir, log_filename)
-    f_handler = logging.handlers.RotatingFileHandler(
-        log_path, backupCount=9)
+    f_handler = RotatingFileHandler(log_path, backupCount=9)
     f_handler.setLevel("DEBUG")
     f_handler.setFormatter(formatter)
 
