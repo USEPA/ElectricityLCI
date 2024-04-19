@@ -60,7 +60,7 @@ In the current release, the PUDL methods are replaced with EPA's API:
 https://github.com/USEPA/ElectricityLCI/issues/207#issuecomment-1751075194
 
 Last edited:
-    2024-02-26
+    2024-04-19
 """
 
 
@@ -400,6 +400,9 @@ def process_cems_dfs(df_list):
 def read_cems_api(api_key, year, state=None, force=False):
     """Read CEMS annual apportioned emissions from new EPA API.
 
+    See "Emissions Management OpenAPI Specification":
+    https://www.epa.gov/power-sector/cam-api-portal#/swagger/emissions-mgmt
+
     Method checks local directory for file existence and prioritizes
     reading from file before calling the API unless force is set to true.
 
@@ -429,8 +432,8 @@ def read_cems_api(api_key, year, state=None, force=False):
     """
     # Use the annual apportioned emissions API URL:
     s_url = (
-        "https://api.epa.gov/easey/streaming-services/emissions/"
-        "apportioned/annual/by-facility"
+        "https://api.epa.gov/easey"
+        "/emissions-mgmt/emissions/apportioned/annual/by-facility"
     )
 
     # Keep column naming consistent with legacy code:
@@ -460,7 +463,13 @@ def read_cems_api(api_key, year, state=None, force=False):
             raise ValueError("Missing Clean Air Markets API key!")
 
         # Prepare the API parameters
-        params = {'api_key': api_key, 'year': year, 'stateCode': state}
+        # The most record from 2016, 2020-2022 is about 150 for TX.
+        params = {
+            'api_key': api_key,
+            'year': year,
+            'stateCode': state,
+            'page': 1,
+            'perPage': 500}  # max allowable by API is 500
         try:
             r = requests.get(s_url, params=params)
         except:
