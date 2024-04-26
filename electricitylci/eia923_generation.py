@@ -82,7 +82,7 @@ def load_eia923_excel(eia923_path, page="1"):
         sheet_name=page_to_load,
         header=header_row,
         na_values=["."],
-        dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
+        dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str, "EIA Sector Number": str},
     )
     # Get ride of line breaks. And apparently 2015 had 'Plant State'
     # instead of 'State'
@@ -115,6 +115,7 @@ def eia923_download_extract(
         "Plant Name",
         "State",
         "NAICS Code",
+        "EIA Sector Number",
         "Reported Prime Mover",
         "Reported Fuel Type Code",
         "YEAR",
@@ -257,7 +258,7 @@ def eia923_primary_fuel(
     # eia923_gen_fuel['FuelCategory'] = group_fuel_categories(eia923_gen_fuel)
     # eia923_gen_fuel.rename(columns={'Reported Fuel Type Code'})
 
-    group_cols = ["Plant Id", "NAICS Code", "Reported Fuel Type Code"]
+    group_cols = ["Plant Id", "NAICS Code", "EIA Sector Number","Reported Fuel Type Code"]
 
     sum_cols = [
         "Net Generation (Megawatthours)",
@@ -276,6 +277,7 @@ def eia923_primary_fuel(
     data_cols = [
         "Plant Id",
         "NAICS Code",
+        "EIA Sector Number",
         "Reported Fuel Type Code",
         "Net Generation (Megawatthours)",
     ]
@@ -337,6 +339,8 @@ def calculate_plant_efficiency(gen_fuel_data):
         / (plant_total["Total Fuel Consumption MMBtu"] * 3.412)
         * 100
     )
+    plant_total=plant_total.drop(columns=["EIA Sector Number"])
+    plant_total=plant_total.merge(gen_fuel_data[["Plant Id","EIA Sector Number"]],on="Plant Id",how="left")
     return plant_total
 
 
@@ -407,11 +411,11 @@ def build_generation_data(
                     >= model_specs.min_plant_percent_generation_from_primary_fuel_category,
                     :,
                 ]
-            # if filter_non_egrid_emission_on_NAICS:
+            if model_specs.filter_non_egrid_emission_on_NAICS:
             #     # Check with Wes to see what the filter here is supposed to be
-            #     final_gen_df = final_gen_df.loc[
-            #         final_gen_df['NAICS Code'] == '22', :
-            #     ]
+                final_gen_df = final_gen_df.loc[
+                    (final_gen_df['NAICS Code'] == '22') & (final_gen_df['EIA Sector Number'].isin(['1','2'])) , :
+                ]
         else:
             final_gen_df = final_gen_df.loc[
                 final_gen_df["Plant Id"].isin(egrid_facilities_to_include), :

@@ -132,6 +132,7 @@ def create_generation_mix_process_df_from_model_generation_data(
                 database_for_genmix_final["PercentGenerationfromDesignatedFuelCategory"]
                 < model_specs.min_plant_percent_generation_from_primary_fuel_category/100)
         database_for_genmix_final.loc[mixed_criteria,"FuelCategory"]="MIXED"
+    database_for_genmix_final = database_for_genmix_final.drop_duplicates()
     if subregion == "US":
         group_cols = ["FuelCategory"]
     else:

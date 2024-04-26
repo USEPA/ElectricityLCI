@@ -503,7 +503,8 @@ def create_generation_process_df():
         right=generation_data,
         right_on=["FacilityID", "Year"],
         left_on=["eGRID_ID", "Year"],
-        how="left",
+        how="inner",#Made this modification 3/4/2024. Will ensure that plants 
+        #that have been filtered out are not included. Primarily for replace eGRID - using EIA923 data
     )
     egrid_facilities_w_fuel_region[
         "FacilityID"
