@@ -133,6 +133,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
 #                TOTAL_INTERCHANGE_ROWS.append(json.loads(line))
     logging.info(f"Net gen rows: {len(NET_GEN_ROWS)}; BA to BA rows:{len(BA_TO_BA_ROWS)}; Demand rows:{len(DEMAND_ROWS)}")
     eia923_gen=eia923.build_generation_data(generation_years=[year])
+    eia923_gen=eia923_gen.drop_duplicates()
     eia860_df=eia860.eia860_balancing_authority(year)
     eia860_df["Plant Id"]=eia860_df["Plant Id"].astype(int)
 

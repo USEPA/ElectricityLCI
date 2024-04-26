@@ -214,6 +214,7 @@ def generate_regional_grid_loss(final_database, year, subregion="all"):
     ]
     egrid_facilities_w_fuel_region["FacilityID"]=egrid_facilities_w_fuel_region["FacilityID"].astype(int)
     plant_generation = build_generation_data(generation_years=[year])
+    plant_generation = plant_generation.drop_duplicates()
     plant_generation["FacilityID"]=plant_generation["FacilityID"].astype(int)
     plant_generation = plant_generation.merge(egrid_facilities_w_fuel_region,on=["FacilityID"],how="left")
     plant_generation["Balancing Authority Name"]=plant_generation["Balancing Authority Code"].map(ba_codes["BA_Name"])
