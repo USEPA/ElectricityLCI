@@ -1,27 +1,91 @@
-"""Add docstring."""
-
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# technosphereflows.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import pandas as pd
+
 from electricitylci.model_config import model_specs
 
 
-def map_heat_inputs_to_fuel_names(generation_df):
-    """Add docstring."""
-    fuel_info_tech_flows = model_specs.fuel_name[model_specs.fuel_name["ElementaryFlowInput"]==0]
-    fuel_info_tech_flows = fuel_info_tech_flows.rename(columns={"Fuelname":"FuelName","FuelList":"FuelCategory"})
-    fuel_cols_to_use = ["FuelCategory","FuelName","Heatcontent","Category","Subcategory"]
-    fuel_info_tech_flows = fuel_info_tech_flows[fuel_cols_to_use]
-    fuel_info_tech_flows['FlowName']='Heat'
-    fuel_info_tech_flows['Category'] = fuel_info_tech_flows['Category'].apply(lambda x:str(x)) +'/'+fuel_info_tech_flows['Subcategory'].apply(lambda x:str(x))
-    generation_df = pd.merge(generation_df,fuel_info_tech_flows,on=['FlowName','FuelCategory'],how='left')
-    generation_df.loc[generation_df['FlowName'] == 'Heat', 'Compartment'] = generation_df['Category']
+##############################################################################
+# MODULE DOCUMENTATION
+##############################################################################
+__doc__ = """This module maps the heat input flows to the respective fuel
+names and replaces them with those fuel names for easy understandability
+within the generated LCA inventory.
 
-    generation_df.loc[(generation_df['FlowName'] == 'Heat')&(generation_df['Heatcontent'].notnull()), 'Emission_factor'] = generation_df['Emission_factor']/generation_df['Heatcontent']
-    generation_df.loc[(generation_df['FlowName'] == 'Heat')&(generation_df['Heatcontent'].notnull()), 'Minimum'] = generation_df['Minimum']/generation_df['Heatcontent']
-    generation_df.loc[(generation_df['FlowName'] == 'Heat')&(generation_df['Heatcontent'].notnull()), 'Maximum'] = generation_df['Maximum']/generation_df['Heatcontent']
-    generation_df.loc[(generation_df['FlowName'] == 'Heat')&(generation_df['Heatcontent'].notnull()), 'Unit'] = 'kg'
+Last updated:
+    2024-01-10
+"""
+__all__ = [
+    "map_heat_inputs_to_fuel_names",
+]
+
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
+def map_heat_inputs_to_fuel_names(generation_df):
+    """Map heat input flows to a generation LCA inventory data frame."""
+    fuel_info_tech_flows = model_specs.fuel_name[
+        model_specs.fuel_name["ElementaryFlowInput"]==0]
+    fuel_info_tech_flows = fuel_info_tech_flows.rename(
+        columns={
+            "Fuelname": "FuelName",
+            "FuelList":"FuelCategory"
+        }
+    )
+    fuel_cols_to_use = [
+        "FuelCategory",
+        "FuelName",
+        "Heatcontent",
+        "Category",
+        "Subcategory"
+    ]
+    fuel_info_tech_flows = fuel_info_tech_flows[fuel_cols_to_use]
+    fuel_info_tech_flows['FlowName'] = 'Heat'
+    fuel_info_tech_flows['Category'] = fuel_info_tech_flows['Category'].apply(
+        lambda x:str(x)
+    ) + '/' + fuel_info_tech_flows['Subcategory'].apply(lambda x:str(x))
+
+    generation_df = pd.merge(
+        generation_df,
+        fuel_info_tech_flows,
+        on=['FlowName', 'FuelCategory'],
+        how='left'
+    )
+
+    # Perform calculations
+    generation_df.loc[
+        generation_df['FlowName'] == 'Heat',
+        'Compartment'] = generation_df['Category']
+    generation_df.loc[
+        (generation_df['FlowName'] == 'Heat')
+        & (generation_df['Heatcontent'].notnull()),
+        'Emission_factor'] = generation_df[
+            'Emission_factor'] / generation_df['Heatcontent']
+    generation_df.loc[
+        (generation_df['FlowName'] == 'Heat')
+        & (generation_df['Heatcontent'].notnull()),
+        'Minimum'] = generation_df['Minimum'] / generation_df['Heatcontent']
+    generation_df.loc[
+        (generation_df['FlowName'] == 'Heat')
+        & (generation_df['Heatcontent'].notnull()), 'Maximum'] = generation_df[
+            'Maximum'] / generation_df['Heatcontent']
+    generation_df.loc[
+        (generation_df['FlowName'] == 'Heat')
+        & (generation_df['Heatcontent'].notnull()), 'Unit'] = 'kg'
 
     # Finally use fuel name for flowname
-    generation_df.loc[generation_df['FlowName'] == 'Heat', 'FlowName'] = generation_df['FuelName']
+    generation_df.loc[
+        generation_df['FlowName'] == 'Heat',
+        'FlowName'] = generation_df['FuelName']
+
     fuel_cols_to_drop = ["FuelName", "Heatcontent", "Category", "Subcategory"]
     generation_df = generation_df.drop(columns=fuel_cols_to_drop)
+
     return generation_df

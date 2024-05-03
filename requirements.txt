@@ -1,25 +1,61 @@
 # Check Python versions = "version Python 3.8.2 (64-bit)."
 # This requirements document was generated in the following way:
 # 1. Create a new python virtual environment.
-# 2. Install packages in this environment from the previous requirements file in Github
+# 2. Install packages in this environment from the previous requirements
+#    file in Github.
 # 3. Delete the existing requirements file.
-# 4. Generate this requirements file.
-# This method ensures that all installed packages are in the requirements file, which
-# includes packages that are sub-requirements of other packages.
-
-git+git://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List@v1.0.2#egg=fedelemflowlist
-git+git://github.com/USEPA/standardizedinventories@v0.9.3#egg=StEWI
-numpy>=1.1         # NumPy is the fundamental package for array computing with Python.
-pandas>=0.24       # Powerful Python data analysis toolkit.
-olca-ipc>=0.0.6    # A Python package for calling openLCA functions from Python.
-openpyxl>=2.5      # Python library to read/write Excel 2010 xlsx/xlsm/xltx/xltm files.
-matplotlib>=2.2    # Python plotting package.
-seaborn>=0.9       # Statistical data visualization.
-sympy>=1.2         # Computer algebra system (CAS) in Python.
-xlrd>=1.1          # Library for developers to extract data from Microsoft Excel legacy spreadsheet files (xls).
-pyyaml>=5.1        # YAML parser and emitter for Python.
-pycodestyle>=2.6.0 # Python code tool to check style conventions in PEP 8.
-pydocstyle>=5.0.2  # Python code tool to check style conventions in PEP 257.
-requests>=2.2     # Web request handler
+# 4. Generate this requirements file (pip freeze > requirements.txt).
+# This method ensures that all installed packages are in the requirements
+# file, which includes packages that are sub-requirements of other packages.
+python>=3.7        # Python 3.7 is needed to avoid some issues
+appdirs==1.4.4
+appnope==0.1.3
+asttokens==2.4.0
+backcall==0.2.0
+beautifulsoup4==4.12.2
+boto3==1.28.60
+botocore==1.31.60
+certifi==2023.7.22
+charset-normalizer==3.3.0
+decorator==5.1.1
+esupy @ git+https://github.com/USEPA/esupy.git@e6230c14da0c3c182868bc82d0f429821b5c74d8
+et-xmlfile==1.1.0
+executing==2.0.0
+fedelemflowlist @ git+https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List@e57a542b8b893b67225f5567c89d4b1f1a825eeb
+idna==3.4
+ipython==8.16.1
+jedi==0.19.1
+jmespath==1.0.1
+matplotlib-inline==0.1.6
+mpmath==1.3.0
+numpy==1.26.0
+olca-schema==0.0.12
+openpyxl==3.1.2
+pandas==2.1.1
+parso==0.8.3
+pexpect==4.8.0
+pickleshare==0.7.5
+prompt-toolkit==3.0.39
+ptyprocess==0.7.0
+pure-eval==0.2.2
+pyarrow==13.0.0
+Pygments==2.16.1
+python-dateutil==2.8.2
+pytz==2023.3.post1
+PyYAML==6.0.1
+requests==2.31.0
+requests-ftp==0.3.1
+s3transfer==0.7.0
+scipy==1.11.3
+six==1.16.0
+soupsieve==2.5
+stack-data==0.6.3
+StEWI @ git+https://github.com/USEPA/standardizedinventories@dbe1c5d8eebeeecc0693c694353a4a612d803225
+sympy==1.12
+traitlets==5.11.2
+tzdata==2023.3
+urllib3==1.26.17
+wcwidth==0.2.8
+xlrd==2.0.1
 # Note: This file replaces use of setup.py to install Virtual Environment.
 # Either method has been tested and works.
