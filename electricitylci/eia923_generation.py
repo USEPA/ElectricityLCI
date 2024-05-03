@@ -120,7 +120,7 @@ def load_eia923_excel(eia923_path, page="1"):
         sheet_name=page_to_load,
         header=header_row,
         na_values=["."],
-        dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
+        dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str, "EIA Sector Number": str},
     )
     # Get ride of line breaks. And apparently 2015 had 'Plant State'
     # instead of 'State'
@@ -271,7 +271,7 @@ def eia923_primary_fuel(eia923_gen_fuel=None,
     if year:
         eia923_gen_fuel = eia923_download_extract(year)
 
-    group_cols = ["Plant Id", "NAICS Code", "Reported Fuel Type Code"]
+    group_cols = ["Plant Id", "NAICS Code", "EIA Sector Number","Reported Fuel Type Code"]
     sum_cols = [
         "Net Generation (Megawatthours)",
         "Total Fuel Consumption MMBtu",
@@ -288,6 +288,7 @@ def eia923_primary_fuel(eia923_gen_fuel=None,
     data_cols = [
         "Plant Id",
         "NAICS Code",
+        "EIA Sector Number",
         "Reported Fuel Type Code",
         "Net Generation (Megawatthours)",
     ]
@@ -357,6 +358,8 @@ def calculate_plant_efficiency(gen_fuel_data):
         / (plant_total["Total Fuel Consumption MMBtu"] * 3.412)
         * 100
     )
+    plant_total=plant_total.drop(columns=["EIA Sector Number"])
+    plant_total=plant_total.merge(gen_fuel_data[["Plant Id","EIA Sector Number"]],on="Plant Id",how="left")
     return plant_total
 
 
