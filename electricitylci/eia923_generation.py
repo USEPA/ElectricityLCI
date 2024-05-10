@@ -431,6 +431,11 @@ def build_generation_data(
                     >= model_specs.min_plant_percent_generation_from_primary_fuel_category,
                     :,
                 ]
+            if model_specs.filter_non_egrid_emission_on_NAICS:
+            #     # Check with Wes to see what the filter here is supposed to be
+                final_gen_df = final_gen_df.loc[
+                    (final_gen_df['NAICS Code'] == '22') & (final_gen_df['EIA Sector Number'].isin(['1','2'])) , :
+                ]
         else:
             final_gen_df = final_gen_df.loc[
                 final_gen_df["Plant Id"].isin(egrid_facilities_to_include), :
