@@ -707,7 +707,9 @@ def create_generation_process_df():
         left=emissions_df,
         right=generation_data,
         on=["eGRID_ID", "Year"],
-        how="left",
+        how="inner", #Jamieson made this modification 3/4/2024. 
+        # Ensures that plants that have been filtered out are not included. 
+        # Primarily for replace eGRID - using EIA923 data
     )
     final_database = pd.merge(
         left=final_database,
