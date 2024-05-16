@@ -159,6 +159,7 @@ def eia923_download_extract(year, group_cols=None):
         - 'Plant Name' (str): Plant name (e.g., 'Sand Point')
         - 'State' (str): Two-letter state abbreviation (e.g., 'AL')
         - 'NAICS Code' (str): Industry code (e.g. '22')
+        - 'EIA Sector Number' (int): Sector identifer (e.g., 1)
         - 'Reported Prime Mover' (str): Prime mover code (e.g., 'IC')
         - 'Reported Fuel Type Code' (str): Fuel code (e.g., 'BIT')
         - 'YEAR' (str): EIA Form 923 year (e.g., '2021')
@@ -172,6 +173,7 @@ def eia923_download_extract(year, group_cols=None):
             "Plant Name",
             "State",
             "NAICS Code",
+            "EIA Sector Number",
             "Reported Prime Mover",
             "Reported Fuel Type Code",
             "YEAR",
