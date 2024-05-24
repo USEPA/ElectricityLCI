@@ -159,7 +159,7 @@ def eia923_download_extract(year, group_cols=None):
         - 'Plant Name' (str): Plant name (e.g., 'Sand Point')
         - 'State' (str): Two-letter state abbreviation (e.g., 'AL')
         - 'NAICS Code' (str): Industry code (e.g. '22')
-        - 'EIA Sector Number' (int): Sector identifer (e.g., 1)
+        - 'EIA Sector Number' (str): Sector identifer (e.g., "1")
         - 'Reported Prime Mover' (str): Prime mover code (e.g., 'IC')
         - 'Reported Fuel Type Code' (str): Fuel code (e.g., 'BIT')
         - 'YEAR' (str): EIA Form 923 year (e.g., '2021')
@@ -214,7 +214,7 @@ def eia923_download_extract(year, group_cols=None):
             csv_path = join(expected_923_folder, fn)
             eia = pd.read_csv(
                 csv_path,
-                dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
+                dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str, "EIA Sector Number": str},
                 low_memory=False,
             )
         else:
@@ -413,6 +413,8 @@ def build_generation_data(
         primary_fuel = eia923_primary_fuel(gen_fuel_data)
         gen_efficiency = calculate_plant_efficiency(gen_fuel_data)
 
+        #HOTFIX: fix duplicate NAICS column (S.S. 5/16/2024)
+        primary_fuel = primary_fuel.drop(columns=['NAICS Code'])
         final_gen_df = gen_efficiency.merge(primary_fuel, on="Plant Id")
         if not egrid_facilities_to_include:
             if model_specs.include_only_egrid_facilities_with_positive_generation:
