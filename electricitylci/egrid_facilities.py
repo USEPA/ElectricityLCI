@@ -88,7 +88,7 @@ def make_egrid_subregion_ref(year):
 
     Parameters
     ----------
-    year : ing
+    year : int
         Data year.
     """
     # Define the output file, which should be in data directory of package.
