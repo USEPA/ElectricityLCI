@@ -33,7 +33,7 @@ options. The selection of configuration file will occur after the start
 of this script or it may be passed following the command-line argument, '-c'.
 
 Last updated:
-    2024-04-19
+    2024-07-24
 
 Changelog:
     -   Address logging handler import for Python 3.12 compatability.
@@ -44,6 +44,7 @@ Changelog:
         distribution; creates parallel structure with new run post-processes.
     -   Move `get_generation_process_df` from if-else for clarity.
     -   Reduce parameters passed between methods (i.e, the data frame).
+    -   Testing facility-level inventory generation.
 """
 __all__ = [
     "main",
@@ -191,7 +192,8 @@ def run_generation():
     logging.info("get aggregated generation process")
     generation_process_df = get_generation_process_df(
         upstream_df=upstream_df,
-        upstream_dict=upstream_dict
+        upstream_dict=upstream_dict,
+        to_agg=False  # test facility-level data retrieval
     )
 
     logging.info("write generation process to dict")
@@ -220,6 +222,7 @@ if __name__ == "__main__":
     from logging.handlers import RotatingFileHandler
     import os
     from electricitylci.globals import output_dir
+    from electricitylci import get_facility_level_inventory
 
     # Define a root logger at lowest logging level.
     # Ref: https://stackoverflow.com/q/25187083
@@ -259,7 +262,8 @@ if __name__ == "__main__":
 
     # Execute main
     try:
-        main()
+        #main()
+        get_facility_level_inventory(True, False)
     except Exception as e:
         log.error("Crashed on main!\n%s" % str(e))
     else:

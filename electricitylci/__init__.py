@@ -7,11 +7,13 @@
 # REQUIRED MODULES
 ##############################################################################
 import logging
+import os
 
 import pandas as pd
 
 import electricitylci.model_config as config
 from electricitylci.globals import elci_version
+from electricitylci.globals import output_dir
 from electricitylci.utils import fill_default_provider_uuids
 
 
@@ -22,7 +24,7 @@ __doc__ = """This module contains the main API functions to be used by the
 end user.
 
 Last updated:
-    2024-03-12
+    2024-07-24
 """
 __version__ = elci_version
 
@@ -352,6 +354,7 @@ def get_generation_process_df(regions=None, **kwargs):
 
         - 'upstream_df' : pandas.DataFrame
         - 'upstream_dict' : dict
+        - 'to_agg' : boolean
 
     Returns
     -------
@@ -378,6 +381,13 @@ def get_generation_process_df(regions=None, **kwargs):
        - 'GeomSD'
        - 'Maximum'
        - 'Minimum'
+
+    Examples
+    --------
+    >>> # The facility-level data method
+    >>> data = get_generation_process_df(regions="BA", to_agg=False)
+    >>> # The aggregated data method:
+    >>> data = get_generation_process_df("BA")
     """
     # These packages depend on model_specs (order matters!)
     import electricitylci.generation as gen
@@ -435,16 +445,144 @@ def get_generation_process_df(regions=None, **kwargs):
 
     # NOTE: It would be nice if the following were in a separate method so
     # gen_plus_fuels could be retained without aggregation.
-    if regions is None:
-        regions = config.model_specs.regional_aggregation
+    to_agg = kwargs.get("to_agg", True)
+    if to_agg:
+        if regions is None:
+            regions = config.model_specs.regional_aggregation
 
-    if regions in ["BA", "FERC", "US"]:
-        generation_process_df = aggregate_gen(gen_plus_fuels, "BA")
+        if regions in ["BA", "FERC", "US"]:
+            generation_process_df = aggregate_gen(gen_plus_fuels, "BA")
+        else:
+            generation_process_df = aggregate_gen(gen_plus_fuels, regions)
     else:
-        generation_process_df = aggregate_gen(gen_plus_fuels, regions)
+        # WARNING, Canada is BA level. Probably not useful and should be
+        # filtered out.
+        generation_process_df = gen_plus_fuels
 
     return generation_process_df
 
+
+def get_facility_level_inventory(to_save=False, sep_by_fac=True):
+    """Returns a facility-level data frame and optionally writes to CSV.
+
+    Parameters
+    ----------
+    to_save : bool, optional
+        To write data as CSV, by default False
+    sep_by_fac : bool, optional
+        Whether to save by facility ID, by default True
+
+    Returns
+    -------
+    pandas.DataFrame
+        A data frame of facility-level inventories.
+        The choice of model configuration (e.g., ELCI_1) determines whether
+        upstream emissions, renewable technologies, and plant-level water
+        are included. Ignores Canada.
+
+        Columns include:
+
+        - 'eGRID_ID'
+        - 'FlowName'
+        - 'Compartment'
+        - 'FlowAmount'
+        - 'Unit'
+        - 'DataReliability'
+        - 'Source'
+        - 'Year'
+        - 'PGM_SYS_ID'
+        - 'plant_name'
+        - 'PrimaryFuel'
+        - 'DataCollection'
+        - 'GeographicalCorrelation'
+        - 'TechnologicalCorrelation'
+        - 'Electricity'
+        - 'NAICS Code'
+        - 'PercentGenerationfromDesignatedFuelCategory'
+        - 'State'
+        - 'NERC'
+        - 'Balancing Authority Code'
+        - 'Balancing Authority Name'
+        - 'FuelCategory'
+        - 'SourceListName'
+        - 'FlowUUID'
+        - 'ElementaryFlowPrimeContext'
+        - 'Age'
+        - 'TemporalCorrelation'
+        - 'stage_code'
+        - 'Compartment_path'
+        - 'EIA_Region'
+        - 'FERC_Region'
+        - 'quantity'
+        - 'input'
+        - 'FacilityID'
+    """
+    if config.model_specs is None:
+        # Prompt user to select configuration option.
+        # These are defined as YAML files in the modelconfig/ folder in the
+        # eLCI package; you might have to search site-packages under lib.
+        config.model_specs = config.build_model_class()
+
+    # File naming convention for "no upstream"
+    us_txt =  "nu"
+
+    if config.model_specs.include_upstream_processes is True:
+        # File naming convention for "upstream"
+        us_txt = "us"
+
+        # Create data frame with all generation process data; includes
+        # upstream and Canadian data.
+        # NOTE: Only nuclear ('NUC') stage codes have electricity data;
+        #       all others are nans.
+        logging.info("get upstream process")
+        upstream_df = get_upstream_process_df(config.model_specs.eia_gen_year)
+        logging.info("write upstream process to dict")
+        upstream_dict = write_upstream_process_database_to_dict(upstream_df)
+
+        # NOTE: UUID's for upstream processes are created when converting to
+        #       JSON-LD. This has to be done here if the information is
+        #       going to be included in the final outputs.
+        upstream_dict = write_process_dicts_to_jsonld(upstream_dict)
+    else:
+        # Create data frame with only generation process data.
+        upstream_dict = {}
+        upstream_df = None
+
+    # NOTE: This method triggers an input request for EPA data API key;
+    #       see https://github.com/USEPA/ElectricityLCI/issues/207
+    # NOTE: This method runs aggregation and emission uncertainty
+    #       calculations.
+    logging.info("get aggregated generation process")
+    data = get_generation_process_df(
+        upstream_df=upstream_df,
+        upstream_dict=upstream_dict,
+        to_agg=False  # test facility-level data retrieval
+    )
+    # Drop Canada and unknown facilities from data frame
+    data = data.dropna(subset='FacilityID')
+
+    if to_save:
+        if sep_by_fac:
+            logging.info("Saving individual facility-level inventories to CSV")
+            # Create CSV files for each facility
+            fac_list = data['FacilityID'].unique()
+            for fac in fac_list:
+                tmp = data.query("FacilityID == %f" % fac)
+                csv_file = "elci_fac_%05d_%d_%s.csv" % (
+                    fac, config.model_specs.eia_gen_year, us_txt
+                )
+                csv_path = os.path.join(output_dir, csv_file)
+                tmp.to_csv(csv_path, index=False)
+        else:
+            # Create one massive CSV file
+            logging.info("Saving facility-level inventories to CSV")
+            csv_file = "elci_fac_all_%d_%s.csv" % (
+                config.model_specs.eia_gen_year, us_txt)
+            csv_path = os.path.join(output_dir, csv_file)
+            data.to_csv(csv_path, index=False)
+            # TODO: consider zipping this massive file, 500 MB.
+
+    return data
 
 def get_upstream_process_df(eia_gen_year):
     """Automatically load all of the upstream emissions data from the various
