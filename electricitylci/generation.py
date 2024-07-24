@@ -70,11 +70,14 @@ CHANGELOG
 -   Fix groupby for source_db in :func:`calculate_electricity_by_source` to
     match the filter used to find multiple source entries.
 -   Add empty database check in :func:`calculate_electricity_by_source`
+-   Separate replace egrid function
+-   Fix zero division error in aggregate data
+-   TODO: implement Hawkins-Young uncertainty
 
 Created:
     2019-06-04
 Last edited:
-    2024-03-28
+    2024-07-24
 """
 __all__ = [
     "add_data_collection_score",
@@ -903,6 +906,32 @@ def aggregate_data(total_db, subregion="BA"):
         -----
         Alternatively scipy.stats.lognorm may be used to fit a distribution
         and provide the parameters.
+
+        There are three parameters fit to a lognormal distribution, they are:
+
+        - shape: controls the skewness of the distribution (-1 to +1)
+        - scale: controls the spread of the distribution
+        - location: determines the mean or median of the distribution
+
+        The geometric standard deviation is non-negative, unitless
+        multiplicative factor that is a measure of the spread of logarithmic
+        values around the mean that acts as an indicator of volatility or risk
+        (>=1), which is good for non-normally distribution data.
+
+        Consider this:
+
+        1)  Use scipy.stats.lognorm.fit(data) to get the three-parameter fit
+            of the lognormal distribution.
+
+            -   shape, s (i.e., sigma of the normal distribution,
+                Y = ln(X - loc) ~ N(mu, sigma))
+            -   location, loc
+            -   scale (i.e., e^mu, where mu is the mean of the normal
+                distribution, Y = ln(X - loc) ~ N(mu, sigma)); scale is 1 when
+                mu is zero.
+
+        2) Use scipy.stats.lognorm.interval to calculate the confidence
+           interval of the sample.
         """
         # Check series length and data value requirements
         #   Not sure why we care about the median, other than it being the
@@ -913,7 +942,7 @@ def aggregate_data(total_db, subregion="BA"):
                 "Calculating confidence interval for: " +
                 " - ".join(df.loc[p_series.index[0], cols].values)
             )
-            logging.debug(f"Count: {len(p_series.values)}")
+            logging.debug(f"Count: {l}")
             with np.errstate(all='raise'):
                 try:
                     data = p_series.to_numpy()
@@ -936,6 +965,7 @@ def aggregate_data(total_db, subregion="BA"):
                     return None
 
                 try:
+                    # Simplified geometric standard deviation; scale parameter
                     se = np.std(log_data)/np.sqrt(l)
                     sd2 = se**2
                 except (ArithmeticError, ValueError, FloatingPointError):
@@ -945,8 +975,13 @@ def aggregate_data(total_db, subregion="BA"):
                     return None
 
                 try:
+                    # Compute confidence interval for the logarithm of the data
+                    # using the mean and standard deviation of the logarithms
+                    # of the data.
+                    # BUG: why is df = l-2? Only one parameter is being
+                    # estimated, so df should be l=1.
                     # Hotfix syntax (alpha==confidence); 2023-11-06 [TWD]
-                    _, pi2 = t.interval(0.90, df=l - 2, loc=mean, scale=se)
+                    _, pi2 = t.interval(0.9, df=l - 2, loc=mean, scale=se)
                 except (ArithmeticError, ValueError, FloatingPointError):
                     # See California Independent Operator - GEOTHERMAL
                     logging.debug("Problem with t function")
@@ -984,6 +1019,11 @@ def aggregate_data(total_db, subregion="BA"):
                     )
                     return None
         else:
+            logging.debug(
+                "Skipping confidence interval for: " +
+                " - ".join(df.loc[p_series.index[0], cols].values)
+            )
+            logging.debug(f"Count: {l}")
             return None
 
 
@@ -1062,10 +1102,22 @@ def aggregate_data(total_db, subregion="BA"):
                     df['Emission_factor'], df["uncertaintyLognormParams"][2]))
                 return (None, None)
             else:
-                c = np.log(df["uncertaintyLognormParams"][2]) - np.log(
-                    df["Emission_factor"])
-                b = -2**0.5*erfinv(2*0.95-1)
+                # The CDF for a lognormal distribution is:
+                # CDF = 0.5*(1 + erf[(ln(x) - mu)/(sqrt(2)*sigma)])
+                # substitute: x = EF + (1+PI); mu = ln(EF) - 0.5*sigma**2
+                # and set CDF = 0.95:
+                # 0.9=erf{[ln(EF*(1+PI)-ln(EF)+0.5*sigma**2)]/(sqrt(2)*sigma)}
+                # Know that the erfinv(0.9) = 1.163087, solve for sigma:
+                # 1.163 = [ln(EF*(1+PI))-ln(EF)+0.5*sigma**2]/(sqrt(2)*sigma)
+                # Rearrange in quadratic form:
+                # 0 = 0.5*sigma**2 + (-sqrt(2)*1.163)*sigma + ln(1 + PI),
+                # where PI is the upper prediction inverval expressed as a
+                # fraction. For example, PI=90% would be 0.9, such that:
+                # EF*(1+PI) = EF + 0.9*EF.
+                # HOTFIX 'c' parameter based on the simplification above [TWD]
                 a = 0.5
+                b = -2**0.5*erfinv(2*0.95-1)
+                c = np.log(1 + df["uncertaintyLognormParams"][2])
                 # HOTFIX: avoid invalid value encountered in scalar power;
                 # this happens when a square root is taken of a negative.
                 abc = (b**2 - 4*a*c)
@@ -1168,24 +1220,17 @@ def aggregate_data(total_db, subregion="BA"):
 
     # Replace primary fuel categories based on EIA Form 923, if requested
     if model_specs.replace_egrid:
-        # NOTE: this is more "data correction" than aggregation; consider
-        # moving to another method.
-        primary_fuel_df = eia923_primary_fuel(year=model_specs.eia_gen_year)
-        primary_fuel_df.rename(columns={'Plant Id': "eGRID_ID"}, inplace=True)
-        primary_fuel_df["eGRID_ID"] = primary_fuel_df["eGRID_ID"].astype(int)
-        key_df = primary_fuel_df[
-            ["eGRID_ID", "FuelCategory"]].dropna().drop_duplicates(
-                subset="eGRID_ID").set_index("eGRID_ID")
-        not_all = total_db["FuelCategory"] != "ALL"
-        total_db.loc[not_all, "FuelCategory"] = total_db.loc[
-            not_all, "eGRID_ID"].map(key_df["FuelCategory"])
+        total_db = replace_egrid(total_db, model_specs.eia_gen_year)
 
+    # Use a dummy UUID to avoid groupby errors
     total_db["FlowUUID"] = total_db["FlowUUID"].fillna(value="dummy-uuid")
+
     # Aggregate multiple emissions of the same type
     logging.info("Aggregating multiples of plant emissions")
     sz_tdb = len(total_db)
     total_db = aggregate_facility_flows(total_db)
     logging.debug("Reduce data from %d to %d rows" % (sz_tdb, len(total_db)))
+
     # Calculate electricity totals by region and source
     total_db, electricity_df = calculate_electricity_by_source(
         total_db, subregion
@@ -1194,14 +1239,25 @@ def aggregate_data(total_db, subregion="BA"):
     # Inject a false flow amount for "uncertainty" calculations
     false_gen = 1e-15
     # HOTFIX: pandas futurewarning syntax [2024-03-08; TWD]
-    total_db = total_db.replace({"FlowAmount": 0}, false_gen)
+    #total_db = total_db.replace({"FlowAmount": 0}, false_gen)
+
+    # Assign data score based on percent generation
     total_db = add_data_collection_score(total_db, electricity_df, subregion)
-    total_db["facility_emission_factor"] = (
-        total_db["FlowAmount"] / total_db["Electricity"]
+
+    # Calculate the emission factor (E/MWh)
+    # HOTFIX ZeroDivisionError [2024-05-14; TWD]
+    crit_zero = total_db["Electricity"] != 0
+    total_db.loc[crit_zero, "facility_emission_factor"] = (
+        total_db.loc[crit_zero, "FlowAmount"]
+        / total_db.loc[crit_zero, "Electricity"]
     )
-    # Effectively removes rows with zero Electricity or nan flow amounts;
-    # for 2016 generation, it's all nans in flow amounts.
+    # Effectively removes rows with zero Electricity or nan flow amounts.
+    # For 2016 generation, it's all caused by nans in flow amounts.
+    # For 2020 generation, it's all zero electricity
     total_db.dropna(subset=["facility_emission_factor"], inplace=True)
+
+    # TODO: replace geo_mean w/ Hawkins-Young variant. It should return
+    #       just sigma for use in the mu and mu_g calculations.
 
     wm = lambda x: _wtd_mean(x, total_db)
     geo_mean = lambda x: _geometric_mean(x, total_db, groupby_cols)
@@ -1271,11 +1327,14 @@ def aggregate_data(total_db, subregion="BA"):
             right_on=groupby_cols,
             how="left",
         )
-    # Create emission factors, adjust accordingly for for Canadian BA's
-    canada_db.index = database_f3.loc[canadian_criteria, :].index
+
+    # Reverse the dummy UUID assignment
     database_f3.loc[
         database_f3["FlowUUID"] == "dummy-uuid", "FlowUUID"
     ] = float("nan")
+
+    # Create emission factors, adjust accordingly for for Canadian BA's
+    canada_db.index = database_f3.loc[canadian_criteria, :].index
     database_f3.loc[canada_db.index, "electricity_sum"] = canada_db[
         "Electricity"
     ]
@@ -1321,6 +1380,41 @@ def aggregate_data(total_db, subregion="BA"):
         )
     database_f3.sort_values(by=groupby_cols, inplace=True)
     return database_f3
+
+
+def replace_egrid(total_db, year=None):
+    """Replace eGRID primary fuel categories with EIA 923 values.
+
+    Parameters
+    ----------
+    total_db : pandas.DataFrame
+        A data frame with facility-level 'FuelCategory' values for each
+        'eGRID_ID' facility.
+    year : int, optional
+        EIA generation year, by default None.
+        If none, uses model_specs.eia_gen_year.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The same data frame as the ``total_db`` parameter, but with
+        "FuelCategory" values updated. Notably maintains the "ALL"
+        category, which is associated with Canadian balancing authorities.
+    """
+    if year is None:
+        year = model_specs.eia_gen_year
+
+    primary_fuel_df = eia923_primary_fuel(year=year)
+    primary_fuel_df.rename(columns={'Plant Id': "eGRID_ID"}, inplace=True)
+    primary_fuel_df["eGRID_ID"] = primary_fuel_df["eGRID_ID"].astype(int)
+    key_df = primary_fuel_df[
+        ["eGRID_ID", "FuelCategory"]].dropna().drop_duplicates(
+            subset="eGRID_ID").set_index("eGRID_ID")
+    not_all = total_db["FuelCategory"] != "ALL"
+    total_db.loc[not_all, "FuelCategory"] = total_db.loc[
+        not_all, "eGRID_ID"].map(key_df["FuelCategory"])
+
+    return total_db
 
 
 def turn_data_to_dict(data, upstream_dict):
