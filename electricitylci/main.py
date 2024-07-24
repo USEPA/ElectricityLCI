@@ -222,6 +222,7 @@ if __name__ == "__main__":
     from logging.handlers import RotatingFileHandler
     import os
     from electricitylci.globals import output_dir
+    from electricitylci.utils import check_output_dir
     from electricitylci import get_facility_level_inventory
 
     # Define a root logger at lowest logging level.
@@ -242,6 +243,7 @@ if __name__ == "__main__":
 
     # Create file handler for debug messages
     log_filename = "elci.log"
+    check_output_dir(output_dir)
     log_path = os.path.join(output_dir, log_filename)
     f_handler = RotatingFileHandler(log_path, backupCount=9)
     f_handler.setLevel("DEBUG")

@@ -184,6 +184,7 @@ def generate_regional_grid_loss(year, subregion="all"):
     logging.info(
         "Generating %d factors for transmission and distribution losses" % year)
     plant_generation = build_generation_data(generation_years=[year])
+
     plant_generation["FacilityID"] = plant_generation["FacilityID"].astype(int)
     if config.model_specs.replace_egrid:
         plant_data = eia_facility_fuel_region(year)

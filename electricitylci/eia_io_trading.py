@@ -33,7 +33,7 @@ from electricitylci.process_dictionary_writer import (
     exchange,
     process_table_creation_con_mix,
     exchange_table_creation_input_con_mix,
-    exchange_table_creation_ref_cons,
+    exchange_table_creation_ref,
 )
 
 
@@ -1538,7 +1538,7 @@ def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
         # Filter regions for positive trade.
         database_filt = database_reg['fraction'] > 0
         database_reg = database_reg[database_filt].copy()
-        exchange(exchange_table_creation_ref_cons(database_reg), exchanges_list)
+        exchange(exchange_table_creation_ref(database_reg), exchanges_list)
 
         for export_region in list(database_reg[export_column].unique()):
             database_f1 = database_reg[
