@@ -38,7 +38,7 @@ JSON-LD format as prescribed by OpenLCA software.
 Portions of this code were cleaned using ChatGPTv3.5.
 
 Last updated:
-    2024-01-10
+    2024-07-30
 """
 __all__ = [
     'con_process_ref',
@@ -1192,25 +1192,17 @@ def uncertainty_table_creation(data):
     """
     ar = dict()
 
-    if data["GeomMean"].iloc[0] is not None:
-        ar["geomMean"] = str(float(data["GeomMean"].iloc[0]))
+    gm = data["GeomMean"].iloc[0]
+    gs = data["GeomSD"].iloc[0]
 
-    if data["GeomSD"].iloc[0] is not None:
-        ar["geomSd"] = str(float(data["GeomSD"].iloc[0]))
+    # NaN checking at its best.
+    if gm == gm and gs == gs:
+        ar["geomMean"] = gm
+        ar["geomSd"] = gs
+        ar["distributionType"] = "Logarithmic Normal Distribution"
 
-    ar["distributionType"] = "Logarithmic Normal Distribution"
-    ar["mean"] = ""
-    ar["meanFormula"] = ""
-    ar["geomMeanFormula"] = ""
-    ar["maximum"] = data["Maximum"].iloc[0]
-    ar["minimum"] = data["Minimum"].iloc[0]
-    ar["minimumFormula"] = ""
-    ar["sd"] = ""
-    ar["sdFormula"] = ""
-    ar["geomSdFormula"] = ""
-    ar["mode"] = ""
-    ar["modeFormula"] = ""
-    ar["maximumFormula"] = ""
+    # NOTE: here is good place to check other values to implement
+    #       alternative uncertainty (e.g., uniform, triangle)
 
     return ar
 

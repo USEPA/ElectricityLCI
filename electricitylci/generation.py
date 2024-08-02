@@ -6,14 +6,15 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
-import ast
 from datetime import datetime
 import logging
 
 import numpy as np
 import pandas as pd
-from scipy.stats import t            # in geometric_mean in aggregate_data
+from scipy.stats import t
 from scipy.special import erfinv
+from scipy.optimize import least_squares
+from scipy.stats import uniform
 
 # Presence of 'model_specs' indicates that model configuration occurred.
 from electricitylci.model_config import model_specs
@@ -72,12 +73,12 @@ CHANGELOG
 -   Add empty database check in :func:`calculate_electricity_by_source`
 -   Separate replace egrid function
 -   Fix zero division error in aggregate data
--   TODO: implement Hawkins-Young uncertainty
+-   Implement Hawkins-Young uncertainty
 
 Created:
     2019-06-04
 Last edited:
-    2024-07-24
+    2024-08-02
 """
 __all__ = [
     "add_data_collection_score",
@@ -88,7 +89,11 @@ __all__ = [
     "calculate_electricity_by_source",
     "create_generation_process_df",
     "eia_facility_fuel_region",
+    "hawkins_young",
+    "hawkins_young_sigma",
+    "hawkins_young_uncertainty",
     "olcaschema_genprocess",
+    "replace_egrid",
     "turn_data_to_dict",
 ]
 
@@ -96,6 +101,97 @@ __all__ = [
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
+def _calc_sigma(p_series):
+    """Calculate the standard deviation for a series of facility emission
+    factors.
+
+    Parameters
+    ----------
+    p_series : pandas.Series
+        A series object sent during an aggregation or apply call.
+
+    Returns
+    -------
+    float
+        The fitted sigma for a Hawkins-Young uncertainty method.
+        Assumes a 90% confidence level (see :param:`alpha`).
+    """
+    alpha = 0.9
+    (is_error, sigma) = hawkins_young_sigma(p_series.values, alpha)
+    if is_error:
+        return None
+    else:
+        return sigma
+
+
+def _calc_geom_params(p_series):
+    """Location-adjusted geometric mean and standard deviation based on the
+    Hawkins-Young uncertainty method.
+
+    Parameters
+    ----------
+    p_series : pandas.Series
+        A data series for aggregated (or disaggregated) emissions,
+        including variables for 'uncertaintySigma' (as calculated
+        by :func:`_calc_sigma`), 'Emission_factor' (emission amounts
+        per MWh),
+
+    Returns
+    -------
+    tuple
+        Geometric mean : float or NaN
+        Geometric standard deviation : float or NaN
+
+    """
+    sigma = p_series["uncertaintySigma"]
+    ef = p_series["Emission_factor"]
+
+    if sigma is None:
+        return (float('nan'), float('nan'))
+
+    d = hawkins_young_uncertainty(ef, sigma, False)
+    is_error = d['error']
+    if is_error:
+        return (float('nan'), float('nan'))
+    else:
+        return (d['mu_g'], d['sigma_g'])
+
+
+def _wtd_mean(pdser, total_db):
+    """The weighted mean method.
+
+    Parameters
+    ----------
+    pdser : pandas.Series
+        A pandas series of numerical values.
+        Examples include correlation and data quality values.
+    total_db : pandas.DataFrame
+        A data frame with the same indices as the pandas series and
+        with a column, 'FlowAmount,' that represents the emission
+        amount used as the weighting factor (i.e., higher emissions
+        means more contribution towards the average).
+
+    Returns
+    -------
+    float or nan
+        The flow-amount-weighted average of values.
+    """
+    try:
+        wts = total_db.loc[pdser.index, "FlowAmount"]
+        result = np.average(pdser, weights=wts)
+    except:
+        logging.debug(
+            f"Error calculating weighted mean for {pdser.name}-"
+            f"likely from 0 FlowAmounts"
+        )
+        try:
+            with np.errstate(all='raise'):
+                result = np.average(pdser)
+        except ArithmeticError or ValueError or FloatingPointError:
+            result = float("nan")
+    return result
+
+
 def eia_facility_fuel_region(year):
     """Generate a data frame with EIA 860 and EIA 923 facility data.
 
@@ -123,6 +219,9 @@ def eia_facility_fuel_region(year):
         - 'Balancing Authority Code' : str
         - 'Balancing Authority Name' : str
     """
+    logging.info(
+        "Generating the percent generation from primary fuel category "
+        "for each facility")
     primary_fuel = eia923_primary_fuel(year=year)
     ba_match = eia860_balancing_authority(year)
     primary_fuel["Plant Id"] = primary_fuel["Plant Id"].astype(int)
@@ -244,39 +343,7 @@ def aggregate_facility_flows(df):
         "stage_code"
     ]
 
-    def wtd_mean(pdser, total_db, cols):
-        """Perform a weighted-average of DQI using 'FlowAmount' as the weight.
-
-        Parameters
-        ----------
-        pdser : pandas.Series
-            A numeric series (e.g., DataQuality).
-        total_db : pandas.DataFrame
-            A data frame with 'FlowAmount' column, numeric, used for weights.
-        cols : list
-            Unused.
-
-        Returns
-        -------
-        float
-            The weighted average for a given series.
-        """
-        try:
-            wts = total_db.loc[pdser.index, "FlowAmount"]
-            result = np.average(pdser, weights=wts)
-        except:
-            logging.debug(
-                f"Error calculating weighted mean for {pdser.name}-"
-                f"likely from 0 FlowAmounts"
-            )
-            try:
-                with np.errstate(all='raise'):
-                    result = np.average(pdser)
-            except ArithmeticError or ValueError or FloatingPointError:
-                result = float("nan")
-        return result
-
-    wm = lambda x: wtd_mean(x, df, groupby_cols)
+    wm = lambda x: _wtd_mean(x, df)
     emissions = df["Compartment"].isin(emission_compartments)
     df_emissions = df[emissions]
     df_nonemissions = df[~emissions]
@@ -377,6 +444,7 @@ def add_data_collection_score(db, elec_df, subregion="BA"):
         The level of subregion that the data will be aggregated to. Choices
         are 'all', 'NERC', 'BA', 'US', by default 'BA'
     """
+    logging.info("Adding data collection score")
     region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"]
     if region_agg:
@@ -641,6 +709,7 @@ def create_generation_process_df():
                 encoding="utf-8-sig",
                 index=False
             )
+
         ewf_df = pd.merge(
             left=emissions_and_wastes_by_facility,
             right=eia860_FRS,
@@ -661,12 +730,16 @@ def create_generation_process_df():
             inplace=True
         )
         ewf_df["FacilityID"] = ewf_df["PGM_SYS_ID"].astype(int)
+
         # HOTFIX: SettingWithCopyWarning [2024-03-12; TWD]
         emissions_and_waste_for_selected_eia_facilities = ewf_df[
             ewf_df["FacilityID"].isin(eia_facilities_to_include)].copy()
         emissions_and_waste_for_selected_eia_facilities.rename(
             columns={"FacilityID": "eGRID_ID"}, inplace=True)
+
         cems_df = ampd.generate_plant_emissions(model_specs.eia_gen_year)
+
+        # Correct StEWI emissions
         emissions_df = em_other.integrate_replace_emissions(
             cems_df, emissions_and_waste_for_selected_eia_facilities
         )
@@ -710,8 +783,8 @@ def create_generation_process_df():
         left=emissions_df,
         right=generation_data,
         on=["eGRID_ID", "Year"],
-        how="inner", #Jamieson made this modification 3/4/2024. 
-        # Ensures that plants that have been filtered out are not included. 
+        how="inner", #Jamieson made this modification 3/4/2024.
+        # Ensures that plants that have been filtered out are not included.
         # Primarily for replace eGRID - using EIA923 data
     )
     final_database = pd.merge(
@@ -807,6 +880,180 @@ def create_generation_process_df():
     return final_database
 
 
+def hawkins_young(x, **kwargs):
+    """The uncertainty model to be minimized.
+
+    Parameters
+    ----------
+    x : int or float
+        The guessed value of sigma.
+    kwargs: dict
+        Optional keyword arguments, including:
+
+        - 'alpha' (float): The confidence level (e.g., 0.9 for 90%)
+        - 'cui' (float): The confidence upper interval value
+
+    Returns
+    -------
+    float
+        The fitted value of sigma.
+
+    Notes
+    -----
+    From Young et al. (2019) <https://doi.org/10.1021/acs.est.8b05572>,
+    to ensure non-negative releases in Monte Carlo simulations, the error
+    is set to a log-normal distribution with the expected value assigned
+    to the emission factor (EF) and the 95th percentile of the cumulative
+    distribution function (CDF) set to the 90% confidence interval upper
+    limit (CIU).
+
+    Based on the CDF for lognormal distribution, D(x), set to 0.95 for
+    x = EF*(1+PI), the 90% CIU based on a given emission factor, EF, and
+    prediction/confidence interval expressed as a fraction (or percentage);
+    hence the 1+CIU. If CIU is undefined, a default value of 50% is used.
+    """
+    if 'alpha' in kwargs.keys():
+        alpha = kwargs['alpha']
+    else:
+        alpha = 0.9
+
+    if 'ciu' in kwargs.keys():
+        ciu = kwargs['ciu']
+    else:
+        ciu = 0.5
+
+    a = 0.5
+    z = erfinv(alpha)
+    b = -2**0.5*z
+    c = np.log(1 + ciu)
+    r = a*x**2 + b*x + c
+
+    return r
+
+
+def hawkins_young_sigma(data, alpha):
+    """Model a log-normal uncertainty distribution to a dataset.
+
+    This method does not fit a log-normal distribution to the given data!
+
+    Parameters
+    ----------
+    data : numpy.array
+        A data array.
+    alpha : float
+        The confidence level, expressed as a fraction
+        (e.g., 90% confidence = 0.9).
+
+    Returns
+    -------
+    tuple
+        A tuple of length two: error boolean and sigma (the standard deviation
+        of the normally distributed values of Y = log(X)).
+
+    Notes
+    -----
+    From Young et al. (2019) <https://doi.org/10.1021/acs.est.8b05572>,
+    the prediction interval is expressed as the percentage of the expected
+    release factor; Eq 3. expresses it as
+    :math:`P = s * sqrt(1 + 1/n)*z/y_hat`
+    where:
+      s is the standard error of the expected value, SEM;
+      n is the sample size;
+      z is the critical value for 90% confidence; and
+      y_hat is the expected value.
+    """
+    # Note that there is no assumed log-normal distribution here.
+    # HOTFIX nans in z and ciu calcs [2024-05-14; TWD]
+    is_error = True
+    n = len(data)
+    z = 0.0
+    if n > 1:
+        is_error = False
+        z = t.ppf(q=alpha, df=n-1)
+    se = np.std(data)/np.sqrt(n)
+    y_hat = data.mean()
+    ciu = 0.0
+    if y_hat != 0:
+        ciu = se*np.sqrt(1 + 1/n)*z/y_hat
+    if ciu <= -1:
+        is_error = True
+        ciu = -9.999999e-1  # makes log(0.0000001) in hawkins_young
+
+    # Use least-squares fitting for the quadratic.
+    # NOTE: remember, we are fitting sigma, the standard deviation of the
+    #       underlying normal distribution. A 'safe' assumption is to
+    #       expect sigma to be between 1 and 5. So run a few fits and
+    #       get the one that isn't negative (most positive).
+    #       Alternatively, we could take std(ddof=1) of the log of the data
+    #       to get an estimate of the standard deviation and search across
+    #       4x's of it. See snippet code for method:
+    #       `s_std = np.round(4*np.log(data).std(ddof=1), 0)`
+    all_ans = []
+    for i in uniform.rvs(0, 6, size=10):
+        ans = least_squares(
+            hawkins_young, i, kwargs={'alpha': alpha, 'ciu': ciu})
+        all_ans.append(ans['x'][0])
+
+    # Find the minimum of all positive values:
+    all_ans = np.array(all_ans)
+    sigma = all_ans[np.where(all_ans > 0)].min()
+
+    return (is_error, sigma)
+
+
+def hawkins_young_uncertainty(ef, sigma, is_error):
+    """Compute the log-normal distribution parameters.
+
+    The (geometric) mean and (geometric) standard deviation are fitted to an
+    assumed distribution that has an expected value of the emission factor,
+    `ef`, and the 95th percentile at the 90% confidence upper interval.
+
+    This modeled log-normal distribution is for use with Monte-Carlo
+    simulations to guarantee non-negative emission values with an expected
+    value that matches a given emission factor.
+
+    Parameters
+    ----------
+    ef : float
+        Emission factor (emission units/MWh).
+    sigma : float
+        Fitted standard deviation to emissions data.
+    is_error : bool
+        The error flag returned from :func:`hawkins_young_sigma`.
+
+    Returns
+    -------
+    dict
+        A dictionary of results. Keys include the following.
+
+        -   'mu' (float): The mean of a normally distributed values of
+            Y = log(X)
+        -   'sigma' (float): The standard deviation of the normally distributed
+            values of Y = log(X)
+        -   'mu_g' (float): The geometric mean for the log-normal distribution.
+        -   'sigma_g' (float): The geometric standard deviation for the
+            log-normal distribution.
+        -   'error' (bool): Whether the method failed (e.g., too few data
+            points, ci < -1, ef < 0). To be used to quality check results.
+    """
+    if ef <= 0:
+        is_error = True
+        mu = np.nan
+    else:
+        mu = np.log(ef) - 0.5*sigma**2
+
+    mu_g = np.exp(mu)
+    sigma_g = np.exp(sigma)
+
+    return {
+        'mu': mu,
+        'sigma': sigma,
+        'mu_g': mu_g,
+        'sigma_g': sigma_g,
+        'error': is_error,
+    }
+
+
 def aggregate_data(total_db, subregion="BA"):
     """Aggregate facility-level emissions to the specified subregion and
     calculate emission factors based on the total emission and total
@@ -822,8 +1069,7 @@ def aggregate_data(total_db, subregion="BA"):
     Parameters
     ----------
     total_db : pandas.DataFrame
-        Facility-level emissions as generated by created by
-        create_generation_process_df
+        Facility-level emissions as generated by create_generation_process_df
     subregion : str, optional
         The level of subregion that the data will be aggregated to. Choices
         are 'all', 'NERC', 'BA', 'US', by default 'BA'.
@@ -852,7 +1098,7 @@ def aggregate_data(total_db, subregion="BA"):
         - 'DataReliability' (float): DQI weighted value between 1-5
         - 'uncertaintyMin' (float): min of facility-level emission factor
         - 'uncertaintyMax' (float): max of facility-level emission factor
-        - 'uncertaintyLognormParams' (tuple): geo-mean, zero, and CI_max
+        - 'uncertaintySigma' (float): standard deviation of flow amounts
         - 'electricity_sum' (float): aggregated electricity gen (MWh)
         - 'electricity_mean' (float): mean electricity gen (MWh)
         - 'facility_count' (float): count of facilities for electricity stats
@@ -860,343 +1106,6 @@ def aggregate_data(total_db, subregion="BA"):
         - 'GeomMean' (float): geometric mean of emission factor (units/MWh)
         - 'GeomSD' (float): geometric standard deviation of emission factor
     """
-    # """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-    # SUBMODULES
-    # """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-    def _geometric_mean(p_series, df, cols):
-        """Perform logarithmic calculations on a data series.
-
-        Parameters
-        ----------
-        p_series : pandas.Series
-            A series of numerical data (e.g., emission factors), from which
-            the geometric mean and a type of confidence interval are
-            computed.
-        df : pandas.DataFrame
-            The full data frame from which the series was extracted.
-            Used only in debugging messages.
-        cols : list
-            The list of relevant columns (used in the groupby method).
-            Used only in debugging messages.
-
-        Returns
-        -------
-        tuple
-            A tuple of length three.
-
-            1. The geometric mean of the series.
-
-            .. math::
-
-                \mu_g = \exp(\frac{\sum(\ln x)}{N})
-
-            2. Zero
-            3. A type of upper confidence interval.
-
-            .. math::
-
-                \exp\left[\max\left(
-                \bar{d}
-                + \frac{\hat{s}^2}{2}
-                \pm (\bar{d} + t_{\alpha/2,2} \times se_\bar{d})
-                \sqrt{\hat{s}^2 \left[
-                \frac{1}{N} + \frac{\hat{s}^2}{2(N-1)}
-                \right]}
-                \right)\right]
-
-        Notes
-        -----
-        Alternatively scipy.stats.lognorm may be used to fit a distribution
-        and provide the parameters.
-
-        There are three parameters fit to a lognormal distribution, they are:
-
-        - shape: controls the skewness of the distribution (-1 to +1)
-        - scale: controls the spread of the distribution
-        - location: determines the mean or median of the distribution
-
-        The geometric standard deviation is non-negative, unitless
-        multiplicative factor that is a measure of the spread of logarithmic
-        values around the mean that acts as an indicator of volatility or risk
-        (>=1), which is good for non-normally distribution data.
-
-        Consider this:
-
-        1)  Use scipy.stats.lognorm.fit(data) to get the three-parameter fit
-            of the lognormal distribution.
-
-            -   shape, s (i.e., sigma of the normal distribution,
-                Y = ln(X - loc) ~ N(mu, sigma))
-            -   location, loc
-            -   scale (i.e., e^mu, where mu is the mean of the normal
-                distribution, Y = ln(X - loc) ~ N(mu, sigma)); scale is 1 when
-                mu is zero.
-
-        2) Use scipy.stats.lognorm.interval to calculate the confidence
-           interval of the sample.
-        """
-        # Check series length and data value requirements
-        #   Not sure why we care about the median, other than it being the
-        #   scale parameter.
-        l = len(p_series)
-        if (l > 3) & (p_series.quantile(0.5) > 0):
-            logging.debug(
-                "Calculating confidence interval for: " +
-                " - ".join(df.loc[p_series.index[0], cols].values)
-            )
-            logging.debug(f"Count: {l}")
-            with np.errstate(all='raise'):
-                try:
-                    data = p_series.to_numpy()
-                except (ArithmeticError, ValueError, FloatingPointError):
-                    logging.debug("Problem with input data")
-                    return None
-
-                try:
-                    log_data = np.log(data)
-                except (ArithmeticError, ValueError, FloatingPointError):
-                    # See Duke Energy Carolinas and Duke Energy Florida, Inc.
-                    #  - SOLAR - Power plant - Acid compounds
-                    logging.debug("Problem with log function")
-                    return None
-
-                try:
-                    mean = np.mean(log_data)
-                except (ArithmeticError, ValueError, FloatingPointError):
-                    logging.debug("Problem with mean function")
-                    return None
-
-                try:
-                    # Simplified geometric standard deviation; scale parameter
-                    se = np.std(log_data)/np.sqrt(l)
-                    sd2 = se**2
-                except (ArithmeticError, ValueError, FloatingPointError):
-                    # See Arizona Public Service Company - WIND
-                    # and California Independent System Operator - MIXED
-                    logging.debug("Problem with std function")
-                    return None
-
-                try:
-                    # Compute confidence interval for the logarithm of the data
-                    # using the mean and standard deviation of the logarithms
-                    # of the data.
-                    # BUG: why is df = l-2? Only one parameter is being
-                    # estimated, so df should be l=1.
-                    # Hotfix syntax (alpha==confidence); 2023-11-06 [TWD]
-                    _, pi2 = t.interval(0.9, df=l - 2, loc=mean, scale=se)
-                except (ArithmeticError, ValueError, FloatingPointError):
-                    # See California Independent Operator - GEOTHERMAL
-                    logging.debug("Problem with t function")
-                    return None
-
-                try:
-                    upper_interval = np.max(
-                        [
-                            mean
-                            + sd2/2
-                            + pi2*np.sqrt(sd2/l + sd2**2/(2 * (l-1))),
-                            mean
-                            + sd2/2
-                            - pi2*np.sqrt(sd2/l + sd2**2/(2 * (l-1))),
-                        ]
-                    )
-                except:
-                    logging.debug("Problem with interval function")
-                    return None
-                try:
-                    # NOTE:
-                    # np.exp(mean) is the geometric mean of the series
-                    result = (np.exp(mean), 0, np.exp(upper_interval))
-                except (ArithmeticError, ValueError, FloatingPointError):
-                    logging.debug("Unable to calculate geometric_mean")
-                    return None
-                if result is not None:
-                    return result
-                else:
-                    logging.debug(
-                        f"Problem generating uncertainty parameters \n"
-                        f"{df.loc[p_series.index[0], cols].values}\n"
-                        f"{p_series.values}"
-                        f"{p_series.values+1}"
-                    )
-                    return None
-        else:
-            logging.debug(
-                "Skipping confidence interval for: " +
-                " - ".join(df.loc[p_series.index[0], cols].values)
-            )
-            logging.debug(f"Count: {l}")
-            return None
-
-
-    def _calc_geom_std(df):
-        """Location adjusted geometric mean and standard deviation.
-
-        Parameters
-        ----------
-        df : pandas.Series
-            A data series for aggregated (or disaggregated) emissions,
-            including variables for 'uncertaintyLognormParams' (as calculated
-            by :func:`_geometric_mean`), 'Emission_factor' (emission amounts
-            per MWh),
-
-        Returns
-        -------
-        tuple
-            Geometric mean : string or None
-            Geometric standard deviation : string or None
-
-        Notes
-        -----
-        -   Values are returned as strings, not floats, in order to use
-            NoneType filtering.
-        -   Depends on global variables (e.g, region_agg) defined within the
-            scope of :func:`aggregate_data`.
-        """
-        if region_agg is not None:
-            debug_string = (
-                f"{df[region_agg].values[0]} - "
-                f"{df['FuelCategory']} - {df['FlowName']}")
-        else:
-            debug_string = f"{df['FuelCategory']} - {df['FlowName']}"
-        logging.debug(debug_string)
-
-        if df["uncertaintyLognormParams"] is None:
-            return (None, None)
-
-        # BUG: unused variable, params [2023-11-09; TWD]
-        if isinstance(df["uncertaintyLognormParams"], str):
-            params = ast.literal_eval(df["uncertaintyLognormParams"])
-
-        try:
-            length = len(df["uncertaintyLognormParams"])
-        except TypeError:
-            logging.warning(
-                f"Error calculating length of uncertaintyLognormParams"
-                f"{df['uncertaintyLognormParams']}"
-            )
-            return (None, None)
-
-        if length != 3:
-            logging.warning(
-                f"Error estimating standard deviation - length: {length}"
-            )
-        else:
-            # In some cases, the final emission factor is far different than
-            # the geometric mean of the individual emission factor.
-            # Depending on the severity, this could be a clear sign of outliers
-            # having a large impact on the final emission factor.
-            # When the uncertainty is generated for these cases, the results
-            # can be nonsensical - hence we skip them.
-            # A more agressive approach would be to re-assign the emission
-            # factor as well.
-            if df["Emission_factor"] > df["uncertaintyLognormParams"][2]:
-                # NOTE: the majority of the values filtered out by this
-                # are only fractionally over the confidence interval.
-                # Exceptions include, Bonneville Power Administration -
-                # GEOTHERMAL - Coal, anthracite, with a value of 10 and
-                # a CI limit of 1.3e-5. Carbon dioxide emissions may be
-                # +100 over the CI limit (e.g., 869 > 739).
-                logging.warning(
-                    "Emission factor exceeds confidence limit! "
-                    "%s" % debug_string)
-                logging.debug("%s > %s" % (
-                    df['Emission_factor'], df["uncertaintyLognormParams"][2]))
-                return (None, None)
-            else:
-                # The CDF for a lognormal distribution is:
-                # CDF = 0.5*(1 + erf[(ln(x) - mu)/(sqrt(2)*sigma)])
-                # substitute: x = EF + (1+PI); mu = ln(EF) - 0.5*sigma**2
-                # and set CDF = 0.95:
-                # 0.9=erf{[ln(EF*(1+PI)-ln(EF)+0.5*sigma**2)]/(sqrt(2)*sigma)}
-                # Know that the erfinv(0.9) = 1.163087, solve for sigma:
-                # 1.163 = [ln(EF*(1+PI))-ln(EF)+0.5*sigma**2]/(sqrt(2)*sigma)
-                # Rearrange in quadratic form:
-                # 0 = 0.5*sigma**2 + (-sqrt(2)*1.163)*sigma + ln(1 + PI),
-                # where PI is the upper prediction inverval expressed as a
-                # fraction. For example, PI=90% would be 0.9, such that:
-                # EF*(1+PI) = EF + 0.9*EF.
-                # HOTFIX 'c' parameter based on the simplification above [TWD]
-                a = 0.5
-                b = -2**0.5*erfinv(2*0.95-1)
-                c = np.log(1 + df["uncertaintyLognormParams"][2])
-                # HOTFIX: avoid invalid value encountered in scalar power;
-                # this happens when a square root is taken of a negative.
-                abc = (b**2 - 4*a*c)
-                sd1 = float("nan")
-                sd2 = float("nan")
-                if abc >= 0:
-                    sd1 = (-b + abc**0.5)/(2*a)
-                    sd2 = (-b - abc**0.5)/(2*a)
-                # HOTFIX: correct check for nan [2024-03-28; TWD]
-                if sd1 == sd1 and sd2 == sd2:
-                    if sd1 < sd2:
-                        geostd = np.exp(sd1)
-                        geomean = np.exp(
-                            np.log(df["Emission_factor"]) - 0.5*sd1**2)
-                    else:
-                        geostd = np.exp(sd2)
-                        geomean = np.exp(
-                            np.log(df["Emission_factor"]) - 0.5*sd2**2)
-                elif sd1 == sd1 and sd2 != sd2:
-                    geostd = np.exp(sd1)
-                    geomean = np.exp(np.log(df["Emission_factor"]) - 0.5*sd1**2)
-                elif sd2 == sd2 and sd1 != sd1:
-                    geostd = np.exp(sd2)
-                    geomean = np.exp(np.log(df["Emission_factor"]) - 0.5*sd2**2)
-                else:
-                    return (None, None)
-
-                if (
-                    (geostd is np.inf)
-                    or (geostd is np.NINF)
-                    or (geostd != geostd)  # HOTFIX: nan check [240328;TWD]
-                    or str(geostd) == "nan"
-                    or (geostd == 0)
-                ):
-                    return (None, None)
-                return str(geomean), str(geostd)
-
-
-    def _wtd_mean(pdser, total_db):
-        """The weighted mean method.
-
-        Parameters
-        ----------
-        pdser : pandas.Series
-            A pandas series of numerical values.
-            Examples include correlation and data quality values.
-        total_db : pandas.DataFrame
-            A data frame with the same indices as the pandas series and
-            with a column, 'FlowAmount,' that represents the emission
-            amount used as the weighting factor (i.e., higher emissions
-            means more contribution towards the average).
-
-        Returns
-        -------
-        float or nan
-            The flow-amount-weighted average of values.
-        """
-        try:
-            wts = total_db.loc[pdser.index, "FlowAmount"]
-            result = np.average(pdser, weights=wts)
-        except:
-            logging.debug(
-                f"Error calculating weighted mean for {pdser.name}-"
-                f"likely from 0 FlowAmounts"
-                # f"{total_db.loc[pdser.index[0],cols]}"
-            )
-            try:
-                with np.errstate(all='raise'):
-                    result = np.average(pdser)
-            except ArithmeticError or ValueError or FloatingPointError:
-                result = float("nan")
-        return result
-
-
-    # """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-    # MAIN METHOD
-    # """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"]
     if region_agg:
@@ -1238,11 +1147,6 @@ def aggregate_data(total_db, subregion="BA"):
         total_db, subregion
     )
 
-    # Inject a false flow amount for "uncertainty" calculations
-    false_gen = 1e-15
-    # HOTFIX: pandas futurewarning syntax [2024-03-08; TWD]
-    #total_db = total_db.replace({"FlowAmount": 0}, false_gen)
-
     # Assign data score based on percent generation
     total_db = add_data_collection_score(total_db, electricity_df, subregion)
 
@@ -1254,21 +1158,19 @@ def aggregate_data(total_db, subregion="BA"):
         / total_db.loc[crit_zero, "Electricity"]
     )
     # Effectively removes rows with zero Electricity or nan flow amounts.
-    # For 2016 generation, it's all caused by nans in flow amounts.
-    # For 2020 generation, it's all zero electricity
+    #  For 2016 generation, it's all caused by nans in flow amounts.
+    #  For 2020 generation, it's all zero electricity.
+    #  For 2022 generation, it's a mixed bag.
     total_db.dropna(subset=["facility_emission_factor"], inplace=True)
 
-    # TODO: replace geo_mean w/ Hawkins-Young variant. It should return
-    #       just sigma for use in the mu and mu_g calculations.
-
+    # Define the weighted mean function, which relies on the full database
+    # for flow amounts (i.e., the flow-amount weighted method)
     wm = lambda x: _wtd_mean(x, total_db)
-    geo_mean = lambda x: _geometric_mean(x, total_db, groupby_cols)
-    geo_mean.__name__ = "geo_mean"
-    logging.info(
-        "Aggregating flow amounts, dqi information, and calculating uncertainty"
-    )
 
-    # NOTE: lots of runtime warnings
+    logging.info(
+        "Aggregating flow amounts and dqi information, calculating "
+        "uncertainty"
+    )
     database_f3 = total_db.groupby(
         groupby_cols + ["Year", "source_string"], as_index=False
     ).agg({
@@ -1278,9 +1180,10 @@ def aggregate_data(total_db, subregion="BA"):
         "GeographicalCorrelation": wm,
         "DataCollection": wm,
         "DataReliability": wm,
-        "facility_emission_factor": ["min", "max", geo_mean],
+        "facility_emission_factor": ["min", "max", _calc_sigma],
     })
 
+    # Reset and define new column names
     database_f3.columns = groupby_cols + [
         "Year",
         "source_string",
@@ -1293,11 +1196,12 @@ def aggregate_data(total_db, subregion="BA"):
         "DataReliability",
         "uncertaintyMin",
         "uncertaintyMax",
-        "uncertaintyLognormParams",
+        "uncertaintySigma",
     ]
 
+    # Remove uncertainty from input flows.
     criteria = database_f3["Compartment"] == "input"
-    database_f3.loc[criteria, "uncertaintyLognormParams"] = None
+    database_f3.loc[criteria, "uncertaintySigma"] = None
 
     # Merge electricity_sum, electricity_mean, and facility_count data
     # HOTFIX: 'Year' must be integer in both dataframes [2023-12-18; TWD]
@@ -1354,33 +1258,14 @@ def aggregate_data(total_db, subregion="BA"):
     database_f3.loc[
         database_f3['electricity_sum'] == fix_val, 'Emission_factor'] = 0
 
-    if region_agg is not None:
-        database_f3["GeomMean"], database_f3["GeomSD"] = zip(
-            *database_f3[
-                [
-                    "Emission_factor",
-                    "uncertaintyLognormParams",
-                    "uncertaintyMin",
-                    "uncertaintyMax",
-                    "FuelCategory",
-                    "FlowName"
-                ] + region_agg
-            ].apply(_calc_geom_std, axis=1)
-        )
-    else:
-        database_f3["GeomMean"], database_f3["GeomSD"] = zip(
-            *database_f3[
-                [
-                    "Emission_factor",
-                    "uncertaintyLognormParams",
-                    "uncertaintyMin",
-                    "uncertaintyMax",
-                    "FuelCategory",
-                    "FlowName"
-                ]
-            ].apply(_calc_geom_std, axis=1)
-        )
+    # Calculate the log-normal parameters for uncertainty; see Hawkins-Young
+    # https://github.com/USEPA/ElectricityLCI/discussions/240
+    database_f3["GeomMean"], database_f3["GeomSD"] = zip(
+        *database_f3[["Emission_factor", "uncertaintySigma"]].apply(
+            _calc_geom_params, axis=1
+    ))
     database_f3.sort_values(by=groupby_cols, inplace=True)
+
     return database_f3
 
 
@@ -1443,7 +1328,7 @@ def turn_data_to_dict(data, upstream_dict):
         - DataReliability
         - uncertaintyMin
         - uncertaintyMax
-        - uncertaintyLognormParams
+        - uncertaintySigma
         - Emission_factor
         - GeomMean
         - GeomSD
@@ -1533,7 +1418,7 @@ def turn_data_to_dict(data, upstream_dict):
     data["uncertainty"] = ""
     for index, row in data.iterrows():
         data.at[index, "uncertainty"] = uncertainty_table_creation(
-            data.loc[index:index, :]
+            data.loc[index:index, :]  # TODO: check this syntax
         )
         data.at[index, "flow"] = flow_table_creation(
             data.loc[index:index, :]
@@ -1567,6 +1452,7 @@ def turn_data_to_dict(data, upstream_dict):
     data_dict = data_for_dict.to_dict("records")
     # HOTFIX: append the product flow dictionary to the list [2023-11-13; TWD]
     data_dict.append(ref_exchange_creator())
+
     return data_dict
 
 
@@ -1616,7 +1502,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         "DataReliability",
         "uncertaintyMin",
         "uncertaintyMax",
-        "uncertaintyLognormParams",
+        "uncertaintySigma",
         "Emission_factor",
         "GeomMean",
         "GeomSD",
@@ -1691,6 +1577,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         "description",
     ]
     result = process_df[process_cols].to_dict("index")
+
     return result
 
 
