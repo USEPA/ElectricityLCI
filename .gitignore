@@ -19,6 +19,7 @@ ElectricityLCI.pyproj
 
 # notebooks
 *.ipynb
+*.ipynb_checkpoints
 
 # downloaded excel files and csv transformations
 electricitylci/data/**/*.*
