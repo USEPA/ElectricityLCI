@@ -43,7 +43,7 @@ inventory is if a particular plant began receiving coal of a different type,
 from a different type of mine, or from a different location.
 
 Last updated:
-    2024-03-12
+    2024-08-02
 """
 
 
@@ -124,6 +124,9 @@ def _transport_code(row):
 def eia_7a_download(year, save_path):
     """Download public coal Excel workbook from EIA.
 
+    Example site for 2020 public coal spreadsheet:
+    https://www.eia.gov/coal/data/public/xls/coalpublic2020.xls
+
     Parameters
     ----------
     year : int
@@ -131,6 +134,12 @@ def eia_7a_download(year, save_path):
     save_path : str
         A folder path.
         If the folder does not exist, the method tries to create it.
+
+    Notes
+    -----
+    Some years are provided in XML format and require re-saving to work with
+    the remainder of the code. If you run into troubles with the download,
+    see https://github.com/USEPA/ElectricityLCI/issues/230 for a solution.
     """
     eia7a_base_url = 'http://www.eia.gov/coal/data/public/xls/'
     name = 'coalpublic{}.xls'.format(year)

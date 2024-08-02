@@ -24,7 +24,7 @@ __doc__ = """This module contains the main API functions to be used by the
 end user.
 
 Last updated:
-    2024-07-24
+    2024-08-02
 """
 __version__ = elci_version
 
@@ -230,8 +230,11 @@ def get_gen_plus_netl():
     geo_df = geo.generate_upstream_geo(eia_gen_year)
     solar_df = solar.generate_upstream_solar(eia_gen_year)
     wind_df = wind.generate_upstream_wind(eia_gen_year)
-    hydro_df = hydro.generate_hydro_emissions()
+    hydro_df = hydro.generate_hydro_emissions() # always 2016
     solartherm_df = solartherm.generate_upstream_solarthermal(eia_gen_year)
+
+    # NOTE: hydro is purposefully left out here.
+    logging.info("Concatenating renewable data frames")
     netl_gen = combine.concat_map_upstream_databases(
         eia_gen_year, geo_df, solar_df, wind_df, solartherm_df
     )
@@ -241,11 +244,17 @@ def get_gen_plus_netl():
     netl_gen["DataReliability"] = 1
 
     # Add hydro, which already has DQI information associated with it:
+    logging.info("Concatenating hydro facilities with renewables")
     netl_gen = pd.concat(
-        [netl_gen,hydro_df[netl_gen.columns]], ignore_index=True, sort=False)
+        [netl_gen, hydro_df[netl_gen.columns]],
+        ignore_index=True,
+        sort=False
+    )
 
+    # This combines EIA 923, EIA 860, with EPA CEMS
     logging.info("Getting reported emissions for generators...")
     gen_df = gen.create_generation_process_df()
+
     combined_gen = combine.concat_clean_upstream_and_plant(gen_df, netl_gen)
 
     return combined_gen
@@ -340,6 +349,9 @@ def get_generation_mix_process_df(regions=None):
 def get_generation_process_df(regions=None, **kwargs):
     """Create emissions data frame from regional power generation by fuel type.
 
+    When including upstream processes, this method also adds fuels to
+    generation data (see :func:`add_fuels_to_gen`).
+
     "kwargs" include the upstream emissions dataframe (upstream_df) and
     dictionary (upstream_dict) if upstream emissions are being included.
 
@@ -408,7 +420,7 @@ def get_generation_process_df(regions=None, **kwargs):
         generation_process_df = combine.concat_clean_upstream_and_plant(
             generation_process_df, water_df)
 
-    # Add upstream processes
+    # Add upstream & Canadian processes
     if config.model_specs.include_upstream_processes is True:
         try:
             upstream_df = kwargs['upstream_df']
@@ -584,6 +596,7 @@ def get_facility_level_inventory(to_save=False, sep_by_fac=True):
 
     return data
 
+
 def get_upstream_process_df(eia_gen_year):
     """Automatically load all of the upstream emissions data from the various
     modules.
@@ -597,6 +610,27 @@ def get_upstream_process_df(eia_gen_year):
     pandas.DataFrame
         A data frame with upstream emissions from coal, natural gas, petroleum,
         nuclear, and plant construction.
+
+        Columns include:
+
+        - 'plant_id'
+        - 'FuelCategory' (e.g., CONSTRUCTION, OIL, COAL, GAS)
+        - 'stage_code': construction or basin (e.g., coal_const, Unita)
+        - 'FlowName': emission name (e.g., 2,4-D diethanolamine salt)
+        - 'Compartment' (e.g., emission/water)
+        - 'Compartment_path (e.g., emission/water, resource, NaN)
+        - 'FlowUUID' (str)
+        - 'Unit' (str): emission unit
+        - 'ElementaryFlowPrimeContext' (e.g., emission, resource, technosphere)
+        - 'FlowAmount': emission amount
+        - 'quantity': nameplate capacity for construction; fuel production?
+        - 'Source (i.e., 'netl')
+        - 'Year' (int): EIA generation year
+        - 'Electricity': Available for nuclear only
+        - 'input' (bool): for input flows (otherwise, emission)
+        - 'stage': denotes 'Mining' and 'Transportation' (for coal only)
+        - 'FlowType' (e.g. PRODUCT_FLOW, ELEMENTARY_FLOW, or WASTE_FLOW)
+        - 'Basin': natural gas basin (for GAS only)
     """
     import electricitylci.coal_upstream as coal
     import electricitylci.natural_gas_upstream as ng
@@ -886,7 +920,7 @@ def write_generation_mix_database_to_dict(genmix_db, gen_dict, regions=None):
 
     return genmix_dict
 
-
+# TODO: find if/where this is called.
 def write_generation_process_database_to_dict(gen_database, regions=None):
     """Create olca-formatted dictionaries of individual processes.
 

@@ -29,7 +29,7 @@ nuclear fuel cycle), and maps emissions based on the Federal LCA Commons
 Elementary Flow List in order to provide life cycle inventory.
 
 Last edited:
-    2024-03-08
+    2024-08-02
 """
 __all__ = [
     "BA_CODES",
@@ -184,6 +184,8 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     For EIA generation year 2016, there is a reported 2375 unmatched and
     2036 matched flows for renewable energy power plants.
 
+    This method sets all data vintages with EIA generation year.
+
     Examples
     --------
     >>> import electricitylci.geothermal as geo
@@ -229,6 +231,10 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
             upstream_df_list.append(df)
     upstream_df = pd.concat(upstream_df_list, ignore_index=True, sort=False)
 
+    # See https://github.com/USEPA/fedelemflowlist
+    # The mapping data includes a conversion factor to convert everything into
+    # standard units (e.g., kg, MJ, m2*a). Note that 'SourceFlowContext' is
+    # already in lowercase letters, which is why no change happens below.
     logging.info("Creating flow mapping database")
     flow_mapping = fedefl.get_flowmapping('eLCI')
     flow_mapping["SourceFlowName"] = flow_mapping["SourceFlowName"].str.lower()
@@ -272,9 +278,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         upstream_df_grp = upstream_df.groupby(
             groupby_cols, as_index=False
         ).agg({"FlowAmount": "sum", "quantity": "mean"})
-    upstream_df = upstream_df[
-        ["FlowName_orig", "Compartment_path_orig", "stage_code"]
-    ]
+
     logging.info("Merging upstream database and flow mapping")
     upstream_mapped_df = pd.merge(
         left=upstream_df_grp,
@@ -314,6 +318,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         "ElementaryFlowPrimeContext",
     ] = "resource"
     upstream_mapped_df["Source"] = "netl"
+    # WARNING: don't use with HYDRO, which has its own data year
     upstream_mapped_df["Year"] = eia_gen_year
     final_columns = [
         "plant_id",
@@ -341,6 +346,11 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     if kwargs != {}:
         if "group_name" in kwargs:
             logging.info("kwarg group_name used: generating flows lists")
+            upstream_df = upstream_df[[
+                "FlowName_orig",
+                "Compartment_path_orig",
+                "stage_code"
+            ]]
             unique_orig = upstream_df.groupby(
                 by=["FlowName_orig", "Compartment_path_orig"]
             ).groups
@@ -373,8 +383,11 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
                 f.close()
             logging.info("Flow mapping results written to %s" % out_path)
             upstream_mapped_df = upstream_mapped_df[final_columns]
+
             return upstream_mapped_df, unmatched_list, matched_list
+
     upstream_mapped_df = upstream_mapped_df[final_columns]
+
     return upstream_mapped_df
 
 

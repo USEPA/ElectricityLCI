@@ -6,6 +6,8 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+import logging
+
 import pandas as pd
 
 
@@ -17,7 +19,7 @@ included in stewi. For now, this specifically means emissions from Air Markets
 Program Data (AMPD).
 
 Last updated:
-    2023-11-29
+    2024-08-02
 """
 __all__ = [
     "integrate_replace_emissions",
@@ -74,6 +76,7 @@ def integrate_replace_emissions(new_emissions, stewi_emissions):
     pandas.DataFrame
         The new emissions data frame.
     """
+    logging.info("Correcting StEWI emissions")
     required_cols = [
         'Compartment',
         'FlowAmount',

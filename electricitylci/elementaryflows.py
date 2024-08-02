@@ -6,6 +6,8 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+import logging
+
 import pandas as pd
 
 import fedelemflowlist
@@ -20,7 +22,7 @@ also handled. Along with that, types of flows and compartment information are
 also determined and indexed.
 
 Last updated:
-    2024-01-10
+    2024-08-02
 """
 __all__ = [
     "mapping_to_fedelemflows",
@@ -84,6 +86,7 @@ def map_emissions_to_fedelemflows(df_with_flows_compartments):
     -------
     pandas.DataFrame
     """
+    logging.info("Mapping emissions to FEDEFL")
     mapped_df = pd.merge(
         df_with_flows_compartments,
         mapping_to_fedelemflows.drop_duplicates(

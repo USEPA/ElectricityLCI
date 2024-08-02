@@ -23,9 +23,38 @@ from electricitylci.globals import elci_version
 
 
 ##############################################################################
+# MODULE DOCUMENTATION
+##############################################################################
+__doc__ = """
+This module contains the relevant methods for generating openLCA-compliant
+dictionaries for upstream process inventories.
+
+Last updated:
+    2024-08-02
+"""
+__all__ = [
+    "olcaschema_genupstream_processes",
+]
+
+
+##############################################################################
 # FUNCTIONS
 ##############################################################################
 def _unit(unt):
+    """Create a unit dictionary in olca-schema format.
+
+    See `online <https://greendelta.github.io/olca-schema/classes/Unit.html>`_
+
+    Parameters
+    ----------
+    unt : str
+        Unit name
+
+    Returns
+    -------
+    dict
+        openLCA-schema formatted dictionary for Unit.
+    """
     ar = dict()
     ar["internalId"] = ""
     ar["@type"] = "Unit"
@@ -34,13 +63,44 @@ def _unit(unt):
 
 
 def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
+    """Generate an openlca-schema formatted dictionary for a Process.
+
+    See
+    `online <https://greendelta.github.io/olca-schema/classes/Process.html>`_.
+
+    Parameters
+    ----------
+    process_name : str
+        Process name.
+    exchanges_list : list
+        List of exchange dictionaries.
+    fuel_type : str
+        Fuel type
+
+    Returns
+    -------
+    dict
+        A dictionary for an openLCA schema Process.
+    """
+    # Standard categories for openLCA processes by technology (by NAICS code).
     fuel_category_dict = {
-        "COAL": "21: Mining, Quarrying, and Oil and Gas Extraction/2121: Coal Mining",
-        "GAS": "22: Utilities/2212: Natural Gas Distribution",
-        "OIL": "31-33: Manufacturing/3241: Petroleum and Coal Products Manufacturing",
-        "NUCLEAR": "31-33: Manufacturing/3251: Basic Chemical Manufacturing",
-        "CONSTRUCTION":"23: Construction/2371: Utility System Construction",
+        "COAL": (
+            "21: Mining, Quarrying, and Oil and Gas Extraction/"
+            "2121: Coal Mining"),
+        "GAS": (
+            "22: Utilities/"
+            "2212: Natural Gas Distribution"),
+        "OIL": (
+            "31-33: Manufacturing/"
+            "3241: Petroleum and Coal Products Manufacturing"),
+        "NUCLEAR": (
+            "31-33: Manufacturing/"
+            "3251: Basic Chemical Manufacturing"),
+        "CONSTRUCTION": (
+            "23: Construction/"
+            "2371: Utility System Construction"),
     }
+
     ar = dict()
     ar["@type"] = "Process"
     ar["allocationFactors"] = ""
@@ -48,16 +108,21 @@ def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
     ar["exchanges"] = exchanges_list
     ar["location"] = ""  # location(region)
     ar["parameters"] = ""
-    logging.info(f"passing {fuel_type.lower()}_upstream to process_doc_creation")
-    ar['processDocumentation']=process_doc_creation(process_type=f"{fuel_type.lower()}_upstream")
+
+    logging.info(
+        f"passing {fuel_type.lower()}_upstream to process_doc_creation")
+    ar['processDocumentation'] = process_doc_creation(
+        process_type=f"{fuel_type.lower()}_upstream")
     ar["processType"] = "LCI_RESULT"
     ar["name"] = process_name
     if fuel_type == "coal_transport":
         ar["category"] = fuel_category_dict["COAL"]
     else:
         ar["category"] = fuel_category_dict[fuel_type]
-    ar["description"] = process_description_creation(f"{fuel_type.lower()}_upstream")
-    ar["version"]=make_valid_version_num(elci_version)
+    ar["description"] = process_description_creation(
+        f"{fuel_type.lower()}_upstream")
+    ar["version"] = make_valid_version_num(elci_version)
+
     return ar
 
 
@@ -67,46 +132,62 @@ def _exchange_table_creation_ref(fuel_type):
         "flowProperties": "",
         "name": "natural gas, through transmission",
         "id": "",
-        "category": "Technosphere Flows/22: Utilities/2212: Natural Gas Distribution",
+        "category": (
+            "Technosphere Flows/"
+            "22: Utilities/"
+            "2212: Natural Gas Distribution"),
     }
-
     coal_flow = {
         "flowType": "PRODUCT_FLOW",
         "flowProperties": "",
         "name": "coal, processed, at mine",
         "id": "",
-        "category": "Technosphere Flows/21: Mining, Quarrying, and Oil and Gas Extraction/2121: Coal Mining",
+        "category": (
+            "Technosphere Flows/"
+            "21: Mining, Quarrying, and Oil and Gas Extraction/"
+            "2121: Coal Mining"),
     }
-
     petroleum_flow = {
         "flowType": "PRODUCT_FLOW",
         "flowProperties": "",
         "name": "petroleum fuel, through transportation",
         "id": "",
-        "category": "Technosphere Flows/31-33: Manufacturing/3241: Petroleum and Coal Products Manufacturing",
+        "category": (
+            "Technosphere Flows/"
+            "31-33: Manufacturing/"
+            "3241: Petroleum and Coal Products Manufacturing"),
     }
-
     transport_flow = {
         "flowType": "PRODUCT_FLOW",
         "flowProperties": "",
         "name": "coal, transported",
         "id": "",
-        "category": "Technosphere Flows/21: Mining, Quarrying, and Oil and Gas Extraction/2121: Coal Mining",
+        "category": (
+            "Technosphere Flows/"
+            "21: Mining, Quarrying, and Oil and Gas Extraction/"
+            "2121: Coal Mining"),
     }
     nuclear_flow = {
         "flowType": "PRODUCT_FLOW",
         "flowProperties": "",
         "name": "nuclear fuel, through transportation",
         "id": "",
-        "category": "Technosphere Flows/31-33: Manufacturing/3251: Basic Chemical Manufacturing",
+        "category": (
+            "Technosphere Flows/"
+            "31-33: Manufacturing/"
+            "3251: Basic Chemical Manufacturing"),
     }
-    construction_flow ={
-            "flowType":"PRODUCT_FLOW",
-            "flowProperties":"",
-            "name":"power plant construction",
-            "id":"",
-            "category":"Technosphere Flows/23: Construction/2371: Utility System Construction"
-            }
+    construction_flow = {
+        "flowType":"PRODUCT_FLOW",
+        "flowProperties":"",
+        "name":"power plant construction",
+        "id":"",
+        "category": (
+            "Technosphere Flows/"
+            "23: Construction/"
+            "2371: Utility System Construction")
+    }
+
     # the following link provides the undefined variable: https://github.com/KeyLogicLCA/ElectricityLCI/commit/f61d28a3d0cf5b0ef61ca147f870e15a863f8ec3
     ar = dict()
     ar["internalId"] = ""
@@ -133,14 +214,17 @@ def _exchange_table_creation_ref(fuel_type):
         ar["unit"] = _unit("MWh")
         ar["amount"] = 1
     elif fuel_type == "GEOTHERMAL":
+        logging.warning("Undefined geothermal flow")
         ar["flow"] = geothermal_flow
         ar["unit"] = _unit("MWh")
         ar["amount"] = 1
     elif fuel_type == "SOLAR":
+        logging.warning("Undefined solar flow")
         ar["flow"] = solar_flow
         ar["unit"] = _unit("Item(s)")
         ar["amount"] = 1
     elif fuel_type == "WIND":
+        logging.warning("Undefined wind flow")
         ar["flow"] = wind_flow
         ar["unit"] = _unit("Item(s)")
         ar["amount"] = 1
@@ -183,9 +267,10 @@ def _flow_table_creation(data):
     elif ar["flowType"] == "WASTE_FLOW":
         ar["category"] = "Waste flows/"
     else:
-        ar[
-            "category"
-        ] = "22: Utilities/2211: Electric Power Generation, Transmission and Distribution"
+        ar["category"] = (
+            "22: Utilities/"
+            "2211: Electric Power Generation, Transmission and Distribution")
+
     return ar
 
 
@@ -210,24 +295,22 @@ def _exchange_table_creation_output(data):
 
 
 def olcaschema_genupstream_processes(merged):
-    """
-    Generate olca-schema dictionaries.
+    """Generate olca-schema dictionaries.
 
-    For upstream processes for the inventory provided in the given dataframe.
+    For upstream processes for the inventory provided in the given data frame.
 
     Parameters
     ----------
-    merged: dataframe
-        Dataframe containing the inventory for upstream processes used by
-        eletricity generation.
+    merged: pandas.DataFrame
+        Data frame containing the inventory for upstream processes used by
+        electricity generation.
 
     Returns
     ----------
-    dictionary
+    dict
         Dictionary containing all of the unit processes to be written to
-        JSON-LD for import to openLCA
+        JSON-LD for import to openLCA.
     """
-
     coal_type_codes_inv = dict(map(reversed, coal_type_codes.items()))
     mine_type_codes_inv = dict(map(reversed, mine_type_codes.items()))
     basin_codes_inv = dict(map(reversed, basin_codes.items()))
@@ -265,10 +348,7 @@ def olcaschema_genupstream_processes(merged):
         merged_summary["FlowAmount"] / merged_summary["quantity"]
     )
     merged_summary.dropna(subset=["emission_factor"],inplace=True)
-    upstream_list = list(
-        x
-        for x in merged_summary["stage_code"].unique()
-    )
+    upstream_list = [x for x in merged_summary["stage_code"].unique()]
 
     upstream_process_dict = dict()
     for upstream in upstream_list:
@@ -353,6 +433,7 @@ def olcaschema_genupstream_processes(merged):
         upstream_process_dict[
             merged_summary_filter.loc[first_row, "stage_code"]
         ] = final
+
     return upstream_process_dict
 
 
