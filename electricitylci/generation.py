@@ -8,6 +8,7 @@
 ##############################################################################
 from datetime import datetime
 import logging
+import os
 
 import numpy as np
 import pandas as pd
@@ -40,10 +41,11 @@ from electricitylci.process_dictionary_writer import uncertainty_table_creation
 from electricitylci.process_dictionary_writer import unit
 from electricitylci.utils import make_valid_version_num
 from electricitylci.utils import set_dir
+from electricitylci.utils import write_csv_to_output
 from electricitylci.egrid_emissions_and_waste_by_facility import (
     emissions_and_wastes_by_facility,
 )
-import facilitymatcher.globals as fmglob  # package under development
+import facilitymatcher.globals as fmglob  # provided by StEWI
 
 
 ##############################################################################
@@ -78,7 +80,7 @@ CHANGELOG
 Created:
     2019-06-04
 Last edited:
-    2024-08-02
+    2024-08-08
 """
 __all__ = [
     "add_data_collection_score",
@@ -667,18 +669,26 @@ def create_generation_process_df():
         "ground": "ground",
     }
     if model_specs.replace_egrid:
-        # Create data frame with 'FacilityID', 'Electricity', and 'Year'
+        # Create data frame with EIA's info on:
+        # - 'FacilityID' (int),
+        # - 'Electricity' (float), and
+        # - 'Year' (int)
+        # NOTE: this may return multi-year facilities
         generation_data = build_generation_data().drop_duplicates()
 
+        # Pull list of unique facilities from all generation years of interest
         eia_facilities_to_include = generation_data["FacilityID"].unique()
-        # Other columns in the emissions_and_wastes_by_Facility
-        # FacilityID and FRS_ID (in addition to those above)
+
+        # Create the file name for reading/writing facility matcher data.
         inventories_of_interest_list = sorted([
             f"{x}_{model_specs.inventories_of_interest[x]}"
             for x in model_specs.inventories_of_interest.keys()
         ])
         inventories_of_interest_str = "_".join(inventories_of_interest_list)
 
+        # NOTE: pulled from Facility Register Service (FRS) program data
+        # provided, by USEPA's FacilityMatcher, now a part of StEWI.
+        # https://github.com/USEPA/standardizedinventories
         try:
             eia860_FRS = pd.read_csv(
                 f"{paths.local_path}/FRS_bridges/"
@@ -702,14 +712,26 @@ def create_generation_process_df():
             eia860_FRS = fmglob.filter_by_program_list(
                 df=FRS_bridge, program_list=["EIA-860"]
             )
-            set_dir(f"{paths.local_path}/FRS_bridges")
-            eia860_FRS.to_csv(
-                f"{paths.local_path}/FRS_bridges/"
-                f"{inventories_of_interest_str}.csv",
-                encoding="utf-8-sig",
-                index=False
-            )
 
+            # Define file paths
+            frs_dir = os.path.join(f"{paths.local_path}", "FRS_bridges")
+            frs_csv = f"{inventories_of_interest_str}.csv"
+            frs_path = os.path.join(frs_dir, frs_csv)
+
+            # Ensure output folder exists
+            set_dir(frs_dir)
+
+            # Save a local copy
+            write_csv_to_output(frs_path, eia860_FRS)
+
+        # emissions_and_wastes_by_facility is a StEWICombo inventory based on
+        # inventories of interest (e.g., eGRID, RCRAInfo, NEI).
+        # Columns in the emissions_and_wastes_by_facility include
+        # FacilityID and FRS_ID (the latter links to REGISTRY_ID in FRS).
+        # This effectively adds 'PGM_SYS_ID', which are the EIA facility
+        # numbers mapped to eGRID facility numbers.
+        # NOTE: there are unmatched facilities that are in FRS_bridge, but
+        # not in EIA (e.g., EGRID, RCRA).
         ewf_df = pd.merge(
             left=emissions_and_wastes_by_facility,
             right=eia860_FRS,
@@ -717,35 +739,51 @@ def create_generation_process_df():
             right_on="REGISTRY_ID",
             how="left",
         )
+
+        # Effectively removes all non-EIA facilities from StEWICombo inventory.
+        #   drops 909 rows in 2022 inventory
         ewf_df.dropna(subset=["PGM_SYS_ID"], inplace=True)
-        ewf_df.drop(
-            columns=[
-                "NEI_ID",
-                "FRS_ID",
-                "TRI_ID",
-                "RCRAInfo_ID",
-                "PGM_SYS_ACRNM",
-                "REGISTRY_ID"],
-            errors="ignore",
-            inplace=True
-        )
+
+        # Drop unused columns; note legacy column names are still here.
+        d_cols = [
+            "NEI_ID",
+            "FRS_ID",
+            "TRI_ID",
+            "RCRAInfo_ID",
+            "PGM_SYS_ACRNM",
+            "REGISTRY_ID"
+        ]
+        d_cols = [x for x in d_cols if x in ewf_df.columns]
+        if len(d_cols) > 0:
+            ewf_df.drop(columns=d_cols, inplace=True)
+
+        # Convert facility ID to integer for comparisons.
         ewf_df["FacilityID"] = ewf_df["PGM_SYS_ID"].astype(int)
 
         # HOTFIX: SettingWithCopyWarning [2024-03-12; TWD]
-        emissions_and_waste_for_selected_eia_facilities = ewf_df[
+        eaw_for_select_eia_facilities = ewf_df[
             ewf_df["FacilityID"].isin(eia_facilities_to_include)].copy()
-        emissions_and_waste_for_selected_eia_facilities.rename(
+        # HOTFIX: "eGRID_ID" column already appears
+        if "eGRID_ID" in eaw_for_select_eia_facilities.columns:
+            eaw_for_select_eia_facilities.drop(columns="eGRID_ID", inplace=True)
+        eaw_for_select_eia_facilities.rename(
             columns={"FacilityID": "eGRID_ID"}, inplace=True)
 
+        # Read in EPA's CEMS state-level data
+        # NOTE: reads in all facility data, including those 99999 facilities
+        # that were filtered out w/ NAICS code filtering.
         cems_df = ampd.generate_plant_emissions(model_specs.eia_gen_year)
 
         # Correct StEWI emissions
         emissions_df = em_other.integrate_replace_emissions(
-            cems_df, emissions_and_waste_for_selected_eia_facilities
+            cems_df, eaw_for_select_eia_facilities
         )
-        emissions_df.rename(columns={"FacilityID": "eGRID_ID"}, inplace=True)
+
+        # Read EIA 860/923 facility info (e.g., PrimaryFuel and percent of
+        # generation from designated fuel category).
         facilities_w_fuel_region = eia_facility_fuel_region(
             model_specs.eia_gen_year)
+
         facilities_w_fuel_region.rename(
             columns={'FacilityID': 'eGRID_ID'}, inplace=True)
     else:
@@ -779,14 +817,19 @@ def create_generation_process_df():
     generation_data['Year'] = generation_data['Year'].astype(int)
     generation_data.rename(columns={'FacilityID': 'eGRID_ID'}, inplace=True)
 
+    # Match electricity generation data (generation_data) to their facility
+    # emissions inventory (emissions_df) by year.
+    # HOTFIX: Change how to 'inner' to ensure that plants that have been
+    # filtered out are not included. Primarily for replace eGRID -
+    # using EIA923 data. [3/4/2024; M. Jamieson]
     final_database = pd.merge(
         left=emissions_df,
         right=generation_data,
         on=["eGRID_ID", "Year"],
-        how="inner", #Jamieson made this modification 3/4/2024.
-        # Ensures that plants that have been filtered out are not included.
-        # Primarily for replace eGRID - using EIA923 data
+        how="inner",
     )
+
+    # Add facility-level info to the emissions and generation data.
     final_database = pd.merge(
         left=final_database,
         right=facilities_w_fuel_region,
@@ -796,8 +839,14 @@ def create_generation_process_df():
     )
 
     if model_specs.replace_egrid:
+        # Get EIA primary fuel categories (and their percent generation);
+        # The data are the same as from EIA's `eia_facility_fuel_region`,
+        # but with additional facilities.
         primary_fuel_df = eia923_primary_fuel(year=model_specs.eia_gen_year)
-        primary_fuel_df.rename(columns={'Plant Id':"eGRID_ID"},inplace=True)
+        primary_fuel_df.rename(
+            columns={'Plant Id': "eGRID_ID"},
+            inplace=True
+        )
         primary_fuel_df["eGRID_ID"] = primary_fuel_df["eGRID_ID"].astype(int)
         key_df = (
             primary_fuel_df[["eGRID_ID", "FuelCategory"]]
@@ -1150,7 +1199,7 @@ def aggregate_data(total_db, subregion="BA"):
     # Assign data score based on percent generation
     total_db = add_data_collection_score(total_db, electricity_df, subregion)
 
-    # Calculate the emission factor (E/MWh)
+    # Calculate the facility-level emission factor (E/MWh)
     # HOTFIX ZeroDivisionError [2024-05-14; TWD]
     crit_zero = total_db["Electricity"] != 0
     total_db.loc[crit_zero, "facility_emission_factor"] = (
@@ -1305,7 +1354,7 @@ def replace_egrid(total_db, year=None):
 
 
 def turn_data_to_dict(data, upstream_dict):
-    """Turn aggregated emission data into a dictionary for openLCA.
+    """Turn aggregated emission data into exchange dictionary for openLCA.
 
     Parameters
     ----------
@@ -1344,6 +1393,8 @@ def turn_data_to_dict(data, upstream_dict):
     """
     logging.debug("Data has %d rows" % len(data))
     logging.debug(f"Turning flows from {data.name} into dictionaries")
+
+    # NOTE: the new key names are handled in olca_jsonld_writer.py
     cols_for_exchange_dict = [
         "internalId",
         "@type",
@@ -1357,7 +1408,7 @@ def turn_data_to_dict(data, upstream_dict):
         "amount",
         "amountFormula",
         "unit",
-        "pedigreeUncertainty",
+        "pedigreeUncertainty", # defunct
         "dqEntry",
         "uncertainty",
         "comment",
@@ -1369,10 +1420,10 @@ def turn_data_to_dict(data, upstream_dict):
     data["flowProperty"] = ""
     data["baseUncertainty"] = ""
     data["provider"] = ""
-    data["unit"] = data["Unit"]
     data["FlowType"]="ELEMENTARY_FLOW"
 
-    # Effectively rename 'uncertainty Max/Min' to 'Max/Min'
+    # Effectively rename 'Unit' to 'unit', 'uncertainty Max/Min' to 'Max/Min'
+    data["unit"] = data["Unit"]
     data["Maximum"] = data["uncertaintyMax"]
     data["Minimum"] = data["uncertaintyMin"]
 
@@ -1398,19 +1449,19 @@ def turn_data_to_dict(data, upstream_dict):
     )
     data.loc[waste_filter, "FlowType"] = "WASTE_FLOW"
 
+    # Iterate through upstream stage codes.
     provider_filter = data["stage_code"].isin(upstream_dict.keys())
     for index, row in data.loc[provider_filter, :].iterrows():
+        stage_code = getattr(row, "stage_code")
         provider_dict = {
-            "name": upstream_dict[getattr(row, "stage_code")]["name"],
-            "categoryPath": upstream_dict[getattr(row, "stage_code")][
-                "category"
-            ],
+            "name": upstream_dict[stage_code]["name"],
+            "categoryPath": upstream_dict[stage_code]["category"],
             "processType": "UNIT_PROCESS",
-            "@id": upstream_dict[getattr(row, "stage_code")]["uuid"],
+            "@id": upstream_dict[stage_code]["uuid"],
         }
         data.at[index, "provider"] = provider_dict
         data.at[index, "unit"] = unit(
-            upstream_dict[getattr(row, "stage_code")]["q_reference_unit"]
+            upstream_dict[stage_code]["q_reference_unit"]
         )
         data.at[index, "FlowType"] = "PRODUCT_FLOW"
 
@@ -1449,8 +1500,12 @@ def turn_data_to_dict(data, upstream_dict):
 
     # Copy the columns for exchange process list
     data_for_dict = data[cols_for_exchange_dict]
+
+    # Create a list of dictionaries:
     data_dict = data_for_dict.to_dict("records")
+
     # HOTFIX: append the product flow dictionary to the list [2023-11-13; TWD]
+    # NOTE: This is the quantitative reference flow.
     data_dict.append(ref_exchange_creator())
 
     return data_dict
@@ -1487,6 +1542,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         base_cols = region_agg + fuel_agg
     else:
         base_cols = fuel_agg
+
     non_agg_cols = [
         "stage_code",
         "FlowName",
@@ -1517,11 +1573,10 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     )
     process_df.columns = ["exchanges"]
     process_df.reset_index(inplace=True)
+
     process_df["@type"] = "Process"
     process_df["allocationFactors"] = ""
     process_df["defaultAllocationMethod"] = ""
-    # HOTFIX: remove .values, which throws ValueError [2023-11-13; TWD]
-    process_df["location"] = process_df[region_agg]
     process_df["parameters"] = ""
     process_df["processType"] = "UNIT_PROCESS"
     # HOTFIX: add squeeze to force DataFrame to Series [2023-11-13; TWD]
@@ -1530,6 +1585,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         "Transmission and Distribution/" + process_df[fuel_agg].squeeze().values
     )
     if region_agg is None:
+        process_df["location"] = "US"
         process_df["description"] = (
             "Electricity from "
             + process_df[fuel_agg].squeeze().values
@@ -1539,6 +1595,8 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
             "Electricity - " + process_df[fuel_agg].squeeze().values + " - US"
         )
     else:
+        # HOTFIX: remove .values, which throws ValueError [2023-11-13; TWD]
+        process_df["location"] = process_df[region_agg]
         process_df["description"] = (
             "Electricity from "
             + process_df[fuel_agg].squeeze().values
@@ -1562,6 +1620,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         process_doc_creation(x) for x in list(
             process_df["FuelCategory"].str.lower())
     ]
+
     process_cols = [
         "@type",
         "allocationFactors",
