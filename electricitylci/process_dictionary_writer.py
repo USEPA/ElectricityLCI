@@ -38,7 +38,7 @@ JSON-LD format as prescribed by OpenLCA software.
 Portions of this code were cleaned using ChatGPTv3.5.
 
 Last updated:
-    2024-07-30
+    2024-08-09
 """
 __all__ = [
     'con_process_ref',
@@ -115,7 +115,10 @@ electricity_at_grid_flow = {
     "flowProperties": "",
     "name": electricity_flow_name_generation_and_distribution,
     "id": "",
-    "category": "Technosphere Flows/22: Utilities/2211: Electric Power Generation, Transmission and Distribution",
+    "category": (
+        "Technosphere Flows/"
+        "22: Utilities/"
+        "2211: Electric Power Generation, Transmission and Distribution"),
 }
 
 electricity_at_user_flow = {
@@ -123,7 +126,10 @@ electricity_at_user_flow = {
     "flowProperties": "",
     "name": electricity_flow_name_consumption,
     "id": "",
-    "category": "Technosphere Flows/22: Utilities/2211: Electric Power Generation, Transmission and Distribution",
+    "category": (
+        "Technosphere Flows/"
+        "22: Utilities/"
+        "2211: Electric Power Generation, Transmission and Distribution"),
 }
 
 OLCA_TO_METADATA = {
