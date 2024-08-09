@@ -19,9 +19,6 @@ import electricitylci.eia860_facilities as eia860
 from electricitylci.model_config import model_specs
 
 
-logger = logging.getLogger("ampd_plant_emissions")
-
-
 ##############################################################################
 # MODULE DOCUMENTATION
 ##############################################################################
@@ -40,11 +37,17 @@ and returns a data frame ready for concatenation with other facility-level
 emissions.
 
 Last updated:
-    2024-01-09
+    2024-08-02
 """
 __all__ = [
     "generate_plant_emissions",
 ]
+
+
+##############################################################################
+# GLOBALS
+##############################################################################
+logger = logging.getLogger("ampd_plant_emissions")
 
 
 ##############################################################################
@@ -676,7 +679,7 @@ def generate_plant_emissions(year):
             right_on=["Reported_Fuel_Type_Code", "Reported_Prime_Mover"],
             how="left",
         )
-        emissions["NOx (lbs)"] = None
+        # HOTFIX: Don't set NOx (lbs) to string by setting to None [240802;TWD]
         criteria = emissions["Emission_Factor_Denominator"] == "MMBtu"
         emissions.loc[criteria, "NOx (lbs)"] = (
             emissions.loc[criteria, "Emission_Factor"]
@@ -1335,10 +1338,10 @@ def generate_plant_emissions(year):
     df_list = [
         eia_gen_fuel_co2_ch4_n2o_output,
         eia_gen_fuel_so2_output,
-        eia_gen_fuel_nox_output,
+        eia_gen_fuel_nox_output, # NOx (lbs) as object
         eia_boiler_co2_ch4_n2o_output,
         eia_boiler_so2_output,
-        eia_boiler_nox_output,
+        eia_boiler_nox_output, # NOx (lbs) as float
     ]
     logger.info("Choosing emission sources")
     emissions_comparer = pd.concat(df_list, sort=True)
