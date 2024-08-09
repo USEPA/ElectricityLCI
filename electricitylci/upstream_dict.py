@@ -354,23 +354,29 @@ def olcaschema_genupstream_processes(merged):
     for upstream in upstream_list:
         logging.info(f"Building dictionary for {upstream}")
         exchanges_list = list()
+
         upstream_filter = merged_summary["stage_code"] == upstream
         merged_summary_filter = merged_summary.loc[upstream_filter, :].copy()
         merged_summary_filter.drop_duplicates(
-            subset=["FlowName", "Compartment", "FlowAmount"], inplace=True
+            subset=["FlowName", "Compartment", "FlowAmount"],
+            inplace=True
         )
         merged_summary_filter.dropna(subset=["FlowName"], inplace=True)
+
+        # TODO: where does "[no match]" get set?
         garbage = merged_summary_filter.loc[
-            merged_summary_filter["FlowName"] == "[no match]", :
-        ].index
+            merged_summary_filter["FlowName"] == "[no match]", :].index
         merged_summary_filter.drop(garbage, inplace=True)
+
         ra = merged_summary_filter.apply(
             _exchange_table_creation_output, axis=1
         ).tolist()
         exchanges_list.extend(ra)
+
         first_row = min(merged_summary_filter.index)
         fuel_type = merged_summary_filter.loc[first_row, "FuelCategory"]
         stage_code = merged_summary_filter.loc[first_row, "stage_code"]
+
         if (fuel_type == "COAL") & (stage_code not in coal_transport):
             split_name = merged_summary_filter.loc[
                 first_row, "stage_code"
