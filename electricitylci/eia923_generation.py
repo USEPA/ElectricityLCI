@@ -34,7 +34,7 @@ __doc__ = """Download and import EIA 923 data, which primarily includes electric
 
 
 Last edited:
-    2024-08-06
+    2024-08-09
 """
 EIA923_PAGES = {
     "1": "Page 1 Generation and Fuel Data",
@@ -409,6 +409,7 @@ def calculate_plant_efficiency(gen_fuel_data):
     # HOTFIX: The sum of string columns was to repeat them (e.g., 'ALALAL' for
     # three rows of 'AL') [240806;TWD].
     # HOTFIX: The NAICS Code filtering must be done here. [240806; TWD]
+    # See https://github.com/USEPA/ElectricityLCI/issues/232
     if model_specs.filter_non_egrid_emission_on_NAICS:
         logging.info("Filtering facilities by NAICS code")
         row_criteria = (gen_fuel_data['NAICS Code'] == '22') & (
@@ -479,20 +480,17 @@ def build_generation_data(
         parameters).
 
     Returns
-    ----------
+    -------
     pandas.DataFrame
         Data frame columns include: ['FacilityID', 'Electricity', 'Year'].
     """
+    # Requires model specs to be defined.
+    from electricitylci.generation import get_generation_years
+
     if generation_years is None:
         # Use the years from generation and inventories of interest.
         # HOTFIX: include 2016 for NETL hydropower plants [240806;TWD]
-        generation_years = [model_specs.eia_gen_year]
-        if model_specs.include_renewable_generation is True:
-            generation_years += [2016]
-        generation_years = sorted(list(set(
-            list(model_specs.inventories_of_interest.values())
-            + generation_years
-        )))
+        generation_years = get_generation_years()
 
     df_list = []
     for year in generation_years:
