@@ -284,7 +284,7 @@ def write(processes, file_path, to_save=True):
     good information), and because this method is called (again and again) in
     electricity.main, in each method call, the JSON-LD file is examined, its
     data extracted and updated with the latest data, and re-zipped to the same
-    JSON-LD archive (delting the old version in the process).
+    JSON-LD archive (deleting the old version in the process).
 
     The same methodology is adopted in NetlOlca Python class for interfacing
     with openLCA v2 projects. This is the way.
