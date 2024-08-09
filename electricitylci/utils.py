@@ -26,7 +26,12 @@ from electricitylci.globals import output_dir
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2024-03-21
+    2024-08-09
+
+Changelog:
+    - [24.08.05]: Create new BA code getter w/ FERC mapping.
+    - TODO: update create_ba_region_map to link with new BA code getter
+    - TODO: write BA code w/ FERC mapping to file for offline use
 """
 __all__ = [
     "check_output_dir",
@@ -80,6 +85,7 @@ def check_output_dir(out_dir):
     return os.path.isdir(out_dir)
 
 
+# TODO: Link this to read_ba_codes(); disconnected!
 def create_ba_region_map(match_fn="BA code match.csv",
                          region_col="ferc_region"):
     """Generate a pandas series for mapping a region to balancing authority.
@@ -345,7 +351,7 @@ def make_valid_version_num(foo):
     return result
 
 
-def read_ba_codes():
+def read_ba_codes_old():
     """Create a data frame of balancing authority names and codes.
 
     Provides a common source for balancing authority names, as well as
@@ -390,6 +396,76 @@ def read_ba_codes():
     ba_codes.set_index("BA_Acronym", inplace=True)
 
     return ba_codes
+
+
+def read_ba_codes():
+    # IN PROGRESS
+    #
+    # Referenced in combinatory.py, eia_io_trading.py, import_impacts.py
+    #
+    # Columns for sheet, "BAs" (as of 2024), include:
+    # - BA Code (str)
+    # - BA Name (str)
+    # - Time Zone (str): For example, "Eastern," "Central" or "Pacific"
+    # - Region/Country Code (str): EIA region code
+    # - Region/Country Name (str): EIA region name
+    # - Generation Only BA (str): "Yes" or "No"
+    # - Demand by BA Subregion (str): "Yes" or "No"
+    # - U.S. BA (str): "Yes" or "No"
+    # - Active BA (str): "Yes" or "No"
+    # - Activation Date: (str/NA): mostly empty, a few years are available
+    # - Retirement Date (str/NA): mostly empty, a few years are available
+    eia_ref_url = "https://www.eia.gov/electricity/930-content/EIA930_Reference_Tables.xlsx"
+
+    # BA-to-FERC mapping is based on an intermediate EIA-to-FERC map,
+    # which was completed as a part of Electricity Grid Mix Explorer v4.2.
+    EIA_to_FERC = {
+        "California": "CAISO",
+        "Carolinas": "Southeast",
+        "Central": "SPP",
+        "Electric Reliability Council of Texas, Inc.": "ERCOT",
+        "Florida": "Southeast",
+        "Mid-Atlantic": "PJM",
+        "Midwest": "MISO",
+        "New England ISO": "ISO-NE",
+        "New York Independent System Operator": "NYISO",
+        "Northwest": "Northwest",
+        "Southeast": "Southeast",
+        "Southwest": "Southwest",
+        "Tennessee Valley Authority": "Southeast",
+        # Add Canada and Mexico
+        "Canada": "Canada",
+        "Mexico": "Mexico",
+    }
+    FERC_ABBR = {
+        "CAISO": "CAISO",
+        "ERCOT": "ERCOT",
+        "ISO-NE": "ISO-NE",
+        "MISO": "MISO",
+        "Northwest": "NW",
+        "NYISO": "NYISO",
+        "PJM": "PJM",
+        "Southeast": "SE",
+        "Southwest": "SW",
+        "SPP": "SPP",
+        # Add Canada and Mexico
+        "Canada": "CAN",
+        "Mexico": "MEX",
+    }
+    df = pd.read_excel(eia_ref_url)
+    df = df.rename(columns={
+        'BA Code': 'BA_Acronym',
+        'BA Name': 'BA_Name',
+        'Region/Country Code': 'EIA_Region_Abbr',
+        'Region/Country Name': 'EIA_Region',
+    })
+    df['FERC_Region'] = df['EIA_Region'].map(EIA_to_FERC)
+    df['FERC_Region_Abbr'] = df['FERC_Region'].map(FERC_ABBR)
+    df = df.set_index("BA_Acronym")
+
+    # TODO: save this as a CSV and read it if available.
+
+    return df
 
 
 def read_json(json_path):
