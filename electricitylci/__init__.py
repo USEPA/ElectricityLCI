@@ -251,7 +251,10 @@ def get_gen_plus_netl():
         sort=False
     )
 
-    # This combines EIA 923, EIA 860, with EPA CEMS
+    # This combines EIA 923, EIA 860, with EPA CEMS and StEWI inventories.
+    # WARNING: hydro data (above) are for 2016 facilities, other renewables
+    # are for EIA generation year and the following looks only at facilities
+    # from years of interest.
     logging.info("Getting reported emissions for generators...")
     gen_df = gen.create_generation_process_df()
 
@@ -372,7 +375,7 @@ def get_generation_process_df(regions=None, **kwargs):
     -------
     pandas.DataFrame
         Each row represents information about a single emission from a fuel
-        category in a single region. Columns include the following.
+        category in a single region. Aggregated columns include the following.
 
        - 'Subregion' (str)
        - 'FuelCategory'
@@ -466,6 +469,7 @@ def get_generation_process_df(regions=None, **kwargs):
             generation_process_df = aggregate_gen(gen_plus_fuels, "BA")
         else:
             generation_process_df = aggregate_gen(gen_plus_fuels, regions)
+        logging.info("Aggregation complete!")
     else:
         # WARNING, Canada is BA level. Probably not useful and should be
         # filtered out.

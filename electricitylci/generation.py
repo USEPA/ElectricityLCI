@@ -80,7 +80,7 @@ CHANGELOG
 Created:
     2019-06-04
 Last edited:
-    2024-08-08
+    2024-08-09
 """
 __all__ = [
     "add_data_collection_score",
@@ -643,6 +643,84 @@ def calculate_electricity_by_source(db, subregion="BA"):
     return db, elec_sums
 
 
+def get_generation_years():
+    """Create list of generation years based on model configuration.
+
+    Reads the model specs for inventories of interest, generation year,
+    and (if renewables are included) the hydro power plant data year.
+
+    Returns
+    -------
+    list
+        A list of years (int)
+    """
+    generation_years = [model_specs.eia_gen_year]
+    # Check to see if hydro power plant data are used (always 2016)
+    if model_specs.include_renewable_generation is True:
+        generation_years += [2016]
+    # Add years of inventories of interest; remove duplicates, and
+    # sort chronologically:
+    generation_years = sorted(list(set(
+        list(model_specs.inventories_of_interest.values())
+        + generation_years
+    )))
+
+    return generation_years
+
+
+def get_facilities_w_fuel_region(years=None):
+    """Capture all facility fuels and regions for a given set of years.
+
+    Parameters
+    ----------
+    years : list, optional
+        List of years, by default None
+
+    Returns
+    -------
+    pandas.DataFrame
+        A data frame with columns
+
+        - 'FacilityID' (int): plant identifier
+        - 'FuelCategory' (str): primary fuel category
+        - 'PrimaryFuel' (str): primary fuel code
+        - 'PercentGenerationfromDesignatedFuelCategory' (float)
+        - 'State' (str): two-character state code
+        - 'NERC' (str): NERC region code
+        - 'Balancing Authority Code' (str)
+        - 'Balancing Authority Name' (str)
+    """
+    if years is None:
+        years = get_generation_years()
+
+    if isinstance(years, (int, float, str)):
+        years = [years,]
+
+    for i in range(len(years)):
+        year = years[i]
+        if i == 0:
+            a = eia_facility_fuel_region(year)
+        else:
+            b = eia_facility_fuel_region(year)
+            # This appends a suffix on the old data, and gap fills
+            # new data with old data that are not found in the new data.
+            # Source: https://stackoverflow.com/a/69504041
+            a = a.merge(
+                b,
+                how='outer',
+                on='FacilityID',
+                suffixes=('_df1', '')
+            )
+            for col_name in b.columns:
+                new_name = col_name + "_df1"
+                if new_name in a.columns:
+                    # Fill in new column's NaNs with old data:
+                    a[col_name] = a[col_name].fillna(a[new_name])
+                    a.drop(columns=new_name, inplace=True)
+
+    return a
+
+
 def create_generation_process_df():
     """Read emissions and generation data from different sources to provide
     facility-level emissions. Most important inputs to this process come
@@ -686,8 +764,8 @@ def create_generation_process_df():
         ])
         inventories_of_interest_str = "_".join(inventories_of_interest_list)
 
-        # NOTE: pulled from Facility Register Service (FRS) program data
-        # provided, by USEPA's FacilityMatcher, now a part of StEWI.
+        # NOTE: data pulled from Facility Register Service (FRS) program
+        # provided by USEPA's FacilityMatcher, now a part of StEWI.
         # https://github.com/USEPA/standardizedinventories
         try:
             eia860_FRS = pd.read_csv(
@@ -725,13 +803,14 @@ def create_generation_process_df():
             write_csv_to_output(frs_path, eia860_FRS)
 
         # emissions_and_wastes_by_facility is a StEWICombo inventory based on
-        # inventories of interest (e.g., eGRID, RCRAInfo, NEI).
+        # inventories of interest (e.g., eGRID, RCRAInfo, NEI) and their
+        # respective years as defined in the model config.
         # Columns in the emissions_and_wastes_by_facility include
         # FacilityID and FRS_ID (the latter links to REGISTRY_ID in FRS).
         # This effectively adds 'PGM_SYS_ID', which are the EIA facility
-        # numbers mapped to eGRID facility numbers.
-        # NOTE: there are unmatched facilities that are in FRS_bridge, but
-        # not in EIA (e.g., EGRID, RCRA).
+        # numbers and maps them to eGRID facility numbers.
+        # NOTE: there are unmatched facilities that are found in FRS_bridge,
+        # but not in EIA (e.g., EGRID, RCRA).
         ewf_df = pd.merge(
             left=emissions_and_wastes_by_facility,
             right=eia860_FRS,
@@ -760,6 +839,7 @@ def create_generation_process_df():
         # Convert facility ID to integer for comparisons.
         ewf_df["FacilityID"] = ewf_df["PGM_SYS_ID"].astype(int)
 
+        # Filter stewi inventory to just (EIA) facilities of interest.
         # HOTFIX: SettingWithCopyWarning [2024-03-12; TWD]
         eaw_for_select_eia_facilities = ewf_df[
             ewf_df["FacilityID"].isin(eia_facilities_to_include)].copy()
@@ -771,7 +851,8 @@ def create_generation_process_df():
 
         # Read in EPA's CEMS state-level data
         # NOTE: reads in all facility data, including those 99999 facilities
-        # that were filtered out w/ NAICS code filtering.
+        # that were filtered out w/ NAICS code filtering. These facilities
+        # are re-filtered later on during a merge with generation data.
         cems_df = ampd.generate_plant_emissions(model_specs.eia_gen_year)
 
         # Correct StEWI emissions
@@ -781,11 +862,13 @@ def create_generation_process_df():
 
         # Read EIA 860/923 facility info (e.g., PrimaryFuel and percent of
         # generation from designated fuel category).
-        facilities_w_fuel_region = eia_facility_fuel_region(
-            model_specs.eia_gen_year)
-
+        # HOTFIX: gather "the best" facility fuel and location data across
+        #   all inventory years [240809; TWD].
+        facilities_w_fuel_region = get_facilities_w_fuel_region()
         facilities_w_fuel_region.rename(
-            columns={'FacilityID': 'eGRID_ID'}, inplace=True)
+            columns={'FacilityID': 'eGRID_ID'},
+            inplace=True
+        )
     else:
         # Load list; only works when not replacing eGRID!
         from electricitylci.generation_mix import egrid_facilities_w_fuel_region
@@ -820,8 +903,7 @@ def create_generation_process_df():
     # Match electricity generation data (generation_data) to their facility
     # emissions inventory (emissions_df) by year.
     # HOTFIX: Change how to 'inner' to ensure that plants that have been
-    # filtered out are not included. Primarily for replace eGRID -
-    # using EIA923 data. [3/4/2024; M. Jamieson]
+    # filtered out are not included (e.g., by NAICS) [3/4/2024; M. Jamieson]
     final_database = pd.merge(
         left=emissions_df,
         right=generation_data,
@@ -830,6 +912,9 @@ def create_generation_process_df():
     )
 
     # Add facility-level info to the emissions and generation data.
+    # NOTE some failed-to-match facilities with location exist.
+    #   This is likely due to 'facilities_w_fuel_region' being associated with
+    #   the EIA generation year, whilst the data are from several vintages.
     final_database = pd.merge(
         left=final_database,
         right=facilities_w_fuel_region,
@@ -848,20 +933,21 @@ def create_generation_process_df():
             inplace=True
         )
         primary_fuel_df["eGRID_ID"] = primary_fuel_df["eGRID_ID"].astype(int)
+        # Produce a data frame of plant ID to fuel category for mapping
+        # NOTE: drop duplicates should not be necessary;
+        #   passed checks 2016, 2020, 2022 [240809; TWD]
         key_df = (
             primary_fuel_df[["eGRID_ID", "FuelCategory"]]
-            .dropna()
-            .drop_duplicates(subset="eGRID_ID")
-            .set_index("eGRID_ID")
+            .dropna().drop_duplicates().set_index("eGRID_ID")
         )
+        # Fills some, but not all.
         final_database["FuelCategory"] = final_database["eGRID_ID"].map(
             key_df["FuelCategory"])
     else:
+        # Attempt to use facility data to match NaNs.
         key_df = (
             final_database[["eGRID_ID", "FuelCategory"]]
-            .dropna()
-            .drop_duplicates(subset="eGRID_ID")
-            .set_index("eGRID_ID")
+            .dropna().drop_duplicates().set_index("eGRID_ID")
         )
         final_database.loc[
             final_database["FuelCategory"].isnull(), "FuelCategory"
@@ -870,13 +956,24 @@ def create_generation_process_df():
             ].map(
                 key_df["FuelCategory"]
             )
+
     final_database["Final_fuel_agg"] = final_database["FuelCategory"]
     if 'Year_x' in final_database.columns:
         year_filter = final_database["Year_x"] == final_database["Year_y"]
         final_database = final_database.loc[year_filter, :]
         final_database.drop(columns="Year_y", inplace=True)
         final_database.rename(columns={"Year_x": "Year"}, inplace=True)
+
+    # Use the Federal Elementary Flow List (FEDEFL) to map flow UUIDs
+    # NOTE: 10,000 unmatched flows; mostly wastes and product flows
     final_database = map_emissions_to_fedelemflows(final_database)
+
+    # Sanity check that no duplicated columns exist in the data frame.
+    final_database = final_database.loc[
+        :, ~final_database.columns.duplicated()
+    ]
+
+    # Sanity check that no duplicate emission rows are in the data frame.
     dup_cols_check = [
         "eGRID_ID",
         "FuelCategory",
@@ -884,35 +981,41 @@ def create_generation_process_df():
         "FlowAmount",
         "Compartment",
     ]
-    final_database = final_database.loc[
-        :, ~final_database.columns.duplicated()
-    ]
     final_database = final_database.drop_duplicates(subset=dup_cols_check)
+
     drop_columns = ['PrimaryFuel_right', 'FuelCategory', 'FuelCategory_right']
-    drop_columns = [
-        c for c in drop_columns if c in final_database.columns.values.tolist()]
+    drop_columns = [c for c in drop_columns if c in final_database.columns]
     final_database.drop(columns=drop_columns, inplace=True)
     final_database.rename(
-        columns={"Final_fuel_agg": "FuelCategory",},
+        columns={"Final_fuel_agg": "FuelCategory"},
         inplace=True,
     )
+
+    # Add DQI
     final_database = add_temporal_correlation_score(
         final_database, model_specs.electricity_lci_target_year)
     final_database = add_technological_correlation_score(final_database)
     final_database["DataCollection"] = 5
     final_database["GeographicalCorrelation"] = 1
 
-    # For surety sake
+    # For surety's sake
     final_database["eGRID_ID"] = final_database["eGRID_ID"].astype(int)
 
+    # Organize database by facility, then by emission compartment
+    # (e.g., resource), then by flow name.
     final_database.sort_values(
-        by=["eGRID_ID", "Compartment", "FlowName"], inplace=True
+        by=["eGRID_ID", "Compartment", "FlowName"],
+        inplace=True
     )
+
+    # Add more metadata
     final_database["stage_code"] = "Power plant"
     final_database["Compartment_path"] = final_database["Compartment"]
     final_database["Compartment"] = final_database["Compartment_path"].map(
         COMPARTMENT_DICT
     )
+
+    # NOTE: there are fewer BA names than codes in final_database!
     final_database["Balancing Authority Name"] = final_database[
         "Balancing Authority Code"].map(BA_CODES["BA_Name"])
     final_database["EIA_Region"] = final_database[
