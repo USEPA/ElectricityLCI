@@ -16,7 +16,6 @@ import numpy as np
 import pandas as pd
 
 from electricitylci.globals import data_dir
-from electricitylci.globals import output_dir
 from electricitylci.globals import paths
 from electricitylci.bulk_eia_data import download_EBA
 from electricitylci.bulk_eia_data import row_to_df
@@ -60,7 +59,7 @@ References:
     52(11), 6666-6675. https://doi.org/10.1021/acs.est.7b05191
 
 Last updated:
-    2024-03-21
+    2024-08-12
 """
 __all__ = [
     "ba_io_trading_model",
@@ -1336,7 +1335,7 @@ def qio_model(net_gen_df, trade_pivot, ba_map, ba_list, roi=None, thresh=1e-5):
     Returns
     -------
     pandas.DataFrame
-        Columns include:
+        Columns include the following.
 
         - 'export BAA' (str): Balancing authority code of exporter
         - 'import BAA' (str): Balancing authority code of importer
@@ -1354,7 +1353,7 @@ def qio_model(net_gen_df, trade_pivot, ba_map, ba_list, roi=None, thresh=1e-5):
     x_np = np.array(x)
 
     # If values are zero, x_hat matrix will be singular,
-    # set BAAs with 0 to small value (1)
+    # set BAAs with 0 to small value (e.g., 1.0)
     df_x = pd.DataFrame(data=x_np, index=trade_pivot.index)
     df_x = df_x.rename(columns={0: 'inflow'})
     df_x.loc[df_x['inflow'] == 0] = 1
@@ -1442,6 +1441,7 @@ def qio_model(net_gen_df, trade_pivot, ba_map, ba_list, roi=None, thresh=1e-5):
             'variable': 'import BAA'}
     )
 
+    # IMPORTS
     # Merge to bring in import region name matched with BAA
     df_final_trade_out_filt_melted_merge = df_final_trade_out_filt_melted.merge(
         ba_map,
@@ -1454,16 +1454,29 @@ def qio_model(net_gen_df, trade_pivot, ba_map, ba_list, roi=None, thresh=1e-5):
             'FERC_Region_Abbr':'import ferc region abbr'},
         inplace=True
     )
+    # HOTFIX: missing column name in drop column list [240812; TWD]
+    d_cols = [
+        'BA_Acronym',
+        'BA_Name',
+        'NCR ID#',
+        'EIA_Region',
+        'EIA_Region_Abbr',
+        'Time Zone',
+        'Retirement Date',
+        'Generation Only BA',
+        'Demand by BA Subregion',
+        'Active BA',
+        'U.S. BA',
+        'Activation Date',
+    ]
+    d_col = [
+        x for x in d_cols if x in df_final_trade_out_filt_melted_merge.columns]
     df_final_trade_out_filt_melted_merge.drop(
-        columns=[
-            'BA_Acronym',
-            'BA_Name',
-            'NCR ID#',
-            'EIA_Region',
-            'EIA_Region_Abbr'],
+        columns=d_col,
         inplace=True
     )
 
+    # EXPORTS
     # Merge to bring in export region name matched with BAA
     df_final_trade_out_filt_melted_merge = df_final_trade_out_filt_melted_merge.merge(
         ba_map,
@@ -1471,24 +1484,22 @@ def qio_model(net_gen_df, trade_pivot, ba_map, ba_list, roi=None, thresh=1e-5):
         right_on='BA_Acronym'
     )
 
-    # Region of interest filtering.
+    # Region of interest filtering (on exporting BAAs).
     if roi is not None:
         df_final_trade_out_filt_melted_merge = df_final_trade_out_filt_melted_merge.loc[
-            df_final_trade_out_filt_melted_merge["BA_Name"].isin(roi), :]
+            df_final_trade_out_filt_melted_merge["BA_Name"].isin(roi), :].copy()
 
     df_final_trade_out_filt_melted_merge.rename(
         columns={
             'FERC_Region': 'export ferc region',
-            'FERC_Region_Abbr':'export ferc region abbr'},
+            'FERC_Region_Abbr': 'export ferc region abbr'},
         inplace=True
     )
+
+    d_col = [
+        x for x in d_cols if x in df_final_trade_out_filt_melted_merge.columns]
     df_final_trade_out_filt_melted_merge.drop(
-        columns=[
-            'BA_Acronym',
-            'BA_Name',
-            'NCR ID#',
-            'EIA_Region',
-            'EIA_Region_Abbr'],
+        columns=d_col,
         inplace=True
     )
 
