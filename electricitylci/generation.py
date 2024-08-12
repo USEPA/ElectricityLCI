@@ -1324,10 +1324,10 @@ def aggregate_data(total_db, subregion="BA"):
     # for flow amounts (i.e., the flow-amount weighted method)
     wm = lambda x: _wtd_mean(x, total_db)
 
-    logging.info(
-        "Aggregating flow amounts and dqi information, calculating "
-        "uncertainty"
-    )
+    info_txt = "Aggregating flow amounts and dqi information"
+    if model_specs.calculate_uncertainty:
+        info_txt += ", calculating uncertainty"
+    logging.info(info_txt)
     database_f3 = total_db.groupby(
         groupby_cols + ["Year", "source_string"], as_index=False
     ).agg({
