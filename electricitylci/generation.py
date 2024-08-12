@@ -76,11 +76,12 @@ CHANGELOG
 -   Separate replace egrid function
 -   Fix zero division error in aggregate data
 -   Implement Hawkins-Young uncertainty
+-   Add uncertainty switch
 
 Created:
     2019-06-04
 Last edited:
-    2024-08-09
+    2024-08-12
 """
 __all__ = [
     "add_data_collection_score",
@@ -119,7 +120,11 @@ def _calc_sigma(p_series):
         Assumes a 90% confidence level (see :param:`alpha`).
     """
     alpha = 0.9
-    (is_error, sigma) = hawkins_young_sigma(p_series.values, alpha)
+    if model_specs.calculate_uncertainty:
+        (is_error, sigma) = hawkins_young_sigma(p_series.values, alpha)
+    else:
+        return None
+
     if is_error:
         return None
     else:
@@ -1523,7 +1528,7 @@ def turn_data_to_dict(data, upstream_dict):
     data["flowProperty"] = ""
     data["baseUncertainty"] = ""
     data["provider"] = ""
-    data["FlowType"]="ELEMENTARY_FLOW"
+    data["FlowType"] = "ELEMENTARY_FLOW"
 
     # Effectively rename 'Unit' to 'unit', 'uncertainty Max/Min' to 'Max/Min'
     data["unit"] = data["Unit"]
@@ -1542,7 +1547,7 @@ def turn_data_to_dict(data, upstream_dict):
     # Define products based on compartment label
     product_filter=(
         (data["Compartment"].str.lower().str.contains("technosphere"))
-        |(data["Compartment"].str.lower().str.contains("valuable"))
+        | (data["Compartment"].str.lower().str.contains("valuable"))
     )
     data.loc[product_filter, "FlowType"] = "PRODUCT_FLOW"
 
@@ -1572,7 +1577,7 @@ def turn_data_to_dict(data, upstream_dict):
     data["uncertainty"] = ""
     for index, row in data.iterrows():
         data.at[index, "uncertainty"] = uncertainty_table_creation(
-            data.loc[index:index, :]  # TODO: check this syntax
+            data.loc[index:index, :]
         )
         data.at[index, "flow"] = flow_table_creation(
             data.loc[index:index, :]
@@ -1666,13 +1671,15 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         "GeomMean",
         "GeomSD",
     ]
+    non_agg_cols = [x for x in non_agg_cols if x in database.columns]
 
     # Create a data frame with one massive column of exchanges
     database_groupby = database.groupby(by=base_cols)
     process_df = pd.DataFrame(
         database_groupby[non_agg_cols].apply(
             turn_data_to_dict,
-            (upstream_dict))
+            (upstream_dict)
+        )
     )
     process_df.columns = ["exchanges"]
     process_df.reset_index(inplace=True)

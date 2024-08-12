@@ -126,7 +126,11 @@ class ModelSpecs:
     post_process_generation_emission_factors : bool
         Whether to do post processing.
     gen_mix_from_model_generation_data : bool, optional
+        Influences how generation mix process is read when not replacing
+        eGRID with EIA. Not available in model config.
         Defaults to false.
+    calculate_uncertainty : bool
+        Whether or not to compute the uncertainty of emission flows.
     namestr : str
         Absolute path to JSON-LD zip output file.
         File name includes the model name and current time stamp and is
@@ -185,7 +189,9 @@ class ModelSpecs:
             os.path.join(data_dir, self.fuel_name_file))
         self.post_process_generation_emission_factors = model_specs[
             "post_process_generation_emission_factors"]
-        self.gen_mix_from_model_generation_data=False
+        self.gen_mix_from_model_generation_data = False
+        self.calculate_uncertainty = model_specs.get(
+            "calculate_uncertainty", True)
         self.namestr = (
             f"{output_dir}/{model_name}_jsonld_"
             f"{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"

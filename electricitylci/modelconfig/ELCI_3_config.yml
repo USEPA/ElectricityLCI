@@ -21,17 +21,17 @@ regional_aggregation: 'eGRID'
 # the generation mix.
 egrid_year: 2016
 eia_gen_year: 2016
-replace_egrid: False
+replace_egrid: false
 
 # NETL has developed profiles for renewable generation to capture construction
-# impacts (e.g., solar PV menufacturing).
-include_renewable_generation: True
+# impacts (e.g., solar PV manufacturing).
+include_renewable_generation: true
 
 # NETL has developed profiles for power plant water use.
-include_netl_water: True
+include_netl_water: true
 
 # Upstream data from NETL can be included in the outputs.
-include_upstream_processes: True
+include_upstream_processes: true
 
 inventories_of_interest:
   eGRID: 2016
@@ -39,10 +39,13 @@ inventories_of_interest:
   NEI: 2016
   RCRAInfo: 2015
 
+# Provide uncertainty estimates for emissions.
+calculate_uncertainty: true
+
 
 # GENERATOR FILTERS
 # These parameters determine if any power plants are filtered out
-include_only_egrid_facilities_with_positive_generation: True
+include_only_egrid_facilities_with_positive_generation: true
 filter_on_efficiency: True
 egrid_facility_efficiency_filters:
   lower_efficiency: 10
@@ -51,18 +54,22 @@ egrid_facility_efficiency_filters:
 # ELCI creates life cycle processes for each fuel type. If you only want to
 # include power plants with a minimum amount of generation from a single fuel,
 # make sure this parameter is set to true.
-filter_on_min_plant_percent_generation_from_primary_fuel: True
+filter_on_min_plant_percent_generation_from_primary_fuel: true
 min_plant_percent_generation_from_primary_fuel_category: 90
 
 # If the parameter above is set to true, one may still want to keep the plants
-# that do not meet the threshhold. This setting will mark those power plants as
+# that do not meet the threshold. This setting will mark those power plants as
 # MIXED and generate life cycle processes for them. Note that the definition
 # of mixed is purposefully ambiguous and will mean different things depending
 # on the region of aggregation.
-keep_mixed_plant_category: True
+keep_mixed_plant_category: true
 
-# NEEDS A GOOD DESCRIPTION OF THIS PARAMETER
-filter_non_egrid_emission_on_NAICS: True
+# To ensure consistency with eGRID, the model applies a filter to remove
+# industrial cogeneration facilities from the EIA Form 923 data based on
+# their NAICS code (i.e., code 22: Electricity Utilities and Independent
+# Power Producers) and by EIA sector numbers 1 and 2. This filter is
+# designed to reproduce the same power plants that are listed in eGRID.
+filter_non_egrid_emission_on_NAICS: true
 
 
 # TRANSMISSION AND ELECTRICITY TRADING
@@ -78,16 +85,16 @@ efficiency_of_distribution_grid: 0.95
 # without a surplus trading pool) that is based on eGRID regions or a method
 # from NETL that uses an input-output approach using exchange data between
 # balancing authorities from EIA.
-EPA_eGRID_trading: True
+EPA_eGRID_trading: true
 
 # Select between net trading (true) or gross trading (false) between NERC and
 # eGRID regions for consumption mix calculations.
-net_trading: False
+net_trading: false
 
 NETL_IO_trading_year: 2016
 
 # OTHER PARAMETERS
 
 fedelemflowlist_version: 1.0.2
-post_process_generation_emission_factors: False
+post_process_generation_emission_factors: false
 fuel_name_file: fuelname_1.csv
