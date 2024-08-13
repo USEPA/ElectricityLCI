@@ -33,10 +33,10 @@ options. The selection of configuration file will occur after the start
 of this script or it may be passed following the command-line argument, '-c'.
 
 Last updated:
-    2024-07-24
+    2024-08-13
 
 Changelog:
-    -   Address logging handler import for Python 3.12 compatability.
+    -   Address logging handler import for Python 3.12 compatibility.
     -   Remove 'write_upstream_dicts_to_jsonld' as a separate function; it
         simply is a redirect to 'write_process_dicts_to_jsonld,' which is
         used consistently throughout the rest of :func:`main`.
@@ -44,7 +44,8 @@ Changelog:
         distribution; creates parallel structure with new run post-processes.
     -   Move `get_generation_process_df` from if-else for clarity.
     -   Reduce parameters passed between methods (i.e, the data frame).
-    -   Testing facility-level inventory generation.
+    -   Test facility-level inventory generation.
+    -   Make use of the post-processing configuration parameter.
 """
 __all__ = [
     "main",
@@ -100,7 +101,10 @@ def main():
 
     gen_dict = run_generation()
     run_distribution(gen_dict)
-    run_post_processes()
+
+    if config.model_specs.run_post_processes:
+        # Clean JSON-LD and generate product systems.
+        run_post_processes()
 
 
 def run_distribution(generation_process_dict):
@@ -129,6 +133,7 @@ def run_distribution(generation_process_dict):
     else:
         generation_mix_df = get_generation_mix_process_df()
 
+    # Create the "Electricity; at grid; generation mix" processes
     logging.info("write gen mix to dict")
     generation_mix_dict = write_generation_mix_database_to_dict(
         generation_mix_df, generation_process_dict,
@@ -140,7 +145,7 @@ def run_distribution(generation_process_dict):
 
     # At this point the two methods diverge
     if config.model_specs.EPA_eGRID_trading is False:
-        # ELCI_1 & ELCI_2
+        # True for ELCI_1 & ELCI_2 (not ELCI_3)
         dist_dict = run_net_trade(generation_mix_dict)
     else:
         # ELC1_3
@@ -189,11 +194,12 @@ def run_generation():
     #       see https://github.com/USEPA/ElectricityLCI/issues/207
     # NOTE: This method runs aggregation and emission uncertainty
     #       calculations.
+    # BUG:  NaNs in Emission factor
     logging.info("get aggregated generation process")
     generation_process_df = get_generation_process_df(
         upstream_df=upstream_df,
         upstream_dict=upstream_dict,
-        to_agg=False  # test facility-level data retrieval
+        to_agg=True
     )
 
     logging.info("write generation process to dict")
@@ -264,8 +270,8 @@ if __name__ == "__main__":
 
     # Execute main
     try:
-        #main()
-        get_facility_level_inventory(True, False)
+        main()
+        #get_facility_level_inventory(True, False)
     except Exception as e:
         log.error("Crashed on main!\n%s" % str(e))
     else:

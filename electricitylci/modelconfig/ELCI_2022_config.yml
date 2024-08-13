@@ -98,8 +98,16 @@ net_trading: false
 # Trading year for EIA data used for net trading.
 NETL_IO_trading_year: 2022
 
+
+# POST PROCESSING
+# This triggers a cleaning of the JSON-LD (e.g., removing untracked flows
+# zero value product flows, and renumbering the exchange table internal IDs).
+# These end processes help remove common errors that crash openLCA v2.
+# Product systems for the at-user consumption mixes are also generated.
+run_post_processes: true
+
+
 # OTHER PARAMETERS
 
 fedelemflowlist_version: 1.0.3
-post_process_generation_emission_factors: false
 fuel_name_file: fuelname_1.csv

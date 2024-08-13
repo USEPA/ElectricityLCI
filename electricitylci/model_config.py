@@ -34,7 +34,7 @@ configuration settings are set once and shared with the rest of the Python
 package. To change configuration settings, restart Python.
 
 Last edited:
-    2024-01-24
+    2024-08-13
 """
 __all__ = [
     "ConfigurationError",
@@ -123,7 +123,7 @@ class ModelSpecs:
         Columns include 'FuelList', 'Fuelname', 'Heatcontent',
         'ElementaryFlowInput', 'Category', 'Subcategory', 'CategoryUUID', and
         'SubcategoryUUID'.
-    post_process_generation_emission_factors : bool
+    run_post_processes : bool
         Whether to do post processing.
     gen_mix_from_model_generation_data : bool, optional
         Influences how generation mix process is read when not replacing
@@ -187,8 +187,7 @@ class ModelSpecs:
         self.fuel_name_file = model_specs["fuel_name_file"]
         self.fuel_name = pd.read_csv(
             os.path.join(data_dir, self.fuel_name_file))
-        self.post_process_generation_emission_factors = model_specs[
-            "post_process_generation_emission_factors"]
+        self.run_post_processes = model_specs["run_post_processes"]
         self.gen_mix_from_model_generation_data = False
         self.calculate_uncertainty = model_specs.get(
             "calculate_uncertainty", True)
