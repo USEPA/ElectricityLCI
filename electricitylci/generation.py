@@ -77,11 +77,12 @@ CHANGELOG
 -   Fix zero division error in aggregate data
 -   Implement Hawkins-Young uncertainty
 -   Add uncertainty switch
+-   Drop NaNs in exchange table
 
 Created:
     2019-06-04
 Last edited:
-    2024-08-12
+    2024-08-13
 """
 __all__ = [
     "add_data_collection_score",
@@ -1502,7 +1503,7 @@ def turn_data_to_dict(data, upstream_dict):
     logging.debug("Data has %d rows" % len(data))
     logging.debug(f"Turning flows from {data.name} into dictionaries")
 
-    # NOTE: the new key names are handled in olca_jsonld_writer.py
+    # NOTE: the new olca-schema names are handled in olca_jsonld_writer.py
     cols_for_exchange_dict = [
         "internalId",
         "@type",
@@ -1521,6 +1522,14 @@ def turn_data_to_dict(data, upstream_dict):
         "uncertainty",
         "comment",
     ]
+
+    # HOTFIX: remove exchanges that have NaNs for Emission_factor;
+    #   they crash openLCA. [240813; TWD]
+    #   https://github.com/USEPA/ElectricityLCI/issues/246
+    num_nans = data['Emission_factor'].isna().sum()
+    if num_nans > 0:
+        logging.info("Removing %d nans from exchange table" % num_nans)
+    data = data.dropna(subset='Emission_factor')
 
     data["internalId"] = ""
     data["@type"] = "Exchange"
