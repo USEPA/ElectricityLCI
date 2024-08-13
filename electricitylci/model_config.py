@@ -114,15 +114,6 @@ class ModelSpecs:
     NETL_IO_trading_year : int
         Year associated with NETL's input-output net trading method
         (e.g., 2016).
-    fedelemflowlist_version : str
-        Version string (e.g., '1.0.2').
-    fuel_name_file : str
-        Name of a CSV file (e.g., 'fuelname_1.csv').
-    fuel_name : pandas.DataFrame
-        A dataframe representing the fuel name file CSV data.
-        Columns include 'FuelList', 'Fuelname', 'Heatcontent',
-        'ElementaryFlowInput', 'Category', 'Subcategory', 'CategoryUUID', and
-        'SubcategoryUUID'.
     run_post_processes : bool
         Whether to do post processing.
     gen_mix_from_model_generation_data : bool, optional
@@ -183,10 +174,6 @@ class ModelSpecs:
         self.EPA_eGRID_trading = model_specs["EPA_eGRID_trading"]
         self.net_trading = model_specs["net_trading"]
         self.NETL_IO_trading_year = model_specs["NETL_IO_trading_year"]
-        self.fedelemflowlist_version = model_specs["fedelemflowlist_version"]
-        self.fuel_name_file = model_specs["fuel_name_file"]
-        self.fuel_name = pd.read_csv(
-            os.path.join(data_dir, self.fuel_name_file))
         self.run_post_processes = model_specs["run_post_processes"]
         self.gen_mix_from_model_generation_data = False
         self.calculate_uncertainty = model_specs.get(

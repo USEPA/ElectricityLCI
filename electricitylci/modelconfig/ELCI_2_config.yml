@@ -104,6 +104,3 @@ run_post_processes: true
 
 
 # OTHER PARAMETERS
-
-fedelemflowlist_version: 1.0.3
-fuel_name_file: fuelname_1.csv
