@@ -92,6 +92,7 @@ EPA_eGRID_trading: false
 # eGRID regions for consumption mix calculations.
 net_trading: false
 
+# Trading year for EIA data used for net trading.
 NETL_IO_trading_year: 2016
 
 
