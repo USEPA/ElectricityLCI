@@ -821,7 +821,7 @@ def generate_upstream_coal(year):
     )
     merged_coal_upstream.reset_index(drop=True, inplace=True)
     merged_coal_upstream["Year"] = year
-    merged_coal_upstream["Source"] = "netl"
+    merged_coal_upstream["Source"] = "netlcoaleiafuel"
 
     return merged_coal_upstream
 

@@ -125,7 +125,7 @@ def generate_upstream_solar(year):
         compartment_map)
     solar_upstream["Unit"] = "kg"
     solar_upstream["input"] = False
-
+    solar_upstream["Source"] = "netlnrelsolarpv"
     return solar_upstream
 
 

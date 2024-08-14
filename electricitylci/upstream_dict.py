@@ -332,7 +332,7 @@ def olcaschema_genupstream_processes(merged):
             "Compartment",
             "plant_id",
             "Unit",
-            "input"
+            "input",
         ],
         as_index=False,
     ).agg({"FlowAmount": "sum", "quantity": "mean"})

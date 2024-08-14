@@ -114,7 +114,7 @@ def generate_hydro_emissions():
 
     # Add other necessary metadata
     hydro_df["Year"] = 2016
-    hydro_df["Source"] = "netl"
+    hydro_df["Source"] = "netlhydro"
 
     # Read in 2016 power plant location data (i.e., state, NERC, BA).
     eia860_df = eia860_balancing_authority(2016)

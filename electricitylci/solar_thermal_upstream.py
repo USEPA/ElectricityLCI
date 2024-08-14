@@ -127,7 +127,7 @@ def generate_upstream_solarthermal(year):
         'Compartment'].map(compartment_map)
     solarthermal_upstream["Unit"] = "kg"
     solarthermal_upstream["input"] = False
-
+    solarthermal_upstream["Source"] = "netlsolarthermal"
     return solarthermal_upstream
 
 

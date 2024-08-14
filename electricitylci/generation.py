@@ -522,8 +522,14 @@ def calculate_electricity_by_source(db, subregion="BA"):
     """
     all_sources = '_'.join(sorted(list(db["Source"].unique())))
     power_plant_criteria = db["stage_code"]=="Power plant"
-    db_powerplant = db.loc[power_plant_criteria, :].copy()
-    db_nonpower = db.loc[~power_plant_criteria, :].copy()
+    
+    # HOTFIX: not separating the dataframe in hopes of generating electricity
+    # amounts for fuel inputs that doesn't make the plants "too efficient"
+    # [2024-08-14 MBJ]
+    #db_powerplant = db.loc[power_plant_criteria, :].copy()
+    #db_nonpower = db.loc[~power_plant_criteria, :].copy()
+    db_powerplant = db.copy()
+    
     region_agg = subregion_col(subregion)
 
     fuel_agg = ["FuelCategory"]
@@ -586,8 +592,9 @@ def calculate_electricity_by_source(db, subregion="BA"):
             # HOTFIX: it doesn't make sense to groupby a different group;
             # it gives different results from the first-pass filter;
             # changed to match criteria above. [2023-12-19; TWD]
+            # HOTFIX undone [2024-08-13; MBJ]
             source_df = pd.DataFrame(
-                db_multiple_sources.groupby(["FlowName", "Compartment"])[
+                db_multiple_sources.groupby(groupby_cols)[
                     ["Source"]].apply(combine_source_lambda),
                 columns=["source_list"],
             )
@@ -602,8 +609,8 @@ def calculate_electricity_by_source(db, subregion="BA"):
             old_index = db_multiple_sources.index
             db_multiple_sources = db_multiple_sources.merge(
                 right=source_df,
-                left_on=["FlowName", "Compartment"],
-                right_on=["FlowName", "Compartment"],
+                left_on=groupby_cols,
+                right_on=groupby_cols,
                 how="left",
             )
             db_multiple_sources.index = old_index
@@ -628,7 +635,7 @@ def calculate_electricity_by_source(db, subregion="BA"):
             )
         ]
         sub_db = db.loc[src_filter, :].copy()
-        sub_db.drop_duplicates(subset=fuel_agg + ["eGRID_ID"], inplace=True)
+        sub_db.drop_duplicates(subset=fuel_agg + ["eGRID_ID","Year"], inplace=True)
         # HOTFIX: fix pandas futurewarning syntax [2024-03-08; TWD]
         sub_db_group = sub_db.groupby(elec_groupby_cols, as_index=False).agg(
             {"Electricity": ["sum", "mean"], "eGRID_ID": "count"}
@@ -640,12 +647,12 @@ def calculate_electricity_by_source(db, subregion="BA"):
         ]
         sub_db_group["source_string"] = src
         elec_sum_lists.append(sub_db_group)
-    db_nonpower["source_string"] = all_sources
-    db_nonpower["source_list"] = [all_sources]*len(db_nonpower)
+    #db_nonpower["source_string"] = all_sources
+    #db_nonpower["source_list"] = [all_sources]*len(db_nonpower)
     elec_sums = pd.concat(elec_sum_lists, ignore_index=True)
     elec_sums.sort_values(by=elec_groupby_cols, inplace=True)
-    db = pd.concat([db_powerplant, db_nonpower])
-
+    #db = pd.concat([db_powerplant, db_nonpower])
+    db = db_powerplant
     return db, elec_sums
 
 

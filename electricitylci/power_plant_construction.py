@@ -227,7 +227,7 @@ def generate_power_plant_construction(year):
     construction_df["fuel_type"] = "Construction"
     construction_df["Unit"] = construction_df["Unit"].str.replace(
         "mj","MJ", regex=False)
-
+    construction_df["Source"]="netlconst"
     return construction_df
 
 

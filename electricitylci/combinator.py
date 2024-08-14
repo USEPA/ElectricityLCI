@@ -101,6 +101,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     fuel_df["FacilityID"] = upstream_reduced["plant_id"]
     fuel_df["FuelCategory"] = upstream_reduced["FuelCategory"]
     fuel_df["Year"] = upstream_reduced["Year"]
+    fuel_df["Source"] = upstream_reduced["Source"]
     merge_cols = [
         "Age",
         "Balancing Authority Code",
@@ -122,7 +123,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
         how="left",
     )
     fuel_df.dropna(subset=["Electricity"], inplace=True)
-    fuel_df["Source"] = "eia"
+    #fuel_df["Source"] = "eia"
     fuel_df = add_temporal_correlation_score(
         fuel_df, model_specs.electricity_lci_target_year)
     fuel_df["DataCollection"] = 5
@@ -268,6 +269,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         "FlowName_orig",
         "Compartment_path_orig",
         "Unit_orig",
+        "Source"
     ]
     upstream_df["FlowAmount"] = upstream_df["FlowAmount"].astype(float)
     if "Electricity" in upstream_df.columns:
@@ -317,7 +319,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         upstream_mapped_df["Compartment"].str.contains("resource"),
         "ElementaryFlowPrimeContext",
     ] = "resource"
-    upstream_mapped_df["Source"] = "netl"
+    #upstream_mapped_df["Source"] = "netl"
     # WARNING: don't use with HYDRO, which has its own data year
     upstream_mapped_df["Year"] = eia_gen_year
     final_columns = [
@@ -362,6 +364,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
                     "FlowName",
                     "Compartment",
                     "Unit",
+                    "Source"
                 ]
             ).groups
             unique_mapped_set = set(unique_mapped.keys())

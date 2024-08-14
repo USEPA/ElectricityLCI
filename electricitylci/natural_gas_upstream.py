@@ -150,7 +150,7 @@ def generate_upstream_ng(year):
         inplace=True
     )
     ng_lci_basin["Year"] = year
-    ng_lci_basin["Source"] = "netl"
+    ng_lci_basin["Source"] = "netlgaseiafuel"
     ng_lci_basin["ElementaryFlowPrimeContext"] = "emission"
     ng_lci_basin.loc[
         ng_lci_basin["Compartment"].str.contains("resource/"),
