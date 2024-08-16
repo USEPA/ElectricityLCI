@@ -14,6 +14,7 @@ import zipfile
 
 import numpy as np
 import pandas as pd
+import re
 
 from electricitylci.globals import data_dir
 from electricitylci.globals import paths
@@ -289,22 +290,28 @@ def _read_bulk():
         logging.info("Using existing bulk data download")
 
     logging.info("Loading bulk data to json")
+    #Changing to regex matches to allow compatability with past and present
+    #bulk data. 
+    ngh_matches=rb"\"EBA[\S\w\d]+[^NG]\.NG\.H\""
+    idh_matches=rb"\"EBA.+\.ID\.H\""
+    dh_matches=rb"\"EBA.+\.D\.H\""
     with z.open('EBA.txt') as f:
         for line in f:
             # All but one BA is currently reporting net generation in UTC
             # and local time. For that one BA (GRMA) only UTC time is
             # reported - so only pulling that for now.
-            if b'EBA.NG.H' in line and b'EBA.NG.HL' not in line:
+            if re.search(ngh_matches,line) is not None:
                 NET_GEN_ROWS.append(json.loads(line))
+            
             # Similarly there are 5 interchanges that report interchange
             # in UTC but not in local time.
-            elif b'EBA.ID.H' in line and b'EBA.ID.HL' not in line:
+            elif re.search(idh_matches,line) is not None:
                 exchange_line = json.loads(line)
                 s_txt = exchange_line['series_id'].split('-')[0][4:]
                 if s_txt not in REGION_ACRONYMS:
                     BA_TO_BA_ROWS.append(exchange_line)
             # Keeping these here just in case
-            elif b'EBA.D.H' in line and b'EBA.D.HL' not in line:
+            elif re.search(dh_matches,line) is not None:
                 DEMAND_ROWS.append(json.loads(line))
 
     logging.debug(f"Net gen rows: {len(NET_GEN_ROWS)}")
@@ -568,11 +575,12 @@ def _make_net_gen(year, ba_cols, ng_json_list):
     # there are several other columns included in the dataset
     # that represent states (e.g., TEX, NY, FL) and other areas (US48)
     df_net_gen = df_net_gen[ba_cols]
-
+    cols_to_change=df_net_gen.columns[df_net_gen.dtypes.eq('object')]
+    df_net_gen[cols_to_change]=df_net_gen[cols_to_change].apply(pd.to_numeric, errors="coerce")
     # Re-sort columns so the headers are in alpha order
     df_net_gen = df_net_gen.sort_index(axis=1)
     df_net_gen = df_net_gen.fillna(value=0)
-    df_net_gen = df_net_gen.loc[start_datetime:end_datetime]
+    df_net_gen = df_net_gen.loc[df_net_gen.index.year==year]
 
     return df_net_gen
 
@@ -771,8 +779,9 @@ def _make_trade_pivot(year, ba_cols, trade_df):
     df_ba_trade_pivot = ba_trade.pivot(
         columns='transacting regions', values='ba_to_ba'
     )
-    df_ba_trade_pivot = df_ba_trade_pivot.loc[start_datetime:end_datetime]
-
+    df_ba_trade_pivot = df_ba_trade_pivot.loc[df_ba_trade_pivot.index.year==year]
+    cols_to_change=df_ba_trade_pivot.columns[df_ba_trade_pivot.dtypes.eq('object')]
+    df_ba_trade_pivot[cols_to_change]=df_ba_trade_pivot[cols_to_change].apply(pd.to_numeric, errors="coerce")
     # Sum columns - represents the net transacted amount between the two BAs
     df_ba_trade_sum = df_ba_trade_pivot.sum(axis=0).to_frame()
     df_ba_trade_sum = df_ba_trade_sum.reset_index()
