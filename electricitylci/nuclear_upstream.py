@@ -123,7 +123,7 @@ def generate_upstream_nuc(year):
     input_dict={"emission": False, "resource": True}
     nuc_merged["directionality"] = nuc_merged["directionality"].map(input_dict)
     nuc_merged.rename(columns={"directionality":"input"}, inplace=True)
-
+    nuc_merged["Source"]="netlnuceiafuel"
     return nuc_merged
 
 
