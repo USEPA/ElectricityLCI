@@ -452,8 +452,15 @@ def efficiency_filter(df, egrid_facility_efficiency_filters):
     upper/lower limits for plant efficiency."""
     upper = egrid_facility_efficiency_filters["upper_efficiency"]
     lower = egrid_facility_efficiency_filters["lower_efficiency"]
-
-    df = df.loc[(df["efficiency"] >= lower) & (df["efficiency"] <= upper), :]
+    #HOTFIX Issue #247 - errors in calculating plant efficiencies.
+    #Excluding a bunch of plant types from this efficiency filter. It really
+    #was only ever meant to apply to thermal (fossil) power plants anyways.
+    fuel_categories_to_exclude=["NUCLEAR","WIND","SOLAR","SOLARTHERMAL",
+                                "HYDRO"
+                                ]
+    df = df.loc[((df["efficiency"] >= lower) & (df["efficiency"] <= upper)) | 
+                (df["FuelCategory"].isin(fuel_categories_to_exclude)), :
+                ]
 
     return df
 
