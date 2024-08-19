@@ -275,6 +275,9 @@ if __name__ == "__main__":
     except Exception as e:
         log.error("Crashed on main!\n%s" % str(e))
     else:
-        log.info("Finished!")
+        log.info(
+            "Finished!\n"
+            "You can find your JSON-LD in this folder: %s" % output_dir
+        )
     finally:
         log.handlers[0].doRollover()
