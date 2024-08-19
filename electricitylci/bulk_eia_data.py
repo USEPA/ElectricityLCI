@@ -63,7 +63,7 @@ def check_EBA_vintage():
     If the vintage of the local copy is too old (i.e., greater than the
     VINTAGE_THRESH), then download a new copy of the bulk data.
     """
-    logging.debug("Checking EBA bulk data vintage...")
+    logging.info("Checking EBA bulk data vintage...")
     d = read_local_manifest_last_update()
     d = datetime.datetime.fromisoformat(d)
 
@@ -71,7 +71,10 @@ def check_EBA_vintage():
     a = datetime.datetime.fromisoformat(a)
 
     if (a-d).days > VINTAGE_THRESH:
+        logging.info("Bulk data is out-of-date, requesting download...")
         download_EBA()
+    else:
+        logging.info("Vintage is okay (%d days)" % (a-d).days)
 
 
 def download_EBA_manifest(out_file):

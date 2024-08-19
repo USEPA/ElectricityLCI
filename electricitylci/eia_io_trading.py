@@ -289,12 +289,13 @@ def _read_bulk():
     else:
         logging.info("Using existing bulk data download")
 
+    # Changing to regex matches to allow compatibility with past and present
+    # bulk data. [2024-08-16; MJ]
+    ngh_matches = rb"\"EBA[\S\w\d]+[^NG]\.NG\.H\""
+    idh_matches = rb"\"EBA.+\.ID\.H\""
+    dh_matches = rb"\"EBA.+\.D\.H\""
+
     logging.info("Loading bulk data to json")
-    #Changing to regex matches to allow compatability with past and present
-    #bulk data. 
-    ngh_matches=rb"\"EBA[\S\w\d]+[^NG]\.NG\.H\""
-    idh_matches=rb"\"EBA.+\.ID\.H\""
-    dh_matches=rb"\"EBA.+\.D\.H\""
     with z.open('EBA.txt') as f:
         for line in f:
             # All but one BA is currently reporting net generation in UTC
@@ -302,7 +303,7 @@ def _read_bulk():
             # reported - so only pulling that for now.
             if re.search(ngh_matches,line) is not None:
                 NET_GEN_ROWS.append(json.loads(line))
-            
+
             # Similarly there are 5 interchanges that report interchange
             # in UTC but not in local time.
             elif re.search(idh_matches,line) is not None:
