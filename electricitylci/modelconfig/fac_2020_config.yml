@@ -1,0 +1,102 @@
+# MODEL CONFIG FILE
+# This file contains parameters that can be changed by a user.
+
+# MODEL AND DATA YEARS
+# These parameters determine what year the outputs represent and which years
+# of data are used from each source.
+
+# The target year is used to determine the temporal correlation of data with
+# the electricity generation processes, which can be used in uncertainty
+# calculations.
+electricity_lci_target_year: 2020
+
+# Select a regional aggregation from "eGRID", "NERC", "BA", "US", "FERC",
+# and "EIA". The EPA_eGRID trading method can only be used with "eGRID".
+# The NETL_BA_trading method can only be used with "BA" and "FERC".
+regional_aggregation: 'BA'
+
+# If egrid is not used as a primary data source then set "replace_egrid"
+# to True. This will trigger the use of EPA CEMS and EIA data as substitutes
+# for eGRID. Replacing eGRID will also use EIA generation data to determine
+# the generation mix.
+egrid_year: 2020
+eia_gen_year: 2020
+replace_egrid: True
+
+# NETL has developed profiles for renewable generation to capture construction
+# impacts (e.g., solar PV manufacturing). Set to true to include these impacts.
+include_renewable_generation: True
+
+# NETL has developed profiles for power plant water use.
+# Set to true to include these impacts.
+include_netl_water: True
+
+# Upstream data from NETL can be included in the outputs.
+include_upstream_processes: True
+
+# Inventory vintages taken from StEWI.
+# https://github.com/USEPA/standardizedinventories
+inventories_of_interest:
+  eGRID: 2020
+  TRI: 2020
+  NEI: 2020
+  RCRAInfo: 2019
+
+
+# GENERATOR FILTERS
+# These parameters determine if any power plants are filtered out
+include_only_egrid_facilities_with_positive_generation: True
+filter_on_efficiency: True
+egrid_facility_efficiency_filters:
+  lower_efficiency: 10
+  upper_efficiency: 100
+
+# ELCI creates life cycle processes for each fuel type. If you only want to
+# include power plants with a minimum amount of generation from a single fuel,
+# make sure this parameter is set to true.
+filter_on_min_plant_percent_generation_from_primary_fuel: True
+min_plant_percent_generation_from_primary_fuel_category: 90
+
+# If the parameter above is set to true, one may still want to keep the plants
+# that do not meet the threshold. This setting will mark those power plants as
+# MIXED and generate life cycle processes for them. Note that the definition
+# of mixed is purposefully ambiguous and will mean different things depending
+# on the region of aggregation.
+keep_mixed_plant_category: True
+
+# To ensure consistency with eGRID, the model applies a filter to remove
+# industrial cogeneration facilities from the EIA Form 923 data based on
+# their NAICS code (i.e., code 22: Electricity Utilities and Independent
+# Power Producers) and by EIA sector numbers 1 and 2. This filter is
+# designed to reproduce the same power plants that are listed in eGRID.
+filter_non_egrid_emission_on_NAICS: True
+
+
+# TRANSMISSION AND ELECTRICITY TRADING
+# These parameters are used to determine which method of electricity trading is
+# used and what losses from electricity distribution are included in the
+# results.
+
+# Used to compute the loss factor for transmission and distribution
+# (i.e., 1/efficiency).
+efficiency_of_distribution_grid: 0.95
+
+# Electricity trading can be calculated using a method from EPA (with or
+# without a surplus trading pool) that is based on eGRID regions or a method
+# from NETL that uses an input-output approach using exchange data between
+# balancing authorities from EIA. If false, net trading is used.
+EPA_eGRID_trading: False
+
+# For net trading, select between two options for for consumption mix
+# calculations: net trading (true) or gross trading (false) between NERC
+# and eGRID regions.
+net_trading: False
+
+# Trading year for EIA data used for net trading.
+NETL_IO_trading_year: 2020
+
+# OTHER PARAMETERS
+
+fedelemflowlist_version: 1.0.3
+post_process_generation_emission_factors: False
+fuel_name_file: fuelname_1.csv
