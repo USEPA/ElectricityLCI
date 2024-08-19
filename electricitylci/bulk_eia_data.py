@@ -205,7 +205,13 @@ def row_to_df(rows, data_type):
                     format='%Y%m%dT%H%z'
                 )
             except ValueError:
-                continue
+                try:
+                    datetime = pd.to_datetime(
+                        [x[0] for x in row['data']],
+                        format='%Y%m%dT%H'
+                )
+                except ValueError:
+                    continue
         data = [x[1] for x in row['data']]
         region = row['series_id'].split('-')[0][4:]
         tuple_data = [
@@ -248,7 +254,13 @@ def ba_exchange_to_df(rows, data_type='ba_to_ba'):
                     format='%Y%m%dT%H%z'
                 )
             except ValueError:
-                continue
+                try:
+                    datetime = pd.to_datetime(
+                        [x[0] for x in row['data']],
+                        format='%Y%m%dT%H'
+                )
+                except ValueError:
+                    continue
         data = [x[1] for x in row['data']]
         from_region = row['series_id'].split('-')[0][4:]
         to_region = row['series_id'].split('-')[1][:-5]

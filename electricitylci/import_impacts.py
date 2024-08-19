@@ -218,7 +218,7 @@ def generate_canadian_mixes(us_inventory, gen_year):
     ca_mix_inventory.rename(
         columns={"Code": "Balancing Authority Code"}, inplace=True
     )
-    ca_mix_inventory["Source"] = "netl"
+    ca_mix_inventory["Source"] = "netlca"
     ca_mix_inventory["Year"] = us_inventory["Year"].mode().to_numpy()[0]
     ca_mix_inventory["FuelCategory"] = "ALL"
     ca_mix_inventory["eGRID_ID"] = ca_mix_inventory[

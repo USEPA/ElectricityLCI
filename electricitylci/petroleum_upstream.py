@@ -218,7 +218,7 @@ def generate_petroleum_upstream(year):
     merged_inventory['Compartment'] = merged_inventory[
         'Compartment'].map(compartment_dict)
     merged_inventory.dropna(inplace=True)
-
+    merged_inventory["Source"] = "netlpetro"
     return merged_inventory
 
 
