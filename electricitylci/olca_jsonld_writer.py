@@ -220,13 +220,18 @@ def clean_json(file_path):
                 else:
                     e_list.append(e.flow.id)
 
-                # TODO: check to see if output exchange is labeled as a
+                # Check to see if output exchange is labeled as a
                 # resource flow
                 # https://github.com/USEPA/ElectricityLCI/issues/233
                 if not e.is_input and 'resource' in f_type.category.lower():
                     logging.warning(
-                        "Found resource flow in output exchange! "
+                        "Fixing resource flow in output exchange! "
                         "'%s' in %s (%s)" % (f_type.name, p.name, p.id))
+                    # HOTFIX: remove troublesome exchange, fix meta & re-add:
+                    p.exchanges.remove(e)
+                    e.is_input = True
+                    e.description = "mislabeled resources"
+                    p.exchanges.append(e)
 
             # Loop through exchanges a second time and re-number their
             # internal IDs to a consecutive order.
