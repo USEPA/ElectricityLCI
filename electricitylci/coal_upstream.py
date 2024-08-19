@@ -540,9 +540,39 @@ def generate_upstream_coal(year):
     Returns
     ----------
     pandas.DataFrame
+        Includes the following columns:
+
+        -   'plant_id' (int) : Plant identifier
+        -   'stage_code' (str) : LCA stage code (e.g., 'Truck', 'L-L-S')
+        -   'quantity' (float) :
+        -   'FlowName'
+        -   'FlowAmount' (float) :
+        -   'Compartment'
+        -   'input' (bool) :
+        -   'stage'
+        -   'FlowUUID'
+        -   'ElementaryFlowPrimeContext'
+        -   'Unit'
+        -   'FlowType'
+        -   'FuelCategory'
+        -   'Year' (int) :
+        -   'Source'
 
     Notes
     -----
+    Relies on data files:
+
+
+        -   2016_Coal_Trans_By_Plant_ABB_Data.csv: contains transportation
+            units by transportation mode for each coal facility.
+        -   coal_mining_lci.csv: Monte-carlo emission results (mean) for each
+            coal scenario in the coal model.
+        -   Coal_model_transportation_inventory.xlsx
+
+            -   'transportation': Five modes by 41 emission flows
+            -   'flowmapping': Map between flow name and target flow name,
+                context (e.g., emission/air), UUID, and unit.
+
     Address the pandas FutureWarning:
 
         coal_upstream.py:374: FutureWarning: Setting an item of incompatible
