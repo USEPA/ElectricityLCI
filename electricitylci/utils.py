@@ -29,9 +29,11 @@ Last updated:
     2024-08-09
 
 Changelog:
-    - [24.08.05]: Create new BA code getter w/ FERC mapping.
-    - TODO: update create_ba_region_map to link with new BA code getter
-    - TODO: write BA code w/ FERC mapping to file for offline use
+    -   [24.08.05]: Create new BA code getter w/ FERC mapping.
+    -   TODO: update create_ba_region_map to link with new BA code getter
+    -   TODO: write BA code w/ FERC mapping to file for offline use
+    -   TODO: create a "wipe clean" method to remove all downloaded data
+        within the electricitylci folder.
 """
 __all__ = [
     "check_output_dir",
