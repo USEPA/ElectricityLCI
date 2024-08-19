@@ -33,7 +33,7 @@ options. The selection of configuration file will occur after the start
 of this script or it may be passed following the command-line argument, '-c'.
 
 Last updated:
-    2024-08-13
+    2024-08-19
 
 Changelog:
     -   Address logging handler import for Python 3.12 compatibility.
@@ -46,6 +46,7 @@ Changelog:
     -   Reduce parameters passed between methods (i.e, the data frame).
     -   Test facility-level inventory generation.
     -   Make use of the post-processing configuration parameter.
+    -   Make main() runnable (add ``is_set`` param)
 """
 __all__ = [
     "main",
@@ -57,7 +58,7 @@ __all__ = [
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def main():
+def main(is_set=False):
     """Generate an openLCA-schema JSON-LD zip file containing the life cycle
     inventory for US power plants based on the settings in the user-specified
     configuration file. The basic workflow is as follows:
@@ -93,7 +94,7 @@ def main():
     >>> config.model_specs = config.build_model_class()
     >>> print(config.model_specs.namestr)
     """
-    if config.model_specs is None:
+    if not is_set or config.model_specs is None:
         # Prompt user to select configuration option.
         # These are defined as YAML files in the modelconfig/ folder in the
         # eLCI package; you might have to search site-packages under lib.
@@ -252,7 +253,7 @@ if __name__ == "__main__":
     check_output_dir(output_dir)
     log_path = os.path.join(output_dir, log_filename)
     f_handler = RotatingFileHandler(log_path, backupCount=9)
-    f_handler.setLevel("DEBUG")
+    f_handler.setLevel("INFO")
     f_handler.setFormatter(formatter)
 
     log.addHandler(f_handler)
@@ -268,9 +269,9 @@ if __name__ == "__main__":
     else:
         config.model_specs = None
 
-    # Execute main
+    # Execute main; make is_set true in this block.
     try:
-        main()
+        main(True)
         #get_facility_level_inventory(True, False)
     except Exception as e:
         log.error("Crashed on main!\n%s" % str(e))
