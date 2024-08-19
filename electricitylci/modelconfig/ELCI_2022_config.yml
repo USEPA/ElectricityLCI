@@ -43,7 +43,7 @@ inventories_of_interest:
   RCRAInfo: 2019
 
 # Provide uncertainty estimates for emissions.
-calculate_uncertainty: false
+calculate_uncertainty: true
 
 
 # GENERATOR FILTERS
