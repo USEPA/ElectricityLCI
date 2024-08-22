@@ -6,6 +6,7 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+import datetime
 import io
 import json
 import logging
@@ -26,7 +27,7 @@ from electricitylci.globals import output_dir
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2024-08-09
+    2024-08-21
 
 Changelog:
     -   [24.08.05]: Create new BA code getter w/ FERC mapping.
@@ -38,6 +39,7 @@ Changelog:
 __all__ = [
     "check_output_dir",
     "create_ba_region_map",
+    "decode_str",
     "download",
     "download_unzip",
     "fill_default_provider_uuids",
@@ -45,6 +47,7 @@ __all__ = [
     "join_with_underscore",
     "make_valid_version_num",
     "read_ba_codes",
+    "read_eia_api",
     "read_json",
     "set_dir",
 ]
@@ -146,6 +149,33 @@ def create_ba_region_map(match_fn="BA code match.csv",
         map_series = region_match[region_col]
 
     return map_series
+
+
+def decode_str(bstring):
+    """Return a Python string.
+
+    Decodes a byte string.
+
+    Parameters
+    ----------
+    bstring : bytes
+        An encoded byte string.
+
+    Returns
+    -------
+    str
+        A Python string.
+    """
+    if isinstance(bstring, bytes):
+        try:
+            bstring = bstring.decode("utf-8")
+        except:
+            bstring = ""
+    elif isinstance(bstring, str):
+        pass
+    else:
+        bstring = ""
+    return bstring
 
 
 def download(url, file_path):
@@ -468,6 +498,68 @@ def read_ba_codes():
     # TODO: save this as a CSV and read it if available.
 
     return df
+
+
+def read_eia_api(url, url_try=0, max_tries=5):
+    """Return a JSON data response from EIA's API.
+
+    Parameters
+    ----------
+    url : str
+        The URL in proper syntax.
+    url_try : int
+        Internal counter for URL retries; default is 0
+    max_tries : int
+        When to stop retrying; default is 5
+
+    Returns:
+    (dict, int)
+        The JSON response and URL try count.
+        The JSON dictionary includes keys:
+
+        -   'response' (dict): with keys:
+
+            -   'total' (int): count of records in 'data'
+            -   'dateFormat' (str): For example, 'YYYY-MM-DD"T"HH24'
+            -   'frequency' (str): For example, 'hourly'
+            -   'description' (str): Data description
+            -   'data' (list): Dictionaries with keys:
+
+                -   'period'
+                -   'fromba': for ID only
+                -   'fromba-name': for ID only
+                -   'toba': for ID only
+                -   'toba-name': for ID only
+                -   'respondent': for D and NG only
+                -   'respondent-name': for D and NG only
+                -   'type': for D and NG only
+                -   'type-name': for D and NG only
+                -   'value'
+                -   'value-units'
+
+        -   'request' (dict): Parameters sent to the API
+        -   'apiVersion' (str): API version string (e.g., '2.1.7')
+        -   'ExcelAddInVersion' (str): AddIn version string (e.g., '2.1.0')
+    """
+    r_dict = {}
+    url_try += 1
+    r = requests.get(url)
+    r_status = r.status_code
+    if r_status == 200:
+        r_content = r.content
+        try:
+            r_dict = r.json()
+        except:
+            # If at first you, fail...
+            r_content = decode_str(r_content)
+            r_dict = json.loads(r_content)
+    else:
+        if url_try < max_tries:
+            r_dict, url_try = read_eia_api(url, url_try)
+        else:
+            logging.error("Requests failed!")
+
+    return (r_dict, url_try)
 
 
 def read_json(json_path):

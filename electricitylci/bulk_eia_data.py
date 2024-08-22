@@ -29,7 +29,7 @@ Commission regions. This electricity trading ultimately decides the
 consumption mix for a given region.
 
 Last updated:
-    2024-03-20
+    2024-08-21
 """
 __all__ = [
     "ba_exchange_to_df",
@@ -178,8 +178,8 @@ def read_remote_manifest_last_update():
 
 
 def row_to_df(rows, data_type):
-    """Turn rows of a single type from the bulk data text file into a dataframe
-    with the region, datetime, and data as columns.
+    """Turn rows of a single type from the bulk data text file into a data
+    frame with the region, datetime, and data as columns.
 
     Parameters
     ----------
@@ -191,34 +191,38 @@ def row_to_df(rows, data_type):
     Returns
     -------
     pandas.DataFrame
-        Data for all regions in a single df with datatimes converted and UTC.
+        Data for all regions in a single df with datetimes converted to UTC.
     """
     tuple_list = []
     for row in rows:
         try:
-            datetime = pd.to_datetime(
+            date_time = pd.to_datetime(
                 [x[0] for x in row['data']],
                 utc=True,
                 format='%Y%m%dT%HZ'
             )
         except ValueError:
             try:
-                datetime = pd.to_datetime(
+                date_time = pd.to_datetime(
                     [x[0]+":00" for x in row['data']],
                     format='%Y%m%dT%H%z'
                 )
             except ValueError:
                 try:
-                    datetime = pd.to_datetime(
-                        [x[0] for x in row['data']],
-                        format='%Y%m%dT%H'
-                )
+                    # Last ditch, try to infer the format.
+                    # Also, necessary for daily data from API.
+                    date_time = pd.to_datetime([x[0] for x in row['data']])
                 except ValueError:
+                    logging.warning(
+                        "Failed to convert timestamps for %s" % (
+                            row['series_id']
+                        )
+                    )
                     continue
         data = [x[1] for x in row['data']]
         region = row['series_id'].split('-')[0][4:]
         tuple_data = [
-            x for x in zip([region]*len(datetime), list(datetime), data)]
+            x for x in zip([region]*len(date_time), list(date_time), data)]
         tuple_list.extend(tuple_data)
     df = pd.DataFrame(tuple_list, columns=["region", "datetime", data_type])
 
@@ -240,7 +244,7 @@ def ba_exchange_to_df(rows, data_type='ba_to_ba'):
     Returns
     -------
     pandas.DataFrame
-        Data for all regions in a single df with datatimes converted and UTC
+        Data for all regions in a single df with datetimes converted and UTC
     """
     tuple_list = []
     for row in rows:
@@ -258,11 +262,14 @@ def ba_exchange_to_df(rows, data_type='ba_to_ba'):
                 )
             except ValueError:
                 try:
-                    datetime = pd.to_datetime(
-                        [x[0] for x in row['data']],
-                        format='%Y%m%dT%H'
-                )
+                    # For daily data from API.
+                    datetime = pd.to_datetime([x[0] for x in row['data']])
                 except ValueError:
+                    logging.warning(
+                        "Failed to convert timestamps for %s" % (
+                            row['series_id']
+                        )
+                    )
                     continue
         data = [x[1] for x in row['data']]
         from_region = row['series_id'].split('-')[0][4:]
