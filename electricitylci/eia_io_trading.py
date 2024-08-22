@@ -19,6 +19,7 @@ import re
 from electricitylci.globals import data_dir
 from electricitylci.globals import paths
 from electricitylci.globals import API_SLEEP
+from electricitylci.globals import EIA_API
 from electricitylci.bulk_eia_data import download_EBA
 from electricitylci.bulk_eia_data import row_to_df
 from electricitylci.bulk_eia_data import ba_exchange_to_df
@@ -370,6 +371,7 @@ def _read_bulk_api(ba_cols):
         _sub_domain = _sub_domain_d
         _sub_domain2 = _sub_domain2_d
 
+    logging.info("Querying EIA API for demand, net gen, and interchange data")
     DEMAND_ROWS = _read_dng_api(
         _baseurl, _sub_domain, api_key, _freq, _start, _end, ba_cols, 'D')
     NET_GEN_ROWS = _read_dng_api(
@@ -1513,7 +1515,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     # Read necessary data from EIA's bulk data download.
     # WARNING: this is a lot of data in memory!
     # UPDATE: now send ba_cols and whether to use API
-    NET_GEN_ROWS, BA_TO_BA_ROWS, DEMAND_ROWS = _read_bulk(ba_cols, True)
+    NET_GEN_ROWS, BA_TO_BA_ROWS, DEMAND_ROWS = _read_bulk(ba_cols, EIA_API)
 
     # Net Generation Data Import
     df_net_gen = _make_net_gen(year, ba_cols, NET_GEN_ROWS)
