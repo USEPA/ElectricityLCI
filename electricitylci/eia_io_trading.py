@@ -63,7 +63,7 @@ References:
     52(11), 6666-6675. https://doi.org/10.1021/acs.est.7b05191
 
 Last updated:
-    2024-08-21
+    2024-08-22
 """
 __all__ = [
     "ba_io_trading_model",
@@ -485,7 +485,7 @@ def _read_id_api(baseurl, sub_domain, api_key, freq, start, end):
     total_recs = 2
     offset = 0
     while recs_captured < (total_recs - 1):
-        url_id = (
+        _url = (
             f"{baseurl}{sub_domain}?api_key={api_key}&out=json"
             f"&frequency={freq}"
             f"&start={start}"
@@ -506,7 +506,7 @@ def _read_id_api(baseurl, sub_domain, api_key, freq, start, end):
             _idx = 'HL'
 
         # Make request and sleep, so as to not be a hater.
-        d_json, _ = read_eia_api(url_id)
+        d_json, _ = read_eia_api(_url)
         time.sleep(API_SLEEP)
 
         # Check response
