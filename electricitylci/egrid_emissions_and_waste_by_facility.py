@@ -28,8 +28,8 @@ Inventories (StEWI).
 
 If there is no existing CSV file, the call to stewicombo to generate the
 inventory can take some time. It should be noted that this module is executed
-immediately upon import, which may cause some unexpected delays if the CSV file
-is not present.
+immediately upon import (e.g., in generation.py), which may cause some
+unexpected delays if the CSV file is not present.
 
 Last edited:
     2023-12-19
@@ -73,6 +73,9 @@ if emissions_and_wastes_by_facility is None:
 
     # HOTFIX: work-around ParseError [2023-12-19; TWD]
     # Ref: https://github.com/USEPA/standardizedinventories/issues/151
+    # NOTE: Hi! If you are here, then you probably are looking to uncomment
+    # the commented line below to get StEWI's pre-processed data.
+    # https://github.com/USEPA/standardizedinventories/issues/151
     emissions_and_wastes_by_facility = cbi(
         base_inventory,
         model_specs.inventories_of_interest,
