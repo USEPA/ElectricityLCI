@@ -54,6 +54,23 @@ A Python virtual environment (v 3.11 or higher) is required with the following p
     * Successfully installs:
         + scipy-1.12.0
 
+# API
+In the latest version of ElectricityLCI, there is a dependency on two external datasets that require the use of an application programming interface (API) key.
+These keys are free to request and assist their governing agencies with reporting and justifying their data service.
+
+The EPA's Continuous Emissions Monitors (CEMs) background data are provided by the Clean Air Markets API Portal.
+Request a free API key (a long string of numbers used to unlock data access) at the following site.
+Keep your API key secret, as it links you to the their data.
+
+- https://www.epa.gov/power-sector/cam-api-portal#/api-key-signup
+
+The EIA's bulk U.S. Electric System Operating Data (EBA) is provided by their Open Data API (v2).
+Request a free API key by registering at the following address.
+
+- https://www.eia.gov/opendata/.
+
+Be careful when the ElectricityLCI prompts you for an API key, as there are two (EPA and EIA).
+Make sure you supply the right one!
 
 # Use
 Check which eLCI model configuration you want to use, or create a new configuration.
