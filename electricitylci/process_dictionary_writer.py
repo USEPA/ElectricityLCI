@@ -843,6 +843,7 @@ def process_doc_creation(process_type="default"):
     >>> process_type = "Coal"
     >>> metadata_dict = process_doc_creation(process_type)
     """
+    from electricitylci.generation import get_generation_years
     try:
         assert process_type in VALID_FUEL_CATS, f"Invalid process_type ({process_type}), using default"
     except AssertionError:
@@ -878,9 +879,12 @@ def process_doc_creation(process_type="default"):
                 ar[key] = metadata[process_type][OLCA_TO_METADATA[key]]
 
     ar["timeDescription"] = ""
+    # default valid year is the range of generation years
     if not ar["validUntil"]:
-        ar["validUntil"] = "12/31/" + str(model_specs.electricity_lci_target_year)
-        ar["validFrom"] = "1/1/" + str(model_specs.electricity_lci_target_year)
+        #Hot fix for https://github.com/USEPA/ElectricityLCI/issues/244
+        year_range = get_generation_years()
+        ar["validUntil"] = "12/31/" + str(max(year_range))
+        ar["validFrom"] = "1/1/" + str(min(year_range))
     ar["sources"] = [x for x in ar["sources"].values()]
     ar["copyright"] = False
     ar["creationDate"] = time.time()
