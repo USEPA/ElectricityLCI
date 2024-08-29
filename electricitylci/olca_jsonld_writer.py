@@ -16,6 +16,7 @@ import re
 import uuid
 from zipfile import ZipFile
 
+import fedelemflowlist
 import olca_schema as o
 import olca_schema.units as o_units
 import olca_schema.zipio as zipio
@@ -70,15 +71,11 @@ Changelog:
         ``_build_supply_chain``
     -   Add missing 'Electricity; at user; consumption mix - US - US' process
         to product system generation
-
-Error log:
-
-    -   There are two instances of 'elementary flow used as input and output
-        of process': "Water, fresh" and "Water, saline". Find these resources
-        and label them as emissions.
+    -   Correct emissions labeled as resource
+    -   Add flow metadata from USEPA's fedelemflowlist.
 
 Last edited:
-    2024-03-21
+    2024-08-29
 """
 __all__ = [
     "build_product_systems",
@@ -857,6 +854,7 @@ def _flow(dict_d, flowprop, dict_s):
     name = _val(dict_d, 'name')
     category_path = _val(dict_d, 'category', default='')
     is_waste = "waste" in category_path.lower()
+
     # HOTFIX: remove technosphere/3rd party flow check;
     # it duplicates every waste flow in the JSON-LD [2023-12-05; TWD]
 
@@ -883,8 +881,19 @@ def _flow(dict_d, flowprop, dict_s):
 
         f_type = _flow_type(_val(dict_d, 'flowType', default=def_type))
         flow = o.new_flow(name, f_type, flowprop)
+
+        # Get FEDEFL version number and CAS number
+        fed_version = _get_fedefl_version()
+        fed_cas, fed_form, fed_syn = _get_fedefl_meta(uid)
+
+        # Hotfix: Add missing flow metadata.
+        # https://github.com/USEPA/ElectricityLCI/discussions/239
         flow.id = uid
         flow.category = category_path
+        flow.description = "Based on FEDELEMFLOW version %s" % fed_version
+        flow.cas = fed_cas
+        flow.formula = fed_form
+        flow.synonyms = fed_syn
 
         # Update master list
         dict_s['Flow']['ids'].append(uid)
@@ -1051,6 +1060,75 @@ def _format_dq_entry(entry):
         else:
             nums[i] = str(round(float(nums[i])))
     return '(%s)' % ';'.join(nums)
+
+
+def _get_fedefl_meta(flow_id):
+    """Query the FEDEFL for flow metadata (i.e., CAS No, formula, and synonyms)
+
+    Parameters
+    ----------
+    flow_id : str
+        Flow universally unique identifier (mapped to FEDEFL).
+
+    Returns
+    -------
+    tuple
+        A tuple of length three:
+
+        - str: CAS No
+        - str: Formula
+        - str: Synonyms
+    """
+    # Initialize return values
+    f_cas = ""
+    f_form = ""
+    f_syn = ""
+
+    # Read the FEDEFL from file into memory
+    # WARNING: litters the info log.
+    flowlist = fedelemflowlist.get_flows(False)
+    logging.getLogger("pkg_resources").setLevel(logging.WARNING)
+
+    # Query the flow ID and count rows that match
+    tmp_df = flowlist.query("`Flow UUID` == '%s'" % flow_id)
+    num_matches = len(tmp_df)
+
+    # Query results for metadata.
+    if num_matches == 0:
+        logging.info("Failed to find FEDEFL flow (%s)!" % flow_id)
+    elif num_matches == 1:
+        # Convert data frame to series
+        tmp_df = tmp_df.iloc[0]
+        f_cas = tmp_df['CAS No']
+        f_form = tmp_df['Formula']
+        f_syn = tmp_df['Synonyms']
+    else:
+        logging.warning(
+            "Found %d matches for FEDEFL flow (%s); using first instance." % (
+                num_matches, flow_id)
+        )
+        tmp_df = tmp_df.iloc[0]
+        f_cas = tmp_df['CAS No']
+        f_form = tmp_df['Formula']
+        f_syn = tmp_df['Synonyms']
+
+    return (f_cas, f_form, f_syn)
+
+
+def _get_fedefl_version():
+    """Return the version string of Federal Elementary Flow List
+
+    Returns
+    -------
+    str
+        Version string (e.g., '1.0.0')
+    """
+    try:
+        # Adapted from:
+        # https://github.com/USEPA/ElectricityLCI/discussions/239
+        return fedelemflowlist.globals.flow_list_specs['list_version']
+    except AttributeError:
+        return "1.0.0"
 
 
 def _init_root_entities(json_file):
