@@ -6,7 +6,6 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
-import argparse
 import logging
 
 from electricitylci import get_generation_mix_process_df
@@ -33,7 +32,7 @@ options. The selection of configuration file will occur after the start
 of this script or it may be passed following the command-line argument, '-c'.
 
 Last updated:
-    2024-08-19
+    2024-08-22
 
 Changelog:
     -   Address logging handler import for Python 3.12 compatibility.
@@ -195,7 +194,7 @@ def run_generation():
     #       see https://github.com/USEPA/ElectricityLCI/issues/207
     # NOTE: This method runs aggregation and emission uncertainty
     #       calculations.
-    # BUG:  NaNs in Emission factor
+    # NOTE: Will import generation.py, which triggers a lot data into memory.
     logging.info("get aggregated generation process")
     generation_process_df = get_generation_process_df(
         upstream_df=upstream_df,
@@ -226,6 +225,7 @@ def run_generation():
 # MAIN
 ##############################################################################
 if __name__ == "__main__":
+    import argparse
     from logging.handlers import RotatingFileHandler
     import os
     from electricitylci.globals import output_dir
@@ -253,7 +253,7 @@ if __name__ == "__main__":
     check_output_dir(output_dir)
     log_path = os.path.join(output_dir, log_filename)
     f_handler = RotatingFileHandler(log_path, backupCount=9)
-    f_handler.setLevel("INFO")
+    f_handler.setLevel("DEBUG")
     f_handler.setFormatter(formatter)
 
     log.addHandler(f_handler)
