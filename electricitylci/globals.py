@@ -218,7 +218,7 @@ STATE_ABBREV = {
 
 API_SLEEP = 0.2
 '''float : A courtesy sleep time between API calls.'''
-EIA_API = False
+EIA_API = True
 '''bool : Whether to use EIA API or EBA.zip for bulk EIA data.'''
 
 
