@@ -110,12 +110,18 @@ The `main()` method has four steps:
 
 
 # Known Issues
+* `Enter EIA API key: ` prompt used for bad EBA.zip data (found in August 2024)
+    - In globals.py, there is a paramter `EIA_API` that can be toggled to true
+    - You will need an EIA API key (https://www.eia.gov/opendata/)
 * `Enter EPA API key: ` prompt encountered during 2020–2022 baseline runs.
     - The CEMS data are no longer available via the old FTP.
     - See https://github.com/USEPA/ElectricityLCI/issues/207
     - In the short-term, a free-to-register EPA Data API key is required (https://www.epa.gov/power-sector/cam-api-portal#/api-key-signup)
     - Copy and paste the API key (a long string of numbers and letters) to the prompt and hit Enter to download the missing data.
     - The missing data are archived in state-based zip files the epacems2020, epacems2021, and epacems2022 folders found in the `paths.local_path` location (as defined in electricitylci.globals.py).
+* `ParseError` when importing generation.py.
+    - This is likely caused by RCRAInfo download through stewicombo: https://github.com/USEPA/standardizedinventories/issues/151.
+    - In egrid_emissions_and_waste_by_facility.py, uncomment the line with 'download_if_missing=True', restart Python kernel, build model specs, and import generation.py. This should download the cached version of the RCRAInfo data. Re-comment the line when you're done.
 * `ValueError` encountered during 2021 and 2022 baseline runs.
     - The 'coalpublic2021.xls' and 'coalpublic2022.xls' files downloaded to your f7a_2021 and f7a_2022 folders (in the `paths.local_path` location found in electricitylci.globals.py) are actually XML spreadsheets.
     - The simple fix is to open these files in Microsoft Excel and "Save as" Microsoft Excel 95 Workbook, replacing the previous file with the new (do not leave both copies in the folder!)
