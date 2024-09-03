@@ -458,7 +458,7 @@ def efficiency_filter(df, egrid_facility_efficiency_filters):
     fuel_categories_to_exclude=["NUCLEAR","WIND","SOLAR","SOLARTHERMAL",
                                 "HYDRO"
                                 ]
-    df = df.loc[((df["efficiency"] >= lower) & (df["efficiency"] <= upper)) | 
+    df = df.loc[((df["efficiency"] >= lower) & (df["efficiency"] <= upper)) |
                 (df["FuelCategory"].isin(fuel_categories_to_exclude)), :
                 ]
 
@@ -568,7 +568,21 @@ def build_generation_data(
 
 
 def eia923_generation_and_fuel(year):
-    """Add docstring."""
+    """Return data frame of EIA 923 Generation and Fuel Data for given year.
+
+    Parameters
+    ----------
+    year : int
+        The EIA generation year.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A data frame with >90 columns associated with Page 1, "Generation and
+        Fuel Data" from EIA923 Schedules 2,3,4,5,M,12. Quantities are in
+        physical consumed units (e.g., short tons of coal, barrels of oil,
+        mcf of gas). Generation is in MWh.
+    """
     expected_923_folder = join(paths.local_path, "f923_{}".format(year))
 
     if not os.path.exists(expected_923_folder):
