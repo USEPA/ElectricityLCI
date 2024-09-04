@@ -247,6 +247,7 @@ if __name__ == "__main__":
     s_handler = logging.StreamHandler()
     s_handler.setLevel("INFO")
     s_handler.setFormatter(formatter)
+    log.addHandler(s_handler)
 
     # Create file handler for debug messages
     log_filename = "elci.log"
@@ -255,9 +256,7 @@ if __name__ == "__main__":
     f_handler = RotatingFileHandler(log_path, backupCount=9)
     f_handler.setLevel("DEBUG")
     f_handler.setFormatter(formatter)
-
     log.addHandler(f_handler)
-    log.addHandler(s_handler)
 
     # Define argument parser and process specified configuration model
     parser = argparse.ArgumentParser()
