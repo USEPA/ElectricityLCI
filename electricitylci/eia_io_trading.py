@@ -49,6 +49,11 @@ or Federal Energy Regulatory Commission (FERC) regions. These electricity
 flows are then used to generate the consumption mix for a given region or
 balancing authority area.
 
+The default data provider for the bulk U.S. Electric System Operating Data
+is the EIA API open data portal. Request a free API key here:
+
+https://www.eia.gov/opendata/
+
 The main trading model is based on the quasi-input-output model by
 Qu et al. (2017) and Qu et al. (2018).
 
@@ -63,7 +68,7 @@ References:
     52(11), 6666-6675. https://doi.org/10.1021/acs.est.7b05191
 
 Last updated:
-    2024-08-22
+    2024-09-04
 """
 __all__ = [
     "ba_io_trading_model",
@@ -263,6 +268,34 @@ def _read_ba():
     return df_BA_NA, US_BA_acronyms, ferc_list
 
 
+def _check_api(key, owner, r_txt):
+    """Helper function to check and request for API key.
+
+    Parameters
+    ----------
+    key : str, Nonetype
+        The key to be checked.
+    owner : str
+        The API owner (e.g., 'EIA' or 'EPA').
+    r_txt : str
+        Helper text for acquiring an API key (e.g., registration URL).
+
+    Returns
+    -------
+    str
+        API key as provided by the user.
+    """
+    if key is None or key == "":
+        key = input("Enter %s API key: " % owner)
+        key = key.strip()
+        if key == "":
+            logging.warning(
+                "No API key given!"
+                f"Sign up here: {r_txt}"
+            )
+    return key
+
+
 def _check_json(d):
     """Check that EBA.zip JSON data has info.
 
@@ -310,6 +343,55 @@ def _read_bulk(ba_cols, use_api=True):
         return _read_bulk_zip()
 
 
+def _write_bulk_api(row_data, output_file):
+    """Helper function to write out bulk row data to pseudo JSON file.
+
+    Note that the output format does not comply with JSON strictly; rather,
+    each row is a dictionary created by json.dumps(). This allows each row
+    to be read using json.loads().
+
+    Parameters
+    ----------
+    row_data : list
+        A list of dictionaries to be written to file.
+    output_file : str
+        A file path for writing data. The parent directory's existence is
+        checked using :func:`check_output_dir`.
+    """
+    output_dir = os.path.dirname(output_file)
+    check_output_dir(output_dir)
+    # Get away with using write_csv_to_output in utils.py for writing strings.
+    d_txt = "\n".join([json.dumps(x) for x in row_data])
+    write_csv_to_output(output_file, d_txt)
+
+
+def _read_bulk_json(json_file):
+    """Helper method to read JSON data written by :func:`write_bulk_api`
+
+    Note that the plain text file is not strictly in JSON format; rather,
+    each line is a dictionary produced using ``json.dumps``.
+
+    Parameters
+    ----------
+    json_file : str
+        File path to an existing data file.
+
+    Returns
+    -------
+    list
+        A list of dictionaries representing bulk (demand, net gen, interchange)
+        data.
+    """
+    row_data = []
+    if os.path.isfile(json_file):
+        with open(json_file, 'r') as f:
+            for line in f:
+                d = json.loads(line)
+                row_data.append(d)
+
+    return row_data
+
+
 def _read_bulk_api(ba_cols):
     """Read demand, net generation, and interchange data from EIA's API.
 
@@ -340,17 +422,6 @@ def _read_bulk_api(ba_cols):
     The response dictionary should have a key, 'facets' with 'id' and 'name'
     fields for each BA/region.
     """
-    api_key = None
-    new_api = "https://www.eia.gov/opendata/"
-    if api_key is None:
-        api_key = input("Enter EIA API key: ")
-        api_key = api_key.strip()
-        if api_key == "":
-            logging.warning(
-                "No API key given!"
-                f"Sign up here: {new_api}"
-            )
-
     # Define the URLs for the two sub-domains and for hourly and daily data.
     _baseurl = "https://api.eia.gov/v2/"
     _sub_domain_h = "electricity/rto/region-data/data/"
@@ -371,13 +442,63 @@ def _read_bulk_api(ba_cols):
         _sub_domain = _sub_domain_d
         _sub_domain2 = _sub_domain2_d
 
-    logging.info("Querying EIA API for demand, net gen, and interchange data")
-    DEMAND_ROWS = _read_dng_api(
-        _baseurl, _sub_domain, api_key, _freq, _start, _end, ba_cols, 'D')
-    NET_GEN_ROWS = _read_dng_api(
-        _baseurl, _sub_domain, api_key, _freq, _start, _end, ba_cols, 'NG')
-    BA_TO_BA_ROWS = _read_id_api(
-        _baseurl, _sub_domain2, api_key, _freq, _start, _end)
+    # LOCAL DATA STORE MANAGEMENT
+    data_store = os.path.join(paths.local_path, "bulk_data")
+    d_rows_file = os.path.join(data_store, "eia_bulk_demand_%s.json" % _yr)
+    ng_rows_file = os.path.join(data_store, "eia_bulk_netgen_%s.json" % _yr)
+    id_rows_file = os.path.join(data_store, "eia_bulk_id_%s.json" % _yr)
+    d_rows_exists = os.path.isfile(d_rows_file)
+    ng_rows_exists = os.path.isfile(ng_rows_file)
+    id_rows_exists = os.path.isfile(id_rows_file)
+
+    # Initialize return lists
+    DEMAND_ROWS = []
+    NET_GEN_ROWS = []
+    BA_TO_BA_ROWS = []
+
+    # Initialize API strings
+    new_api = "https://www.eia.gov/opendata/"
+    api_key = None
+
+    # TODO: consider having a configuration setting to force API; otherwise,
+    # it is up to the end user to delete the JSON files from bulk_data to
+    # prompt the API a second time (assuming success on the first run).
+
+    # Get bulk demand
+    if d_rows_exists:
+        logging.info("Reading local %s" % os.path.basename(d_rows_file))
+        DEMAND_ROWS= _read_bulk_json(d_rows_file)
+    else:
+        logging.info("Querying EIA API for bulk demand data")
+        api_key = _check_api(api_key, 'EIA', new_api)
+        DEMAND_ROWS, _ok = _read_dng_api(
+            _baseurl, _sub_domain, api_key, _freq, _start, _end, ba_cols, 'D')
+        if _ok:
+            _write_bulk_api(DEMAND_ROWS, d_rows_file)
+
+    # Get bulk net generation
+    if ng_rows_exists:
+        logging.info("Reading local %s" % os.path.basename(ng_rows_file))
+        NET_GEN_ROWS = _read_bulk_json(ng_rows_file)
+    else:
+        logging.info("Querying EIA API for bulk net generation data")
+        api_key = _check_api(api_key, 'EIA', new_api)
+        NET_GEN_ROWS, _ok = _read_dng_api(
+            _baseurl, _sub_domain, api_key, _freq, _start, _end, ba_cols, 'NG')
+        if _ok:
+            _write_bulk_api(NET_GEN_ROWS, ng_rows_file)
+
+    # Get bulk interchange
+    if id_rows_exists:
+        logging.info("Reading local %s" % os.path.basename(id_rows_file))
+        BA_TO_BA_ROWS = _read_bulk_json(id_rows_file)
+    else:
+        logging.info("Querying EIA API for bulk interchange data")
+        api_key = _check_api(api_key, 'EIA', new_api)
+        BA_TO_BA_ROWS = _read_id_api(
+            _baseurl, _sub_domain2, api_key, _freq, _start, _end)
+        if True:
+            _write_bulk_api(BA_TO_BA_ROWS, id_rows_file)
 
     return (NET_GEN_ROWS, BA_TO_BA_ROWS, DEMAND_ROWS)
 
@@ -580,6 +701,7 @@ def _read_dng_api(baseurl, sub_domain, api_key, freq, start, end, ba_cols, m):
 
     # For demand and net gen, we only need U.S. BA areas:
     # Due to API response limits, request each BA individually.
+    _is_okay = True
     for ba in ba_cols:
         _url = (
             f"{baseurl}{sub_domain}?api_key={api_key}&out=json"
@@ -600,12 +722,17 @@ def _read_dng_api(baseurl, sub_domain, api_key, freq, start, end, ba_cols, m):
             _idx = 'HL'
 
         # Make request and sleep, so as to not be a hater.
-        d_json, url_tries = read_eia_api(_url)
+        d_json, url_tries = read_eia_api(_url, max_tries=5)
         time.sleep(API_SLEEP)
+
+        # Check for max retries
+        if url_tries == 5:
+            _is_okay = False
 
         # Check response
         d_resp = d_json.get('response', {})
         if 'warnings' in d_resp.keys():
+            _is_okay = False  # something didn't work right
             logging.warning(d_resp['warnings'])
         try:
             d_tot = d_resp.get("total", 0)
@@ -629,7 +756,7 @@ def _read_dng_api(baseurl, sub_domain, api_key, freq, start, end, ba_cols, m):
             d_dict['data'] = [[x,y] for x,y in d_dict['data'].items()]
             r_list.append(d_dict)
 
-    return r_list
+    return r_list, _is_okay
 
 
 def _read_ca_imports(year):

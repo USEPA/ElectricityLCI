@@ -27,7 +27,7 @@ from electricitylci.globals import output_dir
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2024-08-21
+    2024-09-04
 
 Changelog:
     -   [24.08.05]: Create new BA code getter w/ FERC mapping.
@@ -555,7 +555,7 @@ def read_eia_api(url, url_try=0, max_tries=5):
             r_dict = json.loads(r_content)
     else:
         if url_try < max_tries:
-            r_dict, url_try = read_eia_api(url, url_try)
+            r_dict, url_try = read_eia_api(url, url_try, max_tries)
         else:
             logging.error("Requests failed!")
 
