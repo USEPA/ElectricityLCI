@@ -1589,10 +1589,16 @@ def _read_fedefl():
         First item is a list of 27 olca-schema UnitGroup objects.
         Second item is a list of 33 olca-schema FlowProperty objects.
     """
+    url_token = (
+        "https://www.lcacommons.gov/"
+        "lca-collaboration/ws/public/download/json/prepare/"
+        "Federal_LCA_Commons/elementary_flow_list?path=FLOW_PROPERTY"
+    )
+    # using "path=FLOW_PROPERTY" obtains all Flow properties and all unit groups
+
     url = (
         "https://www.lcacommons.gov/"
-        "lca-collaboration/ws/public/download/json/"
-        "repository_Federal_LCA_Commons@elementary_flow_list"
+        "lca-collaboration/ws/public/download/json"
     )
     u_file = "unit_groups.json"
     u_path = os.path.join(data_dir, u_file)
@@ -1606,7 +1612,8 @@ def _read_fedefl():
     if not os.path.exists(u_path) or not os.path.exists(p_path):
         # Pull from Federal Elementary Flow List
         logging.info("Reading data from Federal LCA Commons")
-        r = requests.get(url, stream=True)
+        token = requests.get(url_token).content.decode()
+        r = requests.get(f"{url}/{token}")
         with ZipFile(io.BytesIO(r.content)) as zippy:
             # Find the unit groups, convert them to UnitGroup class
             for name in zippy.namelist():
