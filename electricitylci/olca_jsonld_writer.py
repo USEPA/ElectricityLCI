@@ -251,17 +251,17 @@ def clean_json(file_path):
             data['Flow']['ids'].pop(idx)
             data['Flow']['objs'].pop(idx)
 
-        # Update flow w/ FEDEFL metadata
-        # https://github.com/USEPA/ElectricityLCI/discussions/239
-        fed_version = _get_fedefl_version()
-        for i in range(len(data['Flow']['objs'])):
-            uid = data['Flow']['objs'][i].id
-            fed_cas, fed_form, fed_syn = _get_fedefl_meta(uid)
-            data['Flow']['objs'][i].cas = fed_cas
-            data['Flow']['objs'][i].formula = fed_form
-            data['Flow']['objs'][i].synonyms = fed_syn
-            data['Flow']['objs'][i].description = (
-                "Based on FEDELEMFLOW version %s" % fed_version)
+        # # Update flow w/ FEDEFL metadata
+        # # https://github.com/USEPA/ElectricityLCI/discussions/239
+        # fed_version = _get_fedefl_version()
+        # for i in range(len(data['Flow']['objs'])):
+        #     uid = data['Flow']['objs'][i].id
+        #     fed_cas, fed_form, fed_syn = _get_fedefl_meta(uid)
+        #     data['Flow']['objs'][i].cas = fed_cas
+        #     data['Flow']['objs'][i].formula = fed_form
+        #     data['Flow']['objs'][i].synonyms = fed_syn
+        #     data['Flow']['objs'][i].description = (
+        #         "Based on FEDELEMFLOW version %s" % fed_version)
 
         # Overwrite
         _save_to_json(file_path, data)
@@ -1859,6 +1859,12 @@ def _save_to_json(json_file, e_dict):
     with zipio.ZipWriter(json_file) as writer:
         for k in e_dict.keys():
             logging.info("Writing %d %s" % (len(e_dict[k]['ids']), k))
+            if k == "Flow":
+                # FEDEFL flows are not added as objects, write them separately
+                # using fedelmflowlist.write_jsonld()
+                flowlist = fedelemflowlist.get_flows()
+                flows = flowlist[flowlist['Flow UUID'].isin(e_dict[k]['ids'])]
+                fedelemflowlist.write_jsonld(flows, path=None, zw=writer)
             for k_obj in e_dict[k]['objs']:
                 # Last chance to fix Ref's and it's not perfect.
                 if isinstance(k_obj, o.Ref):
@@ -1869,6 +1875,9 @@ def _save_to_json(json_file, e_dict):
                     k_obj = e_dict[k_type]['class'].from_dict(k_dict)
 
                 logging.debug("Writing %s entity (%s)" % (k, k_obj.id))
+                if k == "Flow" and k_obj.id in flows['Flow UUID'].values:
+                    # all FEDEFL flows written above
+                    continue
                 writer.write(k_obj)
 
 
