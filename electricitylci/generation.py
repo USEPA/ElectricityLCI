@@ -799,7 +799,11 @@ def create_generation_process_df():
                 'PGM_SYS_ACRNM': "str",
                 'PGM_SYS_ID': "str"
             }
+            if not (fmglob.FRSpath / file_).exists():
+                fmglob.download_extract_FRS_combined_national(file_)
             FRS_bridge = fmglob.read_FRS_file(file_, col_dict)
+            # ^^ these lines could be replaced by a future improved fxn 
+            # in FacilityMatcher
             eia860_FRS = fmglob.filter_by_program_list(
                 df=FRS_bridge, program_list=["EIA-860"]
             )
