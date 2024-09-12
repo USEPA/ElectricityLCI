@@ -1874,10 +1874,10 @@ def _save_to_json(json_file, e_dict):
                     k_dict = k_obj.to_dict()
                     k_obj = e_dict[k_type]['class'].from_dict(k_dict)
 
-                logging.debug("Writing %s entity (%s)" % (k, k_obj.id))
                 if k == "Flow" and k_obj.id in flows['Flow UUID'].values:
                     # all FEDEFL flows written above
                     continue
+                logging.debug("Writing %s entity (%s)" % (k, k_obj.id))
                 writer.write(k_obj)
 
 
