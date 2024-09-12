@@ -208,10 +208,10 @@ def clean_json(file_path):
             for e in p.exchanges:
                 # Get the flow type
                 fid = data["Flow"]['ids'].index(e.flow.id)
-                f_type = data["Flow"]['objs'][fid]
+                f_obj = data["Flow"]['objs'][fid]
                 # Remove if flow is a product flow with zero exchange value
                 # NOTE: don't add as an exchange flow!
-                if e.amount == 0 and f_type != o.FlowType.ELEMENTARY_FLOW:
+                if e.amount == 0 and f_obj.flow_type != o.FlowType.ELEMENTARY_FLOW:
                     logging.debug(
                         "Removing zero product flow, %s, from %s" % (
                             e.flow.name, p.name))
@@ -222,10 +222,10 @@ def clean_json(file_path):
                 # Check to see if output exchange is labeled as a
                 # resource flow
                 # https://github.com/USEPA/ElectricityLCI/issues/233
-                if not e.is_input and 'resource' in f_type.category.lower():
+                if not e.is_input and 'resource' in f_obj.category.lower():
                     logging.warning(
                         "Fixing resource flow in output exchange! "
-                        "'%s' in %s (%s)" % (f_type.name, p.name, p.id))
+                        "'%s' in %s (%s)" % (f_obj.name, p.name, p.id))
                     # HOTFIX: remove troublesome exchange, fix meta & re-add:
                     p.exchanges.remove(e)
                     e.is_input = True
