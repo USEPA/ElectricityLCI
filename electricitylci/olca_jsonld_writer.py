@@ -16,7 +16,6 @@ import re
 import uuid
 from zipfile import ZipFile
 
-from esupy.processed_data_mgmt import find_file
 import fedelemflowlist
 import olca_schema as o
 import olca_schema.units as o_units
@@ -74,9 +73,10 @@ Changelog:
         to product system generation
     -   Correct emissions labeled as resource
     -   Add flow metadata from USEPA's fedelemflowlist.
+    -   Speed up fedelemflowlist writing
 
 Last edited:
-    2024-09-04
+    2024-09-19
 """
 __all__ = [
     "build_product_systems",
@@ -251,18 +251,6 @@ def clean_json(file_path):
             idx = data["Flow"]['ids'].index(u_id)
             data['Flow']['ids'].pop(idx)
             data['Flow']['objs'].pop(idx)
-
-        # # Update flow w/ FEDEFL metadata
-        # # https://github.com/USEPA/ElectricityLCI/discussions/239
-        # fed_version = _get_fedefl_version()
-        # for i in range(len(data['Flow']['objs'])):
-        #     uid = data['Flow']['objs'][i].id
-        #     fed_cas, fed_form, fed_syn = _get_fedefl_meta(uid)
-        #     data['Flow']['objs'][i].cas = fed_cas
-        #     data['Flow']['objs'][i].formula = fed_form
-        #     data['Flow']['objs'][i].synonyms = fed_syn
-        #     data['Flow']['objs'][i].description = (
-        #         "Based on FEDELEMFLOW version %s" % fed_version)
 
         # Overwrite
         _save_to_json(file_path, data)
@@ -1066,95 +1054,6 @@ def _format_dq_entry(entry):
         else:
             nums[i] = str(round(float(nums[i])))
     return '(%s)' % ';'.join(nums)
-
-
-def _get_fedefl_meta(flow_id):
-    """Query the FEDEFL for flow metadata (i.e., CAS No, formula, and synonyms)
-
-    Parameters
-    ----------
-    flow_id : str
-        Flow universally unique identifier (mapped to FEDEFL).
-
-    Returns
-    -------
-    tuple
-        A tuple of length three:
-
-        - str: CAS No
-        - str: Formula
-        - str: Synonyms
-    """
-    # Initialize return values
-    f_cas = ""
-    f_form = ""
-    f_syn = ""
-
-    # Read the FEDEFL from file into memory
-    # WARNING: litters the info log.
-    flowlist = fedelemflowlist.get_flows(False)
-    logging.getLogger("pkg_resources").setLevel(logging.WARNING)
-
-    # Query the flow ID and count rows that match
-    tmp_df = flowlist.query("`Flow UUID` == '%s'" % flow_id)
-    num_matches = len(tmp_df)
-
-    # Query results for metadata.
-    if num_matches == 0:
-        logging.info("Failed to find FEDEFL flow (%s)!" % flow_id)
-    elif num_matches == 1:
-        # Convert data frame to series
-        tmp_df = tmp_df.iloc[0]
-        f_cas = tmp_df['CAS No']
-        f_form = tmp_df['Formula']
-        f_syn = tmp_df['Synonyms']
-    else:
-        logging.warning(
-            "Found %d matches for FEDEFL flow (%s); using first instance." % (
-                num_matches, flow_id)
-        )
-        tmp_df = tmp_df.iloc[0]
-        f_cas = tmp_df['CAS No']
-        f_form = tmp_df['Formula']
-        f_syn = tmp_df['Synonyms']
-
-    return (f_cas, f_form, f_syn)
-
-
-def _get_fedefl_version():
-    """Return the version string of local Federal Elementary Flow List
-
-    Returns
-    -------
-    str
-        Version string. Defaults to '1.0.0' if methods fail.
-    """
-    version = None
-    try:
-        # Adapted from:
-        # https://github.com/USEPA/ElectricityLCI/discussions/239
-        meta = fedelemflowlist.globals.set_metadata()
-        fpath = fedelemflowlist.globals.fedefl_path
-
-        # From esupy's documentation: returns the most recent version of the
-        # file requested---so does not have to match ``meta.tool_version``
-        f = find_file(meta, fpath)
-        if f:
-            # The parquet file name is based on ``set_metadata`` function
-            # in fedelemflowlist's globals.py
-            r = re.compile(".*_v(\d+\.\d+\.\d+)_.*")
-            m = r.match(f.name)
-            if m:
-                version = m.group(1)
-                logging.info("Read FEDEFL version %s from file" % version)
-        if version is None:
-            version = fedelemflowlist.globals.flow_list_specs['list_version']
-            logging.info("Using list version %s for FEDEFL" % version)
-    except AttributeError:
-        version = "1.0.0"
-        logging.info("Using default version %s for FEDEFL" % version)
-
-    return version
 
 
 def _init_root_entities(json_file):
