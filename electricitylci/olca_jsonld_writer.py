@@ -211,7 +211,8 @@ def clean_json(file_path):
                 f_obj = data["Flow"]['objs'][fid]
                 # Remove if flow is a product flow with zero exchange value
                 # NOTE: don't add as an exchange flow!
-                if e.amount == 0 and f_obj.flow_type != o.FlowType.ELEMENTARY_FLOW:
+                if e.amount == 0 and (
+                        f_obj.flow_type != o.FlowType.ELEMENTARY_FLOW):
                     logging.debug(
                         "Removing zero product flow, %s, from %s" % (
                             e.flow.name, p.name))
@@ -1861,7 +1862,7 @@ def _save_to_json(json_file, e_dict):
             logging.info("Writing %d %s" % (len(e_dict[k]['ids']), k))
             if k == "Flow":
                 # FEDEFL flows are not added as objects, write them separately
-                # using fedelmflowlist.write_jsonld()
+                # using fedelmflowlist.write_jsonld() [20240911; BY]
                 flowlist = fedelemflowlist.get_flows()
                 flows = flowlist[flowlist['Flow UUID'].isin(e_dict[k]['ids'])]
                 fedelemflowlist.write_jsonld(flows, path=None, zw=writer)
