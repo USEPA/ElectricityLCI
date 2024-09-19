@@ -280,4 +280,4 @@ if __name__ == "__main__":
             "You can find your JSON-LD in this folder: %s" % output_dir
         )
     finally:
-        log.handlers[0].doRollover()
+        log.handlers[1].doRollover()
