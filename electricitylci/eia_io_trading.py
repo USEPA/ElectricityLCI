@@ -19,7 +19,6 @@ import re
 from electricitylci.globals import data_dir
 from electricitylci.globals import paths
 from electricitylci.globals import API_SLEEP
-from electricitylci.globals import EIA_API
 from electricitylci.bulk_eia_data import download_EBA
 from electricitylci.bulk_eia_data import row_to_df
 from electricitylci.bulk_eia_data import ba_exchange_to_df
@@ -68,7 +67,7 @@ References:
     52(11), 6666-6675. https://doi.org/10.1021/acs.est.7b05191
 
 Last updated:
-    2024-09-04
+    2024-09-25
 """
 __all__ = [
     "ba_io_trading_model",
@@ -318,17 +317,15 @@ def _check_json(d):
         logging.critical("No JSON data for %s, '%s'" % (series, name))
 
 
-def _read_bulk(ba_cols, use_api=True):
+def _read_bulk(ba_cols):
     """Handle both ZIP and API data sources for bulk U.S. Electric System
-    Operating Data.
+    Operating Data managed by model_config.
 
     Parameters
     ----------
     ba_cols : list
         A list of balancing authority short codes.
         These are used for querying API demand and net generation data.
-    use_api : bool, optional
-        Whether to use EIA API call, by default True
 
     Returns
     -------
@@ -337,10 +334,12 @@ def _read_bulk(ba_cols, use_api=True):
         Each item is a list.
         See :func:`_read_bulk_api` and :func:`read_bulk_zip` for details.
     """
-    if use_api:
-        return _read_bulk_api(ba_cols)
-    else:
+    if model_specs.use_eia_bulk_zip:
+        logging.info("Reading EIA bulk zip")
         return _read_bulk_zip()
+    else:
+        logging.info("Reading EIA API bulk data")
+        return _read_bulk_api(ba_cols)
 
 
 def _write_bulk_api(row_data, output_file):
@@ -458,7 +457,7 @@ def _read_bulk_api(ba_cols):
 
     # Initialize API strings
     new_api = "https://www.eia.gov/opendata/"
-    api_key = None
+    api_key = model_specs.eia_api_key
 
     # TODO: consider having a configuration setting to force API; otherwise,
     # it is up to the end user to delete the JSON files from bulk_data to
@@ -532,7 +531,10 @@ def _read_bulk_zip():
 
     # HOTFIX: Check file vintage [2024-03-12; TWD]
     path = os.path.join(paths.local_path, 'bulk_data', 'EBA.zip')
-    check_EBA_vintage()
+    if model_specs.bypass_bulk_vintage:
+        logging.info("Skipping EBA vintage check")
+    else:
+        check_EBA_vintage()
 
     try:
         z = zipfile.ZipFile(path, 'r')
@@ -1121,23 +1123,42 @@ def _make_square_pivot(df, names):
     trade_rows_set = set(trade_rows)
     trade_ba_ref_set = set(names)
 
+    # To add
     trade_col_diff = list(trade_ba_ref_set - trade_cols_set)
     trade_col_diff.sort(key=str.upper)
 
     trade_row_diff = list(trade_ba_ref_set - trade_rows_set)
     trade_row_diff.sort(key=str.upper)
 
-    # Add in missing columns, then sort in alphabetical order
+    # Add in missing columns
     for i in trade_col_diff:
+        logging.debug("Adding column, '%s'" % i)
         df[i] = 0
 
-    df = df.sort_index(axis=1)
-
-    # Add in missing rows, then sort in alphabetical order
+    # Add in missing rows
     for i in trade_row_diff:
+        logging.debug("Adding row, '%s'" % i)
         df.loc[i,:] = 0
 
-    # Square matrix with US BA codes as indexes and column names
+    # To remove
+    trade_col_diff = list(trade_cols_set - trade_ba_ref_set)
+    trade_col_diff.sort(key=str.upper)
+
+    trade_row_diff = list(trade_rows_set - trade_ba_ref_set)
+    trade_row_diff.sort(key=str.upper)
+
+    # Remove untracked cols and rows
+    for i in trade_col_diff:
+        logging.debug("Removing column, '%s'" % i)
+        df = df.drop(i, axis=1)
+
+    for i in trade_row_diff:
+        logging.debug("Removing row, '%s'" % i)
+        df = df.drop(i, axis=0)
+
+    # Sort alphabetically.
+    # You should now square matrix with US BA codes as indexes and column names
+    df = df.sort_index(axis=1)
     df = df.sort_index(axis=0)
 
     return df
@@ -1641,8 +1662,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
 
     # Read necessary data from EIA's bulk data download.
     # WARNING: this is a lot of data in memory!
-    # UPDATE: now send ba_cols and whether to use API
-    NET_GEN_ROWS, BA_TO_BA_ROWS, DEMAND_ROWS = _read_bulk(ba_cols, EIA_API)
+    NET_GEN_ROWS, BA_TO_BA_ROWS, DEMAND_ROWS = _read_bulk(ba_cols)
 
     # Net Generation Data Import
     df_net_gen = _make_net_gen(year, ba_cols, NET_GEN_ROWS)
@@ -1679,7 +1699,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     df_CA_Imports_Rows = _match_df_cols(df_trade_pivot, df_CA_Imports_Rows)
     df_concat_trade_CA = pd.concat([df_trade_pivot, df_CA_Imports_Rows])
 
-    # Make it square.
+    # Make it square. BUG: ELCI_1 has extra 'GRIS' column with no data.
     all_baa = list(df_concat_trade_CA.index.values)
     df_concat_trade_CA = _make_square_pivot(df_concat_trade_CA, all_baa)
     df_trade_pivot = df_concat_trade_CA
