@@ -11,11 +11,9 @@ import logging
 import os
 
 import yaml
-import pandas as pd
 
 from electricitylci.globals import modulepath
 from electricitylci.globals import list_model_names_in_config
-from electricitylci.globals import data_dir
 from electricitylci.globals import output_dir
 
 
@@ -34,7 +32,7 @@ configuration settings are set once and shared with the rest of the Python
 package. To change configuration settings, restart Python.
 
 Last edited:
-    2024-08-13
+    2024-09-25
 """
 __all__ = [
     "ConfigurationError",
@@ -147,6 +145,10 @@ class ModelSpecs:
         # use 923 and cems rather than egrid, but still use the egrid_year
         # parameter to determine the data year
         self.replace_egrid = model_specs["replace_egrid"]
+        self.epa_api_key = model_specs["epa_cam_api"]
+        self.eia_api_key = model_specs["eia_api"]
+        self.use_eia_bulk_zip = model_specs["use_eia_bulk_zip"]
+        self.bypass_bulk_vintage = model_specs["bypass_bulk_vintage"]
 
         self.include_renewable_generation = model_specs[
             "include_renewable_generation"]

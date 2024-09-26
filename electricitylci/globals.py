@@ -20,7 +20,7 @@ __doc__ = """Define paths, variables, and functions used across several
 modules.
 
 Last updated:
-    2024-08-22
+    2024-09-25
 """
 
 
@@ -218,8 +218,6 @@ STATE_ABBREV = {
 
 API_SLEEP = 0.2
 '''float : A courtesy sleep time between API calls.'''
-EIA_API = True
-'''bool : Whether to use EIA API or EBA.zip for bulk EIA data.'''
 
 
 ##############################################################################

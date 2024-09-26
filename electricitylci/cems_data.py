@@ -60,7 +60,7 @@ In the current release, the PUDL methods are replaced with EPA's API:
 https://github.com/USEPA/ElectricityLCI/issues/207#issuecomment-1751075194
 
 Last edited:
-    2024-04-19
+    2024-09-25
 """
 
 
@@ -135,7 +135,7 @@ def _write_cems_api(data, file_path):
         logging.info("Saved CEMS data to file, %s" % file_path)
 
 
-def build_cems_df(year, use_api=True):
+def build_cems_df(year, use_api=True, api_key=""):
     """Build the CEMS data frame.
 
     Download the CEMS CSV zip files for each state for a given year,
@@ -147,7 +147,9 @@ def build_cems_df(year, use_api=True):
     year : int
         A valid year for EPA CEMS data (e.g., 1995 to present).
     use_api : bool, optional
-        Whether to use the EPA data API; sign-up free here:
+        Whether to use the EPA data API.
+    api_key : str, optional
+        The user's API key. Register free here:
         https://www.epa.gov/power-sector/cam-api-portal#/api-key-signup
 
     Returns
@@ -211,13 +213,14 @@ def build_cems_df(year, use_api=True):
     raw_dfs = extract(
         epacems_years=[year],
         states=states,
-        use_api=use_api
+        use_api=use_api,
+        api_key=api_key
     )
     summary_df = process_cems_dfs(raw_dfs)
     return summary_df
 
 
-def extract(epacems_years, states, use_api=True):
+def extract(epacems_years, states, use_api=True, api_key=""):
     """Extract the EPA CEMS hourly data.
 
     This function is the main function of this file. It returns a generator
@@ -231,7 +234,9 @@ def extract(epacems_years, states, use_api=True):
         List of states.
     use_api : bool, optional
         Option to by-pass the FTP download.
-        Triggers input for API key, available for free at:
+    api_key : str, optional
+        User's API key. If blank, triggers input for API key.
+        Register for free at:
         https://www.epa.gov/power-sector/cam-api-portal#/api-key-signup
 
     Returns
@@ -240,7 +245,6 @@ def extract(epacems_years, states, use_api=True):
     """
     logging.info("Extracting EPA CEMS data...")
     dfs = []
-    api_key = None
     new_api = "https://www.epa.gov/power-sector/cam-api-portal#/api-key-signup"
 
     for year in epacems_years:
@@ -255,7 +259,7 @@ def extract(epacems_years, states, use_api=True):
                         "Found CEMS data file for %s %s" % (state, year))
                     tmp_df = pd.read_csv(c_file)
                 else:
-                    if api_key is None:
+                    if api_key is None or api_key == "":
                         api_key = input("Enter EPA API key: ")
                         api_key = api_key.strip()
                         if api_key == "":

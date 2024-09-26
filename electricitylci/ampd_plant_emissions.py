@@ -37,7 +37,7 @@ and returns a data frame ready for concatenation with other facility-level
 emissions.
 
 Last updated:
-    2024-08-02
+    2024-09-25
 """
 __all__ = [
     "generate_plant_emissions",
@@ -934,7 +934,11 @@ def generate_plant_emissions(year):
         "Generating power plant emissions from CEMS data or emission factors..."
     )
     logger.info("Loading data")
-    ampd = cems.build_cems_df(year, use_api=True)
+    ampd = cems.build_cems_df(
+        year,
+        use_api=True,
+        api_key=model_specs.epa_api_key
+    )
     eia923_gen_fuel = eia923.eia923_generation_and_fuel(year)
     eia923_boiler = eia923.eia923_boiler_fuel(year)
     eia923_aec = eia923.eia923_sched8_aec(year)

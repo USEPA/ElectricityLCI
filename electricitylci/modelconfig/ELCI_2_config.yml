@@ -44,6 +44,27 @@ inventories_of_interest:
 calculate_uncertainty: true
 
 
+# API DATA SOURCES
+# If replacing eGRID, then EPA CEMS from CAMPD is used. This data is available
+# from EPA's API (https://www.epa.gov/power-sector/cam-api-portal). Request
+# for a free API key and copy-and-paste it here:
+epa_cam_api: ""
+
+# If using NETL's trading method, then EIA bulk U.S. Electric System
+# Operating Data are used. The data are available in two formats:
+# bulk zip (EBA.zip) and Opendata API. Choose the path (note that since
+# March 2024, both routes include data from 2019). To get 2016-2018 data,
+# use the archived bulk zip file (`use_eia_bulk_zip` = true) and bypass the
+# vintage check (`bypass_vintage_check` = true). The vintage check triggers
+# a new download of EBA.zip every 30 days, as defined by VINTAGE_THRESH
+# global parameter in `bulk_eia_data` and the EBA manifest text file.
+# To register for a free API key, go to: https://www.eia.gov/opendata/, and
+# copy-and-paste it for `eia_api` below.
+use_eia_bulk_zip: true
+bypass_bulk_vintage: true
+eia_api: ""
+
+
 # GENERATOR FILTERS
 # These parameters determine if any power plants are filtered out
 include_only_egrid_facilities_with_positive_generation: true
