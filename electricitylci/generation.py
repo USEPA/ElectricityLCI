@@ -82,7 +82,7 @@ CHANGELOG
 Created:
     2019-06-04
 Last edited:
-    2024-08-13
+    2024-09-25
 """
 __all__ = [
     "add_data_collection_score",
@@ -184,19 +184,26 @@ def _wtd_mean(pdser, total_db):
     float or nan
         The flow-amount-weighted average of values.
     """
-    try:
-        wts = total_db.loc[pdser.index, "FlowAmount"]
-        result = np.average(pdser, weights=wts)
-    except:
-        logging.debug(
-            f"Error calculating weighted mean for {pdser.name}-"
-            f"likely from 0 FlowAmounts"
-        )
+    # HOTFIX: averaging with NaNs in the array.
+    non_nans = pdser.values[~np.isnan(pdser.values)]
+    if len(non_nans) == 0:
+        logging.debug("Encountered a NaN array!")
+        result = float("nan")
+    else:
         try:
-            with np.errstate(all='raise'):
-                result = np.average(pdser)
-        except ArithmeticError or ValueError or FloatingPointError:
-            result = float("nan")
+            wts = total_db.loc[
+                pdser[~np.isnan(pdser)].index, "FlowAmount"].values
+            result = np.average(non_nans, weights=wts)
+        except:
+            logging.debug(
+                f"Error calculating weighted mean for {pdser.name}-"
+                f"likely from 0 FlowAmounts"
+            )
+            try:
+                with np.errstate(all='raise'):
+                    result = np.average(non_nans)
+            except (ArithmeticError, ValueError, FloatingPointError):
+                result = float("nan")
     return result
 
 
@@ -521,15 +528,12 @@ def calculate_electricity_by_source(db, subregion="BA"):
             along with the facility count for each source.
     """
     all_sources = '_'.join(sorted(list(db["Source"].unique())))
-    power_plant_criteria = db["stage_code"]=="Power plant"
-    
-    # HOTFIX: not separating the dataframe in hopes of generating electricity
+
+    # HOTFIX: not separating the data frame in hopes of generating electricity
     # amounts for fuel inputs that doesn't make the plants "too efficient"
     # [2024-08-14 MBJ]
-    #db_powerplant = db.loc[power_plant_criteria, :].copy()
-    #db_nonpower = db.loc[~power_plant_criteria, :].copy()
     db_powerplant = db.copy()
-    
+
     region_agg = subregion_col(subregion)
 
     fuel_agg = ["FuelCategory"]
@@ -549,7 +553,7 @@ def calculate_electricity_by_source(db, subregion="BA"):
         ]
         elec_groupby_cols = fuel_agg + ["Year"]
 
-    # HOTFIX: add check for empty powerplant data frame [2023-12-19; TWD]
+    # HOTFIX: add check for empty power plant data frame [2023-12-19; TWD]
     if len(db_powerplant) == 0:
         db_cols = list(db_powerplant.columns) + ['source_list', 'source_string']
         db_powerplant = pd.DataFrame(columns=db_cols)
@@ -647,12 +651,10 @@ def calculate_electricity_by_source(db, subregion="BA"):
         ]
         sub_db_group["source_string"] = src
         elec_sum_lists.append(sub_db_group)
-    #db_nonpower["source_string"] = all_sources
-    #db_nonpower["source_list"] = [all_sources]*len(db_nonpower)
     elec_sums = pd.concat(elec_sum_lists, ignore_index=True)
     elec_sums.sort_values(by=elec_groupby_cols, inplace=True)
-    #db = pd.concat([db_powerplant, db_nonpower])
     db = db_powerplant
+
     return db, elec_sums
 
 
@@ -802,7 +804,7 @@ def create_generation_process_df():
             if not (fmglob.FRSpath / file_).exists():
                 fmglob.download_extract_FRS_combined_national(file_)
             FRS_bridge = fmglob.read_FRS_file(file_, col_dict)
-            # ^^ these lines could be replaced by a future improved fxn 
+            # ^^ these lines could be replaced by a future improved fxn
             # in FacilityMatcher
             eia860_FRS = fmglob.filter_by_program_list(
                 df=FRS_bridge, program_list=["EIA-860"]
@@ -1368,7 +1370,7 @@ def aggregate_data(total_db, subregion="BA"):
         "uncertaintySigma",
     ]
 
-    # Remove uncertainty from input flows.
+    logging.info("Removing uncertainty from input flows")
     criteria = database_f3["Compartment"] == "input"
     database_f3.loc[criteria, "uncertaintySigma"] = None
 
@@ -1383,6 +1385,7 @@ def aggregate_data(total_db, subregion="BA"):
     )
 
     # Fix Canada by importing 'Electricity' whilst maintaining the indexes
+    logging.info("Fixing Canadian electricity amounts")
     canadian_criteria = database_f3["FuelCategory"] == "ALL"
     if region_agg:
         canada_db = pd.merge(
@@ -1409,6 +1412,7 @@ def aggregate_data(total_db, subregion="BA"):
     ] = float("nan")
 
     # Create emission factors, adjust accordingly for for Canadian BA's
+    logging.info("Creating emission factors")
     canada_db.index = database_f3.loc[canadian_criteria, :].index
     database_f3.loc[canada_db.index, "electricity_sum"] = canada_db[
         "Electricity"
