@@ -44,7 +44,7 @@ data_dir = os.path.join(modulepath,  'data')
 try:
     elci_version = pkg_resources.require("ElectricityLCI")[0].version
 except:
-    elci_version = "1.0.2"
+    elci_version = "2.0.0"
 
 # ref Table 1.1 NERC report
 electricity_flow_name_generation_and_distribution = (
