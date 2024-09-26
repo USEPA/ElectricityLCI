@@ -32,7 +32,7 @@ __doc__ = """Get a subset of the egrid_facilities dataset.
 The functions in this module calculate the fraction of each generating source
 (either from generation data or straight from eGRID).
 
-Last edited: 2023-10-25
+Last edited: 2024-09-25
 """
 
 
@@ -192,14 +192,17 @@ def create_generation_mix_process_df_from_model_generation_data(
         ]
 
     canada_list=[]
+    #  NOTE: 'B.C. Hydro & Power Authority' shows up as
+    # 'British Columbia Hydro and Power Authority' in ELCI_1
     canada_subregions = [
-        "B.C. Hydro & Power Authority",
-        "Hydro-Quebec TransEnergie",
-        "Manitoba Hydro",
-        "New Brunswick System Operator",
-        "Ontario IESO"
+        "BCHA", # "B.C. Hydro & Power Authority"
+        "HQT",  # "Hydro-Quebec TransEnergie"
+        "MHEB", # "Manitoba Hydro"
+        "NBSO", # "New Brunswick System Operator"
+        "IESO", # "Ontario IESO"
     ]
-    for reg in canada_subregions:
+    for bc in canada_subregions:
+        reg = BA_CODES.loc[bc, "BA_Name"]
         canada_list.append((reg,"ALL",1.0,1.0))
     canada_df = pd.DataFrame(
         canada_list,
