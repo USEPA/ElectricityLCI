@@ -233,6 +233,7 @@ def generate_plant_water_use(year):
         },
         inplace=True,
     )
+    # Hotfix #242
     final_water=final_water.drop(columns=["Electricity"])
     final_water["plant_id"] = final_water["FacilityID"]
     final_water["eGRID_ID"] = final_water["FacilityID"]
