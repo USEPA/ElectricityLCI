@@ -183,52 +183,64 @@ def read_eia923_fuel_receipts(year):
         - 'average_heat_content' (float)
     """
     expected_923_folder = os.path.join(paths.local_path, 'f923_{}'.format(year))
+
+    # Download if not available.
     if not os.path.exists(expected_923_folder):
         logging.info('Downloading EIA-923 files')
         eia923_download(year=year, save_path=expected_923_folder)
+
+    # Check for CSV file
+    # HOTFIX find_file_in_folder to not crash when search fails. [241009;TWD]
+    csv_file = find_file_in_folder(
+        folder_path=expected_923_folder,
+        file_pattern_match=['2_3_4_5', '_page_5_reduced', 'csv'],
+        return_name=False
+    )
+    if csv_file:
+        logging.info('Loading data from reduced CSV file')
+        csv_path = os.path.join(expected_923_folder, csv_file)
+        eia_fuel_receipts_df = pd.read_csv(csv_path, low_memory=False)
+    else:
+        # BUG: the column headers are all "Coalmine"
+        logging.info('Loading data from downloaded Excel file')
         eia923_path, eia923_name = find_file_in_folder(
-            folder_path=expected_923_folder,
-            file_pattern_match=['2_3_4_5'],
-            return_name=True
-        )
+                folder_path=expected_923_folder,
+                file_pattern_match=['2_3_4_5', 'xlsx'],
+                return_name=True)
         eia_fuel_receipts_df = pd.read_excel(
             eia923_path,
             sheet_name='Page 5 Fuel Receipts and Costs',
             skiprows=4,
-            usecols="A:E,H:M,P:Q")
+            usecols="A:E,H:M,P:Q",
+            engine="openpyxl")
         csv_fn = eia923_name.split('.')[0] + '_page_5_reduced.csv'
         csv_path = os.path.join(expected_923_folder, csv_fn)
+        eia_fuel_receipts_df = _clean_columns(eia_fuel_receipts_df)
         eia_fuel_receipts_df.to_csv(csv_path, index=False)
-    else:
-        # Check for both csv and year<_Final> in case multiple years
-        # or other csv files exist
-        logging.info('Loading data from previously downloaded excel file')
-        all_files = os.listdir(expected_923_folder)
-        # Check for both csv and year<_Final> in case multiple years
-        # or other csv files exist
-        # NOTE: isn't this what `find_in_folder` does?
-        csv_file = [
-            f for f in all_files if '.csv' in f and '_page_5_reduced.csv' in f]
-        if csv_file:
-            csv_path = os.path.join(expected_923_folder, csv_file[0])
-            eia_fuel_receipts_df=pd.read_csv(csv_path, low_memory=False)
-        else:
-            eia923_path, eia923_name = find_file_in_folder(
-                    folder_path=expected_923_folder,
-                    file_pattern_match=['2_3_4_5', 'xlsx'],
-                    return_name=True)
-            eia_fuel_receipts_df = pd.read_excel(
-                eia923_path,
-                sheet_name='Page 5 Fuel Receipts and Costs',
-                skiprows=4,
-                usecols="A:E,H:M,P:Q",
-                engine="openpyxl")
-            csv_fn = eia923_name.split('.')[0] + '_page_5_reduced.csv'
-            csv_path = os.path.join(expected_923_folder, csv_fn)
-            eia_fuel_receipts_df.to_csv(csv_path, index=False)
-    eia_fuel_receipts_df = _clean_columns(eia_fuel_receipts_df)
 
     return eia_fuel_receipts_df
+
+
+def read_eia923_public_coal(year):
+    expected_7a_folder = os.path.join(paths.local_path, 'f7a_{}'.format(year))
+    if not os.path.exists(expected_7a_folder):
+        logging.info("Downloading EIA public coal Excel workbook")
+        eia_7a_download(year, expected_7a_folder)
+
+    eia7a_path = find_file_in_folder(
+        folder_path=expected_7a_folder,
+        file_pattern_match=['coalpublic'],
+        return_name=False)
+    # If you're here, then see the following for hotfix:
+    # https://github.com/USEPA/ElectricityLCI/issues/230
+    eia7a_df = pd.read_excel(
+        eia7a_path,
+        sheet_name='Hist_Coal_Prod',
+        skiprows=3
+    )
+    eia7a_df = _clean_columns(eia7a_df)
+
+    return eia7a_df
 
 
 def generate_upstream_coal_map(year):
@@ -273,30 +285,13 @@ def generate_upstream_coal_map(year):
         Code' (eight-digit, zero-padded ANSI code), 'GU Name', and 'Entity
         Description' (e.g., borough, city, town, County)
     """
+    # Filter EIA 923 receipts for coal data.
     eia_fuel_receipts_df = read_eia923_fuel_receipts(year)
-    expected_7a_folder = os.path.join(paths.local_path, 'f7a_{}'.format(year))
-    if not os.path.exists(expected_7a_folder):
-        eia_7a_download(year, expected_7a_folder)
-        eia7a_path = find_file_in_folder(
-            folder_path=expected_7a_folder,
-            file_pattern_match=['coalpublic'],
-            return_name=False)
-    else:
-        eia7a_path = find_file_in_folder(
-            folder_path=expected_7a_folder,
-            file_pattern_match=['coalpublic'],
-            return_name=False)
-    # If you're here, then see the following for hotfix:
-    # https://github.com/USEPA/ElectricityLCI/issues/230
-    eia7a_df = pd.read_excel(
-        eia7a_path,
-        sheet_name='Hist_Coal_Prod',
-        skiprows=3
-    )
-    eia7a_df = _clean_columns(eia7a_df)
     coal_criteria = eia_fuel_receipts_df['fuel_group']=='Coal'
     eia_fuel_receipts_df = eia_fuel_receipts_df.loc[coal_criteria, :]
-    # Add coal supply region
+
+    # Add EIA coal supply regions from public coal data
+    eia7a_df = read_eia923_public_coal(year)
     eia_fuel_receipts_df = eia_fuel_receipts_df.merge(
         eia7a_df[['msha_id', 'coal_supply_region']],
         how='left',
@@ -308,31 +303,40 @@ def generate_upstream_coal_map(year):
         columns={'coal_supply_region': 'eia_coal_supply_region'},
         inplace=True
     )
-    # Find where coal supply regions failed to match
+
+    # Find where EIA coal supply regions failed to match
     eia_fuel_receipts_na = eia_fuel_receipts_df.loc[
         eia_fuel_receipts_df["eia_coal_supply_region"].isnull(), :]
     eia_fuel_receipts_good = eia_fuel_receipts_df.loc[
         ~eia_fuel_receipts_df["eia_coal_supply_region"].isnull(), :]
 
+    # Create a summary dataset of mining states, counties, and supply regions
+    # with a mine count.
     county_basin = eia7a_df.groupby(
         by=["mine_state", "mine_county", "coal_supply_region"],
         as_index=False
     )["production_short_tons"].count()
+
     # Remove region or coal type specifiers from state names.
     # NOTE: There are six entries with state called 'Refuse Recovery'
     #       that are 'Refuse' mines in VA, PA, WV, and CO.
     county_basin["mine_state"] = county_basin["mine_state"].str.replace(
         r" \(.*\)", "", regex=True
     )
-    # Only 'Refuse Recovery' is unmatched.
+
+    # Map state names to their abbreviations.
+    #   Note that only 'Refuse Recovery' is unmatched
     county_basin["mine_state_abv"] = county_basin[
         "mine_state"].str.lower().map(STATE_ABBREV).str.upper()
+
+    # Make county names lowercase to ease matching.
     county_basin["mine_county"] = county_basin["mine_county"].str.lower()
 
+    # Read U.S. county FIPS codes and make them strings.
+    #   Note that gu name is the county name, which is also made lowercase
     fips_codes = pd.read_csv(os.path.join(data_dir, "fips_codes.csv"))
     fips_codes = _clean_columns(fips_codes)
     fips_codes["gu_name"] = fips_codes["gu_name"].str.lower()
-    # Convert county FIPS code to string
     fips_codes["county_fips_code"] = fips_codes[
         "county_fips_code"].astype(str).str.replace(".0", "", regex=False)
 
@@ -348,6 +352,9 @@ def generate_upstream_coal_map(year):
         subset=["mine_state_abv", "county_fips_code"],
         inplace=True
     )
+
+    # Add county basin data (i.e., coal supply regions) to EIA fuel receipts
+    # without coal supply regions by matching the state-county FIPS info.
     eia_fuel_receipts_na = eia_fuel_receipts_na.merge(
         right=county_basin[[
             "mine_state_abv", "county_fips_code", "coal_supply_region"]],
@@ -357,6 +364,9 @@ def generate_upstream_coal_map(year):
     )
     eia_fuel_receipts_na["eia_coal_supply_region"] = eia_fuel_receipts_na[
         "coal_supply_region"]
+
+    # Update the "good" and "na" data frames based on the matches from above.
+    #    Note for 2022, 1350 na rows drop down to 181 after "made good"
     eia_fuel_receipts_made_good = eia_fuel_receipts_na.loc[
         ~eia_fuel_receipts_na["eia_coal_supply_region"].isnull(),
         :].reset_index(drop=True)
@@ -373,6 +383,7 @@ def generate_upstream_coal_map(year):
         sort=False
     )
 
+    # Read in EIA-to-NETL basin mapping and merge with EIA fuel receipts.
     eia_netl_basin = pd.read_csv(
         os.path.join(data_dir, "eia_to_netl_basin.csv")
     )
@@ -382,6 +393,8 @@ def generate_upstream_coal_map(year):
         right_on ="eia_basin",
         how="left").reset_index(drop=True)
 
+    # Read in U.S. state to EIA basin mapping to the "na" receipts.
+    #   Note there are potentially two basin names for each coal plant.
     state_region_map = pd.read_csv(
         os.path.join(data_dir, 'coal_state_to_basin.csv')
     )
@@ -392,6 +405,9 @@ def generate_upstream_coal_map(year):
         how='left'
     )
     eia_fuel_receipts_na.drop(columns=['state'], inplace=True)
+
+    # Map the EIA basins to their NETL basin names
+    #   Note: all netl_basin names are NaN, since no eia_coal_supply_region.
     eia_fuel_receipts_na = eia_fuel_receipts_na.merge(
         eia_netl_basin,
         how='left',
@@ -399,6 +415,8 @@ def generate_upstream_coal_map(year):
         right_on='eia_basin'
     )
     eia_fuel_receipts_na.drop(columns=['eia_basin'], inplace=True)
+
+    # Match NETL basins to EIA basin 1
     minimerge = pd.merge(
         left=eia_fuel_receipts_na,
         right=eia_netl_basin,
@@ -418,12 +436,16 @@ def generate_upstream_coal_map(year):
         inplace=True
     )
     minimerge.rename(columns={"netl_basin_y": "netl_basin"}, inplace=True)
+
+    # Add the "na" receipts to the "good" receipts.
+    #   Note that most unmatched basins are "Imports".
     eia_fuel_receipts_good = pd.concat(
         [eia_fuel_receipts_good, minimerge],
         ignore_index=True,
         sort=False
     )
 
+    # Overwrite select NETL basins based on energy sources and supply regions.
     gulf_lignite = (
         (eia_fuel_receipts_good['energy_source']=='LIG') &
         (eia_fuel_receipts_good['eia_coal_supply_region']=='Interior')
@@ -434,17 +456,26 @@ def generate_upstream_coal_map(year):
                (eia_fuel_receipts_good['eia_coal_supply_region']=='Western'))
     eia_fuel_receipts_good.loc[lignite, ['netl_basin']] = 'Lignite'
 
+    # In 2022, coalmine_type is only column with NaNs (65).
     eia_fuel_receipts_good.dropna(
         subset=['netl_basin', 'energy_source', 'coalmine_type'],
         inplace=True
     )
+
+    # Generate the basin-coal type-mine type code
     eia_fuel_receipts_good['coal_source_code'] = eia_fuel_receipts_good.apply(
         _coal_code,
         axis=1
     )
+
+    # Calculate the heat input based on coal quantity and average heat content
     eia_fuel_receipts_good['heat_input'] = eia_fuel_receipts_good[
         'quantity'] * eia_fuel_receipts_good['average_heat_content']
+
     eia_fuel_receipts_good.drop_duplicates(inplace=True)
+
+    # Map to NETL coal types --- these should match the coal type found in
+    # the coal source code.
     eia_fuel_receipts_good["coal_type"] = eia_fuel_receipts_good[
         "energy_source"].map(coal_type_codes)
 

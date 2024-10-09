@@ -6,7 +6,6 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
-import datetime
 import io
 import json
 import logging
@@ -27,9 +26,10 @@ from electricitylci.globals import output_dir
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2024-09-04
+    2024-10-09
 
 Changelog:
+    -   [24.10.09]: Update find file in folder to not crash.
     -   [24.08.05]: Create new BA code getter w/ FERC mapping.
     -   TODO: update create_ba_region_map to link with new BA code getter
     -   TODO: write BA code w/ FERC mapping to file for offline use
@@ -209,6 +209,8 @@ def download_unzip(url, unzip_path):
     Download and extract contents from a .zip file from a given url to a given
     path.
 
+    The output folder is created if it does not already exist.
+
     Parameters
     ----------
     url : str
@@ -312,13 +314,17 @@ def find_file_in_folder(folder_path, file_pattern_match, return_name=True):
 
     # Would be more elegant with glob but this works to identify the
     # file in question.
+    file_path = None
+    file_name = None
+
     for f in files:
         # modified this so that we can search for multiple strings in the
         # file name - mostly to support different pages of csv files from 923.
         if all(a in f for a in file_pattern_match):
             file_name = f
 
-    file_path = os.path.join(folder_path, file_name)
+    if file_name:
+        file_path = os.path.join(folder_path, file_name)
 
     if not return_name:
         return file_path
@@ -586,8 +592,11 @@ def read_json(json_path):
             logging.error("Failed to read dictionary from %s" % json_path)
         else:
             logging.info("Read file to JSON")
+    elif not os.path.isfile(json_path):
+        logging.warning("Failed to find file, %s" % json_path)
     else:
-        logging.warning("Expected file, received %s" % type(json_path))
+        logging.warning(
+            "Expected string file name, received %s" % type(json_path))
 
     return r_dict
 
