@@ -201,7 +201,6 @@ def read_eia923_fuel_receipts(year):
         csv_path = os.path.join(expected_923_folder, csv_file)
         eia_fuel_receipts_df = pd.read_csv(csv_path, low_memory=False)
     else:
-        # BUG: the column headers are all "Coalmine"
         logging.info('Loading data from downloaded Excel file')
         eia923_path, eia923_name = find_file_in_folder(
                 folder_path=expected_923_folder,
