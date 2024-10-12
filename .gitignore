@@ -40,5 +40,5 @@ tests/
 # Whitelist
 !electricitylci/data/petroleum_inventory/*.*
 !electricitylci/data/EFs/*.*
-!electricitylci/data/renewables/**/*.*
+!electricitylci/data/renewables/**/*.csv
 !electricitylci/data/*.yml
