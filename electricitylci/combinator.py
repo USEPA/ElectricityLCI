@@ -29,7 +29,7 @@ nuclear fuel cycle), and maps emissions based on the Federal LCA Commons
 Elementary Flow List in order to provide life cycle inventory.
 
 Last edited:
-    2024-08-09
+    2024-10-11
 """
 __all__ = [
     "BA_CODES",
@@ -157,7 +157,10 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     All of the emissions in the combined database are mapped to the
     federal elementary flows list based on the mapping file 'eLCI' in
     preparation for being turned into openLCA processes and combined with
-    the generation emissions.
+    the generation emissions. Unmapped emissions are dropped from the
+    inventory.
+
+    All resource flows are preserved.
 
     Parameters
     ----------
@@ -179,7 +182,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     Notes
     -----
     If 'group_name' is provided in kwargs, then the function will return a
-    tuple containing the mapped dataframe and lists of tuples for the unique
+    tuple containing the mapped data frame and lists of tuples for the unique
     mapped and unmapped flows, as well as write the results to text file.
 
     For EIA generation year 2016, there is a reported 2375 unmatched and
@@ -208,16 +211,6 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         "TargetFlowContext": "Compartment",
         "TargetUnit": "Unit",
     }
-    # NOTE: input has no compartment
-    compartment_mapping = {
-        "air": "emission/air",
-        "water": "emission/water",
-        "ground": "emission/ground",
-        "soil": "emission/ground",
-        "resource": "resource",
-        "NETL database/emissions": "NETL database/emissions",
-        "NETL database/resources": "NETL database/resources",
-    }
     logging.info(
         f"Concatenating and flow-mapping {len(arg)} upstream databases.")
     upstream_df_list = list()
@@ -226,9 +219,8 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         df = arg[i]
         if isinstance(df, pd.DataFrame):
             if "Compartment_path" not in df.columns:
-                # HOTFIX: simplify new column definition [2023-12-21; TWD]
-                df["Compartment_path"] = df.loc[:, "Compartment"].map(
-                    compartment_mapping)
+                # HOTFIX: allow for resources [241011; TWD]
+                df = map_compartment_path(df)
             upstream_df_list.append(df)
     upstream_df = pd.concat(upstream_df_list, ignore_index=True, sort=False)
 
@@ -271,6 +263,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         "Unit_orig",
         "Source"
     ]
+    # Ensure flow amounts are floats
     upstream_df["FlowAmount"] = upstream_df["FlowAmount"].astype(float)
     if "Electricity" in upstream_df.columns:
         upstream_df_grp = upstream_df.groupby(
@@ -289,12 +282,36 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         right_on=["SourceFlowName", "SourceFlowContext"],
         how="left",
     )
-    del(upstream_df_grp, flow_mapping)
+
+    # Preserve unmapped resource flows;
+    #   copy over the flow name, compartment and units and
+    #   set conversion factor equal to 1.0.
+    #   Note that all other unmapped flows are lost, which is based on
+    #   only keeping emissions that contribute to TRACI impacts;
+    #   See eLCI.csv here: https://github.com/USEPA/fedelemflowlist
+    r_flows = (upstream_mapped_df['TargetFlowContext'].isna()) & (
+        upstream_mapped_df['input']
+    )
+    upstream_mapped_df.loc[
+        r_flows,
+        'TargetFlowName'] = upstream_mapped_df.loc[r_flows, 'FlowName_orig']
+    upstream_mapped_df.loc[
+        r_flows,
+        'TargetFlowContext'] = upstream_mapped_df.loc[r_flows,
+                                                      'Compartment_path_orig']
+    upstream_mapped_df.loc[
+        r_flows,
+        'TargetUnit'] = upstream_mapped_df.loc[r_flows, 'Unit_orig']
+    upstream_mapped_df.loc[r_flows, 'ConversionFactor'] = 1.0
+
+    # Substitute FEDEFL mapped names, compartments, and units
     upstream_mapped_df.drop(
-        columns={"FlowName", "Compartment", "Unit"}, inplace=True
+        columns={"FlowName", "Compartment", "Unit"},
+        inplace=True
     )
     upstream_mapped_df = upstream_mapped_df.rename(
-        columns=mapped_column_dict, copy=False
+        columns=mapped_column_dict,
+        copy=False
     )
     upstream_mapped_df.drop_duplicates(
         subset=["plant_id", "FlowName", "Compartment_path", "FlowAmount"],
@@ -308,18 +325,20 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         * upstream_mapped_df["ConversionFactor"]
     )
 
+    # Set the fuel category (all caps)
     upstream_mapped_df.rename(
         columns={"fuel_type": "FuelCategory"}, inplace=True
     )
     upstream_mapped_df["FuelCategory"] = upstream_mapped_df[
         "FuelCategory"
     ].str.upper()
+
+    # Set the Elementary flow prime context
     upstream_mapped_df["ElementaryFlowPrimeContext"] = "emission"
     upstream_mapped_df.loc[
-        upstream_mapped_df["Compartment"].str.contains("resource"),
-        "ElementaryFlowPrimeContext",
-    ] = "resource"
-    #upstream_mapped_df["Source"] = "netl"
+        upstream_mapped_df["input"],
+        "ElementaryFlowPrimeContext"] = "resource"
+
     # WARNING: don't use with HYDRO, which has its own data year
     upstream_mapped_df["Year"] = eia_gen_year
     final_columns = [
@@ -343,8 +362,8 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         final_columns = final_columns + ["input"]
 
     # I added the section below to help generate lists of matched and unmatched
-    # flows. Because of the groupby, it's expensive enough not to run everytime.
-    # I didn't want to get rid of it in case it comes in handy later.
+    # flows. Because of the groupby, it's expensive enough not to run every
+    # time and I didn't want to get rid of it in case it comes in handy later.
     if kwargs != {}:
         if "group_name" in kwargs:
             logging.info("kwarg group_name used: generating flows lists")
@@ -476,7 +495,7 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
     ] = float("nan")
 
     # This allows construction impacts to be aligned to a power plant type -
-    # not as import in openLCA but for analyzing results outside of openLCA.
+    # not as important in openLCA but for analyzing results outside of openLCA.
     combined_df.loc[
         combined_df["FuelCategory"] == "CONSTRUCTION", "FuelCategory"
     ] = float("nan")
@@ -576,6 +595,29 @@ def fill_nans(
         df.dropna(subset=["Electricity"],inplace=True)
     return df
 
+
+def map_compartment_path(df):
+    emission_mapping = {
+        "air": "emission/air",
+        "water": "emission/water",
+        "ground": "emission/ground",
+        "soil": "emission/ground",
+        "resource": "resource",
+        "NETL database/emissions": "NETL database/emissions",
+        "NETL database/resources": "NETL database/resources",
+    }
+    resource_mapping = {
+        'water': "resource/water",
+        'input': "input",  # should keep electricity as a resource
+    }
+    # Map resources
+    df.loc[df['input'], 'Compartment_path'] = df.loc[
+        df['input'], 'Compartment'].map(resource_mapping)
+    # Map emissions
+    df.loc[~df['input'], 'Compartment_path'] = df.loc[
+        ~df['input'], 'Compartment'].map(emission_mapping)
+
+    return df
 
 ##############################################################################
 # MAIN

@@ -32,7 +32,7 @@ __doc__ = """Get a subset of the egrid_facilities dataset.
 The functions in this module calculate the fraction of each generating source
 (either from generation data or straight from eGRID).
 
-Last edited: 2024-09-25
+Last edited: 2024-10-11
 """
 
 
@@ -330,30 +330,48 @@ def olcaschema_genmix(database, gen_dict, subregion=None):
                 database_reg["FuelCategory"] == fuelname
             ]
             if database_f1.empty != True:
-                matching_dict = None
-                m_str = "Electricity - " + fuelname + " - " + reg
+                matching_dict = {
+                    'Electricity': None,
+                    'Construction': None
+                }
+                # Iss150, need to search for both electricity and construction
+                m_str1 = "Electricity - " + fuelname + " - " + reg
+                m_str2 = "Construction - " + fuelname + " - " + reg
                 for generator in gen_dict:
-                    if gen_dict[generator]["name"] == m_str:
+                    if gen_dict[generator]["name"] == m_str1:
                         logging.debug(
-                            "Found matching dictionary for '%s'" % m_str)
-                        matching_dict = gen_dict[generator]
+                            "Found matching dictionary for '%s'" % m_str1)
+                        matching_dict['Electricity'] = gen_dict[generator]
+                    elif gen_dict[generator]["name"] == m_str2:
+                        logging.debug(
+                            "Found matching dictionary for '%s'" % m_str2)
+                        matching_dict['Construction'] = gen_dict[generator]
+                    # Still allow breaking if we've found both dicts.
+                    if (matching_dict['Construction'] is not None) and (
+                            matching_dict['Electricity'] is not None):
+                        logging.debug("Found both!")
                         break
-                if matching_dict is None:
-                    logging.warning(
-                        f"Trouble matching dictionary for generation mix {fuelname} - {reg}. Skipping this flow for now"
-                    )
-                else:
-                    ra = exchange_table_creation_input_genmix(
-                        database_f1, fuelname
-                    )
-                    ra["quantitativeReference"] = False
-                    # HOTFIX: make category string, not list [2023-11-29; TWD]
-                    ra["provider"] = {
-                        "name": matching_dict["name"],
-                        "@id": matching_dict["uuid"],
-                        "category": matching_dict["category"],
-                    }
-                    exchanges_list = exchange(ra, exchanges_list)
+
+                for k, match in matching_dict.items():
+                    if match is not None:
+                        ra = exchange_table_creation_input_genmix(
+                            database_f1, fuelname
+                        )
+                        ra["quantitativeReference"] = False
+                        # HOTFIX: make category string, not list
+                        # [2023-11-29; TWD]
+                        ra["provider"] = {
+                            "name": match["name"],
+                            "@id": match["uuid"],
+                            "category": match["category"],
+                        }
+                        exchanges_list = exchange(ra, exchanges_list)
+                    else:
+                        logging.warning(
+                            "Trouble matching dictionary for generation "
+                            f"mix {k} - {fuelname} - {reg}. "
+                            "Skipping this flow for now"
+                        )
 
         final = process_table_creation_genmix(reg, exchanges_list)
         generation_mix_dict[reg] = final

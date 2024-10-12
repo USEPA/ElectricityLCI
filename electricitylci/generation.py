@@ -1569,33 +1569,19 @@ def turn_data_to_dict(data, upstream_dict):
     data.loc[input_filter, "input"] = True
 
     # Define products based on compartment label
+    # HOTFIT: input compartment tends to be technosphere flow
     product_filter=(
         (data["Compartment"].str.lower().str.contains("technosphere"))
         | (data["Compartment"].str.lower().str.contains("valuable"))
+        | (data["Compartment"].str.lower().str.contains("input"))
     )
     data.loc[product_filter, "FlowType"] = "PRODUCT_FLOW"
 
-    # Define wastes based on compartment label
+    # Define wastes based on compartment label; NOTE they will all be inputs!
     waste_filter = (
         (data["Compartment"].str.lower().str.contains("technosphere"))
     )
     data.loc[waste_filter, "FlowType"] = "WASTE_FLOW"
-
-    # Iterate through upstream stage codes.
-    provider_filter = data["stage_code"].isin(upstream_dict.keys())
-    for index, row in data.loc[provider_filter, :].iterrows():
-        stage_code = getattr(row, "stage_code")
-        provider_dict = {
-            "name": upstream_dict[stage_code]["name"],
-            "categoryPath": upstream_dict[stage_code]["category"],
-            "processType": "UNIT_PROCESS",
-            "@id": upstream_dict[stage_code]["uuid"],
-        }
-        data.at[index, "provider"] = provider_dict
-        data.at[index, "unit"] = unit(
-            upstream_dict[stage_code]["q_reference_unit"]
-        )
-        data.at[index, "FlowType"] = "PRODUCT_FLOW"
 
     data["flow"] = ""
     data["uncertainty"] = ""
@@ -1670,13 +1656,19 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     """
     region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"]
+    # Iss150, add stage code to catch renewable construction
+    stage_code = ["stage_code"]
+    renewables_const_stage_codes = [
+        "solar_pv_const",
+        "wind_const",
+        "solar_thermal_const"
+    ]
     if region_agg:
-        base_cols = region_agg + fuel_agg
+        base_cols = region_agg + fuel_agg + stage_code
     else:
-        base_cols = fuel_agg
+        base_cols = fuel_agg + stage_code
 
     non_agg_cols = [
-        "stage_code",
         "FlowName",
         "FlowUUID",
         "Compartment",
@@ -1698,6 +1690,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     non_agg_cols = [x for x in non_agg_cols if x in database.columns]
 
     # Create a data frame with one massive column of exchanges
+    logging.info("Creating exchanges")
     database_groupby = database.groupby(by=base_cols)
     process_df = pd.DataFrame(
         database_groupby[non_agg_cols].apply(
@@ -1706,6 +1699,33 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         )
     )
     process_df.columns = ["exchanges"]
+
+    # Iss150, The following 18 lines of code are taken from turn_data_to_dict
+    # function and modified to reflect that there are now process dictionaries
+    # created for technosphere inputs (e.g. coal input from IL-B-U). These
+    # flows must have the default provider defined using the existing upstream
+    # dictionary and then be "moved" into the Power plant data frame where they
+    # should be.
+    # First, get indices where upstream process exists.
+    provider_filter = [
+        x for x in process_df.index.values if x[2] in upstream_dict.keys()]
+    # HOTFIX: only include stage codes found in process_df [241011; TWD]
+    sc_list = list(set([x[2] for x in provider_filter]))
+    for index, row in process_df.loc(axis=0)[:, :, sc_list].iterrows():
+        provider_dict = {
+            "name": upstream_dict[index[2]]["name"],
+            "categoryPath": upstream_dict[index[2]]["category"],
+            "processType": "UNIT_PROCESS",
+            "@id": upstream_dict[index[2]]["uuid"],
+        }
+        row["exchanges"][0]["provider"] = provider_dict
+        row["exchanges"][0]["unit"] = unit(
+            upstream_dict[index[2]]["q_reference_unit"]
+        )
+        row["exchanges"][0]["FlowType"] = "PRODUCT_FLOW"
+        process_df.loc[index[0], index[1], "Power plant"]["exchanges"].append(
+            row["exchanges"][0])
+    process_df = process_df.drop(provider_filter)
     process_df.reset_index(inplace=True)
 
     process_df["@type"] = "Process"
@@ -1718,6 +1738,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         "22: Utilities/2211: Electric Power Generation, "
         "Transmission and Distribution/" + process_df[fuel_agg].squeeze().values
     )
+    sc_filter = process_df["stage_code"].isin(renewables_const_stage_codes)
     if region_agg is None:
         process_df["location"] = "US"
         process_df["description"] = (
@@ -1727,6 +1748,17 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         )
         process_df["name"] = (
             "Electricity - " + process_df[fuel_agg].squeeze().values + " - US"
+        )
+        # Iss150, correct construction stage code name and description
+        process_df.loc[sc_filter, "description"] = (
+            "Construction of "
+            + process_df[fuel_agg].values
+            + " in the US"
+        )
+        process_df.loc[sc_filter,"name"] = (
+            "Construction - "
+            + process_df[fuel_agg].values
+            + " - US"
         )
     else:
         # HOTFIX: remove .values, which throws ValueError [2023-11-13; TWD]
@@ -1744,6 +1776,21 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
             + " - "
             + process_df[region_agg].squeeze().values
         )
+        # Iss150, correct construction name and description
+        process_df.loc[sc_filter, "description"] = (
+            "Construction of "
+            + process_df.loc[sc_filter, fuel_agg[0]].squeeze().values
+            + " in the "
+            + process_df.loc[sc_filter, region_agg[0]].squeeze().values
+            + " region."
+        )
+        process_df.loc[sc_filter, "name"] = (
+            "Construction - "
+            + process_df.loc[sc_filter, fuel_agg[0]].squeeze().values
+            + " - "
+            + process_df.loc[sc_filter, region_agg[0]].squeeze().values
+        )
+
     process_df["description"] += (
         " This process was created with ElectricityLCI "
         + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
