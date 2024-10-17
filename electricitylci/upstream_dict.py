@@ -109,7 +109,7 @@ def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
     ar["location"] = ""  # location(region)
     ar["parameters"] = ""
 
-    logging.info(
+    logging.debug(
         f"passing {fuel_type.lower()}_upstream to process_doc_creation")
     ar['processDocumentation'] = process_doc_creation(
         process_type=f"{fuel_type.lower()}_upstream")
