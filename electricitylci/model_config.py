@@ -64,7 +64,9 @@ class ModelSpecs:
     regional_aggregation : str
         The aggregation level (e.g., 'BA' for Balancing Authority area).
     egrid_year : int
-        The eGRID year (e.g., 2016).
+        The eGRID year (e.g., 2016) used to fetch facilities and flows from
+        stewi (see egrid_facilities.py and egrid_flowbyfacility.py) and to
+        generate mixes if eGRID is not replaced (see egrid_energy.py).
     eia_gen_year : int
         The generation year for EIA data (e.g, 2016).
     replace_egrid : bool
@@ -104,7 +106,8 @@ class ModelSpecs:
     filter_non_egrid_emission_on_NAICS : bool
         Unknown
     efficiency_of_distribution_grid : float
-        Used to determine transmission and distribution losses.
+        Used to determine transmission and distribution losses (see
+        distribution.py).
     EPA_eGRID_trading : bool
         Whether to use the EPA trading method (based on eGRID regions).
     net_trading : bool

@@ -23,7 +23,8 @@ from electricitylci.egrid_facilities import make_egrid_subregion_ref
 __doc__ = """This module performs calculations on eGrid data from
 `egrid_flowbyfacility.py` to calculate the efficiency of each facility.
 
-Calculations and data input will execute immediately upon import.
+Calculations and data input will execute immediately upon import, which
+only happens if the `replace_egrid` configuration setting is set to false.
 
 Last updated:
     2023-11-20
