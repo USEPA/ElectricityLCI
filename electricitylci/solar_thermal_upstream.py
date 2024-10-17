@@ -178,7 +178,9 @@ def _solar_generation(year):
 
 
 def _solar_om(year):
-    """Generate the operations and maintenance LCI for solar thermal power plants. For 2016 electricity baseline, this data frame is included in the construction inventory.
+    """Generate the operations and maintenance LCI for solar thermal power
+    plants. For 2016 electricity baseline, this data frame includes the
+    construction inventory.
 
     Parameters
     ----------
@@ -252,6 +254,10 @@ def _solar_om(year):
         'FlowAmount': float,
     })
 
+    # Unlike the construction inventory, operations are on the basis of
+    # per MWh, so in order for the data to integrate correctly with the
+    # rest of the inventory, we need to multiply all inventory by electricity
+    # generation (in MWh) for the target year.
     solar_generation_data = _solar_generation(year)
     solarthermal_ops = solar_ops_df_t_melt.merge(
         right=solar_generation_data,
