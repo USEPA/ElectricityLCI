@@ -55,8 +55,8 @@ def _solar_construction(year):
     -------
     pandas.DataFrame
         Emissions inventory for solar PV construction.
-        Returns NoneType for 2016 renewables vintage---the O&M emissions are
-        included with construction inventory.
+        Returns NoneType for 2016 renewables vintage---the O&M emissions
+        include the construction inventory.
 
     Raises
     ------
@@ -77,8 +77,7 @@ def _solar_construction(year):
         )
     elif RENEWABLE_VINTAGE == 2016:
         logging.debug(
-            "The 2016 solar PV LCI did not have separate construction "
-            "and O&M.")
+            "The 2016 solar PV LCI does not separate construction and O&M.")
         return None
     else:
         raise ValueError("Renewable vintage %s undefined!" % RENEWABLE_VINTAGE)
@@ -97,6 +96,7 @@ def _solar_construction(year):
     new_columns[1] = 'FlowName'
     solar_df_t.columns = new_columns
     solar_df_t.drop(index=0, inplace=True)
+
     solar_df_t_melt = solar_df_t.melt(
         id_vars=['Compartment','FlowName'],
         var_name='plant_id',
@@ -146,7 +146,7 @@ def _solar_construction(year):
 
 
 def _solar_generation(year):
-    """Return the EIA generation data for solar thermal power plants.
+    """Return the EIA generation data for solar PV power plants.
 
     Parameters
     ----------
@@ -156,7 +156,7 @@ def _solar_generation(year):
     Returns
     -------
     pandas.DataFrame
-        EIA generation data for solar thermal power plants.
+        EIA generation data for solar PV power plants.
     """
     eia_generation_data = eia923_download_extract(year)
     eia_generation_data['Plant Id'] = eia_generation_data[
@@ -311,6 +311,7 @@ def generate_upstream_solar(year):
     ----------
     pandas.DataFrame
     """
+    logging.info("Generating upstream solar PV inventories")
     solar_pv_cons = _solar_construction(year)
     solar_pv_ops = _solar_om(year)
 

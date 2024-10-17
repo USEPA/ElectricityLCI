@@ -53,8 +53,8 @@ def _solar_construction(year):
     -------
     pandas.DataFrame
         Emissions inventory for solar thermal construction.
-        Returns NoneType for 2016 renewables vintage---the O&M emissions are
-        included with construction inventory.
+        Returns NoneType for 2016 renewables vintage---the O&M emissions
+        include the construction inventory.
 
     Raises
     ------
@@ -324,6 +324,7 @@ def generate_upstream_solarthermal(year):
     ----------
     pandas.DataFrame
     """
+    logging.info("Generating upstream solar thermal inventories")
     solarthermal_ops = _solar_om(year)
     solarthermal_cons = _solar_construction(year)
     if solarthermal_cons is not None:
