@@ -1,15 +1,12 @@
 *.pyc
 *.p
 *.pk
-electricitylci/__pycache__/
 __pycache__/
 *.zip
 build/
-/*.csv
 # IDE files
 .idea/
 .vscode/
-.spyproject/
 ElectricityLCI.sln
 ElectricityLCI.pyproj
 # egg files
@@ -19,41 +16,29 @@ ElectricityLCI.pyproj
 
 # notebooks
 *.ipynb
+*.ipynb_checkpoints
 
-# downloaded excel files and csv transformations
-electricitylci/data/**/*.*
-!electricitylci/data/petroleum_inventory/*.*
-!electricitylci/data/EFs/*.*
-!electricitylci/data/*.yml
+.spyproject/
 .spyproject/codestyle.ini
 .spyproject/encoding.ini
 .spyproject/vcs.ini
 .spyproject/workspace.ini
-electricitylci/dataeGRID_2016_TRI_2016_NEI_2016_RCRAInfo_2015_fromstewicombo.csv
-example/aggregate_df.csv
-example/aggregate_dict.pickle
-example/combined_df.csv
-example/gen_plus_fuels.csv
-example/upstream_df.csv
-example/upstream_dict.pickle
-electricitylci/output/ferc_final_trade_2016.csv
-electricitylci/output/BAA_final_trade_2016.csv
-electricitylci/modelconfig/ELCI_1_config.json
-electricitylci/modelconfig/ELCI_1_config.json
-upstream_df.csv
-electricitylci/modelconfig/ELCI_1_config.json
-example/dist_mix_dict.pickle
-example/gen_mix_dict.pickle
-combined_df.csv
-electricitylci/modelconfig/ELCI_1_config.json
-electricitylci/modelconfig/ELCI_1_config.json
+
+# downloaded excel files and csv transformations
+/*.csv
+electricitylci/data/**/*.*
+
+electricitylci/modelconfig/*.json
 electricitylci/modelconfig/testing*.yml
 
-
-#output files
+# output files
 electricitylci/output/*
-example/*.csv
-example/*.pickle
 
-#internal files
+# internal files
 tests/
+
+# Whitelist
+!electricitylci/data/petroleum_inventory/*.*
+!electricitylci/data/EFs/*.*
+!electricitylci/data/renewables/**/*.csv
+!electricitylci/data/*.yml

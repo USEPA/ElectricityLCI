@@ -1,10 +1,56 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# egrid_emissions_and_waste_by_facility.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import pandas as pd
-import stewicombo
+
+from stewicombo import getInventory
+from stewicombo import saveInventory
+from stewicombo import combineInventoriesforFacilitiesinBaseInventory as cbi
 from electricitylci.model_config import model_specs
 
+
+##############################################################################
+# MODULE DOCUMENTATION
+##############################################################################
+__doc__ = """This module populates the data frame variable,
+`emissions_and_wastes_by_facility` that contains the combined inventories for
+all facilities from all of the specified sources.
+
+This module will either use an existing inventory determined from the
+'inventories_of_interest' specified in the configuration file or create one by
+calling the `stewicombo` package from Standardized Emission and Waste
+Inventories (StEWI).
+
+If there is no existing CSV file, the call to stewicombo to generate the
+inventory can take some time. It should be noted that this module is executed
+immediately upon import (e.g., in generation.py), which may cause some
+unexpected delays if the CSV file is not present.
+
+Last edited:
+    2023-12-19
+"""
+__all__ = [
+    'base_inventory',
+    'emissions_and_wastes_by_facility',
+]
+
+
+##############################################################################
+# GLOBALS
+##############################################################################
 emissions_and_wastes_by_facility = None
+'''pandas.DataFrame : Facility-level inventory. Defaults to none.'''
+
+base_inventory = ""
+'''str : Inventory of interest name. Defaults to empty string.'''
+
 if model_specs.stewicombo_file is not None:
-    emissions_and_wastes_by_facility = stewicombo.getInventory(model_specs.stewicombo_file)
+    emissions_and_wastes_by_facility = getInventory(model_specs.stewicombo_file)
     if "eGRID_ID" in emissions_and_wastes_by_facility.columns:
         base_inventory = "eGRID"
     elif "NEI_ID" in model_specs.inventories_of_interest.keys():
@@ -13,6 +59,8 @@ if model_specs.stewicombo_file is not None:
         base_inventory = "TRI"
     elif "RCRAInfo" in model_specs.inventories_of_interest.keys():
         base_inventory = "RCRAInfo"
+
+# Define the preferred priority list of facilities to base inventories upon.
 if emissions_and_wastes_by_facility is None:
     if "eGRID" in model_specs.inventories_of_interest.keys():
         base_inventory = "eGRID"
@@ -22,16 +70,40 @@ if emissions_and_wastes_by_facility is None:
         base_inventory = "TRI"
     elif "RCRAInfo" in model_specs.inventories_of_interest.keys():
         base_inventory = "RCRAInfo"
-    emissions_and_wastes_by_facility = stewicombo.combineInventoriesforFacilitiesinBaseInventory(base_inventory, model_specs.inventories_of_interest, filter_for_LCI=True)
-    # drop SRS fields
-    emissions_and_wastes_by_facility = emissions_and_wastes_by_facility.drop(columns=['SRS_ID', 'SRS_CAS'])
-    # drop 'Electricity' flow
-    emissions_and_wastes_by_facility = emissions_and_wastes_by_facility[emissions_and_wastes_by_facility['FlowName'] != 'Electricity']
-    # save stewicombo processed file
-    stewicombo.saveInventory(model_specs.model_name, emissions_and_wastes_by_facility, model_specs.inventories_of_interest)
 
-len(emissions_and_wastes_by_facility)
-# with egrid 2016, tri 2016, nei 2016, rcrainfo 2015: 106284
+    # HOTFIX: work-around ParseError [2023-12-19; TWD]
+    # Ref: https://github.com/USEPA/standardizedinventories/issues/151
+    # NOTE: Hi! If you are here, then you probably are looking to uncomment
+    # the commented line below to get StEWI's pre-processed data.
+    # https://github.com/USEPA/standardizedinventories/issues/151
+    emissions_and_wastes_by_facility = cbi(
+        base_inventory,
+        model_specs.inventories_of_interest,
+        filter_for_LCI=True,
+        #download_if_missing=True,
+    )
+    # Drop SRS fields
+    emissions_and_wastes_by_facility = emissions_and_wastes_by_facility.drop(
+        columns=['SRS_ID', 'SRS_CAS'])
+    # Drop 'Electricity' flow
+    emissions_and_wastes_by_facility = emissions_and_wastes_by_facility[
+        emissions_and_wastes_by_facility['FlowName'] != 'Electricity']
+    # Save stewicombo processed file
+    saveInventory(
+        model_specs.model_name,
+        emissions_and_wastes_by_facility,
+        model_specs.inventories_of_interest
+    )
 
-# Get a list of unique years in the emissions data
-years_in_emissions_and_wastes_by_facility = list(pd.unique(emissions_and_wastes_by_facility['Year']))
+
+##############################################################################
+# MAIN
+##############################################################################
+if __name__ == "__main__":
+    len(emissions_and_wastes_by_facility)
+    # with egrid 2016, tri 2016, nei 2016, rcrainfo 2015: 106284
+
+    # Get a list of unique years in the emissions data
+    years_in_emissions_and_wastes_by_facility = list(
+        pd.unique(emissions_and_wastes_by_facility['Year'])
+    )

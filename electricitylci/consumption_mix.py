@@ -1,6 +1,15 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# consumption_mix.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
+import os
+
 import openpyxl
 import pandas as pd
-import numpy as np
 
 from electricitylci.globals import data_dir
 from electricitylci.model_config import model_specs
@@ -12,94 +21,97 @@ from electricitylci.process_dictionary_writer import (
     process_table_creation_surplus
 )
 
-if not model_specs.replace_egrid:
-    wb2 = openpyxl.load_workbook(data_dir+'/eGRID_Consumption_Mix_new.xlsx', data_only=True)
-    data = wb2['ConsumptionMixContributions']
 
-    if model_specs.net_trading == True:
-        nerc_region = data['A4:A29']
-        surplus_pool_trade_in = data['F4':'F29']
-        trade_matrix = data['I3':'AP13']
-        generation_quantity = data['E4':'E29']
-        nerc_region2 = data['H4:H13']
-        egrid_regions = data['C4:C29']
-
-    else:
-        nerc_region = data['A36:A61']
-        surplus_pool_trade_in = data['F36':'F61']
-        trade_matrix = data['I35':'AP45']
-        generation_quantity = data['E36':'E61']
-        nerc_region2 = data['H36:H45']
-        egrid_regions = data['C36:C61']
+##############################################################################
+# MODULE DOCUMENTATION
+##############################################################################
+__doc__ = """This module uses an analysis of FERC Form 714 and international
+electricity trading data to generate consumption mixes for each of the eGRID
+subregions and converts that data to surplus pools and consumption mixes for
+the year 2014.
+"""
+__all__ = [
+    "consumption_dict",
+    "surplus_dict",
+]
 
 
-def surplus_pool_dictionary(nerc_region, surplus_pool_trade_in, trade_matrix, gen_quantity, eGRID_region, nerc_region2):
-
+##############################################################################
+# FUNCTIONS
+##############################################################################
+def surplus_pool_dictionary(nerc_region,
+                            surplus_pool_trade_in,
+                            trade_matrix,
+                            gen_quantity,
+                            eGRID_region,
+                            nerc_region2):
+    """Add docstring."""
     surplus_dict = dict()
     for i in range(0, len(nerc_region2)):
-
         region = nerc_region2[i][0].value
         exchanges_list = []
-
         exchange(ref_exchange_creator(), exchanges_list)
-        # y  = len(trade_matrix[0])
-
-        # chk=0;
         for j in range(0, 34):
             input_region_surplus_amount = trade_matrix[i + 1][j].value
-            if input_region_surplus_amount != None and input_region_surplus_amount != 0:
-                # name = 'Electricity; at region '+trade_matrix[0][j].value+'; Trade Mix'
+            if input_region_surplus_amount != None and (
+                    input_region_surplus_amount != 0):
                 input_region_acronym = trade_matrix[0][j].value
-                exchange(exchange_table_creation_input_con_mix(input_region_surplus_amount, input_region_acronym), exchanges_list)
-                # exchange(exchange_table_creation_input_con_mix(trade_matrix[i+1][j].value,trade_matrix[0][j].value),exchanges_list)
-                # chk = 1;
-
+                exchange(
+                    exchange_table_creation_input_con_mix(
+                        input_region_surplus_amount,
+                        input_region_acronym),
+                    exchanges_list)
         final = process_table_creation_surplus(region, exchanges_list)
         surplus_dict['SurplusPool'+region] = final;
+
     return surplus_dict
 
 
-def consumption_mix_dictionary(nerc_region, surplus_pool_trade_in, trade_matrix, generation_quantity, egrid_regions, nerc_region2):
-
-    surplus_dict = surplus_pool_dictionary(nerc_region, surplus_pool_trade_in, trade_matrix, generation_quantity, egrid_regions, nerc_region2)
+def consumption_mix_dictionary(nerc_region,
+                               surplus_pool_trade_in,
+                               trade_matrix,
+                               generation_quantity,
+                               egrid_regions,
+                               nerc_region2):
+    """Add docstring."""
     # global region
     consumption_dict = dict()
     for reg in range(0, len(egrid_regions)):
         region = egrid_regions[reg][0].value
-
         exchanges_list = []
         exchange(ref_exchange_creator(), exchanges_list)
 
         y = len(trade_matrix[0])
-        chk = 0;
+        chk = 0
         for nerc in range(0, len(nerc_region2)):
-
             if nerc_region[reg][0].value == nerc_region2[nerc][0].value:
-
                 if surplus_pool_trade_in[reg][0].value != 0:
-
                     for j in range(0, y):
-
-                        # name = surplus_dict[nerc_region[reg][0].value]['name']
-
-                        if trade_matrix[nerc+1][j].value != None and trade_matrix[nerc+1][j].value !=0:
-                            exchange(exchange_table_creation_input_con_mix(surplus_pool_trade_in[reg][0].value, nerc_region[reg][0].value), exchanges_list)
-                            chk=1;
-                            break;
-            # name = 'Electricity from generation mix '+eGRID_region[reg][0].value
-            # fuelname =
+                        if trade_matrix[nerc+1][j].value != None and (
+                                trade_matrix[nerc+1][j].value !=0):
+                            exchange(
+                                exchange_table_creation_input_con_mix(
+                                    surplus_pool_trade_in[reg][0].value,
+                                    nerc_region[reg][0].value),
+                                exchanges_list)
+                            chk=1
+                            break
         if chk == 1:
-            exchange(exchange_table_creation_input_con_mix(generation_quantity[reg][0].value, region), exchanges_list)
+            exchange(
+                exchange_table_creation_input_con_mix(
+                    generation_quantity[reg][0].value, region),
+                exchanges_list)
         else:
-            exchange(exchange_table_creation_input_con_mix(1, region), exchanges_list)
+            exchange(
+                exchange_table_creation_input_con_mix(1, region), exchanges_list)
 
         final = process_table_creation_con_mix(region, exchanges_list)
-        consumption_dict['Consumption'+region] = final;
+        consumption_dict['Consumption'+region] = final
+
     return consumption_dict
 
 
 def check_trading_normalized(trading_matrix):
-
     if trading_matrix.iloc[:, 0].sum() > 1:
         for col in trading_matrix.columns:
             trading_matrix[col] /= trading_matrix[col].sum()
@@ -178,45 +190,70 @@ def consumption_flows(fuels_mix, flows):
 
     Parameters
     ----------
-    fuels_mix : dataframe
-        The mix of fuels attributable to consumption within each region. Includes
-        both the columns 'Subregion' for the consumption region and 'from_region'
-        for the production region. Fuel names are listed under 'FuelCategory',
-        and 'trading_gen_ratio' is the fraction of generation from each fuel/region
-        pair.
-    flows : dataframe
+    fuels_mix : pandas.DataFrame
+        The mix of fuels attributable to consumption within each region.
+        Includes both the columns 'Subregion' for the consumption region
+        and 'from_region' for the production region. Fuel names are listed
+        under 'FuelCategory', and 'trading_gen_ratio' is the fraction of
+        generation from each fuel/region pair.
+    flows : pandas.DataFrame
         Flows attributable to generation from each fuel type in each region.
 
     Returns
     -------
-    dataframe
+    pandas.DataFrame
         Joined fuel mix and flows data.
     """
-
-    results = pd.merge(fuels_mix, flows, left_on=['FuelCategory', 'from_region'],
-                       right_on=['FuelCategory', 'Subregion'])
+    results = pd.merge(
+        fuels_mix,
+        flows,
+        left_on=['FuelCategory', 'from_region'],
+        right_on=['FuelCategory', 'Subregion']
+    )
 
     return results
 
 
+##############################################################################
+# GLOBALS
+##############################################################################
 if not model_specs.replace_egrid:
-    # Creating Surplus Pool dictionary
-    surplus_dict = surplus_pool_dictionary(nerc_region, surplus_pool_trade_in, trade_matrix, generation_quantity, egrid_regions, nerc_region2)
-    # del surplus_dict['']
+    wb2 = openpyxl.load_workbook(
+        os.path.join(data_dir, "eGRID_Consumption_Mix_new.xlsx"),
+        data_only=True)
+    data = wb2['ConsumptionMixContributions']
 
-    # Creating Consumption dictionary
-    consumption_dict = consumption_mix_dictionary(nerc_region, surplus_pool_trade_in, trade_matrix, generation_quantity, egrid_regions, nerc_region2)
+    if model_specs.net_trading == True:
+        nerc_region = data['A4:A29']
+        surplus_pool_trade_in = data['F4':'F29']
+        trade_matrix = data['I3':'AP13']
+        generation_quantity = data['E4':'E29']
+        nerc_region2 = data['H4:H13']
+        egrid_regions = data['C4:C29']
+    else:
+        nerc_region = data['A36:A61']
+        surplus_pool_trade_in = data['F36':'F61']
+        trade_matrix = data['I35':'AP45']
+        generation_quantity = data['E36':'E61']
+        nerc_region2 = data['H36:H45']
+        egrid_regions = data['C36:C61']
 
+    # Create Surplus Pool dictionary
+    surplus_dict = surplus_pool_dictionary(
+        nerc_region,
+        surplus_pool_trade_in,
+        trade_matrix,
+        generation_quantity,
+        egrid_regions,
+        nerc_region2,
+    )
 
-# Test distr
-
-
-# The distribution mix dictionary does not require any new information and it will be fine to use the GEN mix dictionary to write these templates.
-# Only extra infomration required is the efficiency
-# distribution_dict = distribution_mix_dictionary(egrid_subregions,efficiency_of_distribution_grid)
-# del distribution_dict['']
-
-
-# consumption_mix_template_generator(consumption_dict)
-# surplus_pool_mix_template_generator(surplus_dict,nerc_region2)
-# distribution_template_generator(distribution_dict,efficiency_of_distribution_grid)
+    # Create Consumption dictionary
+    consumption_dict = consumption_mix_dictionary(
+        nerc_region,
+        surplus_pool_trade_in,
+        trade_matrix,
+        generation_quantity,
+        egrid_regions,
+        nerc_region2,
+    )

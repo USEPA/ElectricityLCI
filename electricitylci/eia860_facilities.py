@@ -1,28 +1,55 @@
-"""
-Download and import EIA860 data, including power plant information such as
-plant code, location, balancing authority, and primary fuel type.
-
-This is using most of the code from eia923_generation.py. It could be
-combined and generalized in the future.
-
-"""
-import pandas as pd
-import zipfile
-import io
-import os
-from os.path import join
-import requests
-from electricitylci.globals import EIA860_BASE_URL, paths
-from electricitylci.utils import (
-    download_unzip,
-    find_file_in_folder,
-    create_ba_region_map,
-)
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# eia860_facilities.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
 import logging
-logger = logging.getLogger("eia860_facilities")
+import os
 
+import pandas as pd
+
+from electricitylci.globals import paths
+from electricitylci.globals import EIA860_BASE_URL
+
+from electricitylci.utils import download_unzip
+from electricitylci.utils import find_file_in_folder
+from electricitylci.utils import create_ba_region_map
+
+
+##############################################################################
+# MODULE DOCUMENTATION
+##############################################################################
+__doc__ = """This module is designed to download and import EIA860 data,
+including power plant information such as plant code, location, balancing
+authority, and primary fuel type.
+
+For now, this module is using most of the code from eia923_generation.py.
+It could be combined and generalized in the future.
+
+Last updated:
+    2023-12-22
+"""
+
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def _clean_columns(df):
-    "Remove special characters and convert column names to snake case"
+    """Remove special characters and convert column names to snake case.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        A pandas data frame with named columns.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The same data frame received, but with column names cleaned.
+    """
     df.columns = (
         df.columns.str.lower()
         .str.replace("[^0-9a-zA-Z\-]+", " ", regex=True)
@@ -36,7 +63,7 @@ def _clean_columns(df):
 def eia860_download(year, save_path):
     """
     Download and unzip one year of EIA 860 annual data to a subfolder
-    of the data directory
+    of the data directory.
 
     Parameters
     ----------
@@ -44,7 +71,6 @@ def eia860_download(year, save_path):
         The year of data to download and save
     save_path : path or str
         A folder where the zip file contents should be extracted
-
     """
     current_url = EIA860_BASE_URL + "xls/eia860{}.zip".format(year)
     archive_url = EIA860_BASE_URL + "archive/xls/eia860{}.zip".format(year)
@@ -57,6 +83,25 @@ def eia860_download(year, save_path):
 
 
 def load_eia860_excel(eia860_path, sheet="Plant", header=1):
+    """Read a named sheet from an EIA860 Excel workbook.
+
+    If the column name, 'Plant Code' is found, it is replaced with 'Plant Id'
+    to match the EIA923 data frame.
+
+    Parameters
+    ----------
+    eia860_path : str
+        File path to EIA 860 workbook
+    sheet : str, optional
+        Excel workbook sheet name, by default "Plant"
+    header : int, optional
+        Row number for column headers, by default 1
+
+    Returns
+    -------
+    pandas.DataFrame
+        EIA860 plant data.
+    """
     eia = pd.read_excel(
         eia860_path,
         sheet_name=sheet,
@@ -64,7 +109,7 @@ def load_eia860_excel(eia860_path, sheet="Plant", header=1):
         na_values=[".", " "],
         dtype={"Plant Code": str},
     )
-    # Get ride of line breaks. Rename Plant Code to Plant Id (match
+    # Get rid of line breaks and rename Plant Code to Plant Id (match
     # the 923 column name)
     eia.columns = (
         eia.columns.str.replace("\n", " ", regex=False)
@@ -76,11 +121,15 @@ def load_eia860_excel(eia860_path, sheet="Plant", header=1):
 
 
 def eia860_balancing_authority(year, regional_aggregation=None):
+    """Return a data frame consisting of EIA Plant IDs and other identifying
+    information, including balancing authority area.
+    """
 
-    expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
+    expected_860_folder = os.path.join(
+        paths.local_path, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
-        logger.info("Downloading EIA-860 files")
+        logging.info("Downloading EIA-860 files")
         eia860_download(year=year, save_path=expected_860_folder)
 
         eia860_path, eia860_name = find_file_in_folder(
@@ -88,22 +137,11 @@ def eia860_balancing_authority(year, regional_aggregation=None):
             file_pattern_match=["2___Plant"],
             return_name=True,
         )
-        # eia860_files = os.listdir(expected_860_folder)
-
-        # # would be more elegent with glob but this works to identify the
-        # # Schedule_2_3_4_5 file
-        # for f in eia860_files:
-        #     if '2___Plant' in f:
-        #         plant_file = f
-
-        # eia860_path = join(expected_860_folder, plant_file)
-
-        # colstokeep = group_cols + sum_cols
         eia = load_eia860_excel(eia860_path)
 
         # Save as csv for easier access in future
         csv_fn = eia860_name.split(".")[0] + ".csv"
-        csv_path = join(expected_860_folder, csv_fn)
+        csv_path = os.path.join(expected_860_folder, csv_fn)
         eia.to_csv(csv_path, index=False)
 
     else:
@@ -119,28 +157,23 @@ def eia860_balancing_authority(year, regional_aggregation=None):
 
         # Read and return the existing csv file if it exists
         if csv_file:
-            logger.info("Loading {} EIA-860 plant data from csv file".format(year))
+            logging.info(
+                "Loading {} EIA-860 plant data from csv file".format(year))
             fn = csv_file[0]
-            csv_path = join(expected_860_folder, fn)
+            csv_path = os.path.join(expected_860_folder, fn)
             eia = pd.read_csv(csv_path, dtype={"Plant Id": str},low_memory=False)
 
         else:
-            logger.info("Loading data from previously downloaded excel file")
+            logging.info("Loading data from previously downloaded excel file")
             eia860_path, eia860_name = find_file_in_folder(
                 folder_path=expected_860_folder,
                 file_pattern_match=["2___Plant"],
                 return_name=True,
             )
-            # # would be more elegent with glob but this works to identify the
-            # # Schedule_2_3_4_5 file
-            # for f in all_files:
-            #     if '2___Plant' in f:
-            #         plant_file = f
-            # eia860_path = join(expected_860_folder, plant_file)
             eia = load_eia860_excel(eia860_path)
 
             csv_fn = eia860_name.split(".")[0] + ".csv"
-            csv_path = join(expected_860_folder, csv_fn)
+            csv_path = os.path.join(expected_860_folder, csv_fn)
             eia.to_csv(csv_path, index=False)
 
     ba_cols = [
@@ -162,16 +195,18 @@ def eia860_balancing_authority(year, regional_aggregation=None):
     return eia_plant_ba_match
 
 
-def eia860_primary_capacity(year):
-
-    pass
-
-
 def eia860_EnviroAssoc_so2(year):
-    expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
+    """Return a data frame containing the SO2-related environmental controls
+    for the power plants.
+
+    This data is used in ampd_plant_emissions.py to calculate SO2 emission
+    factors.
+    """
+    expected_860_folder = os.path.join(
+        paths.local_path, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
-        logger.info("Downloading EIA-860 files")
+        logging.info("Downloading EIA-860 files")
         eia860_download(year=year, save_path=expected_860_folder)
 
         eia860_path, eia860_name = find_file_in_folder(
@@ -179,22 +214,11 @@ def eia860_EnviroAssoc_so2(year):
             file_pattern_match=["6_1_EnviroAssoc", "xlsx"],
             return_name=True,
         )
-        # eia860_files = os.listdir(expected_860_folder)
-
-        # # would be more elegent with glob but this works to identify the
-        # # Schedule_2_3_4_5 file
-        # for f in eia860_files:
-        #     if '2___Plant' in f:
-        #         plant_file = f
-
-        # eia860_path = join(expected_860_folder, plant_file)
-
-        # colstokeep = group_cols + sum_cols
         eia = load_eia860_excel(eia860_path, "Boiler SO2", 1)
 
         # Save as csv for easier access in future
         csv_fn = eia860_name.split(".")[0] + "_boiler_so2.csv"
-        csv_path = join(expected_860_folder, csv_fn)
+        csv_path = os.path.join(expected_860_folder, csv_fn)
         eia.to_csv(csv_path, index=False)
 
     else:
@@ -211,38 +235,47 @@ def eia860_EnviroAssoc_so2(year):
 
         # Read and return the existing csv file if it exists
         if csv_file:
-            logger.info("Loading {} EIA-860 plant data from csv file".format(year))
+            logging.info(
+                "Loading {} EIA-860 plant data from csv file".format(year))
             fn = csv_file[0]
-            csv_path = join(expected_860_folder, fn)
+            csv_path = os.path.join(expected_860_folder, fn)
             eia = pd.read_csv(csv_path, dtype={"Plant Id": str},low_memory=False)
 
         else:
-            logger.info("Loading data from previously downloaded excel file")
+            logging.info("Loading data from previously downloaded excel file")
             eia860_path, eia860_name = find_file_in_folder(
                 folder_path=expected_860_folder,
                 file_pattern_match=["6_1_EnviroAssoc", "xlsx"],
                 return_name=True,
             )
-            # # would be more elegent with glob but this works to identify the
-            # # Schedule_2_3_4_5 file
-            # for f in all_files:
-            #     if '2___Plant' in f:
-            #         plant_file = f
-            # eia860_path = join(expected_860_folder, plant_file)
             eia = load_eia860_excel(eia860_path, "Boiler SO2", 1)
 
             csv_fn = eia860_name.split(".")[0] + "_boiler_so2.csv"
-            csv_path = join(expected_860_folder, csv_fn)
+            csv_path = os.path.join(expected_860_folder, csv_fn)
             eia.to_csv(csv_path, index=False)
     eia = _clean_columns(eia)
     return eia
 
 
 def eia860_boiler_info_design(year):
-    expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
+    """Return a data frame containing boiler parameters from EIA Form 860.
+
+    This data is used in ampd_plant_emissions.py to calculate emission factors.
+
+    Parameters
+    ----------
+    year : int
+        The year associated with EIA Form 860 data.
+
+    Returns
+    -------
+    pandas.DataFrame
+    """
+    expected_860_folder = os.path.join(
+        paths.local_path, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
-        logger.info("Downloading EIA-860 files")
+        logging.info("Downloading EIA-860 files")
         eia860_download(year=year, save_path=expected_860_folder)
 
         eia860_path, eia860_name = find_file_in_folder(
@@ -257,7 +290,7 @@ def eia860_boiler_info_design(year):
 
         # Save as csv for easier access in future
         csv_fn = eia860_name.split(".")[0] + "_boiler_info.csv"
-        csv_path = join(expected_860_folder, csv_fn)
+        csv_path = os.path.join(expected_860_folder, csv_fn)
         eia.to_csv(csv_path, index=False)
 
     else:
@@ -274,40 +307,51 @@ def eia860_boiler_info_design(year):
 
         # Read and return the existing csv file if it exists
         if csv_file:
-            logger.info("Loading {} EIA-860 plant data from csv file".format(year))
+            logging.info(
+                "Loading {} EIA-860 plant data from csv file".format(year))
             fn = csv_file[0]
-            csv_path = join(expected_860_folder, fn)
+            csv_path = os.path.join(expected_860_folder, fn)
             eia = pd.read_csv(csv_path, dtype={"Plant Id": str},low_memory=False)
 
         else:
-            logger.info("Loading data from previously downloaded excel file")
+            logging.info("Loading data from previously downloaded excel file")
             eia860_path, eia860_name = find_file_in_folder(
                 folder_path=expected_860_folder,
                 file_pattern_match=["6_2_EnviroEquip", "xlsx"],
                 return_name=True,
             )
-            # # would be more elegent with glob but this works to identify the
-            # # Schedule_2_3_4_5 file
-            # for f in all_files:
-            #     if '2___Plant' in f:
-            #         plant_file = f
-            # eia860_path = join(expected_860_folder, plant_file)
             eia = load_eia860_excel(
                 eia860_path, "Boiler Info & Design Parameters", 1
             )
 
             csv_fn = eia860_name.split(".")[0] + "_boiler_info.csv"
-            csv_path = join(expected_860_folder, csv_fn)
+            csv_path = os.path.join(expected_860_folder, csv_fn)
             eia.to_csv(csv_path, index=False)
     eia = _clean_columns(eia)
     return eia
 
 
 def eia860_EnviroAssoc_nox(year):
-    expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
+    """Return a data frame containing the NOX-related environmental controls
+    for the power plants from EIA Form 860.
+
+    This data is used in ampd_plant_emissions.py to calculate NOX emission
+    factors.
+
+    Parameters
+    ----------
+    year : int
+        The year associated with EIA Form 860 data.
+
+    Returns
+    -------
+    pandas.DataFrame
+    """
+    expected_860_folder = os.path.join(
+        paths.local_path, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
-        logger.info("Downloading EIA-860 files")
+        logging.info("Downloading EIA-860 files")
         eia860_download(year=year, save_path=expected_860_folder)
 
         eia860_path, eia860_name = find_file_in_folder(
@@ -315,22 +359,11 @@ def eia860_EnviroAssoc_nox(year):
             file_pattern_match=["6_1_EnviroAssoc", "xlsx"],
             return_name=True,
         )
-        # eia860_files = os.listdir(expected_860_folder)
-
-        # # would be more elegent with glob but this works to identify the
-        # # Schedule_2_3_4_5 file
-        # for f in eia860_files:
-        #     if '2___Plant' in f:
-        #         plant_file = f
-
-        # eia860_path = join(expected_860_folder, plant_file)
-
-        # colstokeep = group_cols + sum_cols
         eia = load_eia860_excel(eia860_path, "Boiler NOx", 1)
 
         # Save as csv for easier access in future
         csv_fn = eia860_name.split(".")[0] + "_boiler_nox.csv"
-        csv_path = join(expected_860_folder, csv_fn)
+        csv_path = os.path.join(expected_860_folder, csv_fn)
         eia.to_csv(csv_path, index=False)
 
     else:
@@ -347,37 +380,48 @@ def eia860_EnviroAssoc_nox(year):
 
         # Read and return the existing csv file if it exists
         if csv_file:
-            logger.info("Loading {} EIA-860 plant data from csv file".format(year))
+            logging.info(
+                "Loading {} EIA-860 plant data from csv file".format(year))
             fn = csv_file[0]
-            csv_path = join(expected_860_folder, fn)
+            csv_path = os.path.join(expected_860_folder, fn)
             eia = pd.read_csv(csv_path, dtype={"Plant Id": str},low_memory=False)
 
         else:
-            logger.info("Loading data from previously downloaded excel file")
+            logging.info("Loading data from previously downloaded excel file")
             eia860_path, eia860_name = find_file_in_folder(
                 folder_path=expected_860_folder,
                 file_pattern_match=["6_1_EnviroAssoc", "xlsx"],
                 return_name=True,
             )
-            # # would be more elegent with glob but this works to identify the
-            # # Schedule_2_3_4_5 file
-            # for f in all_files:
-            #     if '2___Plant' in f:
-            #         plant_file = f
-            # eia860_path = join(expected_860_folder, plant_file)
             eia = load_eia860_excel(eia860_path, "Boiler NOx", 1)
 
             csv_fn = eia860_name.split(".")[0] + "_boiler_nox.csv"
-            csv_path = join(expected_860_folder, csv_fn)
+            csv_path = os.path.join(expected_860_folder, csv_fn)
             eia.to_csv(csv_path, index=False)
     eia = _clean_columns(eia)
     return eia
 
+
 def eia860_generator_info(year):
-    expected_860_folder = join(paths.local_path, "eia860_{}".format(year))
+    """Return a data frame containing the information from EIA 860, Schedule 3,
+    Generator Data. This includes the type of coal boilers used in the facility (e.g., uses pulverized coal, is supercritical, etc.).
+
+    This data is used in ampd_plant_emissions.py to calculate emission factors.
+
+    Parameters
+    ----------
+    year : int
+        The year associated with EIA Form 860 data.
+
+    Returns
+    -------
+    pandas.DataFrame
+    """
+    expected_860_folder = os.path.join(
+        paths.local_path, "eia860_{}".format(year))
 
     if not os.path.exists(expected_860_folder):
-        logger.info("Downloading EIA-860 files")
+        logging.info("Downloading EIA-860 files")
         eia860_download(year=year, save_path=expected_860_folder)
 
         eia860_path, eia860_name = find_file_in_folder(
@@ -385,22 +429,11 @@ def eia860_generator_info(year):
             file_pattern_match=["3_1_Generator", "xlsx"],
             return_name=True,
         )
-        # eia860_files = os.listdir(expected_860_folder)
-
-        # # would be more elegent with glob but this works to identify the
-        # # Schedule_2_3_4_5 file
-        # for f in eia860_files:
-        #     if '2___Plant' in f:
-        #         plant_file = f
-
-        # eia860_path = join(expected_860_folder, plant_file)
-
-        # colstokeep = group_cols + sum_cols
         eia = load_eia860_excel(eia860_path, "Operable", 1)
 
         # Save as csv for easier access in future
         csv_fn = eia860_name.split(".")[0] + "_generator_operable.csv"
-        csv_path = join(expected_860_folder, csv_fn)
+        csv_path = os.path.join(expected_860_folder, csv_fn)
         eia.to_csv(csv_path, index=False)
 
     else:
@@ -417,33 +450,33 @@ def eia860_generator_info(year):
 
         # Read and return the existing csv file if it exists
         if csv_file:
-            logger.info("Loading {} EIA-860 plant data from csv file".format(year))
+            logging.info(
+                "Loading {} EIA-860 plant data from csv file".format(year))
             fn = csv_file[0]
-            csv_path = join(expected_860_folder, fn)
-            eia = pd.read_csv(csv_path, dtype={"Plant Id": str},low_memory=False)
+            csv_path = os.path.join(expected_860_folder, fn)
+            eia = pd.read_csv(
+                csv_path, dtype={"Plant Id": str}, low_memory=False)
 
         else:
-            logger.info("Loading data from previously downloaded excel file")
+            logging.info("Loading data from previously downloaded excel file")
             eia860_path, eia860_name = find_file_in_folder(
                 folder_path=expected_860_folder,
                 file_pattern_match=["3_1_Generator", "xlsx"],
                 return_name=True,
             )
-            # # would be more elegent with glob but this works to identify the
-            # # Schedule_2_3_4_5 file
-            # for f in all_files:
-            #     if '2___Plant' in f:
-            #         plant_file = f
-            # eia860_path = join(expected_860_folder, plant_file)
             eia = load_eia860_excel(eia860_path, "Operable", 1)
 
             csv_fn = eia860_name.split(".")[0] + "_generator_operable.csv"
-            csv_path = join(expected_860_folder, csv_fn)
+            csv_path = os.path.join(expected_860_folder, csv_fn)
             eia.to_csv(csv_path, index=False)
     eia = _clean_columns(eia)
+
     return eia
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == "__main__":
     eia_nox = eia860_EnviroAssoc_nox(2016)
     eia_so2 = eia860_EnviroAssoc_so2(2016)

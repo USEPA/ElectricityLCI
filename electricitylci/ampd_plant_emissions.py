@@ -1,23 +1,66 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# ampd_plant_emissions.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
+import logging
+
 import pandas as pd
 import numpy as np
-from electricitylci.globals import data_dir, output_dir
+
+from electricitylci.globals import data_dir
 import electricitylci.PhysicalQuantities as pq
 import electricitylci.cems_data as cems
 import electricitylci.eia923_generation as eia923
 import electricitylci.eia860_facilities as eia860
-import fedelemflowlist
 from electricitylci.model_config import model_specs
 
-import logging
+
+##############################################################################
+# MODULE DOCUMENTATION
+##############################################################################
+__doc__ = """This module generates facility-level power plant emissions using
+data from Air Markets Program Data (AMPD), if possible. If there are problems
+with the AMPD, then emissions are calculated using emissions factors from the
+Environmental Protection Agency AP-42. The emissions from this module are
+meant to serve as a replacement for the emissions provided by eGRID (carbon
+dioxide, methane, nitrogen oxides, sulfur dioxide, and nitrous oxide) with the
+goal of being more transparent about the process to choose the source of
+emissions and to use the actual measured data when possible.
+
+The single method provided in this module, :func:`generate_plant_emissions`,
+downloads data (as necessary), completes all calculations and comparisons,
+and returns a data frame ready for concatenation with other facility-level
+emissions.
+
+Last updated:
+    2024-09-25
+"""
+__all__ = [
+    "generate_plant_emissions",
+]
+
+
+##############################################################################
+# GLOBALS
+##############################################################################
 logger = logging.getLogger("ampd_plant_emissions")
 
+
+##############################################################################
+# FUNCTIONS
+##############################################################################
 def generate_plant_emissions(year):
-    """
-    Reads data from EPA air markets program data and fuel use from EIA 923 Page 1
-    or Page 5 data (generator vs boiler-level data). Emissions factors from AP42
-    are used to calculate emissions from the plant if the fuel input from EPA
-    air markets program data does not matche EIA 923 data. This data is meant
-    to replace the eGRID-sourced data provided by STEWi.
+    """Read EPA air markets program data and fuel use from EIA 923 Page 1
+    or Page 5 (generator vs boiler-level data).
+
+    Emissions factors from AP42 are used to calculate emissions from the plant
+    if the fuel input from EPA air markets program data does not matche EIA 923
+    data. This data is meant to replace the eGRID-sourced data provided by
+    STEWi.
 
     Parameters
     ----------
@@ -26,11 +69,45 @@ def generate_plant_emissions(year):
 
     Returns
     -------
-    dataframe
-        Returns a dataframe with emissions for all power plants reporting to
-        AMPD or EIA923. Emissions are either actual measured emissions (marked
+    pandas.DataFrame :
+        Data frame with emissions for all power plants reporting to AMPD or
+        EIA923. Emissions are either actual measured emissions (marked
         as Source = "cems") or from ap42 emission factors applied at either
         the boiler or generator fuel type level (marked as Source = "ap42").
+
+    Examples
+    --------
+    >>> df = generate_plant_emissions(2016)
+    Enter EPA API key: abcxyz123
+    >>> list(df.columns)
+    ['eGRID_ID',
+     'plant_name',
+     'operator_name',
+     'PrimaryFuel',
+     'net_generation_megawatthours',
+     'Total Fuel Consumption (MMBtu)',
+     'Net Efficiency',
+     'FlowAmount',
+     'Unit',
+     'Year',
+     'Source',
+     'FlowName',
+     'Compartment_path',
+     'Compartment',
+     'FuelCategory',
+     'DataCollection',
+     'GeographicalCorrelation',
+     'TechnologicalCorrelation',
+     'DataReliability']
+    >>> df.head()
+       eGRID_ID    plant_name     operator_name  ... DataReliability
+    0         2  Bankhead Dam  Alabama Power Co  ...               1
+    1         2  Bankhead Dam  Alabama Power Co  ...               1
+    2         2  Bankhead Dam  Alabama Power Co  ...               1
+    3         2  Bankhead Dam  Alabama Power Co  ...               1
+    4         2  Bankhead Dam  Alabama Power Co  ...               1
+    >>> len(df)
+    40600
     """
     COMPARTMENT_MAP = {"emission/air": "air"}
     FUELCAT_MAP = {
@@ -77,6 +154,7 @@ def generate_plant_emissions(year):
     }
 
     def emissions_check_gen_fuel(df):
+        """Unused."""
         emissions_check = eia923_gen_fuel_sub_agg.merge(
             df, on="plant_id", how="left"
         )
@@ -112,6 +190,7 @@ def generate_plant_emissions(year):
         return emissions_check
 
     def emissions_check_boiler(df):
+        """Unused."""
         df_list = [
             eia923_gen_fuel_boiler_agg,
             df,
@@ -183,15 +262,13 @@ def generate_plant_emissions(year):
         ) / emissions_check["Sheet 1_total_fuel_consumption_quantity"].fillna(
             0
         )
-
         return emissions_check
 
     def eia_gen_fuel_co2_ch4_n2o_emissions(eia923_gen_fuel):
-
+        """Add docstring."""
         emissions = pd.DataFrame()
 
         for row in ef_co2_ch4_n2o.itertuples():
-
             fuel_type = eia923_gen_fuel_sub.loc[
                 eia923_gen_fuel_sub["reported_fuel_type_code"].astype(str)
                 == str(row.EIA_Fuel_Type_Code)
@@ -206,7 +283,6 @@ def generate_plant_emissions(year):
             fuel_type["N2O (lbs)"] = (row.pound_n2o_per_mmBtu) * fuel_type[
                 "total_fuel_consumption_mmbtu"
             ].astype(float, errors="ignore")
-
             emissions = pd.concat([emissions, fuel_type])
 
         emissions_agg = emissions.groupby(
@@ -224,7 +300,7 @@ def generate_plant_emissions(year):
         return emissions_agg
 
     def eia_boiler_co2_ch4_n2o_emissions(eia923_boiler):
-
+        """Add docstring."""
         emissions = pd.DataFrame()
 
         for row in ef_co2_ch4_n2o.itertuples():
@@ -296,7 +372,7 @@ def generate_plant_emissions(year):
         return emissions_agg
 
     def eia_gen_fuel_net_gen(eia923_gen_fuel):
-
+        """Add docstring."""
         net_gen_monthly = [
             "netgen_january",
             "netgen_february",
@@ -347,8 +423,7 @@ def generate_plant_emissions(year):
         return eia_923_gen_fuel_agg
 
     def eia_gen_fuel_so2_emissions(eia923_gen_fuel_sub):
-
-        #        emissions = pd.DataFrame()
+        """Add docstring."""
         emissions = eia923_gen_fuel_sub.merge(
             ef_so2.loc[ef_so2["Boiler_Firing_Type_Code"] == "None", :],
             left_on=["reported_prime_mover", "reported_fuel_type_code"],
@@ -394,18 +469,19 @@ def generate_plant_emissions(year):
         )
 
         emissions_agg = emissions.groupby(
-            ["plant_id", "plant_name", "operator_name"], as_index=False
-        )[
+            ["plant_id", "plant_name", "operator_name"],
+            as_index=False
+        )[[
             "SO2 (lbs)",
             "total_fuel_consumption_quantity",
             "total_fuel_consumption_mmbtu",
-        ].sum()
+        ]].sum()
         emissions_agg["plant_id"] = emissions_agg["plant_id"].astype(str)
 
         return emissions_agg
 
     def eia_boiler_so2_emissions(eia923_boiler_firing_type):
-
+        """Add docstring."""
         fuel_heating_value_monthly = [
             "mmbtu_per_unit_january",
             "mmbtu_per_unit_february",
@@ -595,15 +671,15 @@ def generate_plant_emissions(year):
         return emissions_agg
 
     def eia_gen_fuel_nox_emissions(eia923_gen_fuel_sub):
-
-        #        emissions = pd.DataFrame()
+        """Add docstring."""
+        emissions = pd.DataFrame()
         emissions = eia923_gen_fuel_sub.merge(
             ef_nox,
             left_on=["reported_fuel_type_code", "reported_prime_mover"],
             right_on=["Reported_Fuel_Type_Code", "Reported_Prime_Mover"],
             how="left",
         )
-        emissions["NOx (lbs)"] = None
+        # HOTFIX: Don't set NOx (lbs) to string by setting to None [240802;TWD]
         criteria = emissions["Emission_Factor_Denominator"] == "MMBtu"
         emissions.loc[criteria, "NOx (lbs)"] = (
             emissions.loc[criteria, "Emission_Factor"]
@@ -626,12 +702,14 @@ def generate_plant_emissions(year):
         return emissions_agg
 
     def eia_boiler_nox(row):
+        """Add docstring."""
         if row["nox_emission_rate_entire_year_lbs_mmbtu"] > 0:
             return row["NOx Based on Annual Rate (lbs)"]
         else:
             return row["NOx (lbs)"]
 
     def eia_boiler_nox_emissions(eia923_boiler_firing_type):
+        """Add docstring."""
         fuel_heat_quantity_monthly = [
             "MMBtu January",
             "MMBtu February",
@@ -691,25 +769,33 @@ def generate_plant_emissions(year):
         return emissions_agg
 
     def eia_wtd_sulfur_content(eia923_boiler):
-        """This function determines the weighted average sulfur content of all reported fuel types
-    reported in EIA-923 Monthly Boiler Fuel Consumption and Emissions Time Series File.
-    Weighted average fuel sulfur content is derived via monthly fuel quantities and sulfur content reported
-    in 'EIA-923 Monthly Boiler Fuel Consumption and Emissions Time Series File'. This approach implicitly
-    assumes that the composition of fuels consumed in steam boilers are representative of their respective fuel class,
-    and can be applied to thermal generation without loss of generality. For example, the sulfur content of bitumiunous coal
-    consumed for steam generators is assumed to be representative of bituminious coal consumed across other prime movers technologies
-    and/or thermal generation technologies.
+        """Determine the weighted average sulfur content of all fuel types
+        reported in EIA-923 Monthly Boiler Fuel Consumption and Emissions Time Series File.
 
-    Arguments:
-        eia923_boiler {[Dataframe]} -- This dataframe contains all information in 'EIA-923 Monthly Boiler Fuel
-        Consumption and Emissions Time Series File'
+        Weighted average fuel sulfur content is derived via monthly fuel
+        quantities and sulfur content reported in 'EIA-923 Monthly Boiler Fuel
+        Consumption and Emissions Time Series File'. This approach implicitly
+        assumes that the composition of fuels consumed in steam boilers are
+        representative of their respective fuel class, and can be applied to
+        thermal generation without loss of generality. For example, the sulfur
+        content of bituminous coal consumed for steam generators is assumed to
+        be representative of bituminous coal consumed across other prime movers
+        technologies and/or thermal generation technologies.
 
-    Returns:
-        [sulfur_content_agg] -- A 39x1 dataframe, the index represents all unqiue EIA reported fuel
-        code types in the 'EIA-923 Monthly Boiler Fuel Consumption and Emissions Time Series File'.
-        The rows represent the weigthed average sulfur fuel content for the select fuel.
+        Parameters
+        ----------
+        eia923_boiler : pandas.DataFrame :
+            This dataframe contains all information in 'EIA-923 Monthly Boiler
+            Fuel Consumption and Emissions Time Series File'.
+
+        Returns
+        -------
+        pandas.DataFrame :
+            A 39x1 dataframe. The index represents all unique EIA reported fuel
+            code types in the 'EIA-923 Monthly Boiler Fuel Consumption and
+            Emissions Time Series File'. The rows represent the weighted
+            average sulfur fuel content for the select fuel.
         """
-
         sulfur_content = pd.DataFrame()
         eia923_boiler_drop_na = eia923_boiler.dropna(
             subset=["reported_fuel_type_code"]
@@ -772,16 +858,17 @@ def generate_plant_emissions(year):
         sulfur_content_agg = sulfur_content_agg[
             ["reported_fuel_type_code", "Avg Sulfur Content (%)"]
         ]
-
         return sulfur_content_agg
 
     def eia_primary_fuel(row):
+        """Add docstring."""
         if row["Primary Fuel %"] < model_specs.min_plant_percent_generation_from_primary_fuel_category/100:
             return "Mixed Fuel Type"
         else:
             return row["Primary Fuel"]
 
     def emissions_logic_CO2(row):
+        """Unused."""
         if (
             (
                 row["ampd Heat Input (MMBtu)"]
@@ -802,6 +889,7 @@ def generate_plant_emissions(year):
             return row["CO2 (Tons)"], row["Source"]
 
     def emissions_logic_SO2(row):
+        """Unused."""
         if (
             (
                 row["ampd Heat Input (MMBtu)"]
@@ -822,6 +910,7 @@ def generate_plant_emissions(year):
             return row["SO2 (lbs)"], row["Source"]
 
     def emissions_logic_NOx(row):
+        """Unused."""
         if (
             (
                 row["ampd Heat Input (MMBtu)"]
@@ -841,51 +930,39 @@ def generate_plant_emissions(year):
             row["Source"] = "ap42"
             return row["NOx (lbs)"], row["Source"]
 
-    logger.info (
+    logger.info(
         "Generating power plant emissions from CEMS data or emission factors..."
     )
     logger.info("Loading data")
-    ampd = cems.build_cems_df(year)
+    ampd = cems.build_cems_df(
+        year,
+        use_api=True,
+        api_key=model_specs.epa_api_key
+    )
     eia923_gen_fuel = eia923.eia923_generation_and_fuel(year)
-    #    eia923_gen_fuel = pd.read_pickle(
-    #        f"{data_dir}/EIA 923/Pickle Files/Generation and Fuel/EIA 923 Generation and Fuel {year}.pkl"
-    #    )
     eia923_boiler = eia923.eia923_boiler_fuel(year)
-    #    eia923_boiler = pd.read_pickle(
-    #        f"{data_dir}/EIA 923/Pickle Files/Boiler Fuel/EIA 923 Boiler Fuel {year}.pkl"
-    #    )
     eia923_aec = eia923.eia923_sched8_aec(year)
-    #    eia923_aec = pd.read_pickle(
-    #        f"{data_dir}/EIA 923/Pickle Files/Air Emissions Control/EIA 923 AEC {year}.pkl"
-    #    )
     eia860_env_assoc_boiler_NOx = eia860.eia860_EnviroAssoc_nox(year)
-    #    eia860_env_assoc_boiler_NOx = pd.read_pickle(
-    #        f"{data_dir}/EIA 860/Pickle Files/Environmental Associations/EIA 860 Boiler NOx {year}.pkl"
-    #    )
     eia860_env_assoc_boiler_SO2 = eia860.eia860_EnviroAssoc_so2(year)
-    #    eia860_env_assoc_boiler_SO2 = pd.read_pickle(
-    #        f"{data_dir}/EIA 860/Pickle Files/Environmental Associations/EIA 860 Boiler SO2 {year}.pkl"
-    #    )
     eia860_boiler_design = eia860.eia860_boiler_info_design(year)
-    #    eia860_boiler_design = pd.read_pickle(
-    #        f"{data_dir}/EIA 860/Pickle Files/Boiler Info & Design Parameters/EIA 860 Boiler Design {year}.pkl"
-    #    )
     ef_co2_ch4_n2o = pd.read_excel(
-        f"{data_dir}/EFs/eLCI EFs.xlsx", sheet_name="CO2,CH4,N2O"
+        f"{data_dir}/EFs/eLCI EFs.xlsx",
+        sheet_name="CO2,CH4,N2O"
     )
     ef_so2 = pd.read_csv(f"{data_dir}/EFs/eLCI EFs_SO2.csv", index_col=0)
     ef_nox = pd.read_csv(f"{data_dir}/EFs/eLCI EFs_NOx.csv", index_col=0)
-    eia_nox_rate = eia923_aec[
-        [
-            "plant_id",
-            "nox_control_id",
-            "nox_emission_rate_entire_year_lbs_mmbtu",
-        ]
-    ].copy()
+    eia_nox_rate = eia923_aec[[
+        "plant_id",
+        "nox_control_id",
+        "nox_emission_rate_entire_year_lbs_mmbtu",
+    ]].copy()
 
     eia_nox_rate["nox_emission_rate_entire_year_lbs_mmbtu"] = eia_nox_rate[
         "nox_emission_rate_entire_year_lbs_mmbtu"
-    ].apply(pd.to_numeric, errors="coerce")
+    ].apply(
+        pd.to_numeric,
+        errors="coerce"
+    )
     eia_nox_rate = eia_nox_rate.dropna().drop_duplicates()
     eia_nox_rate["nox_control_id"] = eia_nox_rate["nox_control_id"].astype(str)
     eia_nox_rate["plant_id"] = eia_nox_rate["plant_id"].astype(str)
@@ -901,19 +978,18 @@ def generate_plant_emissions(year):
         ["plant_id", "nox_emission_rate_entire_year_lbs_mmbtu", "boiler_id"]
     ].drop_duplicates(["plant_id", "boiler_id"])
 
-    eia_so2_rem_eff = eia923_aec[
-        [
-            "plant_id",
-            "so2_control_id",
-            "so2_removal_efficiency_rate_at_annual_operating_factor",
-        ]
-    ].copy()
+    eia_so2_rem_eff = eia923_aec[[
+        "plant_id",
+        "so2_control_id",
+        "so2_removal_efficiency_rate_at_annual_operating_factor",
+    ]].copy()
     eia_so2_rem_eff[
         "so2_removal_efficiency_rate_at_annual_operating_factor"
     ] = eia_so2_rem_eff[
         "so2_removal_efficiency_rate_at_annual_operating_factor"
     ].apply(
-        pd.to_numeric, errors="coerce"
+        pd.to_numeric,
+        errors="coerce"
     )
     eia_so2_rem_eff = eia_so2_rem_eff.dropna().drop_duplicates()
     eia_so2_rem_eff["so2_control_id"] = eia_so2_rem_eff[
@@ -928,13 +1004,11 @@ def generate_plant_emissions(year):
         how="left",
     )
     eia_so2_rem_eff = eia_so2_rem_eff.dropna()
-    eia_so2_rem_eff = eia_so2_rem_eff[
-        [
-            "plant_id",
-            "so2_removal_efficiency_rate_at_annual_operating_factor",
-            "boiler_id",
-        ]
-    ].drop_duplicates(["plant_id", "boiler_id"])
+    eia_so2_rem_eff = eia_so2_rem_eff[[
+        "plant_id",
+        "so2_removal_efficiency_rate_at_annual_operating_factor",
+        "boiler_id",
+    ]].drop_duplicates(["plant_id", "boiler_id"])
 
     eia923_gen_fuel_unique_fuel_codes = (
         eia923_gen_fuel[["reported_fuel_type_code"]].drop_duplicates().dropna()
@@ -947,9 +1021,6 @@ def generate_plant_emissions(year):
     ).fillna(0)
     wtd_sulfur_content_fuel.set_index("reported_fuel_type_code", inplace=True)
 
-    #    eia923_gen_fuel = eia923_gen_fuel.rename(
-    #        columns={"prime_mover": "Reported Prime Mover"}
-    #    )
     index1 = pd.MultiIndex.from_arrays(
         [
             eia923_gen_fuel[col]
@@ -1271,10 +1342,10 @@ def generate_plant_emissions(year):
     df_list = [
         eia_gen_fuel_co2_ch4_n2o_output,
         eia_gen_fuel_so2_output,
-        eia_gen_fuel_nox_output,
+        eia_gen_fuel_nox_output, # NOx (lbs) as object
         eia_boiler_co2_ch4_n2o_output,
         eia_boiler_so2_output,
-        eia_boiler_nox_output,
+        eia_boiler_nox_output, # NOx (lbs) as float
     ]
     logger.info("Choosing emission sources")
     emissions_comparer = pd.concat(df_list, sort=True)
@@ -1464,6 +1535,11 @@ def generate_plant_emissions(year):
     return netl_harmonized_melt
 
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == "__main__":
+    from electricitylci.globals import output_dir
+
     netl_harmonized_melt = generate_plant_emissions(2016)
     netl_harmonized_melt.to_csv(f"{output_dir}/netl_harmonized.csv")
