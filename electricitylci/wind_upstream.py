@@ -368,6 +368,6 @@ def generate_upstream_wind(year):
 ##############################################################################
 if __name__ == "__main__":
     from electricitylci.globals import output_dir
-    year = 2016
+    year = 2020
     wind_upstream = generate_upstream_wind(year)
     wind_upstream.to_csv(f"{output_dir}/upstream_wind_{year}.csv")

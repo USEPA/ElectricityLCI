@@ -141,7 +141,7 @@ def _solar_construction(year):
         compartment_map)
     solar_upstream["Unit"] = "kg"
     solar_upstream["input"] = False
-
+    
     return solar_upstream
 
 
