@@ -330,30 +330,50 @@ def olcaschema_genmix(database, gen_dict, subregion=None):
                 database_reg["FuelCategory"] == fuelname
             ]
             if database_f1.empty != True:
-                matching_dict = None
+                matching_dict = {}
                 for generator in gen_dict:
                     if (
-                        gen_dict[generator]["name"]
-                        == "Electricity - " + fuelname + " - " + reg
-                    ):
-                        matching_dict = gen_dict[generator]
-                        break
+                        (gen_dict[generator]["name"]
+                        == "Electricity - " + fuelname + " - " + reg)
+                        ):
+                        matching_dict["Electricity"] = gen_dict[generator]
+                    elif (
+                        (gen_dict[generator]["name"]
+                        == "Construction - " + fuelname + " - " + reg)
+                        ):
+                        matching_dict["Construction"] = gen_dict[generator]
+                    
+                        #break #needed to remove this so that we find electricity AND construction
                 if matching_dict is None:
                     logging.warning(
                         f"Trouble matching dictionary for generation mix {fuelname} - {reg}. Skipping this flow for now"
                     )
                 else:
-                    ra = exchange_table_creation_input_genmix(
-                    database_f1, fuelname
-                    )
-                    ra["quantitativeReference"] = False                    
-                    ra["provider"] = {
-                        "name": matching_dict["name"],
-                        "@id": matching_dict["uuid"],
-                        "category": matching_dict["category"].split("/"),
-                    }
-                    #if matching_dict is None:
-                    exchange(ra, exchanges_list)
+                    for match in matching_dict:
+                        ra = exchange_table_creation_input_genmix(
+                        database_f1, fuelname
+                        )
+                        ra["quantitativeReference"] = False
+                        ra["provider"] = {
+                            "name": matching_dict[match]["name"],
+                            "@id": matching_dict[match]["uuid"],
+                            "category": matching_dict[match]["category"].split("/"),
+                        }
+                        #if matching_dict is None:
+                        exchange(ra, exchanges_list)
+                    # else:
+                    #     matching_dict=matching_dict[list(matching_dict.keys())[0]]
+                    #     ra = exchange_table_creation_input_genmix(
+                    #     database_f1, fuelname
+                    #     )
+                    #     ra["quantitativeReference"] = False
+                    #     ra["provider"] = {
+                    #         "name": matching_dict["name"],
+                    #         "@id": matching_dict["uuid"],
+                    #         "category": matching_dict["category"].split("/"),
+                    #     }
+                    #     #if matching_dict is None:
+                    #     exchange(ra, exchanges_list)
                     # Writing final file
 
         final = process_table_creation_genmix(reg, exchanges_list)
