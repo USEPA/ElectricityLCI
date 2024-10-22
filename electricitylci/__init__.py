@@ -24,7 +24,7 @@ __doc__ = """This module contains the main API functions to be used by the
 end user.
 
 Last updated:
-    2024-08-02
+    2024-10-22
 """
 __version__ = elci_version
 
@@ -227,9 +227,10 @@ def get_gen_plus_netl():
         "Generating inventories for geothermal, solar, wind, hydro, and "
         "solar thermal..."
     )
+    # TODO: replace solar PV and solar thermal w/ get O&M.
     geo_df = geo.generate_upstream_geo(eia_gen_year)
     solar_df = solar.generate_upstream_solar(eia_gen_year)
-    wind_df = wind.generate_upstream_wind(eia_gen_year)
+    wind_df = wind.get_wind_om(eia_gen_year)
     hydro_df = hydro.generate_hydro_emissions() # always 2016
     solartherm_df = solartherm.generate_upstream_solarthermal(eia_gen_year)
 
@@ -408,7 +409,8 @@ def get_generation_process_df(regions=None, **kwargs):
     import electricitylci.generation as gen
     import electricitylci.combinator as combine
 
-    # Add NETL renewables
+    # Add NETL renewables;
+    # NOTE: these should all be 'Power plant' stage code.
     if config.model_specs.include_renewable_generation is True:
         generation_process_df = get_gen_plus_netl()
     else:
@@ -437,7 +439,9 @@ def get_generation_process_df(regions=None, **kwargs):
         _, canadian_gen = combine_upstream_and_gen_df(
             generation_process_df, upstream_df
         )
-        # Add upstream fuels and Canadian generation to plant gen
+
+        # Add upstream fuels to generation processes, with Canadian generation
+        # along for the ride.
         gen_plus_fuels = add_fuels_to_gen(
             generation_process_df, upstream_df, canadian_gen, upstream_dict
         )
@@ -648,7 +652,7 @@ def get_upstream_process_df(eia_gen_year):
     ng_df = ng.generate_upstream_ng(eia_gen_year)
     petro_df = petro.generate_petroleum_upstream(eia_gen_year)
     nuke_df = nuke.generate_upstream_nuc(eia_gen_year)
-    const = ppc.generate_power_plant_construction(eia_gen_year)
+    const = ppc.generate_power_plant_construction(eia_gen_year, incl_renew=True)
     upstream_df = combine.concat_map_upstream_databases(
         eia_gen_year, petro_df, nuke_df, const
     )

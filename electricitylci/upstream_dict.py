@@ -30,7 +30,7 @@ This module contains the relevant methods for generating openLCA-compliant
 dictionaries for upstream process inventories.
 
 Last updated:
-    2024-08-02
+    2024-10-22
 """
 __all__ = [
     "olcaschema_genupstream_processes",
@@ -188,7 +188,8 @@ def _exchange_table_creation_ref(fuel_type):
             "2371: Utility System Construction")
     }
 
-    # the following link provides the undefined variable: https://github.com/KeyLogicLCA/ElectricityLCI/commit/f61d28a3d0cf5b0ef61ca147f870e15a863f8ec3
+    # The following link provides the undefined variables:
+    # https://github.com/KeyLogicLCA/ElectricityLCI/commit/f61d28a3d0cf5b0ef61ca147f870e15a863f8ec3
     ar = dict()
     ar["internalId"] = ""
     ar["@type"] = "Exchange"
@@ -238,6 +239,7 @@ def _exchange_table_creation_ref(fuel_type):
     ar["baseUncertainty"] = ""
     ar["provider"] = ""
     ar["amountFormula"] = ""
+
     return ar
 
 
@@ -324,7 +326,7 @@ def olcaschema_genupstream_processes(merged):
     # First going to keep plant IDs to account for possible emission repeats
     # for the same compartment, leading to erroneously low emission factors
     merged_summary = merged.groupby(
-        [
+        by=[
             "FuelCategory",
             "stage_code",
             "FlowName",
@@ -332,25 +334,36 @@ def olcaschema_genupstream_processes(merged):
             "Compartment",
             "plant_id",
             "Unit",
-            "input",
+            "input"
         ],
         as_index=False,
     ).agg({"FlowAmount": "sum", "quantity": "mean"})
     merged_summary = merged_summary.groupby(
-        ["FuelCategory", "stage_code", "FlowName", "FlowUUID", "Compartment","Unit","input"],
+        by=[
+            "FuelCategory",
+            "stage_code",
+            "FlowName",
+            "FlowUUID",
+            "Compartment",
+            "Unit",
+            "input"
+        ],
         as_index=False,
     )[["quantity", "FlowAmount"]].sum()
 
     # For natural gas extraction there are extraction and transportation stages
     # that will get lumped together in the groupby which will double
     # the quantity and erroneously lower emission rates.
+
+    # Calculate emission factor (e.g., total emission per total MWh)
     merged_summary["emission_factor"] = (
         merged_summary["FlowAmount"] / merged_summary["quantity"]
     )
-    merged_summary.dropna(subset=["emission_factor"],inplace=True)
-    upstream_list = [x for x in merged_summary["stage_code"].unique()]
+    merged_summary.dropna(subset=["emission_factor"], inplace=True)
 
+    # Make upstream processes for each stage code and save to a dictionary.
     upstream_process_dict = dict()
+    upstream_list = [x for x in merged_summary["stage_code"].unique()]
     for upstream in upstream_list:
         logging.info(f"Building dictionary for {upstream}")
         exchanges_list = list()
@@ -363,14 +376,13 @@ def olcaschema_genupstream_processes(merged):
         )
         merged_summary_filter.dropna(subset=["FlowName"], inplace=True)
 
-        # TODO: where does "[no match]" get set?
+        # TODO: where does "[no match]" get set? FEDEFL mapper?
         garbage = merged_summary_filter.loc[
             merged_summary_filter["FlowName"] == "[no match]", :].index
         merged_summary_filter.drop(garbage, inplace=True)
 
         ra = merged_summary_filter.apply(
-            _exchange_table_creation_output, axis=1
-        ).tolist()
+            _exchange_table_creation_output, axis=1).tolist()
         exchanges_list.extend(ra)
 
         first_row = min(merged_summary_filter.index)

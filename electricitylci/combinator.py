@@ -29,7 +29,7 @@ nuclear fuel cycle), and maps emissions based on the Federal LCA Commons
 Elementary Flow List in order to provide life cycle inventory.
 
 Last edited:
-    2024-10-11
+    2024-10-22
 """
 __all__ = [
     "BA_CODES",
@@ -52,7 +52,7 @@ BA_CODES = read_ba_codes()
 ##############################################################################
 def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     """Convert the upstream emissions database to fuel inputs and add them
-    to the generator dataframe.
+    to the generator data frame.
 
     This is in preparation of generating unit processes for openLCA.
 
@@ -75,6 +75,18 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     Returns
     -------
     pandas.DataFrame
+
+    Examples
+    --------
+    >>> from electricitylci import get_gen_plus_netl
+    >>> from electricitylci import get_upstream_process_df
+    >>> from electricitylci import write_upstream_process_database_to_dict
+    >>> from electricitylci import write_process_dicts_to_jsonld
+    >>> generation_df = get_gen_plus_netl()
+    >>> ups_df = get_upstream_process_df(2020)
+    >>> ups_dict = write_upstream_process_database_to_dict(ups_df)
+    >>> ups_dict = write_process_dicts_to_jsonld(ups_dict)
+    >>> gen_plus_fuel = add_fuel_inputs(generation_df, ups_df, ups_dict)
     """
     upstream_reduced = upstream_df.drop_duplicates(
         subset=["plant_id", "stage_code", "quantity"]
@@ -87,10 +99,13 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     # to generate the fuels and associated metadata with each plant. That will
     # then be merged with the generation database.
     fuel_df["flowdict"] = upstream_reduced["stage_code"].map(upstream_dict)
-
     expand_fuel_df = fuel_df["flowdict"].apply(pd.Series)
     fuel_df.drop(columns=["flowdict"], inplace=True)
 
+    # Fill in with appropriate fields.
+    # NOTE: 'quantity' is units of Electricity (MWh) for construction and
+    # nameplate capacity (MW) for coal, heat input (MJ) for petroleum, tons
+    # for coal mining, etc.
     fuel_df["Compartment"] = "input"
     fuel_df["FlowName"] = expand_fuel_df["q_reference_name"]
     fuel_df["stage_code"] = upstream_reduced["stage_code"]
@@ -102,6 +117,8 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     fuel_df["FuelCategory"] = upstream_reduced["FuelCategory"]
     fuel_df["Year"] = upstream_reduced["Year"]
     fuel_df["Source"] = upstream_reduced["Source"]
+
+    # Drop the merge columns from fuel data frame
     merge_cols = [
         "Age",
         "Balancing Authority Code",
@@ -112,18 +129,23 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     ]
     merge_cols = [x for x in merge_cols if x in fuel_df.columns]
     fuel_df.drop(columns=merge_cols, inplace=True)
+
+    # Get location data for each facility and add it to fuel data frame.
+    # NOTE: some facilities may not have location data.
     gen_df_reduced = gen_df[merge_cols + ["eGRID_ID"]].drop_duplicates(
         subset=["eGRID_ID"]
     )
-
     fuel_df = fuel_df.merge(
         right=gen_df_reduced,
         left_on="eGRID_ID",
         right_on="eGRID_ID",
         how="left",
     )
+
+    # Drop rows that didn't link up.
     fuel_df.dropna(subset=["Electricity"], inplace=True)
-    #fuel_df["Source"] = "eia"
+
+    # Add data quality indicators and elementary flow prime context (inputs)
     fuel_df = add_temporal_correlation_score(
         fuel_df, model_specs.electricity_lci_target_year)
     fuel_df["DataCollection"] = 5
@@ -131,6 +153,8 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     fuel_df["TechnologicalCorrelation"] = 1
     fuel_df["DataReliability"] = 1
     fuel_df["ElementaryFlowPrimeContext"] = "input"
+
+    # Create a series mapping facility IDs to their primary fuel categories
     fuel_cat_key = (
         gen_df[["FacilityID", "FuelCategory"]].drop_duplicates(
             subset="FacilityID").set_index("FacilityID")
@@ -138,8 +162,11 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     fuel_df["FuelCategory"] = fuel_df["FacilityID"].map(
         fuel_cat_key["FuelCategory"]
     )
+
+    # Concatenate the generation processes with their upstream processes.
     gen_plus_up_df = pd.concat([gen_df, fuel_df], ignore_index=True)
     gen_plus_up_df = fill_nans(gen_plus_up_df, model_specs.eia_gen_year)
+
     # Taking out anything with New Brunswick System Operator so that
     # these fuel inputs (for a very small US portion of NBSO) don't get mapped
     # to the Canadian import rollup (i.e., double-counted)

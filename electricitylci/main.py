@@ -32,7 +32,7 @@ options. The selection of configuration file will occur after the start
 of this script or it may be passed following the command-line argument, '-c'.
 
 Last updated:
-    2024-08-22
+    2024-10-22
 
 Changelog:
     -   Address logging handler import for Python 3.12 compatibility.
@@ -172,18 +172,23 @@ def run_generation():
     """
     # There are essentially two paths - with and without upstream processes.
     if config.model_specs.include_upstream_processes is True:
-        # Create data frame with all generation process data; includes
-        # upstream and Canadian data.
+        # Create data frame with all upstream process data---
+        # plant construction, natural gas/petroleum extraction & processing,
+        # coal mining, and nuclear fuel extraction and processing.
         # NOTE: Only nuclear ('NUC') stage codes have electricity data;
         #       all others are nans.
         logging.info("get upstream process")
         upstream_df = get_upstream_process_df(config.model_specs.eia_gen_year)
+
+        # Convert all upstream stage codes into exchange tables
+        # via upstream_dict.py's `olcaschema_genupstream_processes`.
         logging.info("write upstream process to dict")
         upstream_dict = write_upstream_process_database_to_dict(upstream_df)
 
-        # NOTE: UUID's for upstream processes are created when converting to
-        #       JSON-LD. This has to be done here if the information is
-        #       going to be included in the final outputs.
+        # Save each upstream stage code as an openLCA process---
+        # these will be used as providers for downstream processes.
+        # NOTE: This creates the UUID's for upstream processes
+        # (and a few other required metadata fields in the dictionary)
         upstream_dict = write_process_dicts_to_jsonld(upstream_dict)
     else:
         # Create data frame with only generation process data.
