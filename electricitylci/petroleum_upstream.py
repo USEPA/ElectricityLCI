@@ -63,7 +63,8 @@ def generate_petroleum_upstream(year):
 
     Returns
     ----------
-    dataframe
+    pandas.DataFrame
+        Columns include 'quantity' (heat input in MJ).
     """
     eia_fuel_receipts_df = read_eia923_fuel_receipts(year)
     petroleum_criteria = (
