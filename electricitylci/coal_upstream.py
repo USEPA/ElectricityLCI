@@ -592,7 +592,6 @@ def generate_upstream_coal(year):
     -----
     Relies on data files:
 
-
         -   2016_Coal_Trans_By_Plant_ABB_Data.csv: contains transportation
             units by transportation mode for each coal facility.
         -   coal_mining_lci.csv: Monte-carlo emission results (mean) for each
@@ -602,14 +601,6 @@ def generate_upstream_coal(year):
             -   'transportation': Five modes by 41 emission flows
             -   'flowmapping': Map between flow name and target flow name,
                 context (e.g., emission/air), UUID, and unit.
-
-    Address the pandas FutureWarning:
-
-        coal_upstream.py:374: FutureWarning: Setting an item of incompatible
-        dtype is deprecated and will raise in a future error of pandas. Value
-        'emission' has dtype incompatible with float64, please explicitly cast
-        to a compatible dtype first.
-        minimerge.drop(
     """
     # Read the coal input from eia
     coal_input_eia = generate_upstream_coal_map(year)
