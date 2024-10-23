@@ -6,6 +6,7 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+import logging
 import os
 
 import pandas as pd
@@ -22,10 +23,11 @@ construction to the fossil power generators in the United States and produces
 a data frame that permits the calculation of total construction impact.
 
 Last edited:
-    2024-10-22
+    2024-10-23
 """
 __all__ = [
     "generate_power_plant_construction",
+    "get_coal_ngcc_const",
 ]
 
 
@@ -33,28 +35,84 @@ __all__ = [
 # FUNCTIONS
 ##############################################################################
 def generate_power_plant_construction(year, incl_renew=False):
-    # IN PROGRESS --- TODO: add remaining construction plants
+    """Create the life-cycle inventory for power plant construction.
+
+    By default includes the coal and natural gas combined cycle power
+    plants, and, optionally, the renewable power plant construction.
+
+    Parameters
+    ----------
+    year : int
+        The year for EIA facilities.
+    incl_renew : bool, optional
+        Option, when true, includes renewable power plant construction (e.g., solar PV, solar thermal, and wind farm), by default False
+
+    Returns
+    -------
+    pandas.DataFrame
+        Life-cycle inventory of power plant construction.
+        Data frame columns include:
+
+        -   'Compartment', emission compartment (e.g., air, soil, water)
+        -   'Compartment_path', compartment path (e.g., emission/air)
+        -   'FlowAmount', emission amount (float)
+        -   'FlowName', emission name
+        -   'Source', source strings (e.g., 'netlconst')
+        -   'Unit', emission unit (e.g., kg)
+        -   'input', boolean for resource (true) or emission (false)
+        -   'fuel_type', 'Construction'
+        -   'plant_id', EIA facility ID
+        -   'quantity', depends on stage (coal, gas, or renewable)
+        -   'stage_code', construction stage code (e.g., 'coal_const')
+        -   'technology', for labeling gas and coal plants (unused)
+    """
     # Pull the original coal and ngcc power plant construction processes.
     construction_df = get_coal_ngcc_const(year)
 
     # NEW: Issue#150; pull in renewable power plant construction.
     if incl_renew:
-        # Wind has 'EIA Sector Number', 'Reported Prime Mover', and
-        # 'Electricity' and does not have 'technology'---the latter is
-        # not used.
+        # 'EIA Sector Number', 'Reported Prime Mover', and
+        # 'Electricity' columns are extra and 'technology' is missing---
+        # the latter is not used, just add empty string to assist with concat,
+        # and set fuel type to construction to make it a construction process.
+        renew_extra_cols = [
+            'EIA Sector Number',
+            'Reported Prime Mover',
+            'Electricity',
+        ]
+
         from electricitylci.wind_upstream import get_wind_construction
         wind_const = get_wind_construction(year)
-        wind_const = wind_const.drop(
-            columns=[
-                'EIA Sector Number',
-                'Reported Prime Mover',
-                'Electricity',
-            ]
-        )
+        wind_extra_cols = [
+            x for x in renew_extra_cols if x in wind_const.columns]
+        wind_const = wind_const.drop(columns=wind_extra_cols)
         wind_const['technology'] = ''
         wind_const['fuel_type'] = 'Construction'
+        logging.info("Adding wind power plant construction")
         construction_df =  pd.concat(
             [construction_df, wind_const], ignore_index=True)
+
+        # Add solar thermal power plant construction
+        from electricitylci.solar_thermal_upstream import get_solarthermal_construction
+        st_const = get_solarthermal_construction(year)
+        st_extra_cols = [x for x in renew_extra_cols if x in st_const.columns]
+        st_const = st_const.drop(columns=st_extra_cols)
+        st_const['technology'] = ''
+        st_const['fuel_type'] = 'Construction'
+        logging.info("Adding solar thermal power plant construction")
+        construction_df = pd.concat(
+            [construction_df, st_const], ignore_index=True)
+
+        # Add solar PV power plant construction
+        from electricitylci.solar_upstream import get_solar_pv_construction
+        spv_const = get_solar_pv_construction(year)
+        spv_extra_cols = [x for x in renew_extra_cols if x in spv_const.columns]
+        spv_const = spv_const.drop(columns=spv_extra_cols)
+        spv_const['technology'] = ''
+        spv_const['fuel_type'] = 'Construction'
+        logging.info("Adding solar PV power plant construction")
+        construction_df = pd.concat(
+            [construction_df, spv_const], ignore_index=True)
 
     return construction_df
 
@@ -95,17 +153,17 @@ def get_coal_ngcc_const(year):
         This dataframe provides construction inventory for each power plant
         reporting to EIA. Columns include:
 
-        - 'plant_id' (int): EIA860 plant identifier
-        - 'technology' (str): coal, nat. gas, petroleum, or other plant type
-        - 'quantity' (float): nameplate capacity, MW
-        - 'FlowAmount' (float): flow amount
-        - 'Unit' (str): units of flow
-        - 'Compartment_path' (str): resource or emission path (to air, soil)
-        - 'FlowName' (str): flow name
-        - 'Compartment' (str): resource, air, water, or soil
-        - 'stage_code' (str): 'coal_const' or 'ngcc_const'
-        - 'input' (bool): true for resources; false otherwise
-        - 'fuel_type' (str): 'Construction'
+        - 'plant_id' (int), EIA860 plant identifier
+        - 'technology' (str), coal, nat. gas, petroleum, or other plant type
+        - 'quantity' (float), nameplate capacity, MW
+        - 'FlowAmount' (float), flow amount
+        - 'Unit' (str), units of flow
+        - 'Compartment_path' (str), resource or emission path (to air, soil)
+        - 'FlowName' (str), flow name
+        - 'Compartment' (str), resource, air, water, or soil
+        - 'stage_code' (str), 'coal_const' or 'ngcc_const'
+        - 'input' (bool), true for resources; false otherwise
+        - 'fuel_type' (str), 'Construction'
     """
     gen_columns=[
         "plant_id",

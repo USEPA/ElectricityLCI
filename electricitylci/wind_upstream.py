@@ -14,6 +14,7 @@ import pandas as pd
 
 from electricitylci.globals import data_dir
 from electricitylci.eia923_generation import eia923_download_extract
+from electricitylci.solar_upstream import fix_renewable
 
 
 ##############################################################################
@@ -24,11 +25,10 @@ for wind farm construction for each plant in EIA 923 based on upstream
 contributions.
 
 Last updated:
-    2024-10-22
+    2024-10-23
 """
 __all__ = [
     "aggregate_wind",
-    "fix_wind",
     "generate_upstream_wind",
     "get_wind_construction",
     "get_wind_generation",
@@ -45,53 +45,6 @@ RENEWABLE_VINTAGE = 2020
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def fix_wind(df):
-    """Apply data frame fixes for upstream wind LCI.
-
-    1. Applies a constant value, "netlnrelwind", as Source.
-    2. Sets 'Electricity' flows as inputs in units of MWh.
-    3. Corrects negative water-to-water emissions as positive inputs.
-    4. Assigns compartment paths.
-
-    Parameters
-    ----------
-    df : pandas.DataFrame
-        Life cycle inventory of upstream wind (e.g., construction + O&M).
-        The data frame must have columns labeled 'FlowName', 'Compartment,
-        'input', 'Unit', and 'FlowAmount', which are used as filters for
-        querying and updating rows.
-
-    Returns
-    -------
-    pandas.DataFrame
-        The same data frame that was received with updated values.
-    """
-    # Give unique source code
-    df["Source"] = "netlnrelwind"
-
-    # Set the compartment paths (only to air and water)
-    air_c = df['Compartment'] == 'air'
-    water_c = df['Compartment'] == 'water'
-    df['Compartment_path'] = ""
-    df.loc[air_c, 'Compartment_path'] = "emission/air"
-    df.loc[water_c, 'Compartment_path'] = "emission/water"
-
-    # Set Electricity as input and correct its units.
-    df.loc[df["FlowName"]=="Electricity", "input"] = True
-    df.loc[df["FlowName"]=="Electricity", "Unit"] = "MWh"
-    df.loc[df["FlowName"]=="Electricity", "Compartment_path"] = "input"
-
-    # HOTFIX water as an input (Iss147).
-    #   These are the negative water-to-water emissions.
-    water_filter = (df['Compartment'] == 'water') & (
-        df['FlowAmount'] < 0) & (df['FlowName'].str.startswith('Water'))
-    df.loc[water_filter, 'input'] = True
-    df.loc[water_filter, 'FlowAmount'] *= -1.0
-    df.loc[water_filter, 'Compartment_path'] = "resource"
-
-    return df
-
-
 def get_wind_construction(year):
     """Generate wind farm construction inventory.
 
@@ -207,7 +160,7 @@ def get_wind_construction(year):
     wind_upstream["input"] = False
     wind_upstream["Unit"] = "kg"
 
-    wind_upstream = fix_wind(wind_upstream)
+    wind_upstream = fix_renewable(wind_upstream, "netlnrelwind")
 
     return wind_upstream
 
@@ -372,7 +325,7 @@ def get_wind_om(year):
     wind_ops["input"] = False
     wind_ops["Unit"]="kg"
 
-    wind_ops = fix_wind(wind_ops)
+    wind_ops = fix_renewable(wind_ops, "netlnrelwind")
 
     return wind_ops
 

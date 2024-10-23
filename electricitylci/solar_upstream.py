@@ -25,23 +25,114 @@ the upstream contributions. Emissions from the construction of panels are
 accounted for elsewhere.
 
 Last updated:
-    2024-10-16
+    2024-10-23
 """
 __all__ = [
+    "fix_renewable",
     "generate_upstream_solar",
+    "get_solar_generation",
+    "get_solar_pv_construction",
+    "get_solar_pv_om",
 ]
 
 
 ##############################################################################
 # GLOBALS
 ##############################################################################
-RENEWABLE_VINTAGE = 2016
+RENEWABLE_VINTAGE = 2020
 
 
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def _solar_construction(year):
+def fix_renewable(df, source="netlrenew"):
+    """Apply data frame fixes for upstream renewable LCI.
+
+    1. Applies a constant value to Source.
+    2. Sets 'Electricity' flows as inputs in units of MWh.
+    3. Corrects negative water-to-water emissions as positive inputs.
+    4. Assigns compartment paths needed for FEDEFL mapping.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Life cycle inventory of upstream renewable LCI (e.g., solar PV,
+        solar thermal, and wind farm construction and/or O&M). The data
+        frame must have columns labeled 'FlowName', 'Compartment, 'input',
+        'Unit', and 'FlowAmount', which are used as filters for querying
+        and updating rows.
+    source : str, option
+        The source string for the given renewable.
+        Expected values include:
+
+        - 'netlnrelsolarpv', for solar PV
+        - 'netlsolarthermal', for solar thermal
+        - 'netlnrelwind', for wind farm
+
+        Defaults to 'netlrenew'.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The same data frame that was received with updated values.
+
+    Notes
+    -----
+    For the water filter, there are generally three flows that contribute
+    to the resource load: "Water, rain", "Water, fresh", and "Water, saline".
+    The first does not appear to map to FEDEFL and is lost, whereas the second
+    two carry over.
+    """
+    # Give unique source code.
+    df["Source"] = source
+
+    # Set the compartment paths (only to air and water)
+    air_c = df['Compartment'] == 'air'
+    water_c = df['Compartment'] == 'water'
+    df['Compartment_path'] = ""
+    df.loc[air_c, 'Compartment_path'] = "emission/air"
+    df.loc[water_c, 'Compartment_path'] = "emission/water"
+
+    # Set Electricity as input and correct its units.
+    df.loc[df["FlowName"]=="Electricity", "input"] = True
+    df.loc[df["FlowName"]=="Electricity", "Unit"] = "MWh"
+    df.loc[df["FlowName"]=="Electricity", "Compartment_path"] = "input"
+
+    # HOTFIX water as an input (Iss147).
+    #   These are the negative water-to-water emissions.
+    water_filter = (df['Compartment'] == 'water') & (
+        df['FlowAmount'] < 0) & (df['FlowName'].str.startswith('Water'))
+    df.loc[water_filter, 'input'] = True
+    df.loc[water_filter, 'FlowAmount'] *= -1.0
+    df.loc[water_filter, 'Compartment_path'] = "resource"
+
+    return df
+
+
+def get_solar_generation(year):
+    """Return the EIA generation data for solar thermal and PV power plants.
+
+    Parameters
+    ----------
+    year : int
+        EIA generation year.
+
+    Returns
+    -------
+    pandas.DataFrame
+        EIA generation data for solar thermal and solar PV power plants.
+    """
+    eia_generation_data = eia923_download_extract(year)
+    eia_generation_data['Plant Id'] = eia_generation_data[
+        'Plant Id'].astype(int)
+
+    column_filt = (eia_generation_data['Reported Fuel Type Code'] == 'SUN')
+    df = eia_generation_data.loc[column_filt, :]
+
+    return df
+
+
+def get_solar_pv_construction(year):
     """Generate solar PV construction inventory.
 
     The construction UP functional unit is normalized per year.
@@ -55,7 +146,7 @@ def _solar_construction(year):
     -------
     pandas.DataFrame
         Emissions inventory for solar PV construction.
-        Returns NoneType for 2016 renewables vintage---the O&M emissions
+        Returns NoneType for 2016 renewable vintage---the O&M emissions
         include the construction inventory.
 
     Raises
@@ -65,6 +156,8 @@ def _solar_construction(year):
     """
     # Iss150, new construction and O&M LCIs
     if RENEWABLE_VINTAGE == 2020:
+        logging.info(
+            "Reading 2020 upstream solar PV construction inventory.")
         solar_df = pd.read_csv(
             os.path.join(
                 data_dir,
@@ -76,8 +169,9 @@ def _solar_construction(year):
             na_values=["#VALUE!", "#DIV/0!"],
         )
     elif RENEWABLE_VINTAGE == 2016:
-        logging.debug(
-            "The 2016 solar PV LCI does not separate construction and O&M.")
+        logging.info(
+            "The 2016 solar PV LCI does not separate construction and O&M. "
+            "Returning none.")
         return None
     else:
         raise ValueError("Renewable vintage %s undefined!" % RENEWABLE_VINTAGE)
@@ -104,7 +198,7 @@ def _solar_construction(year):
     )
     solar_df_t_melt = solar_df_t_melt.astype({'plant_id' : int})
 
-    solar_generation_data = _solar_generation(year)
+    solar_generation_data = get_solar_generation(year)
     solar_upstream = solar_df_t_melt.merge(
         right=solar_generation_data,
         left_on='plant_id',
@@ -142,33 +236,12 @@ def _solar_construction(year):
     solar_upstream["Unit"] = "kg"
     solar_upstream["input"] = False
 
+    solar_upstream = fix_renewable(solar_upstream, "netlnrelsolarpv")
+
     return solar_upstream
 
 
-def _solar_generation(year):
-    """Return the EIA generation data for solar PV power plants.
-
-    Parameters
-    ----------
-    year : int
-        EIA generation year.
-
-    Returns
-    -------
-    pandas.DataFrame
-        EIA generation data for solar PV power plants.
-    """
-    eia_generation_data = eia923_download_extract(year)
-    eia_generation_data['Plant Id'] = eia_generation_data[
-        'Plant Id'].astype(int)
-
-    column_filt = (eia_generation_data['Reported Fuel Type Code'] == 'SUN')
-    df = eia_generation_data.loc[column_filt, :]
-
-    return df
-
-
-def _solar_om(year):
+def get_solar_pv_om(year):
     """Generate the operations and maintenance LCI for solar PV power plants.
     For 2016 electricity baseline, this data frame includes the construction
     inventory.
@@ -186,7 +259,7 @@ def _solar_om(year):
     Raises
     ------
     ValueError
-        If the renwables vintage is not defined or a valid year.
+        If the renewable vintage is not defined or a valid year.
     """
     # Iss150, new construction and O&M LCIs
     if RENEWABLE_VINTAGE == 2020:
@@ -242,7 +315,7 @@ def _solar_om(year):
         'FlowAmount': float,
     })
 
-    solar_generation_data = _solar_generation(year)
+    solar_generation_data = get_solar_generation(year)
     solar_ops = solar_df_t_melt.merge(
         right=solar_generation_data,
         left_on='plant_id',
@@ -284,6 +357,8 @@ def _solar_om(year):
     solar_ops["Unit"] = "kg"
     solar_ops["input"] = False
 
+    solar_ops = fix_renewable(solar_ops, "netlnrelsolarpv")
+
     return solar_ops
 
 
@@ -312,8 +387,8 @@ def generate_upstream_solar(year):
     pandas.DataFrame
     """
     logging.info("Generating upstream solar PV inventories")
-    solar_pv_cons = _solar_construction(year)
-    solar_pv_ops = _solar_om(year)
+    solar_pv_cons = get_solar_pv_construction(year)
+    solar_pv_ops = get_solar_pv_om(year)
 
     if solar_pv_cons is not None:
         solar_pv_df = pd.concat(
@@ -322,24 +397,6 @@ def generate_upstream_solar(year):
         )
     else:
         solar_pv_df = solar_pv_ops
-
-    # Provide unique data source
-    solar_pv_df["Source"] = "netlnrelsolarpv"
-
-    # Set the electricity column as an input.
-    solar_pv_df.loc[
-        solar_pv_df["FlowName"]=="Electricity", "input"] = True
-    # Set electricity resource units.
-    solar_pv_df.loc[
-        solar_pv_df["FlowName"]=="Electricity", "Unit"] = "MWh"
-
-    # HOTFIX water as an input (Iss147).
-    #   These are the negative water-to-water emissions.
-    water_filter = (solar_pv_df['Compartment'] == 'water') & (
-        solar_pv_df['FlowAmount'] < 0) & (
-            solar_pv_df['FlowName'].str.startswith('Water'))
-    solar_pv_df.loc[water_filter, 'input'] = True
-    solar_pv_df.loc[water_filter, 'FlowAmount'] *= -1.0
 
     return solar_pv_df
 

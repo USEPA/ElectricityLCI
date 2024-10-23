@@ -206,7 +206,7 @@ def get_gen_plus_netl():
 
     Includes impacts (e.g., from construction) that would be omitted from the
     regular sources of emissions, then generates power plant emissions.
-    The two different dataframes are combined to provide a single dataframe
+    The two different data frames are combined to provide a single data frame
     representing annual emissions or life cycle emissions apportioned over the
     appropriate number of years for all reporting power plants.
 
@@ -227,12 +227,11 @@ def get_gen_plus_netl():
         "Generating inventories for geothermal, solar, wind, hydro, and "
         "solar thermal..."
     )
-    # TODO: replace solar PV and solar thermal w/ get O&M.
     geo_df = geo.generate_upstream_geo(eia_gen_year)
-    solar_df = solar.generate_upstream_solar(eia_gen_year)
+    solar_df = solar.get_solar_pv_om(eia_gen_year)
+    solartherm_df = solartherm.get_solarthermal_om(eia_gen_year)
     wind_df = wind.get_wind_om(eia_gen_year)
     hydro_df = hydro.generate_hydro_emissions() # always 2016
-    solartherm_df = solartherm.generate_upstream_solarthermal(eia_gen_year)
 
     # NOTE: hydro is purposefully left out here.
     logging.info("Concatenating renewable data frames")
