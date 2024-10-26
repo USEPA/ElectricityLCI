@@ -20,6 +20,7 @@ from electricitylci.globals import STATE_ABBREV
 from electricitylci.eia923_generation import eia923_download  # +model_specs
 from electricitylci.eia923_generation import eia923_generation_and_fuel
 import electricitylci.PhysicalQuantities as pq
+from electricitylci.utils import download
 from electricitylci.utils import find_file_in_folder
 
 
@@ -42,14 +43,38 @@ therefore, the only thing that could change the annual coal transportation
 inventory is if a particular plant began receiving coal of a different type,
 from a different type of mine, or from a different location.
 
+For the 2023 coal model, see: https://www.osti.gov/biblio/2370100.
+
 Last updated:
-    2024-08-02
+    2024-10-25
 """
+__all__ = [
+    "COAL_MINING_LCI_VINTAGE",
+    "COAL_TRANSPORT_LCI_VINTAGE",
+    "coal_type_codes",
+    "mine_type_codes",
+    "basin_codes",
+    "transport_dict",
+    "eia_7a_download",
+    "generate_upstream_coal",
+    "get_2023_coal_transport_lci",
+    "generate_upstream_coal_map",
+    "read_coal_mining",
+    "read_coal_transportation",
+    "read_eia7a_public_coal",
+    "read_eia923_fuel_receipts",
+]
 
 
 ##############################################################################
 # GLOBALS
 ##############################################################################
+COAL_MINING_LCI_VINTAGE = 2023
+'''int : The life cycle inventory vintage for coal mining (2020 or 2023).'''
+
+COAL_TRANSPORT_LCI_VINTAGE = 2023
+'''int : The life cycle inventory vintage for coal transportation (2020/23).'''
+
 coal_type_codes = {
     'BIT': 'B',
     'LIG': 'L',
@@ -57,12 +82,16 @@ coal_type_codes = {
     'WC': 'W',
     'RC' : 'RC',
 }
+'''dict : Map between EIA coal fuel source codes and NETL coal codes.'''
+
 mine_type_codes = {
     'Surface': 'S',
     'Underground': 'U',
     'Facility': 'F',
     'Processing': 'P',
 }
+'''dict : A map between coal mine type and their abbreviation.'''
+
 basin_codes = {
     'Central Appalachia': 'CA',
     'Central Interior': 'CI',
@@ -76,6 +105,8 @@ basin_codes = {
     'West/Northwest': 'WNW',
     'Import': 'IMP',
 }
+'''dict : A map between NETL coal basin names and their abbreviations.'''
+
 transport_dict = {
     'Avg Barge Ton*Miles': 'Barge',
     'Avg Lake Vessel Ton*Miles': 'Lake Vessel',
@@ -83,6 +114,7 @@ transport_dict = {
     'Avg Railroad Ton*Miles': 'Railroad',
     'Avg Truck Ton*Miles': 'Truck',
 }
+'''dict : A map between coal model transport columns and their short names.'''
 
 
 ##############################################################################
@@ -114,9 +146,197 @@ def _coal_code(row):
     return coal_code_str
 
 
+def _process_2023_coal_transport_lci(df, name):
+    """Map the 41 air emissions for coal transport to the 2023 transport LCI.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        A coal transport output inventory.
+    name : str
+        The coal transport mode (e.g. 'Truck' or 'Train')
+
+    Returns
+    -------
+    pandas.DataFrame
+        A data frame with flow names, amounts, units, UUIDs, and compartment
+        paths.
+    """
+    # Get the 41 air emissions we want:
+    air_emissions = pd.read_excel(
+        os.path.join(data_dir, 'Coal_model_transportation_inventory.xlsx'),
+        sheet_name='flowmapping',
+        usecols="C:F"
+    )
+    air_emissions = air_emissions.merge(
+        df,
+        left_on=['TargetFlowName', 'TargetFlowContext', 'TargetUnit'],
+        right_on=['Name', 'Compartment', 'Unit'],
+        how='left'
+    )
+    # Quality check that all flows are matched (241024; TWD)
+    # - Conveyor Belt... matched!
+    # - Truck... matched!
+    # - Barge... missing Mercury and Aldehydes, CS.
+    # - Ocean vessel... missing Mercury and Aldehydes, CS.
+    # - Train... matched!
+
+    # Fill in missing values (for barge and ocean vessel)
+    air_emissions['Name'] = air_emissions['Name'].fillna(
+        air_emissions['TargetFlowName'])
+    air_emissions['Compartment'] = air_emissions[
+        'Compartment'].fillna(air_emissions['TargetFlowContext'])
+    air_emissions['Unit'] = air_emissions['Unit'].fillna(
+        air_emissions['TargetUnit'])
+    air_emissions['Amount (per kg*km)'] = air_emissions[
+        'Amount (per kg*km)'].fillna(0)
+
+    # Add the transport source code name
+    air_emissions['coal_source_code'] = name
+    # Remove duplicate columns:
+    drop_cols = [
+        'TargetFlowName',
+        'TargetFlowContext',
+        'TargetUnit',
+        'Category',
+    ]
+    air_emissions = air_emissions.drop(columns=drop_cols)
+    # Rename remaining columns:
+    air_emissions = air_emissions.rename(columns={
+        'TargetFlowUUID': "FlowUUID",
+        'Amount (per kg*km)': "FlowAmount",
+    })
+
+    return air_emissions
+
+
+def _make_2023_coal_transport_data(year):
+    # IN PROGRESS.
+    #
+    # The 2023 transport distances are by NERC region and coal basin.
+    # The goal is to get a data frame with facility IDs matched to their
+    # NERC region and coal basin.
+
+    # Get NERC regions for coal facilities
+    coal_reg = eia923_generation_and_fuel(year)
+    coal_reg = coal_reg[
+        ['plant_id', 'nerc_region', 'state', 'reported_fuel_type_code']].copy()
+    # Keep only coal facilities
+    coal_filt = coal_reg['reported_fuel_type_code'].isin(coal_type_codes.keys())
+    coal_reg = coal_reg.loc[coal_filt, :]
+    # Lose facilities without a NERC region
+    coal_reg = coal_reg.dropna(subset='nerc_region')
+
+    # Get the basin map.
+    basin_map = pd.read_csv(os.path.join(data_dir, 'eia_to_netl_basin.csv'))
+    basin_map = basin_map.set_index('eia_basin')
+    basin_map = basin_map['netl_basin']
+    basin_map = basin_map.to_dict()
+
+    # Get the state to basin map.
+    state_map = pd.read_csv(os.path.join(data_dir, 'coal_state_to_basin.csv'))
+    state_map = state_map.set_index('state')
+    state_map = state_map['basin1']
+    state_map = state_map.to_dict()
+
+    coal_reg['basin'] = coal_reg['state'].map(state_map)
+    coal_reg.dropna(subset='basin')
+
+    # TODO;
+
+    # The 2023 coal baseline model's 'Transportation' worksheet was
+    # saved to CSV. All distances are in miles.
+    # Columns include 'Basin', 'NERC Region', 'Belt', 'Truck', 'Barge',
+    # 'Ocean Vessel', 'Railroad' (renamed from 'Train'), and 'Total (mi)'.
+    coal_distance = pd.read_csv(
+        os.path.join(
+            data_dir, "coal", "2023", "coal_transportation_distances.csv")
+    )
+
+
+def _make_ave_transport(trans_df, lci_df):
+    """Estimate the average facility coal transport (kg*km) by mode.
+
+    Uses the U.S. average transport distances by transport mode data from
+    the 2023 Coal Baseline Report (NETL, 2023), and multiplies it by the
+    estimated kilograms of coal for each transport mode (based on the
+    quantities provided in the coal mining LCI).
+
+    Parameters
+    ----------
+    trans_df : pandas.DataFrame
+        Coal transportation LCI.
+    lci_df : pandas.DataFrame
+        Coal mining LCI.
+
+    Returns
+    -------
+    pandas.DataFrame
+        U.S. average coal transport LCI.
+        Columns include:
+
+        - 'coal_source_code', transportation code (e.g., 'Barge')
+        - 'kg', average facility kilograms by mode (float)
+        - 'km', average facility transport distance (float)
+        - 'kgkm', average facility coal transport (float)
+
+    Examples
+    --------
+    >>> coal_input_eia = generate_upstream_coal_map(2020)
+    >>> coal_transport_df = read_coal_transportation()
+    >>> _make_ave_transport(coal_transport_df, coal_input_eia)
+    """
+    # Pull just the transportation modes and kg*km for each facility.
+    us_ave_kgkm = trans_df[['plant_id', 'coal_source_code', 'quantity']].drop_duplicates().reset_index(drop=True)
+    us_ave_kgkm = us_ave_kgkm.rename(columns={'quantity': 'kgkm'})
+
+    # Pull just the short-tons of coal consumption per facility;
+    # convert tons to kg.
+    us_ave_kg = lci_df[['plant_id', 'quantity']].drop_duplicates().reset_index(
+        drop=True)
+    us_ave_kg['quantity'] *= pq.convert(1, "ton", "kg")
+    us_ave_kg = us_ave_kg.rename(columns={'quantity': 'kg'})
+
+    # Merge by facility to get kg*km by mode and kg of coal by facility
+    us_ave = us_ave_kgkm.merge(us_ave_kg, how='inner', on='plant_id')
+
+    # Calculate the travel distances
+    non_zero_kg = us_ave['kg'] != 0
+    us_ave['km'] = 0.0
+    us_ave.loc[non_zero_kg, 'km'] = us_ave.loc[non_zero_kg, 'kgkm']
+    us_ave.loc[non_zero_kg, 'km'] /= us_ave.loc[non_zero_kg, 'kg']
+
+    # Convert travel distances back to kg
+    # (effectively zero any non-modes of transport)
+    non_zero_km = us_ave['km'] != 0
+    us_ave['kg_new'] = 0.0
+    us_ave.loc[non_zero_km, 'kg_new'] = us_ave.loc[non_zero_km, 'kgkm']
+    us_ave.loc[non_zero_km, 'kg_new'] /= us_ave.loc[non_zero_km, 'km']
+
+    # Calculate the facility average kg of coal by transport mode
+    us_ave = us_ave.groupby(
+        by='coal_source_code').agg({'kg_new': 'mean'}).reset_index(drop=False)
+    us_ave = us_ave.rename(columns={'kg_new': 'kg'})
+
+    # Take the U.S. average transport distances, km (Coal Baseline 2023, NETL)
+    us_ave_km = pd.DataFrame({
+        'coal_source_code': ['Barge', 'Ocean Vessel', 'Railroad', 'Truck'],
+        'km': [56.47542079, 67.81356183, 929.0283925, 6.080599763]
+    })
+    us_ave = us_ave.merge(us_ave_km, how='left', on='coal_source_code')
+
+    # Calculate U.S. facility average kg*km for coal transport.
+    us_ave['kgkm'] = us_ave['kg'] * us_ave['km']
+
+    return us_ave
+
+
 def _transport_code(row):
     """Generate a transport code based on coal source code."""
-    transport_str = transport_dict[row['coal_source_code']]
+    try:
+        transport_str = transport_dict[row['coal_source_code']]
+    except KeyError:
+        transport_str = row['coal_source_code']
 
     return transport_str
 
@@ -158,6 +378,8 @@ def eia_7a_download(year, save_path):
 def read_eia923_fuel_receipts(year):
     """Return data frame of EIA 923 coal receipts.
 
+    Source: EIA923 Schedules 2,3,4,5,M,12, page 5.
+
     Parameters
     ----------
     year : int
@@ -168,19 +390,25 @@ def read_eia923_fuel_receipts(year):
     pandas.DataFrame
         A data frame with monthly plant info. Columns include:
 
-        - 'year' (int)
-        - 'month' (int)
-        - 'plant_id' (int)
-        - 'plant_name' (str)
-        - 'plant_state' (str)
-        - 'energy_source' (str)
-        - 'fuel_group' (str)
-        - 'coalmine_type' (str)
-        - 'coalmine_state' (str)
-        - 'coalmine_county' (str)
-        - 'coalmine_msha_id' (str)
-        - 'quantity' (int)
-        - 'average_heat_content' (float)
+        -   'year' (int): four digit year
+        -   'month' (int)
+        -   'plant_id' (int): EIA plant identification (1-5 digit)
+        -   'plant_name' (str)
+        -   'plant_state' (str): two-character standard state code
+        -   'energy_source' (str): 2-3 character fuel code (e.g., ANT, BIT, PC)
+        -   'fuel_group' (str): energy group for fuel (e.g. 'Coal', 'Petroleum')
+        -   'coalmine_type' (str): type of coal mine (e.g., 'S' for surface)
+        -   'coalmine_state' (str): state/country abbreviation for coal mine
+        -   'coalmine_county' (str): country FIPS code
+        -   'coalmine_msha_id' (str): mine safety & health admin identifier
+        -   'quantity' (int): quantity of coal in tons, barrels or Mcf
+        -   'average_heat_content' (float): heat content in millions of Btus
+            per unit quantity
+
+    Notes
+    -----
+    The EIA923 Schedules 2, 3, 4, 5, M, 12, includes on Page 5, 'Fuel Receipts
+    and Costs,' the primary and secondary transportation modes.
     """
     expected_923_folder = os.path.join(paths.local_path, 'f923_{}'.format(year))
 
@@ -220,7 +448,38 @@ def read_eia923_fuel_receipts(year):
     return eia_fuel_receipts_df
 
 
-def read_eia923_public_coal(year):
+def read_eia7a_public_coal(year):
+    """Read public coal Excel workbook from EIA.
+
+    Parameters
+    ----------
+    year : int
+        The EIA generation year.
+        Will download the workbook for this year, if not already done so.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Columns include:
+
+        - 'year', same as parameter, year (e.g., 2020)
+        - 'msha_id', mine safety and health admin ID (int)
+        - 'mine_name', mine name (e.g., John Poe Mine)
+        - 'mine_state', U.S. state name (e.g. Alabama)
+        - 'mine_county', U.S. county name (e.g., De Kalb)
+        - 'mine_status', status code (e.g., Active, Temporarily closed)
+        - 'mine_type', mine type (e.g., Surface)
+        - 'company_type', company type (e.g., Independent Producer Operator)
+        - 'operation_type', operation type (e.g., Mine only, Preparation Plant)
+        - 'operating_company', name of company (e.g., Blue Diamond Coal Co)
+        - 'operating_company_address', street, state, zip address
+        - 'union_code', name of union (e.g., Western Energy Workers)
+        - 'coal_supply_region', coal region (e.g., Powder River Basin)
+        - 'production_short_tons', coal production (int)
+        - 'average_employees', average number of employees (int)
+        - 'labor_hours', labor hours (int)
+
+    """
     expected_7a_folder = os.path.join(paths.local_path, 'f7a_{}'.format(year))
     if not os.path.exists(expected_7a_folder):
         logging.info("Downloading EIA public coal Excel workbook")
@@ -256,10 +515,10 @@ def generate_upstream_coal_map(year):
         A data frame mapping coal facilities (by ID) to their source code,
         quantity, and heat input values. Columns include:
 
-        - plant_id (int)
-        - coal_source_code (str)
-        - quantity (float)
-        - heat_input (float)
+        - plant_id (int): EIA plant identifier
+        - coal_source_code (str): coal basin-coal type-mine type format
+        - quantity (float): short tons of coal
+        - heat_input (float): millions of BTUs
 
     Notes
     -----
@@ -290,7 +549,7 @@ def generate_upstream_coal_map(year):
     eia_fuel_receipts_df = eia_fuel_receipts_df.loc[coal_criteria, :]
 
     # Add EIA coal supply regions from public coal data
-    eia7a_df = read_eia923_public_coal(year)
+    eia7a_df = read_eia7a_public_coal(year)
     eia_fuel_receipts_df = eia_fuel_receipts_df.merge(
         eia7a_df[['msha_id', 'coal_supply_region']],
         how='left',
@@ -309,6 +568,9 @@ def generate_upstream_coal_map(year):
     eia_fuel_receipts_good = eia_fuel_receipts_df.loc[
         ~eia_fuel_receipts_df["eia_coal_supply_region"].isnull(), :]
 
+    # Start process of correcting the failed matches
+
+    # STEP 1: FIPS code matching
     # Create a summary dataset of mining states, counties, and supply regions
     # with a mine count.
     county_basin = eia7a_df.groupby(
@@ -336,10 +598,14 @@ def generate_upstream_coal_map(year):
     fips_codes = pd.read_csv(os.path.join(data_dir, "fips_codes.csv"))
     fips_codes = _clean_columns(fips_codes)
     fips_codes["gu_name"] = fips_codes["gu_name"].str.lower()
+
+    # Convert county FIPS code to string
     fips_codes["county_fips_code"] = fips_codes[
         "county_fips_code"].astype(str).str.replace(".0", "", regex=False)
 
-    # Match state-county names
+    # Add county FIPS code to county_basin data frame
+    # NOTE expands the rows where multiple FIPS codes are mapped to same county
+    #      this provides multiple match possibilities with EIA receipts
     county_basin = county_basin.merge(
         right=fips_codes[[
             "state_abbreviation", "county_fips_code", "gu_name"]],
@@ -392,6 +658,7 @@ def generate_upstream_coal_map(year):
         right_on ="eia_basin",
         how="left").reset_index(drop=True)
 
+    # STEP 2: match basins at the state level
     # Read in U.S. state to EIA basin mapping to the "na" receipts.
     #   Note there are potentially two basin names for each coal plant.
     state_region_map = pd.read_csv(
@@ -467,7 +734,8 @@ def generate_upstream_coal_map(year):
         axis=1
     )
 
-    # Calculate the heat input based on coal quantity and average heat content
+    # Calculate heat input (quantity in tons; average heat content in millions
+    # of Btus per unit quantity = millions of Btus)
     eia_fuel_receipts_good['heat_input'] = eia_fuel_receipts_good[
         'quantity'] * eia_fuel_receipts_good['average_heat_content']
 
@@ -479,8 +747,9 @@ def generate_upstream_coal_map(year):
         "energy_source"].map(coal_type_codes)
 
     final_df = eia_fuel_receipts_good.groupby(
-        ['plant_id', 'coal_type','coal_source_code'],
+        ['plant_id', 'coal_type', 'coal_source_code'],
     )[['quantity', 'heat_input']].sum()
+
     final_df["mass_fraction"] = final_df[["quantity"]].div(
         final_df[["quantity"]].groupby(level=[0,1]).transform('sum')
     )
@@ -494,18 +763,24 @@ def generate_upstream_coal_map(year):
         final_df[["heat_input"]].groupby(level=[0]).transform('sum')
     )
 
+    # Read EIA 923 generation and fuel data.
+    #   reported_fuel_type_code (str): fuel code (e.g., 'SUB' or 'LIG')
+    #   electric_fuel_consumption_quantity: short tons of coal for elec. gen.
+    #   elec_fuel_consumption_mmbtu: millions of Btus of fuel consumption
     eia_923_gen_fuel = eia923_generation_and_fuel(year)
     eia_923_gen_fuel = eia_923_gen_fuel[[
-        "plant_id","reported_fuel_type_code",
+        "plant_id",
+        "reported_fuel_type_code",
         "electric_fuel_consumption_quantity",
         "elec_fuel_consumption_mmbtu"
-    ]]
+    ]].copy()
     eia_923_gen_fuel["coal_type"] = eia_923_gen_fuel[
         "reported_fuel_type_code"].map(coal_type_codes)
     eia_923_gen_fuel["plant_id"] = eia_923_gen_fuel["plant_id"].astype(int)
-
+    # Effectively filters out NaNs in coal type
+    # NOTE: quantity is in short tons
     eia_923_grouped = eia_923_gen_fuel.groupby(
-        by=["plant_id","coal_type"])[[
+        by=["plant_id", "coal_type"])[[
             "electric_fuel_consumption_quantity",
             "elec_fuel_consumption_mmbtu"
     ]].sum()
@@ -546,7 +821,8 @@ def generate_upstream_coal_map(year):
     final_df = final_df[[
         "plant_id",
         "coal_source_code",
-        "new_quantity","new_heat_input"
+        "new_quantity",
+        "new_heat_input",
     ]]
     final_df = final_df.rename(
         columns = {
@@ -557,10 +833,405 @@ def generate_upstream_coal_map(year):
     return final_df
 
 
-def generate_upstream_coal(year):
+def get_2023_coal_transport_lci(coal_xlsx="Transportation-Inventories.xlsx"):
+    """Return the 2023 coal model transportation air emission LCI.
+
+    The source Excel workbook is available online here:
+    https://www.netl.doe.gov/energy-analysis/details?id=27ea1ba4-6ea9-4ee5-8b32-d7fce7f4e1e0
+
+    Parameters
+    ----------
+    coal_xlsx : str, optional
+        File path to the Excel workbook for coal transportation inventories,
+        by default "Transportation-Inventories.xlsx"
+
+    Returns
+    -------
+    pandas.DataFrame
+        A data frame of air emissions associated with coal mining and processing transportation modes (e.g., 'Conveyor Belt', 'Truck', 'Barge', 'Ocean Vessel', and 'Railroad') in units of emission per
+        kg*km of coal transport. Columns include:
+
+        - 'Name', flow name
+        - 'Compartment', the compartment path (e.g., emission/air)
+        - 'Unit', the flow units (e.g., kg)
+        - 'Mode', the transportation mode (e.g., 'Truck' or 'Railroad')
+        - 'FlowUUID', the universally unique ID for the flow (FEDEFL mapped)
+        - 'FlowAmount', the emission in units per kg*km
     """
-    Generate the annual coal mining and transportation emissions (in kg) for
-    each plant in EIA923.
+    if coal_xlsx is None or coal_xlsx == "" or not os.path.isfile(coal_xlsx):
+        # NETL VUE URL for transportation inventory Excel workbook.
+        trans_url = (
+            "https://www.netl.doe.gov/projects/VueConnection"
+            "/download.aspx?id=403d0bc0-4752-4225-9bc5-5a402ebad020"
+            "&filename=Transportation+Inventories.xlsx"
+        )
+
+        # The data store for NETL transportation inventories workbook.
+        data_folder = os.path.join(paths.local_path, 'netl')
+        if not os.path.isdir(data_folder):
+            logging.info("Creating local data folder, %s" % data_folder)
+            os.mkdir(data_folder)
+        data_path = os.path.join(data_folder, "Transportation-Inventories.xlsx")
+
+        # Check to see data file already exists
+        if os.path.isfile(data_path):
+            logging.info("Reading existing Excel file")
+            coal_xlsx = data_path
+        else:
+            _is_good = download(trans_url, data_path)
+            if _is_good:
+                logging.info("Downloaded NETL transportation file")
+                coal_xlsx = data_path
+            else:
+                raise OSError(
+                    "Failed to acquire NETL transportation inventory!")
+
+    # There is a workbook for each transportation mode.
+    sheets = ['Conveyor Belt', 'Truck', 'Barge', 'Ocean Vessel', 'Train']
+    num_sheets = len(sheets)
+    logging.info("Generating 2023 coal transportation inventory data")
+    for i in range(num_sheets):
+        sheet = sheets[i]
+
+        # Reads only the output flows (emissions) for a given transport mode.
+        trans_df = pd.read_excel(
+            coal_xlsx,
+            sheet_name=sheet,
+            skiprows=2,
+            usecols="H:J,L"
+        )
+        # Fix column names;
+        # note that ".1" is appended to each column name (duplicates in sheet)
+        col_names = [x.replace(".1", "") for x in trans_df.columns]
+        trans_df.columns = col_names
+
+        # Make compartment path (remove 'elementary flows')
+        trans_df["Compartment"] = trans_df["Category"].str.replace(
+            "Elementary Flows/", "", regex=False)
+
+        if i == 0:
+            t_emissions = _process_2023_coal_transport_lci(trans_df, sheet)
+        else:
+            temp_df = _process_2023_coal_transport_lci(trans_df, sheet)
+            t_emissions = pd.concat([t_emissions, temp_df], ignore_index=True)
+
+    # Match modes to ``_transport_code``; fix Train
+    t_emissions['coal_source_code'] = t_emissions['coal_source_code'].map({
+        'Conveyor Belt': 'Belt',
+        'Truck': 'Truck',
+        'Barge': 'Barge',
+        'Ocean Vessel': 'Ocean Vessel',
+        'Train': 'Railroad',
+    })
+
+    return t_emissions
+
+
+def get_2023_ave_coal_transport(trans_df, input_df):
+    """Create a U.S. average facility coal transportation inventory.
+
+    Parameters
+    ----------
+    trans_df : pandas.DataFrame
+        Coal transportation LCI.
+    input_df : pandas.DataFrame
+        Coal inventory.
+
+    Returns
+    -------
+    pandas.DataFrame
+        U.S. average coal facility transportation LCI.
+
+    Examples
+    --------
+    >>> coal_input_eia = generate_upstream_coal_map(2020)
+    >>> coal_transport_df = read_coal_transportation()
+    >>> get_2023_ave_coal_transport(coal_transport_df, coal_input_eia)
+    """
+    # Get coal transportation and average kg*km transport by mode and merge.
+    trans_lci = get_2023_coal_transport_lci()
+    us_ave_trans = _make_ave_transport(trans_df, input_df)
+    trans_lci = trans_lci.merge(us_ave_trans, how='left', on='coal_source_code')
+    # Multiply flow amount (units/kg*km) by total transportation (kg*km)
+    trans_lci['FlowAmount'] *= trans_lci['kgkm']
+    # Fix column names and set to a common variable
+    trans_lci = trans_lci.rename(columns={'Name': 'FlowName'})
+    # Clean up step (NaNs are mostly Belt transport)
+    trans_lci = trans_lci.dropna()
+    trans_lci = trans_lci.drop(columns=['kg', 'km', 'kgkm'])
+    trans_lci = trans_lci.reset_index(drop=True)
+    # Add missing transportation metadata columns
+    trans_lci['Source'] = 'Transportation'
+    trans_lci['ElementaryFlowPrimeContext'] = 'emission'
+    trans_lci['input'] = False
+    trans_lci["FlowType"] = "ELEMENTARY_FLOW"
+
+    return trans_lci
+
+
+def read_coal_mining():
+    """Read coal mining (extraction and processing) life cycle inventory.
+
+    Depends on the global coal mining LCI vintage year.
+    The flow amounts (associated with Results column) are based on the
+    functional unit of 1 kg of coal processed at mine.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A coal mining life-cycle inventory.
+        Columns include (but are not limited to):
+
+        -   'Results', the flow amount column in Units per kg of coal
+        -   'Coal Code', basin-coal type-mine type (e.g., CA-B-S)
+        -   'FlowUUID', universally unique identifier for flow
+        -   'Compartment', emission compartment paths (e.g. emission/air)
+        -   'FlowName', flow name
+        -   'FlowType', elementary, product, or waste flow
+        -   'Unit', flow unit (e.g., kg)
+        -   'input', for resources (true) or emissions (false)
+        -   'ElementaryFlowPrimeContext', emission, resource , or technosphere
+
+    Raises
+    ------
+    ValueError
+        If the global parameter does not match coal mining vintages available.
+    """
+    if COAL_MINING_LCI_VINTAGE == 2023:
+        logging.info("Reading 2023 coal mining inventory")
+        # The 2023 coal mining CSV file has the correct headings and formats.
+        cm_df = pd.read_csv(
+            os.path.join(data_dir, 'coal', '2023', 'coal_mining_lci.csv')
+        )
+    elif COAL_MINING_LCI_VINTAGE == 2020:
+        logging.info("Reading 2020 coal mining inventory")
+        # The 2020 coal mining LCI needs some help and a results column.
+        cm_df = pd.read_csv(
+            os.path.join(data_dir, 'coal', '2020', 'coal_mining_lci.csv')
+        )
+        cm_df = cm_df.drop(columns=["flow.@type"])
+        cm_df = cm_df.rename(
+            columns={
+                "flow.categoryPath": "Compartment",
+                "flow.name": "FlowName",
+                "flow.refUnit": "Unit",
+                "flow.flowType": "FlowType",
+                "Scenario": "Coal Code",
+                "flow.@id": "FlowUUID",
+                "p50": "Results",        # NOTE: Choose your results column.
+            }                            # Monte-Carlo columns (p05 to p97.5)
+        )                                # or Mean.
+        cm_df["Compartment"] = cm_df["Compartment"].apply(literal_eval)
+        cm_df["Compartment"] = cm_df["Compartment"].str.join("/")
+        cm_df["Compartment"] = cm_df["Compartment"].str.replace(
+            "Elementary Flows/", "", regex=False)
+    else:
+        raise ValueError("Coal mining LCI vintage must be 2020 or 2023.")
+
+    # HOTFIX data type incompatibility [2024-01-09; TWD]
+    cm_df["ElementaryFlowPrimeContext"] = ""
+    cm_df.loc[
+        cm_df["Compartment"].str.contains("emission/"),
+        "ElementaryFlowPrimeContext"] = "emission"
+    cm_df.loc[
+        cm_df["Compartment"].str.contains("resource/"),
+        "ElementaryFlowPrimeContext"] = "resource"
+    cm_df.loc[
+        (cm_df["FlowType"].str.contains("PRODUCT_FLOW"))
+        | (cm_df["FlowType"].str.contains("WASTE_FLOW")),
+        "ElementaryFlowPrimeContext"] = "technosphere"
+    cm_df.reset_index(drop=True, inplace=True)
+
+    return cm_df
+
+
+def read_coal_transportation():
+    """Return the coal transportation mode LCI.
+
+    Currently utilizes the 2016 plant-level transportation distances,
+    and combined with transportation mode LCI, which depends on global
+    parameter, coal transportation vintage.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Transportation LCI. Columns include:
+
+        - 'plant_id', EIA facility ID (based on 2016 transport data)
+        - 'coal_source_code', coal source code (e.g., Barge)
+        - 'quantity', facility-level coal transport quantity (kg*km)
+        - 'FlowName', emission name (e.g., Methane)
+        - 'FlowAmount', emission amount scaled by coal quantity (float)
+        - 'Compartment', emission compartment (e.g., emission/air)
+        - 'FlowUUID', emission universally unique ID
+        - 'Unit', emission unit (e.g., kg)
+        - 'Source', Transportation
+        - 'ElementaryFlowPrimeContext', emission
+        - 'FlowType', ELEMENTARY_FLOW
+        - 'input', whether flow is resource (true) or emission (false)
+
+    """
+    # Presently, we only have the 2016 transportation data by facility.
+    logging.info("Using 2016 coal plant transportation data.")
+    coal_transportation = pd.read_csv(
+        os.path.join(data_dir, '2016_Coal_Trans_By_Plant_ABB_Data.csv')
+    )
+    # Make rows facility IDs with Transport column (modes) and
+    # value (ton*mi)
+    coal_transportation = coal_transportation.melt(
+        'Plant Government ID',
+        var_name='Transport'
+    )
+    # NOTE: the 2016 transportation functional unit is ton*miles;
+    # convert ton*mi to kg*km
+    coal_transportation["value"] = (
+        coal_transportation["value"]
+        * pq.convert(1, "ton", "kg")
+        * pq.convert(1, "mi", "km")
+    )
+    # Rename transport columns
+    coal_transportation = coal_transportation.rename(columns={
+        'Plant Government ID': 'plant_id',
+        'Transport': 'coal_source_code',
+        'value': 'quantity',
+    })
+    # Correct coal_transportation codes
+    coal_transportation['coal_source_code'] = coal_transportation.apply(
+        _transport_code, axis=1)
+
+    # FORK IN THE ROAD
+    if COAL_TRANSPORT_LCI_VINTAGE == 2023:
+        logging.info("Reading 2023 coal transport LCI")
+        coal_inventory_transportation = get_2023_coal_transport_lci()
+        merged_transport_coal = coal_transportation.merge(
+            coal_inventory_transportation,
+            on=['coal_source_code'],
+            how='left'
+        )
+
+        # Group because some plants get the same flow from several basins
+        #   Columns in: 57255; Columns out: 56908.
+        merged_transport_coal = merged_transport_coal.groupby(
+            by=[
+                'plant_id',
+                'coal_source_code',
+                'Compartment',
+                'Name',
+                'FlowUUID',
+                'Unit']
+        )[['quantity', 'FlowAmount']].sum()
+        merged_transport_coal = merged_transport_coal.reset_index()
+
+        # Multiply transportation emission value (kg/kg*km) by total
+        # transportation (kg*km)
+        merged_transport_coal['FlowAmount'] *= merged_transport_coal['quantity']
+
+        # Fix column names and set to a common variable
+        #   should have the same columns as 2020 data.
+        merged_transport_coal = merged_transport_coal.rename(columns={
+            'Name': 'FlowName'})
+        transport_coal = merged_transport_coal
+    elif COAL_TRANSPORT_LCI_VINTAGE == 2020:
+        # Read coal transportation emissions inventory (units = kg/kg*km);
+        # these are air emissions by transportation mode.
+        coal_inventory_transportation = pd.read_excel(
+            os.path.join(data_dir, 'Coal_model_transportation_inventory.xlsx'),
+            sheet_name='transportation'
+        )
+
+        # Correct coal source codes
+        coal_inventory_transportation = coal_inventory_transportation.rename(
+            columns={'Modes': 'coal_source_code'})
+        coal_inventory_transportation['coal_source_code'] = coal_inventory_transportation.apply(
+            _transport_code, axis=1)
+
+        # Add transportation data to emissions inventory
+        # NOTE coal transportation does not include 'Belt' transport.
+        merged_transport_coal = coal_transportation.merge(
+            coal_inventory_transportation,
+            on=['coal_source_code'],
+            how='left'
+        )
+
+        # Multiply transportation emission value (kg/kg*km) by total
+        # transportation (kg*km)
+        column_air_emission=[
+            x for x in coal_inventory_transportation.columns[1:]
+            if "Unnamed" not in x]
+        merged_transport_coal[column_air_emission] = (
+            merged_transport_coal[column_air_emission].multiply(
+                merged_transport_coal['quantity'],
+                axis="index",
+            )
+        )
+
+        # Groupby the plant ID since some plants have multiple row entries
+        # (receive coal from multiple basins)
+        merged_transport_coal = merged_transport_coal.groupby(
+            ['plant_id','coal_source_code'])[['quantity'] + column_air_emission].sum()
+        merged_transport_coal = merged_transport_coal.reset_index()
+
+        # Melting the database on Plant ID; turns each emission and amount
+        # into their own row
+        melted_database_transport = merged_transport_coal.melt(
+            id_vars=['plant_id','coal_source_code','quantity'],
+            var_name='FlowName',
+            value_name='FlowAmount'
+        )
+
+        # Add missing compartment (they are all air emissions).
+        # We'll add the units in the next step.
+        melted_database_transport['Compartment'] = 'emission/air'
+
+        # Get flow mapping for 41 air emissions
+        coal_transportation_flowmapping = pd.read_excel(
+            os.path.join(data_dir, 'Coal_model_transportation_inventory.xlsx'),
+            sheet_name='flowmapping'
+        )
+
+        melted_database_transport = melted_database_transport.merge(
+            coal_transportation_flowmapping,
+            left_on=["FlowName", "Compartment"],
+            right_on=["flowname", "compartment"],
+            how="left"
+        )
+        melted_database_transport.drop(
+            columns=["FlowName", "Compartment", "flowname", "compartment"],
+            errors="ignore",
+            inplace=True
+        )
+        melted_database_transport.rename(
+            columns={
+                "TargetFlowUUID": "FlowUUID",
+                "TargetFlowContext": "Compartment",
+                "TargetUnit": "Unit",
+                "TargetFlowName": "FlowName"},
+            inplace=True
+        )
+        # Set to common variable; should have the same columns as 2023 data.
+        transport_coal = melted_database_transport
+
+    # Adding to new columns for the compartment (water) and
+    # The source of the emissions (mining).
+    transport_coal['Source'] = 'Transportation'
+    transport_coal["ElementaryFlowPrimeContext"] = "emission"
+    transport_coal["FlowType"] = "ELEMENTARY_FLOW"
+    transport_coal["input"] = False
+
+    return transport_coal
+
+
+def generate_upstream_coal(year):
+    """Generate the annual coal mining and transportation emissions (in kg)
+    for each plant in EIA923.
+
+    Proxy processes are used to gap fill certain missing coal mining scenarios.
+    These include:
+
+    -   U.S. Average for imports (of same coal mine type and coal type)
+    -   U.S. Average of B-U and S-U for missing U (e.g., WNW-S-U, WNW-L-U)
+    -   Surface & underground LCI for production (for same basin and coal type)
+    -   PRB-S-S for PRB-B-S
 
     Parameters
     ----------
@@ -572,21 +1243,21 @@ def generate_upstream_coal(year):
     pandas.DataFrame
         Includes the following columns:
 
-        -   'plant_id' (int) : Plant identifier
-        -   'stage_code' (str) : LCA stage code (e.g., 'Truck', 'L-L-S')
-        -   'quantity' (float) :
-        -   'FlowName'
-        -   'FlowAmount' (float) :
-        -   'Compartment'
-        -   'input' (bool) :
-        -   'stage'
-        -   'FlowUUID'
-        -   'ElementaryFlowPrimeContext'
-        -   'Unit'
-        -   'FlowType'
-        -   'FuelCategory'
-        -   'Year' (int) :
-        -   'Source'
+        -   'plant_id' (int), Plant identifier
+        -   'stage_code' (str), LCA stage code (e.g., 'Truck', 'L-L-S')
+        -   'quantity' (float),
+        -   'FlowName',
+        -   'FlowAmount' (float),
+        -   'Compartment',
+        -   'input' (bool),
+        -   'stage',
+        -   'FlowUUID',
+        -   'ElementaryFlowPrimeContext',
+        -   'Unit',
+        -   'FlowType',
+        -   'FuelCategory',
+        -   'Year' (int),
+        -   'Source',
 
     Notes
     -----
@@ -594,94 +1265,49 @@ def generate_upstream_coal(year):
 
         -   2016_Coal_Trans_By_Plant_ABB_Data.csv: contains transportation
             units by transportation mode for each coal facility.
-        -   coal_mining_lci.csv: Monte-carlo emission results (mean) for each
-            coal scenario in the coal model.
+        -   coal_mining_lci.csv: Emission results for each coal scenario
+            in the coal model.
         -   Coal_model_transportation_inventory.xlsx
 
             -   'transportation': Five modes by 41 emission flows
             -   'flowmapping': Map between flow name and target flow name,
                 context (e.g., emission/air), UUID, and unit.
     """
-    # Read the coal input from eia
+    # Read the facility-level coal consumption by source code from EIA
     coal_input_eia = generate_upstream_coal_map(year)
-    # Read coal transportation and mining data
-    coal_transportation = pd.read_csv(
-        os.path.join(data_dir, '2016_Coal_Trans_By_Plant_ABB_Data.csv')
-    )
-    coal_mining_inventory = pd.read_csv(
-        os.path.join(data_dir, 'coal_mining_lci.csv')
-    )
-    coal_mining_inventory.drop(
-        columns=["@type", "flow.@type"],
-        inplace=True,
-        errors="ignore"
-    )
-    coal_mining_inventory.rename(
-        columns={
-            "flow.categoryPath": "Compartment",
-            "flow.name": "FlowName",
-            "flow.refUnit": "Unit",
-            "flow.flowType": "FlowType",
-            "Scenario": "Coal Code",
-            "flow.@id": "FlowUUID",
-        }, inplace=True
-    )
-    coal_mining_inventory["Compartment"] = coal_mining_inventory[
-        "Compartment"].apply(literal_eval)
-    coal_mining_inventory["Compartment"] = coal_mining_inventory[
-        "Compartment"].str.join("/")
-    coal_mining_inventory["Compartment"] = coal_mining_inventory[
-        "Compartment"].str.replace("Elementary Flows/", "", regex=False)
-    # HOTFIX data type incompatibility [2024-01-09; TWD]
-    coal_mining_inventory["ElementaryFlowPrimeContext"] = ""
-    coal_mining_inventory.loc[
-        coal_mining_inventory["Compartment"].str.contains("emission/"),
-        "ElementaryFlowPrimeContext"
-    ] = "emission"
-    coal_mining_inventory.loc[
-        coal_mining_inventory["Compartment"].str.contains("resource/"),
-        "ElementaryFlowPrimeContext"
-    ] = "resource"
-    coal_mining_inventory.loc[
-        coal_mining_inventory["Compartment"].str.contains("Technosphere"),
-        "ElementaryFlowPrimeContext"
-    ] = "technosphere"
-    coal_mining_inventory.reset_index(drop=True, inplace=True)
-    # Reading coal inventory for transportation emissions due transportation
-    # (units = kg/ton-mile)
 
-    coal_inventory_transportation = pd.read_excel(
-        os.path.join(data_dir, 'Coal_model_transportation_inventory.xlsx'),
-        sheet_name='transportation'
-    )
-    coal_transportation_flowmapping = pd.read_excel(
-        os.path.join(data_dir, 'Coal_model_transportation_inventory.xlsx'),
-        sheet_name='flowmapping'
-    )
-    # Merge the coal input with the coal mining air emissions dataframe using
-    # the coal code (basin-coal_type-mine_type) as the common entity
+    # Read coal mining LCI (units = kg/kg)
+    coal_mining_inventory = read_coal_mining()
+
+    # Look up the coal scenarios for each dataset.
     coal_input_eia_scens = list(coal_input_eia["coal_source_code"].unique())
     coal_inventory_scens = list(coal_mining_inventory["Coal Code"].unique())
+
+    # Find missing scenarios in the LCI.
     missing_scens = [
         x for x in coal_input_eia_scens if x not in coal_inventory_scens]
+    logging.info("Addressing %d missing coal scenarios" % len(missing_scens))
 
-    # We're going to fill in each missing scenario with the existing data
-    # using weighted averages of current production. Most of these are from
-    # processing plants so the average will be between the underground and
-    # surface plants in the same region mining the same type of coal. For
-    # imports, this will be the weighted average of all of the same type of
-    # coal production in the US.
+    # Fill in each missing scenario with the existing data using weighted
+    # averages of current production. Most of these are from processing
+    # plants, so the average will be between the underground and surface
+    # plants in the same region mining the same type of coal. For imports
+    # and surface and underground mines, this will be the weighted average
+    # of all of the same type of coal production in the US.
+
+    # Combine facility coal consumption with LCI for all known scenarios.
+    #   for 2023 coal mining LCI, 14 existing scenarios are found
     existing_scens_merge = coal_input_eia.loc[
         ~coal_input_eia["coal_source_code"].isin(missing_scens),
-        :].merge(
-            coal_mining_inventory,
-            left_on=["coal_source_code"],
-            right_on=["Coal Code"],
-            how="left"
-        )
-    groupby_cols=["FlowUUID"]
+        :
+    ].merge(
+        coal_mining_inventory,
+        left_on=["coal_source_code"],
+        right_on=["Coal Code"],
+        how="left"
+    )
 
-    # Define a weighted mean method
+    # Define a weighted mean method that uses coal consumption as the weight.
     def wtd_mean(pdser, total_db):
         try:
             wts = total_db.loc[pdser.index, "quantity"]
@@ -692,7 +1318,10 @@ def generate_upstream_coal(year):
         return result
 
     wm = lambda x: wtd_mean(x, existing_scens_merge)
-    missing_scens_df_list = []
+
+    # Get just the flow info from coal mining LCI.
+    #   drop scenario and results columns;
+    #   creates a list of unique flows
     inventory_flow_info = coal_mining_inventory[[
         "FlowUUID",
         "Compartment",
@@ -702,39 +1331,91 @@ def generate_upstream_coal(year):
         "input",
         "ElementaryFlowPrimeContext"
     ]].drop_duplicates("FlowUUID")
+
+
+    # Define sub/bituminous underground and surface mine scenarios
+    _u_mines = ['-'.join(x) for x in [('B', 'U'), ('S', 'U')]]
+    _s_mines = ['-'.join(x) for x in [('B', 'S'), ('S', 'S')]]
+
+    # Initialize the list of flow data frames for missing scenarios
+    missing_scens_df_list = []
     for scen in missing_scens:
-        coals_to_include = None
-        if scen.split("-")[0] == "IMP":
-            scen_key = "-".join(scen.split("-")[1:])
+        # Initialize the coal scenarios to be used for averaging.
+        coals_to_include = []
+
+        # Pull the search strings from the scenario
+        _basin, _coal, _mine = scen.split("-")
+        _coal_mine = "-".join(scen.split("-")[1:])
+        _reg_coal = "-".join(scen.split("-")[0:2])
+
+        if scen == "PRB-B-S":
+            # Proxy subbituminous for bituminous surface mining
             coals_to_include = [
-                x for x in coal_inventory_scens if scen_key in x]
-        elif scen.split("-")[2] == "P":
-            scen_key = "-".join(scen.split("-")[0:2])
+                x for x in coal_inventory_scens if x == 'PRB-S-S']
+        elif _coal == 'W':
+            # Waste coals are not currently supported.
+            coals_to_include = ['MISSING', ]
+        elif _basin == "IMP":
+            # The imports, find all matching coal and mine scenarios
             coals_to_include = [
-                x for x in coal_inventory_scens if scen_key in x]
-        if coals_to_include is not None:
-            total_scens = len(coals_to_include)
-        if total_scens==0 or coals_to_include is None:
-            scen_key = scen.split("-")[0]
+                x for x in coal_inventory_scens if _coal_mine in x]
+        elif _mine == "P":
+            # Processing scenarios, find all matching region and coal types
             coals_to_include = [
-                x for x in coal_inventory_scens if scen_key in x]
-        if coals_to_include is not None:
-            total_scens = len(coals_to_include)
-        if total_scens==0 or coals_to_include is None:
+                x for x in coal_inventory_scens if _reg_coal in x]
+        elif _mine in ['U', 'S'] and _coal in ['S', 'B']:
+            # Use U.S. average for non-waste coal surface and underground mines
+            if _mine == 'U':
+                for _cm in _u_mines:
+                    coals_to_include += [
+                        x for x in coal_inventory_scens if _cm in x]
+            elif _mine == 'S':
+                for _cm in _s_mines:
+                    coals_to_include += [
+                        x for x in coal_inventory_scens if _cm in x]
+            else:
+                coals_to_include = [
+                    x for x in coal_inventory_scens if _coal_mine in x]
+
+        total_scens = len(coals_to_include)
+        if total_scens == 1 and coals_to_include[0] == 'MISSING':
+            logging.info("Skipping waste scenario for %s" % scen)
+        else:
+            logging.info(
+                "Found %d proxy scenarios for %s" % (total_scens, scen))
+
+        if total_scens == 0:
+            logging.warning(
+                "Failed to find proxy process for coal scenario, %s" % scen)
             coals_to_include = ["MISSING"]
+
+        # Get all matching inventories;
+        #   Note, this is empty for "MISSING".
         target_inventory_df = existing_scens_merge.loc[
             existing_scens_merge["coal_source_code"].isin(coals_to_include)]
+
+        # Condense the target inventory to just IDs and amounts using
+        # the weighted average method.
         scen_inventory_df = target_inventory_df.groupby(
-            by=groupby_cols,
-            as_index=False).agg({"p50": wm})
-        scen_inventory_df["Coal Code"] = scen
-        scen_inventory_df=scen_inventory_df.merge(
-            inventory_flow_info,
-            on=["FlowUUID"],
-            how="left"
-        )
-        missing_scens_df_list.append(scen_inventory_df)
+            by="FlowUUID",
+            as_index=False).agg({"Results": wm})
+
+        # Skip empty data frames (e.g., waste coal)
+        if len(scen_inventory_df) > 0:
+            # Define the coal code and match weighted flows back to their info.
+            scen_inventory_df["Coal Code"] = scen
+            scen_inventory_df = scen_inventory_df.merge(
+                inventory_flow_info,
+                on=["FlowUUID"],
+                how="left"
+            )
+            missing_scens_df_list.append(scen_inventory_df)
+
+    # Concatenate all inventories for the proxy-filled scenarios.
     missing_scens_df = pd.concat(missing_scens_df_list).reset_index(drop=True)
+
+    # Create an LCI for the proxy-filled scenarios.
+    #   Note, there are NaN rows for waste scenarios.
     missing_scens_merge = coal_input_eia.loc[
         coal_input_eia["coal_source_code"].isin(missing_scens),
         :].merge(
@@ -743,19 +1424,25 @@ def generate_upstream_coal(year):
             right_on=["Coal Code"],
             how="left"
         )
+
+    # Concatenate the proxy-filled scenario LCI with the existing LCI.
+    #   Note, you still get NaN entries for waste scenarios.
     coal_mining_inventory_df = pd.concat(
         [existing_scens_merge, missing_scens_merge],
-        sort=False).reset_index(drop=True)
+        sort=False
+    ).reset_index(drop=True)
 
-    # Multiply coal mining emission factor by coal quantity;
-    # convert to kg - coal input in tons (US)
+    # Calculate the flow amount by multiplying the result (kg per kg of coal)
+    # by the quantity (short tons of coal consumed converted to kg).
     coal_mining_inventory_df["FlowAmount"] = (
         pq.convert(1, 'ton', 'kg')
-        * coal_mining_inventory_df["p50"].multiply(
+        * coal_mining_inventory_df["Results"].multiply(
             coal_mining_inventory_df['quantity'],
             axis="index")
     )
 
+    # Set the source metadata and limit the necessary columns
+    #   Removes heat_input, Results, and Coal Code.
     coal_mining_inventory_df["Source"] = "Mining"
     coal_mining_inventory_df = coal_mining_inventory_df[[
         "plant_id",
@@ -770,102 +1457,58 @@ def generate_upstream_coal(year):
         "ElementaryFlowPrimeContext",
         "Unit",
         "FlowType"
-    ]]
+    ]].copy()
 
-    # Repeat the same methods for emissions from transportation
-    coal_transportation = coal_transportation.melt(
-        'Plant Government ID',
-        var_name = 'Transport'
-    )
-    coal_transportation["value"] = coal_transportation["value"] * pq.convert(
-        1, "ton", "kg") * pq.convert(1, "mi", "km")
-    merged_transport_coal = coal_transportation.merge(
-        coal_inventory_transportation,
-        left_on=['Transport'],
-        right_on=['Modes'],
-        how='left'
-    )
+    # Read coal transportation data
+    coal_transport_df = read_coal_transportation()
 
-    # multiply transportation emission factor (kg/kg-mi) by total transportation
-    # (ton-miles)
-    column_air_emission=[
-        x for x in coal_inventory_transportation.columns[1:]
-        if "Unnamed" not in x]
-    merged_transport_coal[column_air_emission] = (
-        merged_transport_coal[column_air_emission].multiply(
-            merged_transport_coal['value'], axis="index"
-        )
-    )
-    merged_transport_coal.rename(
-        columns={'Plant Government ID': 'plant_id'},
-        inplace=True
-    )
+    # Quality check facilities in transportation against mining LCI.
+    trans_plants = coal_transport_df['plant_id'].unique()
+    invent_plants = coal_mining_inventory_df['plant_id'].unique()
 
-    # Groupby the plant ID since some plants have multiple row entries
-    # (receive coal from multiple basins)
-    merged_transport_coal= merged_transport_coal.groupby(
-        ['plant_id','Transport'])[['value'] + column_air_emission].sum()
-    merged_transport_coal = merged_transport_coal.reset_index()
+    # Check for any inventory plants that don't have transportation LCI.
+    missing_plants = [
+        int(x) for x in invent_plants if x not in trans_plants]
+    num_miss_plants = len(missing_plants)
+    if num_miss_plants > 0:
+        logging.info(
+            "There are %d coal plants without transportation LCI" % (
+                num_miss_plants))
+        logging.info("Gap-filling with U.S. average transportation LCI.")
 
-    # Keep the plant ID and emissions columns
-    merged_transport_coal = (
-        merged_transport_coal[
-            ['plant_id','Transport','value'] + column_air_emission]
-    )
-    merged_transport_coal.rename(
-        columns={
-            'Transport': 'coal_source_code',
-            'value': 'quantity'},
-        inplace=True
-    )
-    # Melting the database on Plant ID
-    melted_database_transport = merged_transport_coal.melt(
-        id_vars=['plant_id','coal_source_code','quantity'],
-        var_name='FlowName',
-        value_name='FlowAmount'
-    )
-    melted_database_transport[
-        'coal_source_code'] = melted_database_transport.apply(
-            _transport_code, axis=1)
-    # Adding to new columns for the compartment (water) and
-    # The source of the emissions (mining).
-    melted_database_transport['Compartment'] = 'emission/air'
-    melted_database_transport['Source'] = 'Transportation'
-    melted_database_transport["ElementaryFlowPrimeContext"]="emission"
-    melted_database_transport["FlowType"]="ELEMENTARY_FLOW"
-    melted_database_transport=melted_database_transport.merge(
-        coal_transportation_flowmapping,
-        left_on=["FlowName","Compartment"],
-        right_on=["flowname","compartment"],
-        how="left"
-    )
-    melted_database_transport.drop(
-        columns=["FlowName","Compartment","flowname","compartment"],
-        errors="ignore",
-        inplace=True
-    )
-    melted_database_transport.rename(
-        columns={
-            "TargetFlowUUID": "FlowUUID",
-            "TargetFlowContext": "Compartment",
-            "TargetUnit": "Unit",
-            "TargetFlowName": "FlowName"},
-        inplace=True
-    )
-    melted_database_transport["input"] = False
+        # Create U.S. average inventory for missing plants
+        us_ave = get_2023_ave_coal_transport(coal_transport_df, coal_input_eia)
+        for plant_id in missing_plants:
+            tmp_df = us_ave.copy()
+            # Query coal input data for quantity.
+            q = coal_input_eia.query("plant_id == %d" % plant_id)
+            _quantity = q['quantity'].values[0]
+            tmp_df['plant_id'] = plant_id
+            tmp_df['quantity'] = _quantity
+            coal_transport_df = pd.concat([coal_transport_df, tmp_df])
+
+    # Add transport LCI to mining LCI, set fuel category to coal, and
+    # rename columns.
     merged_coal_upstream = pd.concat(
-        [coal_mining_inventory_df, melted_database_transport],
+        [coal_mining_inventory_df, coal_transport_df],
         sort=False).reset_index(drop=True)
     merged_coal_upstream['FuelCategory'] = 'COAL'
     merged_coal_upstream.rename(
         columns={
-            'coal_source_code':'stage_code',
-            'Source':'stage'},
+            'coal_source_code': 'stage_code',
+            'Source': 'stage'},
         inplace=True
     )
+
+    # Remove facilities with zero coal consumption
     zero_rows = merged_coal_upstream.loc[
         merged_coal_upstream["quantity"]==0, :].index
     merged_coal_upstream.drop(zero_rows, inplace=True)
+
+    # Remove the waste coal scenarios
+    merged_coal_upstream = merged_coal_upstream.dropna(subset='FlowName')
+
+    # Sort and reset the data frame and add additional metadata.
     merged_coal_upstream.sort_values(
         ['plant_id','stage','stage_code','Compartment','FlowName'],
         inplace=True
