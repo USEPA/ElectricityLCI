@@ -27,10 +27,12 @@ from electricitylci.globals import elci_version
 ##############################################################################
 __doc__ = """
 This module contains the relevant methods for generating openLCA-compliant
-dictionaries for upstream process inventories.
+dictionaries for upstream process inventories, such as coal/natural gas/
+petroleum extraction and processing, coal transport, nuclear fuel extraction,
+processing, and transport, and power plant construction.
 
 Last updated:
-    2024-10-22
+    2024-10-28
 """
 __all__ = [
     "olcaschema_genupstream_processes",
@@ -119,6 +121,13 @@ def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
         ar["category"] = fuel_category_dict["COAL"]
     else:
         ar["category"] = fuel_category_dict[fuel_type]
+
+    # TODO: here is where renewable construction process documentation
+    # is handled; however, the fixes for it are found in generation.py;
+    # here construction_upstream is used to make the default fossil/ngcc
+    # construction documentation as found in process_dictionary_writer.py;
+    # potentially add alternative route in process_description_creation
+    # (e.g., pull construction type from process name).
     ar["description"] = process_description_creation(
         f"{fuel_type.lower()}_upstream")
     ar["version"] = make_valid_version_num(elci_version)
@@ -385,6 +394,10 @@ def olcaschema_genupstream_processes(merged):
             _exchange_table_creation_output, axis=1).tolist()
         exchanges_list.extend(ra)
 
+        # TODO
+        # Iss253. The fuel type is 'Construction' and stage code is one of
+        # 'solar_pv_const', 'solar_thermal_const', or 'wind_const'
+        # Paths forward could be to make unique calls for
         first_row = min(merged_summary_filter.index)
         fuel_type = merged_summary_filter.loc[first_row, "FuelCategory"]
         stage_code = merged_summary_filter.loc[first_row, "stage_code"]
@@ -439,14 +452,15 @@ def olcaschema_genupstream_processes(merged):
         elif fuel_type == "CONSTRUCTION":
             combined_name= f"power plant construction - {stage_code}"
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
+
         process_name = f"{combined_name}"
         if (fuel_type == "COAL") & (stage_code in coal_transport):
-            final=_process_table_creation_gen(
-                    process_name, exchanges_list, "coal_transport"
+            final = _process_table_creation_gen(
+                process_name, exchanges_list, "coal_transport"
             )
         else:
             final = _process_table_creation_gen(
-                    process_name, exchanges_list, fuel_type
+                process_name, exchanges_list, fuel_type
             )
         upstream_process_dict[
             merged_summary_filter.loc[first_row, "stage_code"]
