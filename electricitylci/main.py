@@ -32,7 +32,7 @@ options. The selection of configuration file will occur after the start
 of this script or it may be passed following the command-line argument, '-c'.
 
 Last updated:
-    2024-10-22
+    2024-10-28
 
 Changelog:
     -   Address logging handler import for Python 3.12 compatibility.
@@ -258,7 +258,7 @@ if __name__ == "__main__":
     log_filename = "elci.log"
     check_output_dir(output_dir)
     log_path = os.path.join(output_dir, log_filename)
-    f_handler = RotatingFileHandler(log_path, backupCount=9)
+    f_handler = RotatingFileHandler(log_path, backupCount=9, encoding='utf-8')
     f_handler.setLevel("DEBUG")
     f_handler.setFormatter(formatter)
     log.addHandler(f_handler)
