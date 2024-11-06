@@ -34,6 +34,9 @@ jobs:
         pip install pytest
 
     - name: Install package and dependencies
+      env:
+        # Temporary fix to avoid git lfs error in fedelemflowlist install https://github.com/git-lfs/git-lfs/issues/5749
+        GIT_CLONE_PROTECTION_ACTIVE: false
       run: |
         pip install .
 
