@@ -1,0 +1,42 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: eLCI install testing
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master, development]
+    types: [opened, reopened]   # excludes syncronize to avoid redundant trigger from commits on PRs
+  workflow_dispatch:            # also allow manual trigger, for testing purposes
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Update pip & install testing pkgs
+      run: |
+        python -VV
+        python -m pip install --upgrade pip
+        pip install pytest
+
+    - name: Install package and dependencies
+      run: |
+        pip install .
+
+    # - name: Test with pytest
+    #   run: |
+    #     pytest
