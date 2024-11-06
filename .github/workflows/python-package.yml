@@ -5,7 +5,7 @@ name: eLCI install testing
 
 on:
   push:
-    branches: [master]
+    branches: [master, install_testing]
   pull_request:
     branches: [master, development]
     types: [opened, reopened]   # excludes syncronize to avoid redundant trigger from commits on PRs
