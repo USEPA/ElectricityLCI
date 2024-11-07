@@ -102,7 +102,7 @@ basin_codes = {
     'Powder River Basin': 'PRB',
     'Rocky Mountain': 'RM',
     'Southern Appalachia': 'SA',
-    'West/Northwest': 'WNW',
+    'West/North West': 'WNW',
     'Import': 'IMP',
 }
 '''dict : A map between NETL coal basin names and their abbreviations.'''
