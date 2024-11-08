@@ -183,6 +183,8 @@ def run_generation():
         # Convert all upstream stage codes into exchange tables
         # via upstream_dict.py's `olcaschema_genupstream_processes`.
         logging.info("write upstream process to dict")
+
+        # BUG: Issue 267, upstream product flows are converted to elementary flows.
         upstream_dict = write_upstream_process_database_to_dict(upstream_df)
 
         # Save each upstream stage code as an openLCA process---
