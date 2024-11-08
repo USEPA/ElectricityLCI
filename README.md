@@ -149,6 +149,13 @@ The `main()` method has four steps:
     - See GitHub [Issue #215](https://github.com/USEPA/ElectricityLCI/issues/215)
 
 # Troubleshooting
+If you receive a TypeError in `write_jsonld`, got unexpected keyword argument 'zw', then it's likely you have an outdated version of [fedelemflowlist](https://github.com/USEPA/fedelemflowlist).
+Please ensure these USEPA packages are up-to-date:
+
+- esupy
+- fedelemflowlist
+- stewi
+
 If GitHub-hosted packages fail to clone and install, manually downloading the zip files, extracting them, and running the pip install command within package folder also works (see snippet below for example for older version of fedelemflowlist).
 
 ```bash
