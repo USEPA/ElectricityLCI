@@ -253,19 +253,27 @@ def _exchange_table_creation_ref(fuel_type):
 
 
 def _flow_table_creation(data):
+    # HOTFIX iss267. DIDN'T WORK
+    # Construction flows do not have a FlowType assigned; however, other
+    # flows do. Let's check them first.
     ar = dict()
-    if "emission" in data["Compartment"] or "resource" in data["Compartment"]:
-        ar["flowType"] = "ELEMENTARY_FLOW"
-    elif "technosphere" in data["Compartment"].lower() or "valuable" in data["Compartment"].lower():
-        ar["flowType"] = "PRODUCT_FLOW"
-    elif "waste" in data["Compartment"].lower():
-        ar["flowType"] = "WASTE_FLOW"
-    else:
-        ar["flowType"] = "ELEMENTARY_FLOW"
+    try:
+        ar['flowType'] = data['FlowType']
+    except KeyError:
+        # No flow type index
+        if "emission" in data["Compartment"] or "resource" in data["Compartment"]:
+            ar["flowType"] = "ELEMENTARY_FLOW"
+        elif "technosphere" in data["Compartment"].lower() or (
+                "valuable" in data["Compartment"].lower()):
+            ar["flowType"] = "PRODUCT_FLOW"
+        elif "waste" in data["Compartment"].lower():
+            ar["flowType"] = "WASTE_FLOW"
+        else:
+            ar["flowType"] = "ELEMENTARY_FLOW"
+
     ar["flowProperties"] = ""
-    ar["name"] = data["FlowName"][
-        0:255
-    ]  # cutoff name at length 255 if greater than that
+    # Cutoff flow name at length 255 (if longer)
+    ar["name"] = data["FlowName"][0:255]
     ar["id"] = data["FlowUUID"]
     comp = str(data["Compartment"])
     if (ar["flowType"] == "ELEMENTARY_FLOW") & (comp != ""):
