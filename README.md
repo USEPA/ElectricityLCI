@@ -25,8 +25,8 @@ A Python virtual environment (v 3.11 or higher) is required with the following p
         + botocore-1.34.40
         + certifi-2024.2.2
         + charset-normalizer-3.3.2
-        + esupy-0.3.2
-        + fedelemflowlist-1.2.3
+        + esupy-0.3.3
+        + fedelemflowlist-1.2.4
         + idna-3.6
         + jmespath-1.0.1
         + numpy-1.26.4
@@ -44,7 +44,7 @@ A Python virtual environment (v 3.11 or higher) is required with the following p
         + urllib3-2.0.7
 + `pip install git+https://github.com/USEPA/standardizedinventories#egg=StEWI`
     * Successfully installed:
-        + StEWI-1.1.2
+        + StEWI-1.1.3
         + beautifulsoup4-4.12.3
         + et-xmlfile-1.1.0
         + openpyxl-3.1.2
