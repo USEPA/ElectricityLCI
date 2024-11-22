@@ -20,7 +20,7 @@ __doc__ = """Define paths, variables, and functions used across several
 modules.
 
 Last updated:
-    2024-09-25
+    2024-11-22
 """
 
 
@@ -232,6 +232,11 @@ def get_config_dir():
         Folder path to modelconfig directory.
     """
     return os.path.join(modulepath, 'modelconfig')
+
+
+def get_datastore_dir():
+    """Convenience function to show the path to ElectricityLCI data store."""
+    return paths.local_path
 
 
 def list_model_names_in_config():
