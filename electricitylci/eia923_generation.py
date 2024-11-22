@@ -13,7 +13,6 @@ from os.path import join
 
 import pandas as pd
 
-from electricitylci.eia860_facilities import eia860_balancing_authority
 from electricitylci.globals import EIA923_BASE_URL
 from electricitylci.globals import FUEL_CAT_CODES
 from electricitylci.globals import paths
