@@ -32,7 +32,7 @@ petroleum extraction and processing, coal transport, nuclear fuel extraction,
 processing, and transport, and power plant construction.
 
 Last updated:
-    2024-10-28
+    2024-11-25
 """
 __all__ = [
     "olcaschema_genupstream_processes",
@@ -253,9 +253,9 @@ def _exchange_table_creation_ref(fuel_type):
 
 
 def _flow_table_creation(data):
-    # HOTFIX iss267. DIDN'T WORK
-    # Construction flows do not have a FlowType assigned; however, other
-    # flows do. Let's check them first.
+    # HOTFIX iss267. v2: Add elementary flow prime context check.
+    # HOTFIX iss267. v1: Construction flows do not have a FlowType assigned;
+    # however, other flows do. Let's check them first.
     ar = dict()
     try:
         ar['flowType'] = data['FlowType']
@@ -265,6 +265,9 @@ def _flow_table_creation(data):
             ar["flowType"] = "ELEMENTARY_FLOW"
         elif "technosphere" in data["Compartment"].lower() or (
                 "valuable" in data["Compartment"].lower()):
+            ar["flowType"] = "PRODUCT_FLOW"
+        elif data['ElementaryFlowPrimeContext'] == 'technosphere':
+            # Iss267; cross-check prime context for product flows [241125; TWD]
             ar["flowType"] = "PRODUCT_FLOW"
         elif "waste" in data["Compartment"].lower():
             ar["flowType"] = "WASTE_FLOW"
@@ -349,6 +352,7 @@ def olcaschema_genupstream_processes(merged):
             "FlowName",
             "FlowUUID",
             "Compartment",
+            "ElementaryFlowPrimeContext",
             "plant_id",
             "Unit",
             "input"
@@ -362,6 +366,7 @@ def olcaschema_genupstream_processes(merged):
             "FlowName",
             "FlowUUID",
             "Compartment",
+            "ElementaryFlowPrimeContext",
             "Unit",
             "input"
         ],
