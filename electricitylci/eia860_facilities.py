@@ -123,6 +123,9 @@ def load_eia860_excel(eia860_path, sheet="Plant", header=1):
 def eia860_balancing_authority(year, regional_aggregation=None):
     """Return a data frame consisting of EIA Plant IDs and other identifying
     information, including balancing authority area.
+
+    Called in combinator.py, eia_io_trading.py, generation.py, and
+    hydro_upstream.py; albeit none send regional aggregation parameter.
     """
 
     expected_860_folder = os.path.join(
