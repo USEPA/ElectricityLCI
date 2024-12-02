@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 
 from electricitylci.globals import data_dir
+from electricitylci.globals import RENEWABLE_VINTAGE
 from electricitylci.solar_upstream import fix_renewable
 from electricitylci.solar_upstream import get_solar_generation
 
@@ -26,19 +27,13 @@ solely the upstream contributions. Emissions from the construction of panels
 are accounted for elsewhere.
 
 Last updated:
-    2024-10-23
+    2024-12-02
 """
 __all__ = [
     "generate_upstream_solarthermal",
     "get_solarthermal_construction",
     "get_solarthermal_om",
 ]
-
-
-##############################################################################
-# GLOBALS
-##############################################################################
-RENEWABLE_VINTAGE = 2020
 
 
 ##############################################################################

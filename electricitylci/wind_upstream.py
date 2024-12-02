@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 
 from electricitylci.globals import data_dir
+from electricitylci.globals import RENEWABLE_VINTAGE
 from electricitylci.eia923_generation import eia923_download_extract
 from electricitylci.solar_upstream import fix_renewable
 
@@ -25,7 +26,7 @@ for wind farm construction for each plant in EIA 923 based on upstream
 contributions.
 
 Last updated:
-    2024-10-23
+    2024-12-02
 """
 __all__ = [
     "aggregate_wind",
@@ -34,12 +35,6 @@ __all__ = [
     "get_wind_generation",
     "get_wind_om",
 ]
-
-
-##############################################################################
-# GLOBALS
-##############################################################################
-RENEWABLE_VINTAGE = 2020
 
 
 ##############################################################################

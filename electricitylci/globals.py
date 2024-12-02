@@ -20,7 +20,7 @@ __doc__ = """Define paths, variables, and functions used across several
 modules.
 
 Last updated:
-    2024-11-22
+    2024-12-02
 """
 
 
@@ -218,6 +218,9 @@ STATE_ABBREV = {
 
 API_SLEEP = 0.2
 '''float : A courtesy sleep time between API calls.'''
+
+RENEWABLE_VINTAGE = 2020
+'''int : The year for renewable inventories (i.e., 2016 or 2020).'''
 
 
 ##############################################################################
