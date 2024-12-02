@@ -8,7 +8,7 @@
 ##############################################################################
 import os
 import glob
-import pkg_resources  # part of setuptools
+from importlib.metadata import version
 
 from esupy.processed_data_mgmt import Paths
 
@@ -42,7 +42,8 @@ output_dir = os.path.join(str(paths.local_path), 'output')
 data_dir = os.path.join(modulepath,  'data')
 
 try:
-    elci_version = pkg_resources.require("ElectricityLCI")[0].version
+    # HOTFIX: remove dependency on setuptools and its deprecated pkg_resources
+    elci_version = version("ElectricityLCI")
 except:
     elci_version = "2.0.0"
 
