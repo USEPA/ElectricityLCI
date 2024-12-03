@@ -124,7 +124,7 @@ def _clean_columns(df):
    """Remove special characters and convert column names to snake case."""
    df.columns = (
        df.columns.str.lower().str.replace(
-           '[^0-9a-zA-Z\-]+', ' ',
+           '[^0-9a-zA-Z\\-]+', ' ',
            regex=True
         ).str.replace(
             '-', '',

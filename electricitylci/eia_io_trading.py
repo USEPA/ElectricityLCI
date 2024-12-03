@@ -525,9 +525,9 @@ def _read_bulk_zip():
 
     # Changing to regex matches to allow compatibility with past and present
     # bulk data. [2024-08-16; MJ]
-    ngh_matches = "^EBA[\S\w\d]+[^NG]\.NG\.H$"
-    idh_matches = "^EBA.+\.ID\.H$"
-    dh_matches = "^EBA.+\.D\.H$"
+    ngh_matches = "^EBA[\\S\\w\\d]+[^NG]\\.NG\\.H$"
+    idh_matches = "^EBA.+\\.ID\\.H$"
+    dh_matches = "^EBA.+\\.D\\.H$"
 
     # HOTFIX: Check file vintage [2024-03-12; TWD]
     path = os.path.join(paths.local_path, 'bulk_data', 'EBA.zip')
