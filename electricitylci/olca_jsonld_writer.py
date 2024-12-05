@@ -2092,7 +2092,7 @@ def _val(dict_d, *path, **kvargs):
     1
     >>> _val(d,'x') # NoneType for missing key
     None
-    >>> _val(d, 'x', 'y' 'z', 'a', 'b', 'c') # firs real key's value
+    >>> _val(d, 'x', 'y' 'z', 'a', 'b', 'c') # first real key's value
     1
     >>> _val(d, 'z', default=4) # default for missing key
     4

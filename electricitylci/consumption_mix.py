@@ -28,7 +28,7 @@ from electricitylci.process_dictionary_writer import (
 __doc__ = """This module uses an analysis of FERC Form 714 and international
 electricity trading data to generate consumption mixes for each of the eGRID
 subregions and converts that data to surplus pools and consumption mixes for
-the year 2014.
+the year 2014 (Hottle et al.).
 """
 __all__ = [
     "consumption_dict",
