@@ -87,7 +87,8 @@ def generate_power_plant_construction(year, incl_renew=False):
             x for x in renew_extra_cols if x in wind_const.columns]
         wind_const = wind_const.drop(columns=wind_extra_cols)
         wind_const['technology'] = ''
-        wind_const['fuel_type'] = 'Construction'
+        #Issue #150
+        wind_const['fuel_type'] = 'wind_Construction'
         logging.info("Adding wind power plant construction")
         construction_df =  pd.concat(
             [construction_df, wind_const], ignore_index=True)
@@ -98,7 +99,8 @@ def generate_power_plant_construction(year, incl_renew=False):
         st_extra_cols = [x for x in renew_extra_cols if x in st_const.columns]
         st_const = st_const.drop(columns=st_extra_cols)
         st_const['technology'] = ''
-        st_const['fuel_type'] = 'Construction'
+        #Issue #150
+        st_const['fuel_type'] = 'solartherm_Construction'
         logging.info("Adding solar thermal power plant construction")
         construction_df = pd.concat(
             [construction_df, st_const], ignore_index=True)
@@ -109,11 +111,11 @@ def generate_power_plant_construction(year, incl_renew=False):
         spv_extra_cols = [x for x in renew_extra_cols if x in spv_const.columns]
         spv_const = spv_const.drop(columns=spv_extra_cols)
         spv_const['technology'] = ''
-        spv_const['fuel_type'] = 'Construction'
+        #Issue #150
+        spv_const['fuel_type'] = 'solarpv_Construction'
         logging.info("Adding solar PV power plant construction")
         construction_df = pd.concat(
             [construction_df, spv_const], ignore_index=True)
-
     return construction_df
 
 
@@ -335,5 +337,5 @@ def get_coal_ngcc_const(year):
 # MAIN
 ##############################################################################
 if __name__ == "__main__":
-    year=2016
+    year=2020
     df = generate_power_plant_construction(year)

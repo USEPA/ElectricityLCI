@@ -1712,12 +1712,30 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     # HOTFIX: only include stage codes found in process_df [241011; TWD]
     sc_list = list(set([x[2] for x in provider_filter]))
     for index, row in process_df.loc(axis=0)[:, :, sc_list].iterrows():
-        provider_dict = {
-            "name": upstream_dict[index[2]]["name"],
-            "categoryPath": upstream_dict[index[2]]["category"],
-            "processType": "UNIT_PROCESS",
-            "@id": upstream_dict[index[2]]["uuid"],
-        }
+        # New Issue #150, try first to match regional construction. Fall back
+        # is US average.
+        if "_const" in index[2]:
+            try:
+                provider_dict = {
+                    "name": upstream_dict[index[2] + " - " +index[0]]["name"],
+                    "categoryPath": upstream_dict[index[2] + " - " +index[0]]["category"],
+                    "processType": "UNIT_PROCESS",
+                    "@id": upstream_dict[index[2] + " - " +index[0]]["uuid"],
+                }
+            except KeyError:
+                provider_dict = {
+                    "name": upstream_dict[index[2]]["name"],
+                    "categoryPath": upstream_dict[index[2]]["category"],
+                    "processType": "UNIT_PROCESS",
+                    "@id": upstream_dict[index[2]]["uuid"],
+                }
+        else:
+            provider_dict = {
+                "name": upstream_dict[index[2]]["name"],
+                "categoryPath": upstream_dict[index[2]]["category"],
+                "processType": "UNIT_PROCESS",
+                "@id": upstream_dict[index[2]]["uuid"],
+            }
         row["exchanges"][0]["provider"] = provider_dict
         row["exchanges"][0]["unit"] = unit(
             upstream_dict[index[2]]["q_reference_unit"]

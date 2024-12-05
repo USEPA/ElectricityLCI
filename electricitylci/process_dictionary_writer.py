@@ -175,7 +175,11 @@ VALID_FUEL_CATS=[
     "gas_upstream",
     "oil_upstream",
     "coal_transport_upstream",
-    "construction_upstream"
+    "construction_upstream",
+    # Issue #150
+    "solarpv_construction_upstream",
+    "solartherm_construction_upstream",
+    "wind_construction_upstream",
 ]
 
 

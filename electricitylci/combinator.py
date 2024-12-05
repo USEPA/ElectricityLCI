@@ -436,7 +436,6 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
             return upstream_mapped_df, unmatched_list, matched_list
 
     upstream_mapped_df = upstream_mapped_df[final_columns]
-
     return upstream_mapped_df
 
 
@@ -523,9 +522,10 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
 
     # This allows construction impacts to be aligned to a power plant type -
     # not as important in openLCA but for analyzing results outside of openLCA.
-    combined_df.loc[
-        combined_df["FuelCategory"] == "CONSTRUCTION", "FuelCategory"
-    ] = float("nan")
+    # Removed for Issue #150, was causing me issues downstream.
+    # combined_df.loc[
+    #     combined_df["FuelCategory"].str.contains("CONSTRUCTION"), "FuelCategory"
+    # ] = float("nan")
 
     combined_df = fill_nans(combined_df, model_specs.eia_gen_year)
 
