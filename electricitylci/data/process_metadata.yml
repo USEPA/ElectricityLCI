@@ -1263,3 +1263,182 @@ construction_upstream:
       Version: '1.0.1'
 
       Category: 'NETL'
+solarpv_construction_upstream:
+  techno_intro: &solar_const_techno_intro
+  - 'This process represents the cradle-to-gate inventory for
+    electricity production from US solar photovoltaic power plants. '
+
+  techno_process: &solar_const_techno_process
+  - 'Inventories were developed for each solar PV plant in the 2016 EIA 860
+    data. Boundaries include plant construction and minor operating emissions
+    from fuel combustion, etc. The inventory for the plant is allocated over
+    an assumed 30 year life. The aggregation performed in the electricity LCI
+    code will then divide those inventories by the generation in the selected
+    year to provide results on the basis of MWh.'
+
+  Description:
+  - *solar_const_techno_intro
+  - *solar_const_techno_process
+
+  TechnologyDescription:
+
+  DatasetOwner: 'IEA, NREL, JE Mason, VM Fthenakis, T Hansen, HC Kim'
+
+  DataGenerator: 'NETL'
+
+  DataDocumentor: 'NETL'
+
+  DataTreatment: 'Material requirements to construct the solar PV panels and
+    the balance of system are calculated using plant capacity and local
+    insolation estimates to scale the inventories from the referenced studies.
+    The total inventory from construction and operations over the plant life
+    are then divided by the assumed 30 year lifetime to provide emissions per
+    year. When these emissions are divided by the generation for the specified
+    year in the electricity baseline code, the inventory is placed on the basis
+    of 1 MWh.'
+
+  DataSelection: 'Where possible data is sourced from freely available life
+    cycle data, such as NETL unit processes or USLCI. If the material was not
+    available there then ecoinvent processes are used.'
+
+  DataCollectionPeriod: '2018'
+
+  sampling_procedure :
+    - 'BOUNDARY CONDITIONS
+
+      The boundaries include power plant construction with all known material
+      inputs (e.g., steel, glass, concrete) and some minor material
+      requirements and fuel combustion for plant operation. '
+
+    - 'DATA COLLECTION
+
+      Data for the material inputs to the plant are from:
+      NETL unit processes, US LCI, and ecoinvent.
+      '
+
+    - *no_uncertainty
+
+  Sources:
+    Source1:
+      <<: *ingwersen_2024
+solartherm_construction_upstream:
+  techno_intro: &solarthermal_const_techno_intro
+
+  - 'This process represents the cradle-to-gate inventory for electricity
+    production from US solar thermal power plants. '
+
+  techno_process: &solarthermal_const_techno_process
+
+  - 'Inventories were developed for each solar thermal plant in the 2016 EIA
+    860 data. Boundaries include plant construction and minor operating
+    emissions from fuel combustion, etc. The inventory for the plant is
+    allocated over an assumed 30 year life. The aggregation performed in the
+    electricity LCI code will then divide those inventories by the generation
+    in the selected year to provide results on the basis of MWh.'
+
+  Description:
+  - *solarthermal_const_techno_intro
+  - *solarthermal_const_techno_process
+
+  TechnologyDescription:
+
+  DatasetOwner: 'NREL'
+
+  DataGenerator: 'NETL'
+
+  DataDocumentor: 'NETL'
+
+  DataTreatment: 'Material requirements to construct the wind farm are
+    calculated using turbine manufacturer and size information. The total
+    inventory from construction and operations of the wind farm are then
+    divided by the assumed 30 year lifetime to provide emissions per year.
+    When these emissions are divided by the generation for the specified year
+    in the electricity baseline code, the inventory is placed on the basis of
+    1 MWh.'
+
+  DataSelection: 'Where possible data is sourced from freely available life
+    cycle data, such as NETL unit processes or USLCI. If the material was not
+    available there then ecoinvent processes are used.'
+
+  DataCollectionPeriod: '2018'
+
+  sampling_procedure :
+    - 'BOUNDARY CONDITIONS
+
+      The boundaries include power plant construction with all known material
+      inputs (e.g., steel, glass, concrete) and some minor material
+      requirements and fuel combustion for plant operation. '
+
+    - 'DATA COLLECTION
+
+      Data for the material inputs to the plant are from:
+      NETL unit processes, US LCI, and ecoinvent.
+      '
+
+    - *no_uncertainty
+
+  Sources:
+    Source1:
+      <<: *ingwersen_2024
+
+wind_construction_upstream:
+  techno_intro: &wind_const_techno_intro
+
+  - 'This process represents the cradle-to-gate inventory for electricity
+    production from US wind farms. '
+
+  techno_process: &wind_const_techno_process
+
+  - 'Inventories were developed for each wind farm in the 2016 EIA 860 data.
+    Boundaries include wind turbine construction and minor operating emissions
+    from fuel combustion, maintenance, etc. The inventory for the wind farm is
+    allocated over an assumed 30 year life. The aggregation performed in the
+    electricity LCI code will then divide those inventories by the generation in
+    the selected year to provide results on the basis of MWh.'
+
+  Description:
+  - *wind_const_techno_intro
+  - *wind_const_techno_process
+
+  TechnologyDescription:
+
+  DatasetOwner: 'NREL and Vestas'
+
+  DataGenerator: 'NETL'
+
+  DataDocumentor: 'NETL'
+
+  DataTreatment: 'Material requirements to construct the wind farm are
+    calculated using wind turbine manufacturer and size information
+    to for each turbine and aggregating all of the turbines in the wind farm.
+    The total inventory from construction and operations over the plant life
+    are then divided by the assumed 30 year lifetime to provide emissions per
+    year. When these emissions are divided by the generation for the specified
+    year in the electricity baseline code, the inventory is placed on the basis
+    of 1 MWh.'
+
+  DataSelection: 'Where possible data is sourced from freely available life
+    cycle data, such as NETL unit processes or USLCI. If the material was not
+    available there then ecoinvent processes are used.'
+
+  DataCollectionPeriod: '2018'
+
+  sampling_procedure :
+    - 'BOUNDARY CONDITIONS
+
+      The boundaries include power plant construction with all known material
+      inputs (e.g., steel, glass fiber, concrete) and some minor material
+      requirements and fuel combustion for plant operation.
+      '
+
+    - 'DATA COLLECTION
+
+      Data for the material inputs to the plant are from:
+      NETL unit processes, US LCI, and ecoinvent.
+      '
+
+    - *no_uncertainty
+
+  Sources:
+    Source1:
+      <<: *ingwersen_2024
