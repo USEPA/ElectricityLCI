@@ -17,8 +17,10 @@ from ast import literal_eval
 from electricitylci.globals import paths
 from electricitylci.globals import data_dir
 from electricitylci.globals import STATE_ABBREV
-from electricitylci.eia923_generation import eia923_download  # +model_specs
+from electricitylci.eia860_facilities import eia860_balancing_authority
+from electricitylci.eia923_generation import eia923_download
 from electricitylci.eia923_generation import eia923_generation_and_fuel
+from electricitylci.model_config import model_specs
 import electricitylci.PhysicalQuantities as pq
 from electricitylci.utils import download
 from electricitylci.utils import find_file_in_folder
@@ -46,7 +48,7 @@ from a different type of mine, or from a different location.
 For the 2023 coal model, see: https://www.osti.gov/biblio/2370100.
 
 Last updated:
-    2024-10-25
+    2024-12-06
 """
 __all__ = [
     "COAL_MINING_LCI_VINTAGE",
@@ -114,7 +116,7 @@ transport_dict = {
     'Avg Railroad Ton*Miles': 'Railroad',
     'Avg Truck Ton*Miles': 'Truck',
 }
-'''dict : A map between coal model transport columns and their short names.'''
+'''dict : A map from 2016 coal model transport columns to their short names.'''
 
 
 ##############################################################################
@@ -211,47 +213,114 @@ def _process_2023_coal_transport_lci(df, name):
 
 
 def _make_2023_coal_transport_data(year):
-    # IN PROGRESS.
-    #
-    # The 2023 transport distances are by NERC region and coal basin.
-    # The goal is to get a data frame with facility IDs matched to their
-    # NERC region and coal basin.
+    """Generate essentially the same the data as the CSV file from the 2016
+    baseline, updated with transportation data from the 2023 coal model,
+    where gaps are filled using the U.S. average.
 
-    # Get NERC regions for coal facilities
-    coal_reg = eia923_generation_and_fuel(year)
-    coal_reg = coal_reg[
-        ['plant_id', 'nerc_region', 'state', 'reported_fuel_type_code']].copy()
-    # Keep only coal facilities
-    coal_filt = coal_reg['reported_fuel_type_code'].isin(coal_type_codes.keys())
-    coal_reg = coal_reg.loc[coal_filt, :]
-    # Lose facilities without a NERC region
-    coal_reg = coal_reg.dropna(subset='nerc_region')
+    Transportation data units are kg*km
+    (kilograms of coal x kilometers of distance transported).
 
-    # Get the basin map.
-    basin_map = pd.read_csv(os.path.join(data_dir, 'eia_to_netl_basin.csv'))
-    basin_map = basin_map.set_index('eia_basin')
-    basin_map = basin_map['netl_basin']
-    basin_map = basin_map.to_dict()
+    Parameters
+    ----------
+    year : int
+        The year used for facility data from EIA 860.
 
-    # Get the state to basin map.
-    state_map = pd.read_csv(os.path.join(data_dir, 'coal_state_to_basin.csv'))
-    state_map = state_map.set_index('state')
-    state_map = state_map['basin1']
-    state_map = state_map.to_dict()
+    Returns
+    -------
+    pandas.DataFrame
+        A data frame with plant IDs, coal basins, NERC regions, and kg coal*km
+        coal transported data for: Belt, Truck, Barge, Ocean Vessel, and Train.
 
-    coal_reg['basin'] = coal_reg['state'].map(state_map)
-    coal_reg.dropna(subset='basin')
+    Raises
+    ------
+    OSError
+        If the data file is not found.
+    """
+    # Generate the coal upstream map, which labels each facility with its
+    # coal source code: a three-part combo of coal basin, coal type, and
+    # mine type. We only want the coal basin data from this.
+    coal_map_df = generate_upstream_coal_map(year)
+    coal_map_df["Basin"] = coal_map_df["coal_source_code"].str.split("-").str[0]
 
-    # TODO;
+    # Now, let's find the NERC region for each facility.
+    ba_region_df = eia860_balancing_authority(year, regional_aggregation=None)
 
-    # The 2023 coal baseline model's 'Transportation' worksheet was
-    # saved to CSV. All distances are in miles.
-    # Columns include 'Basin', 'NERC Region', 'Belt', 'Truck', 'Barge',
-    # 'Ocean Vessel', 'Railroad' (renamed from 'Train'), and 'Total (mi)'.
-    coal_distance = pd.read_csv(
-        os.path.join(
-            data_dir, "coal", "2023", "coal_transportation_distances.csv")
+    # Let's create a dictionary that maps facilities to their NERC region,
+    # fixing the plant ID from string to integer along the way.
+    # We don't need the heat input or the old coal source code, so let's drop
+    # them.
+    region_dict = dict(
+        zip(ba_region_df["Plant Id"], ba_region_df["NERC Region"])
     )
+    region_dict = {int(k): v for k, v in region_dict.items()}
+    coal_map_df['NERC Region'] = coal_map_df['plant_id'].map(region_dict)
+    coal_map_df = coal_map_df.drop(columns=['coal_source_code', 'heat_input'])
+
+    # Read the 2023 coal model transportation data
+    # Source: https://github.com/USEPA/ElectricityLCI/discussions/273
+    coal_dir = os.path.join(data_dir, "coal", "2023")
+    coal_file = os.path.join(coal_dir, "coal_transport_dist.csv")
+    if not os.path.isfile(coal_file):
+        raise OSError(
+            "Failed to find 2023 coal transportation "
+            "data file, '%s'" % coal_file)
+    coal_trans_df = pd.read_csv(coal_file)
+
+    # NOTE: the 2023 coal model uses a slightly different naming scheme
+    # for WNW coal basin, so let's fix it.
+    basin_codes_new = {k:v for k, v in basin_codes.items()}
+    del basin_codes_new["West/Northwest"]
+    basin_codes_new["West/North West"] = "WNW"
+
+    # Now, map the basin names to their basin codes.
+    # NOTE this works for all basins except for "U.S. Average"
+    coal_trans_df["Basin"] = coal_trans_df["Basin"].map(basin_codes_new)
+
+    # Some facilities may not map to our coal model, so let's save the
+    # U.S. average and use it for them.
+    # TODO: Consider saving the weighted averages for regions as well!
+    us_ave_coal_trans = coal_trans_df.loc[coal_trans_df['Basin'].isna(), :]
+    us_ave_coal_trans = us_ave_coal_trans.reset_index(drop=True)
+
+    # Drop the NaNs from our coal transportation data frame
+    # (i.e., the U.S. average that we saved separately).
+    coal_trans_df = coal_trans_df.dropna().copy()
+
+    # Put it all together by merging our transportation data and the
+    # coal data using the NERC region and coal basin codes as the
+    # common attributes.
+    final_df = pd.merge(
+        left=coal_map_df,
+        right=coal_trans_df,
+        on=['Basin', 'NERC Region'],
+        how='left',
+    )
+
+    # there are facilities not mapped to transportation; let's give them the
+    # U.S. average values
+    # TODO: consider using weighted-average regional values.
+    final_df = final_df.fillna({
+        'Belt': us_ave_coal_trans.loc[0, 'Belt'],
+        'Truck': us_ave_coal_trans.loc[0, 'Truck'],
+        'Barge': us_ave_coal_trans.loc[0, 'Barge'],
+        'Ocean Vessel': us_ave_coal_trans.loc[0, 'Ocean Vessel'],
+        'Train': us_ave_coal_trans.loc[0, 'Train'],
+    })
+
+    # The transportation data from the coal model are in miles.
+    # Let's convert miles to kilometers, and calculate the kg*km values by
+    # multiplying the quantity (kg of coal) by transportation distance
+    # (miles converted to km).
+    mi_to_km = pq.convert(1, 'mi', 'km')
+
+    trans_cols = ["Belt", "Truck", "Barge", "Ocean Vessel", "Train"]
+    final_df[trans_cols] = final_df[trans_cols].mul(mi_to_km)
+    final_df[trans_cols] = final_df[trans_cols].mul(
+        final_df["quantity"],
+        axis=0
+    )
+
+    return final_df
 
 
 def _make_ave_transport(trans_df, lci_df):
@@ -969,6 +1038,100 @@ def get_2023_ave_coal_transport(trans_df, input_df):
     return trans_lci
 
 
+def get_coal_transportation():
+    """Create the coal transport data frame in kilograms of coal by kilometers
+    of distance transported for each facility by transportation type
+    (e.g. 'Barge' or 'Truck').
+
+    Returns
+    -------
+    pandas.DataFrame
+        A three-column data frame of 'plant_id', 'coal_source_code'
+        (i.e., tranportation type like 'Truck' or 'Barge'), and 'quantity'
+        (i.e., transportation of kilograms of coal by kilometers of distance).
+
+        The 2020 version has five types of transportation (i.e., 'Barge', 'Lake
+        Vessel', 'Ocean Vessel', 'Railroad', and 'Truck).
+
+        The 2023 version has five types of transportation (i.e., 'Barge',
+        'Belt', 'Ocean Vessel', 'Railroad', and 'Truck').
+
+    Raises
+    ------
+    ValueError
+        If the global parameter year is not correctly assigned.
+
+    Notes
+    -----
+    Method depends on the global parameter, `COAL_TRANSPORT_LCI_VINTAGE`.
+    For 2020, the 2016 baseline's ABB data file is referenced (i.e.,
+    '2016_Coal_Trans_By_Plant_ABB_Data.csv').
+    For 2023, the 2023 coal baseline data file is referenced
+    (i.e., 'coal_transport_dist.csv' in the coal/2023 folder of data).
+    """
+    # IN PROGRESS
+    if COAL_TRANSPORT_LCI_VINTAGE == 2020:
+        # The 2016 transportation data by facility.
+        logging.info("Using 2016 coal baseline transportation distance data.")
+        coal_transportation = pd.read_csv(
+            os.path.join(data_dir, '2016_Coal_Trans_By_Plant_ABB_Data.csv')
+        )
+        # Make rows facility IDs with Transport column (modes) and
+        # value (ton*mi)
+        coal_transportation = coal_transportation.melt(
+            'Plant Government ID',
+            var_name='Transport'
+        )
+        # NOTE: the 2016 transportation functional unit is ton*miles;
+        # convert ton*mi to kg*km
+        coal_transportation["value"] = (
+            coal_transportation["value"]
+            * pq.convert(1, "ton", "kg")
+            * pq.convert(1, "mi", "km")
+        )
+        # Rename transport columns
+        coal_transportation = coal_transportation.rename(columns={
+            'Plant Government ID': 'plant_id',
+            'Transport': 'coal_source_code',
+            'value': 'quantity',
+        })
+        # Correct coal_transportation codes
+        coal_transportation['coal_source_code'] = coal_transportation.apply(
+            _transport_code, axis=1)
+    elif COAL_TRANSPORT_LCI_VINTAGE == 2023:
+        logging.info("Using 2023 coal model transportation distance data")
+        coal_transportation = _make_2023_coal_transport_data(
+            model_specs.eia_gen_year)
+
+        # NOTE: the 2016 baseline uses 'Railroad' in place of 'Train'
+        coal_transportation = coal_transportation.rename(
+            columns={'Train': 'Railroad'}
+        )
+
+        # The data frame needs melted to match the 2016 data frame, which has
+        # three columns: plant_id, coal_source_code (i.e., transportation type),
+        # and quantity (i.e., the kg*km values).
+        coal_transportation = coal_transportation.melt(
+            id_vars=("plant_id",),
+            value_vars=('Belt', 'Truck', 'Barge', 'Ocean Vessel', 'Railroad')
+        )
+
+        # To allow facilities receiving coal from more than one region/basin,
+        # group by facility and sum by transportation type.
+        coal_transportation = coal_transportation.groupby(by=['plant_id', 'variable']).agg({'value': 'sum'}).reset_index(drop=False)
+
+        # Rename to match the 2016 data frame
+        coal_transportation = coal_transportation.rename(
+            columns={'variable': 'coal_source_code', 'value': 'quantity'}
+        )
+    else:
+        raise ValueError(
+            "The coal transport year, %d, "
+            "is unknown!" % COAL_TRANSPORT_LCI_VINTAGE)
+
+    return coal_transportation
+
+
 def read_coal_mining():
     """Read coal mining (extraction and processing) life cycle inventory.
 
@@ -1071,33 +1234,8 @@ def read_coal_transportation():
         - 'input', whether flow is resource (true) or emission (false)
 
     """
-    # Presently, we only have the 2016 transportation data by facility.
-    logging.info("Using 2016 coal plant transportation data.")
-    coal_transportation = pd.read_csv(
-        os.path.join(data_dir, '2016_Coal_Trans_By_Plant_ABB_Data.csv')
-    )
-    # Make rows facility IDs with Transport column (modes) and
-    # value (ton*mi)
-    coal_transportation = coal_transportation.melt(
-        'Plant Government ID',
-        var_name='Transport'
-    )
-    # NOTE: the 2016 transportation functional unit is ton*miles;
-    # convert ton*mi to kg*km
-    coal_transportation["value"] = (
-        coal_transportation["value"]
-        * pq.convert(1, "ton", "kg")
-        * pq.convert(1, "mi", "km")
-    )
-    # Rename transport columns
-    coal_transportation = coal_transportation.rename(columns={
-        'Plant Government ID': 'plant_id',
-        'Transport': 'coal_source_code',
-        'value': 'quantity',
-    })
-    # Correct coal_transportation codes
-    coal_transportation['coal_source_code'] = coal_transportation.apply(
-        _transport_code, axis=1)
+    # Get the appropriate coal transportation distance data:
+    coal_transportation = get_coal_transportation()
 
     # FORK IN THE ROAD
     if COAL_TRANSPORT_LCI_VINTAGE == 2023:
@@ -1467,6 +1605,7 @@ def generate_upstream_coal(year):
     invent_plants = coal_mining_inventory_df['plant_id'].unique()
 
     # Check for any inventory plants that don't have transportation LCI.
+    # NOTE: this should not occur unless the LCI vintage years are mis-matched.
     missing_plants = [
         int(x) for x in invent_plants if x not in trans_plants]
     num_miss_plants = len(missing_plants)
