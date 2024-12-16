@@ -354,6 +354,10 @@ def olcaschema_genupstream_processes(merged):
         "Ocean Vessel",
         "Railroad",
         "Truck",
+        #Hotfix 12/16/2024 was generating a keyerror below without this.
+        #I don't think the belt inventory is actually used but no harm in 
+        #including
+        "Belt",
     ]
     # First going to keep plant IDs to account for possible emission repeats
     # for the same compartment, leading to erroneously low emission factors
