@@ -257,6 +257,26 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     # already in lowercase letters, which is why no change happens below.
     logging.info("Creating flow mapping database")
     flow_mapping = fedefl.get_flowmapping('eLCI')
+
+    # as hotfix for https://github.com/USEPA/ElectricityLCI/issues/274
+    # append full flowlist to the flow mapping file (dropping duplicates)
+    # to catch any other mappings of flows that use the same name as already
+    # in the flow list
+    flowlist = (fedefl.get_flows()
+                .filter(['Flowable', 'Context', 'Unit', 'Flow UUID'])
+                .assign(SourceFlowName = lambda x: x['Flowable'])
+                .assign(SourceFlowContext = lambda x: x['Context'])
+                .assign(SourceUnit = lambda x: x['Unit'])
+                .assign(ConversionFactor = 1.0)
+                .rename(columns={'Flowable': 'TargetFlowName',
+                                 'Flow UUID': 'TargetFlowUUID',
+                                 'Unit': 'TargetUnit',
+                                 'Context': 'TargetFlowContext'})
+                )
+    flow_mapping = (pd.concat([flow_mapping, flowlist], ignore_index=True)
+                    .drop_duplicates(
+                        subset=['SourceFlowName', 'SourceFlowContext', 'TargetFlowName'])
+                    )
     flow_mapping["SourceFlowName"] = flow_mapping["SourceFlowName"].str.lower()
 
     logging.info("Preparing upstream df for merge")
