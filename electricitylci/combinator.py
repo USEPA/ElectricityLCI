@@ -314,11 +314,11 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     upstream_df["FlowAmount"] = upstream_df["FlowAmount"].astype(float)
     if "Electricity" in upstream_df.columns:
         upstream_df_grp = upstream_df.groupby(
-            groupby_cols, as_index=False
+            groupby_cols, as_index=False, dropna=False
         ).agg({"FlowAmount": "sum", "quantity": "mean", "Electricity": "mean"})
     else:
         upstream_df_grp = upstream_df.groupby(
-            groupby_cols, as_index=False
+            groupby_cols, as_index=False, dropna=False
         ).agg({"FlowAmount": "sum", "quantity": "mean"})
 
     logging.info("Merging upstream database and flow mapping")
