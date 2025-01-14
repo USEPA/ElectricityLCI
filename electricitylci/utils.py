@@ -26,9 +26,10 @@ from electricitylci.globals import output_dir
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2024-10-09
+    2025-01-14
 
 Changelog:
+    -   [25.01.14]: Add StEWI inventories of interest method.
     -   [24.10.09]: Update find file in folder to not crash.
     -   [24.08.05]: Create new BA code getter w/ FERC mapping.
     -   TODO: update create_ba_region_map to link with new BA code getter
@@ -44,12 +45,15 @@ __all__ = [
     "download_unzip",
     "fill_default_provider_uuids",
     "find_file_in_folder",
+    "get_stewi_invent_years",
     "join_with_underscore",
+    "linear_search",
     "make_valid_version_num",
     "read_ba_codes",
     "read_eia_api",
     "read_json",
     "set_dir",
+    "write_csv_to_output",
 ]
 
 
@@ -332,6 +336,62 @@ def find_file_in_folder(folder_path, file_pattern_match, return_name=True):
         return (file_path, file_name)
 
 
+def get_stewi_invent_years(year):
+    """Helper function to return inventory years of interest from StEWI.
+    See https://github.com/USEPA/standardizedinventories for inventory names
+    and years, which are hard-coded here.
+
+    Parameters
+    ----------
+    year : int
+        An inventory vintage (e.g., 2020).
+
+    Returns
+    -------
+        dict
+            A dictionary of inventory codes and their most recent year of
+            data available (less than or equal to the year provided).
+
+    Notes
+    -----
+    This method answers the question, which inventories of interest should
+    go into the modelconfig files (``inventories_of_interest`` attribute) for
+    a given year.
+
+    Depends on :func:`linear_search`.
+
+    In eLCI, the inventories of interest configuration parameter cares about
+    the following data providers,
+
+    - eGRID
+    - TRI
+    - NEI
+    - RCRAInfo
+
+    Examples
+    --------
+    >>> get_stewi_invent_years(2019)
+    """
+    # A dictionary of StEWI inventories and their available vintages
+    # NOTE: inventories not considered in eLCI are commented out.
+    STEWI_DATA_VINTAGES = {
+        # 'DMR': [x for x in range(2011, 2023, 1)],
+        # 'GHGRP': [x for x in range(2011, 2023, 1)],
+        'eGRID': [2014, 2016, 2018, 2019, 2020, 2021],
+        'NEI': [2011, 2014, 2017, 2020],
+        'RCRAInfo': [x for x in range(2011, 2023, 2)],
+        'TRI': [x for x in range(2011, 2023, 1)],
+    }
+
+    r_dict = {}
+    for key in STEWI_DATA_VINTAGES.keys():
+        avail_years = STEWI_DATA_VINTAGES[key]
+        y_idx = linear_search(avail_years, year)
+        if y_idx != -1:
+            r_dict[key] = STEWI_DATA_VINTAGES[key][y_idx]
+    return r_dict
+
+
 def join_with_underscore(items):
     """A helper method to concatenate items together using an underscore.
 
@@ -364,6 +424,40 @@ def join_with_underscore(items):
     if type_cast_to_str:
         items = [str(x) for x in items]
     return "_".join(items)
+
+
+def linear_search(lst, target):
+    """Backwards search for the value less than or equal to a given value.
+
+    Parameters
+    ----------
+    lst : list
+        A list of numerically sorted data (lowest to highest).
+    target : int, float
+        A target value (e.g., year).
+
+    Returns
+    -------
+    int
+        The index of the search list associated with the value equal to or
+        less than the target, else -1 for a target out-of-range (i.e., smaller than the smallest entry in the list).
+
+    Examples
+    --------
+    >>> NEI_YEARS = [2011, 2014, 2017, 2020]
+    >>> linear_search(NEI_YEARS, 2020)
+    3
+    >>> linear_search(NEI_YEARS, 2019)
+    2
+    >>> linear_search(NEI_YEARS, 2018)
+    2
+    >>> linear_search(NEI_YEARS, 2010)
+    -1
+    """
+    for i in range(len(lst) - 1, -1, -1):
+        if lst[i] <= target:
+            return i
+    return -1
 
 
 def make_valid_version_num(foo):
