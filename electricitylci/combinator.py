@@ -29,7 +29,7 @@ nuclear fuel cycle), and maps emissions based on the Federal LCA Commons
 Elementary Flow List in order to provide life cycle inventory.
 
 Last edited:
-    2024-10-22
+    2025-01-15
 """
 __all__ = [
     "BA_CODES",
@@ -314,11 +314,11 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     upstream_df["FlowAmount"] = upstream_df["FlowAmount"].astype(float)
     if "Electricity" in upstream_df.columns:
         upstream_df_grp = upstream_df.groupby(
-            groupby_cols, as_index=False, dropna=False
+            groupby_cols, as_index=False,
         ).agg({"FlowAmount": "sum", "quantity": "mean", "Electricity": "mean"})
     else:
         upstream_df_grp = upstream_df.groupby(
-            groupby_cols, as_index=False, dropna=False
+            groupby_cols, as_index=False,
         ).agg({"FlowAmount": "sum", "quantity": "mean"})
 
     logging.info("Merging upstream database and flow mapping")
