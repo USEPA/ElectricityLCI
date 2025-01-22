@@ -29,7 +29,7 @@ nuclear fuel cycle), and maps emissions based on the Federal LCA Commons
 Elementary Flow List in order to provide life cycle inventory.
 
 Last edited:
-    2025-01-15
+    2025-01-22
 """
 __all__ = [
     "BA_CODES",
@@ -656,6 +656,7 @@ def map_compartment_path(df):
     resource_mapping = {
         'water': "resource/water",
         'input': "input",  # should keep electricity as a resource
+        "resource": "resource",  # hotfix geothermal resource flows
     }
     # Map resources
     df.loc[df['input'], 'Compartment_path'] = df.loc[
