@@ -444,8 +444,11 @@ def eia_7a_download(year, save_path):
             'Error downloading eia-7a: try manually downloading from %s' % url)
 
 
+# TODO: consider moving this to eia923_generation.py, which handles
+#   EIA Form 923 data management; also consider a secondary parameter for
+#   energy-source filtering, which includes coal, natural gas, and petroleum
 def read_eia923_fuel_receipts(year):
-    """Return data frame of EIA 923 coal receipts.
+    """Return data frame of EIA 923 fuel receipts.
 
     Source: EIA923 Schedules 2,3,4,5,M,12, page 5.
 
