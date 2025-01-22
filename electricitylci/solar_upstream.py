@@ -102,6 +102,13 @@ def fix_renewable(df, source="netlrenew"):
     df.loc[elec_c, "input"] = True
     df.loc[elec_c, "Unit"] = "MWh"
     df.loc[elec_c, "Compartment_path"] = "input"
+    # NOTE: the upstream construction and O&M for renewables do not
+    # have electricity disconnected---their inventories include emissions
+    # from electricity generation; therefore, drop these flows until
+    # circularity inventories are implemented.
+    if elec_c.sum() > 0:
+        logging.info("Dropping electricity inputs from renewable, %s" % source)
+        df = df.drop(df[elec_c].index)
 
     # HOTFIX water as an input (Iss147).
     #   These are the negative water-to-water emissions.
