@@ -29,7 +29,10 @@ except ImportError:
 ##############################################################################
 # GLOBALS
 ##############################################################################
-__doc__ = """Download and import EIA 923 data, which primarily includes electricity generated and fuel used by facility. This module will download the data as needed and provides functions to access different pages of the Excel workbook.
+__doc__ = """Download and import EIA 923 data, which primarily includes
+electricity generated and fuel used by facility. This module will download the
+data as needed and provides functions to access different pages of the Excel
+workbook.
 
 
 Last edited:
