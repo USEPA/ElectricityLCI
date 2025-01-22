@@ -81,13 +81,15 @@ def generate_upstream_ng(year):
     ng_generation_data['Plant Id'] = ng_generation_data['Plant Id'].astype(int)
 
     # Import the mapping file which has the source gas basin for each Plant Id.
-    # Merge with ng_generation dataframe.
+    # NOTE:
+    #   This is a 2 MB file that provides about 100 kB of info!
     ng_basin_mapping = pd.read_csv(
         os.path.join(data_dir, 'gas_supply_basin_mapping.csv')
     )
     subset_cols = ['Plant Code', 'NG_LCI_Name']
     ng_basin_mapping = ng_basin_mapping[subset_cols]
 
+    # Merge with ng_generation dataframe.
     ng_generation_data_basin = pd.merge(
         left = ng_generation_data,
         right = ng_basin_mapping,
