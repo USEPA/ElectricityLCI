@@ -25,7 +25,7 @@ the upstream contributions. Emissions from the construction of panels are
 accounted for elsewhere.
 
 Last updated:
-    2024-10-23
+    2025-01-22
 """
 __all__ = [
     "fix_renewable",
@@ -86,17 +86,22 @@ def fix_renewable(df, source="netlrenew"):
     # Give unique source code.
     df["Source"] = source
 
-    # Set the compartment paths (only to air and water)
+    # Set the compartment paths; see map_compartment_paths in combinator.py
     air_c = df['Compartment'] == 'air'
     water_c = df['Compartment'] == 'water'
+    ground_c = df['Compartment'] == 'ground'
+    resource_c = df['Compartment'] == 'resource'
     df['Compartment_path'] = ""
     df.loc[air_c, 'Compartment_path'] = "emission/air"
     df.loc[water_c, 'Compartment_path'] = "emission/water"
+    df.loc[ground_c, 'Compartment_path'] = "emission/ground"
+    df.loc[resource_c, 'Compartment_path'] = "resource"
 
     # Set Electricity as input and correct its units.
-    df.loc[df["FlowName"]=="Electricity", "input"] = True
-    df.loc[df["FlowName"]=="Electricity", "Unit"] = "MWh"
-    df.loc[df["FlowName"]=="Electricity", "Compartment_path"] = "input"
+    elec_c = df["FlowName"] == "Electricity"
+    df.loc[elec_c, "input"] = True
+    df.loc[elec_c, "Unit"] = "MWh"
+    df.loc[elec_c, "Compartment_path"] = "input"
 
     # HOTFIX water as an input (Iss147).
     #   These are the negative water-to-water emissions.
