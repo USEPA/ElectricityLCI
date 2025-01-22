@@ -60,7 +60,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     ----------
     gen_df : pandas.DataFrame
         The generator data frame containing power plant emissions (e.g., from
-        :module:`generation`.\ :func:`create_generation_process_df`).
+        :module:`generation`.\\ :func:`create_generation_process_df`).
     upstream_df : pandas.DataFrame
         The combined upstream data frame (e.g., from
         :func:`get_upstream_process_df`).
