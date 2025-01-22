@@ -99,7 +99,7 @@ generation.py:
               - 2016
 # One of these has been an issue since 2016 - Issue #190.
 # 60822 is an industrial facility, specifically electronics manufacturing
-# that has signficant SF6 emissions. Since these emissions aren't expected to 
+# that has signficant SF6 emissions. Since these emissions aren't expected to
 # come from solar power generation in any signficant quantities, we'll just
 # remove for now.
         entry_8:
@@ -126,3 +126,14 @@ generation.py:
               - "NEI"
             Year:
                - 2020
+        entry_10:
+          edit_type: "remove"
+          data_source: "yaml"
+          filters:
+            FuelCategory:
+              - "WIND"
+              - "SOLAR"
+              - "SOLARTHERMAL"
+            Source:
+              - "TRI"
+              - "NEI"

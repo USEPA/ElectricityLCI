@@ -19,16 +19,33 @@ from electricitylci.globals import data_dir
 ##############################################################################
 __doc__ = """This module provides methods that read a YAML file with
 reassignment or removal instructions for electricity generation inventories.
-For details on the issues these manual edits fix, see the following issues
+
+The manual_edits.yml is formatted with hierarchically starting with the
+module name (``calling_module`` in check_for_edits), then by the method name
+(``calling_function`` in check_for_edits), followed by arbitrarily, but
+uniquely labeled manual fix entries (e.g., 'entry_1' through 'entry_10').
+For each edit entry, a series of attributes are available. They are:
+
+-   'edit_type' (str), either 'reassign' or 'remove'
+-   'data_source' (str), use "yaml" for manually defined attributes
+-   'column_to_reassign' (str), the data column to make reassignments
+    (unnecessary, unused for removals)
+-   'incoming_value' (str, float, int), the original unchanged value
+-   'outgoing_value' (str, float, int), the new value (to be changed to)
+-   'filters' (dict), keywords associated with columns with list values
+    (note that each entry in the list is additive; union of across all entries)
+
+For details on the issues that these manual edits fix, see the following
 on GitHub:
 
 -   https://github.com/USEPA/ElectricityLCI/issues/77
 -   https://github.com/USEPA/ElectricityLCI/issues/121
+-   https://github.com/USEPA/ElectricityLCI/issues/160
 
 Referenced by 'create_generation_process_df' in generation.py.
 
 Last updated:
-    2023-11-29
+    2025-01-22
 """
 __all__ = [
     "check_for_edits",

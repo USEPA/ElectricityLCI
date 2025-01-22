@@ -1043,7 +1043,7 @@ def create_generation_process_df():
         "Balancing Authority Code"].map(BA_CODES["FERC_Region"])
 
     # Apply the "manual edits"
-    # See GitHub issues #212, #121, and #77.
+    # See GitHub issues #212, #160, #121, and #77.
     # https://github.com/USEPA/ElectricityLCI/issues/
     final_database = edits.check_for_edits(
         final_database, "generation.py", "create_generation_process_df")
