@@ -36,7 +36,7 @@ workbook.
 
 
 Last edited:
-    2024-08-09
+    2025-01-22
 """
 EIA923_PAGES = {
     "1": "Page 1 Generation and Fuel Data",
@@ -454,12 +454,12 @@ def efficiency_filter(df, egrid_facility_efficiency_filters):
     upper/lower limits for plant efficiency."""
     upper = egrid_facility_efficiency_filters["upper_efficiency"]
     lower = egrid_facility_efficiency_filters["lower_efficiency"]
-    #HOTFIX Issue #247 - errors in calculating plant efficiencies.
-    #Excluding a bunch of plant types from this efficiency filter. It really
-    #was only ever meant to apply to thermal (fossil) power plants anyways.
-    fuel_categories_to_exclude=["NUCLEAR","WIND","SOLAR","SOLARTHERMAL",
-                                "HYDRO"
-                                ]
+    # HOTFIX Issue #247, #278 - errors in calculating plant efficiencies.
+    # Excluding a bunch of plant types from this efficiency filter. It really
+    # was only ever meant to apply to thermal (fossil) power plants anyways.
+    fuel_categories_to_exclude=[
+        "NUCLEAR", "WIND", "SOLAR", "SOLARTHERMAL", "HYDRO", "GEOTHERMAL",
+    ]
     df = df.loc[((df["efficiency"] >= lower) & (df["efficiency"] <= upper)) |
                 (df["FuelCategory"].isin(fuel_categories_to_exclude)), :
                 ]
