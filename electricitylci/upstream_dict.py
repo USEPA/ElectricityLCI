@@ -348,15 +348,14 @@ def olcaschema_genupstream_processes(merged):
     coal_type_codes_inv = dict(map(reversed, coal_type_codes.items()))
     mine_type_codes_inv = dict(map(reversed, mine_type_codes.items()))
     basin_codes_inv = dict(map(reversed, basin_codes.items()))
+    # Hotfix: add 'Belt' to coal transport list [12/16/2024;MBJ]
+    # NOTE: I don't think the belt inventory is actually used anywhere
     coal_transport = [
         "Barge",
         "Lake Vessel",
         "Ocean Vessel",
         "Railroad",
         "Truck",
-        #Hotfix 12/16/2024 was generating a keyerror below without this.
-        #I don't think the belt inventory is actually used but no harm in 
-        #including
         "Belt",
     ]
     # First going to keep plant IDs to account for possible emission repeats
@@ -375,9 +374,9 @@ def olcaschema_genupstream_processes(merged):
         ],
         as_index=False,
     ).agg({"FlowAmount": "sum", "quantity": "mean"})
-    #NEW Issue #150, adding regional abilit for construction of all types
-    plant_region=eia860_balancing_authority(config.model_specs.eia_gen_year)
-    plant_region["Plant Id"]=plant_region["Plant Id"].astype(int)
+    # NEW Issue #150, adding regional ability for construction of all types
+    plant_region = eia860_balancing_authority(config.model_specs.eia_gen_year)
+    plant_region["Plant Id"] = plant_region["Plant Id"].astype(int)
     merged_summary_regional = (
         merged_summary.loc[
             merged_summary["FuelCategory"].str.contains("CONSTRUCTION"), :
@@ -400,7 +399,11 @@ def olcaschema_genupstream_processes(merged):
         ],
         as_index=False,
     )[["quantity", "FlowAmount"]].sum()
-    #NEW Issue #150, adding regional ability for construction of all types
+
+    # Issue #150, adding regional ability for construction of all types
+    # NOTE: Added "Balancing Authority Name" below to enable regionalized
+    # construction processes. Only for balancing authorities now but should
+    # be expanded to eGRID, etc.
     merged_summary_regional = merged_summary_regional.groupby(
         by=[
             "FuelCategory",
@@ -411,11 +414,6 @@ def olcaschema_genupstream_processes(merged):
             "ElementaryFlowPrimeContext",
             "Unit",
             "input",
-            #Adding these below to enable regionalized construction processes
-            #Only for balancing authorities now but should be expanded to
-            #eGRID, etc. Leaving BA Codes for now just to reduce change of error.
-            #They're also not used.
-            #"Balancing Authority Code",
             "Balancing Authority Name",
         ],
         as_index=False,
@@ -429,7 +427,7 @@ def olcaschema_genupstream_processes(merged):
         merged_summary["FlowAmount"] / merged_summary["quantity"]
     )
     merged_summary.dropna(subset=["emission_factor"], inplace=True)
-    #NEW Issue #150, adding regional ability for construction of all types
+    # NEW Issue #150, adding regional ability for construction of all types
     merged_summary_regional["emission_factor"] = (
         merged_summary_regional["FlowAmount"] / merged_summary_regional["quantity"]
     )
@@ -531,7 +529,7 @@ def olcaschema_genupstream_processes(merged):
         upstream_process_dict[
             merged_summary_filter.loc[first_row, "stage_code"]
         ] = final
-    #New, Issue #150 - adding regional construction profiles.
+    # New, Issue #150 - adding regional construction profiles.
     merged_summary_regional["scen_name"] = (
         merged_summary_regional["stage_code"]
         + " - "
@@ -559,10 +557,6 @@ def olcaschema_genupstream_processes(merged):
             _exchange_table_creation_output, axis=1).tolist()
         exchanges_list.extend(ra)
 
-        # TODO
-        # Iss253. The fuel type is 'Construction' and stage code is one of
-        # 'solar_pv_const', 'solar_thermal_const', or 'wind_const'
-        # Paths forward could be to make unique calls for
         first_row = min(merged_summary_filter.index)
         fuel_type = merged_summary_filter.loc[first_row, "FuelCategory"]
         stage_code = merged_summary_filter.loc[first_row, "stage_code"]
