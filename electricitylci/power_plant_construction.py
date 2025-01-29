@@ -40,6 +40,18 @@ def generate_power_plant_construction(year, incl_renew=False):
     By default includes the coal and natural gas combined cycle power
     plants, and, optionally, the renewable power plant construction.
 
+    The renewable construction LCIs have a functional unit of 1 item per year,
+    where 1 item is a power plant and the emissions are divided by the
+    estimated lifetime of the facility (e.g., 30 years); hence per year.
+    This allows the impacts over 30 years to be equivalent to the total
+    construction impacts.
+
+    When writing the renewable construction emissions to JSON-LD, they are
+    scaled based on the 'quantity' field, which represents the net electricity
+    generation (MWh) making the emissions per MWh. For coal and natural gas,
+    the 'quantity' field is nameplate capacity (in order to scale between the
+    test facility and any given coal power plant).
+
     Parameters
     ----------
     year : int
