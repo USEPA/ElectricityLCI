@@ -8,7 +8,7 @@
 # The target year is used to determine the temporal correlation of data with
 # the electricity generation processes, which can be used in uncertainty
 # calculations.
-electricity_lci_target_year: 2024
+electricity_lci_target_year: 2025
 
 # Select a regional aggregation from "eGRID", "NERC", "BA", "US", "FERC",
 # and "EIA". The EPA_eGRID trading method can only be used with "eGRID".
@@ -43,7 +43,7 @@ inventories_of_interest:
   RCRAInfo: 2019
 
 # Provide uncertainty estimates for emissions.
-calculate_uncertainty: false
+calculate_uncertainty: true
 
 
 # API DATA SOURCES

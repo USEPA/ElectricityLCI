@@ -254,7 +254,7 @@ def get_gen_plus_netl():
     # This combines EIA 923, EIA 860, with EPA CEMS and StEWI inventories.
     # WARNING: hydro data (above) are for 2016 facilities, other renewables
     # are for EIA generation year and the following looks only at facilities
-    # from years of interest.
+    # from years of interest. Performs 'manual edits' to generation data.
     logging.info("Getting reported emissions for generators...")
     gen_df = gen.create_generation_process_df()
 

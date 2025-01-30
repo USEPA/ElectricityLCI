@@ -29,7 +29,7 @@ nuclear fuel cycle), and maps emissions based on the Federal LCA Commons
 Elementary Flow List in order to provide life cycle inventory.
 
 Last edited:
-    2024-10-22
+    2025-01-22
 """
 __all__ = [
     "BA_CODES",
@@ -60,7 +60,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     ----------
     gen_df : pandas.DataFrame
         The generator data frame containing power plant emissions (e.g., from
-        :module:`generation`.\ :func:`create_generation_process_df`).
+        :module:`generation`.\\ :func:`create_generation_process_df`).
     upstream_df : pandas.DataFrame
         The combined upstream data frame (e.g., from
         :func:`get_upstream_process_df`).
@@ -257,6 +257,26 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     # already in lowercase letters, which is why no change happens below.
     logging.info("Creating flow mapping database")
     flow_mapping = fedefl.get_flowmapping('eLCI')
+
+    # as hotfix for https://github.com/USEPA/ElectricityLCI/issues/274
+    # append full flowlist to the flow mapping file (dropping duplicates)
+    # to catch any other mappings of flows that use the same name as already
+    # in the flow list
+    flowlist = (fedefl.get_flows()
+                .filter(['Flowable', 'Context', 'Unit', 'Flow UUID'])
+                .assign(SourceFlowName = lambda x: x['Flowable'])
+                .assign(SourceFlowContext = lambda x: x['Context'])
+                .assign(SourceUnit = lambda x: x['Unit'])
+                .assign(ConversionFactor = 1.0)
+                .rename(columns={'Flowable': 'TargetFlowName',
+                                 'Flow UUID': 'TargetFlowUUID',
+                                 'Unit': 'TargetUnit',
+                                 'Context': 'TargetFlowContext'})
+                )
+    flow_mapping = (pd.concat([flow_mapping, flowlist], ignore_index=True)
+                    .drop_duplicates(
+                        subset=['SourceFlowName', 'SourceFlowContext', 'TargetFlowName'])
+                    )
     flow_mapping["SourceFlowName"] = flow_mapping["SourceFlowName"].str.lower()
 
     logging.info("Preparing upstream df for merge")
@@ -294,11 +314,11 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     upstream_df["FlowAmount"] = upstream_df["FlowAmount"].astype(float)
     if "Electricity" in upstream_df.columns:
         upstream_df_grp = upstream_df.groupby(
-            groupby_cols, as_index=False
+            groupby_cols, as_index=False,
         ).agg({"FlowAmount": "sum", "quantity": "mean", "Electricity": "mean"})
     else:
         upstream_df_grp = upstream_df.groupby(
-            groupby_cols, as_index=False
+            groupby_cols, as_index=False,
         ).agg({"FlowAmount": "sum", "quantity": "mean"})
 
     logging.info("Merging upstream database and flow mapping")
@@ -636,6 +656,7 @@ def map_compartment_path(df):
     resource_mapping = {
         'water': "resource/water",
         'input': "input",  # should keep electricity as a resource
+        "resource": "resource",  # hotfix geothermal resource flows
     }
     # Map resources
     df.loc[df['input'], 'Compartment_path'] = df.loc[

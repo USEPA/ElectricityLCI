@@ -9,6 +9,7 @@
 import io
 import json
 import logging
+from logging.handlers import RotatingFileHandler
 import os
 import re
 import zipfile
@@ -26,9 +27,11 @@ from electricitylci.globals import output_dir
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2024-10-09
+    2025-01-23
 
 Changelog:
+    -   [25.01.23]: Add logger utility methods
+    -   [25.01.14]: Add StEWI inventories of interest method.
     -   [24.10.09]: Update find file in folder to not crash.
     -   [24.08.05]: Create new BA code getter w/ FERC mapping.
     -   TODO: update create_ba_region_map to link with new BA code getter
@@ -44,12 +47,17 @@ __all__ = [
     "download_unzip",
     "fill_default_provider_uuids",
     "find_file_in_folder",
+    "get_logger",
+    "get_stewi_invent_years",
     "join_with_underscore",
+    "linear_search",
     "make_valid_version_num",
     "read_ba_codes",
     "read_eia_api",
     "read_json",
+    "rollover_logger",
     "set_dir",
+    "write_csv_to_output",
 ]
 
 
@@ -332,6 +340,129 @@ def find_file_in_folder(folder_path, file_pattern_match, return_name=True):
         return (file_path, file_name)
 
 
+def get_logger(stream=True, rfh=True, level='INFO', rfh_lv='DEBUG'):
+    """A helper function for creating or retrieving a root logger with
+    only one instance of stream and/or rotating file handler.
+
+    Parameters
+    ----------
+    stream : bool, optional
+        Whether to create a stream handler, by default True
+    rfh : bool, optional
+        Whether to create a rotating file handler, by default True
+    level : str, optional
+        Stream handler logging level, by default 'INFO'
+    rfh_lv : str, optional
+        Rotating file handler logging level, by default 'DEBUG'
+
+    Returns
+    -------
+    logging.Logger
+        The root logger.
+
+    Notes
+    -----
+    This could be expanded to allow the user to set the logging
+    level of a specific handler (or just overwrite all levels).
+    """
+    # Create/retrieve the root logger
+    log = logging.getLogger()
+    log.setLevel("DEBUG")
+
+    # Define log format
+    rec_format = (
+        "%(asctime)s.%(msecs)03d:%(levelname)s:%(module)s:%(funcName)s:"
+        "%(message)s")
+    formatter = logging.Formatter(rec_format, datefmt='%Y-%m-%d %H:%M:%S')
+
+    # Check what handlers the root logger already has
+    has_stream = False
+    has_rfh = False
+    for h in log.handlers:
+        if h.name == 'elci_stream':
+            has_stream = True
+        elif h.name == 'elci_rfh':
+            has_rfh = True
+
+    # Create stream handler for info messages
+    if stream and not has_stream:
+        s_handler = logging.StreamHandler()
+        s_handler.setLevel(level)
+        s_handler.setFormatter(formatter)
+        s_handler.set_name('elci_stream')
+        log.addHandler(s_handler)
+
+    # Create file handler for debug messages
+    if rfh and not has_rfh:
+        log_filename = "elci.log"
+        check_output_dir(output_dir)
+        log_path = os.path.join(output_dir, log_filename)
+        f_handler = RotatingFileHandler(
+            log_path, backupCount=9, encoding='utf-8')
+        f_handler.setLevel(rfh_lv)
+        f_handler.setFormatter(formatter)
+        f_handler.set_name('elci_rfh')
+        log.addHandler(f_handler)
+
+    return log
+
+
+def get_stewi_invent_years(year):
+    """Helper function to return inventory years of interest from StEWI.
+    See https://github.com/USEPA/standardizedinventories for inventory names
+    and years, which are hard-coded here.
+
+    Parameters
+    ----------
+    year : int
+        An inventory vintage (e.g., 2020).
+
+    Returns
+    -------
+        dict
+            A dictionary of inventory codes and their most recent year of
+            data available (less than or equal to the year provided).
+
+    Notes
+    -----
+    This method answers the question, which inventories of interest should
+    go into the modelconfig files (``inventories_of_interest`` attribute) for
+    a given year.
+
+    Depends on :func:`linear_search`.
+
+    In eLCI, the inventories of interest configuration parameter cares about
+    the following data providers,
+
+    - eGRID
+    - TRI
+    - NEI
+    - RCRAInfo
+
+    Examples
+    --------
+    >>> get_stewi_invent_years(2019)
+    """
+    # A dictionary of StEWI inventories and their available vintages
+    # NOTE: inventories not considered in eLCI are commented out.
+    STEWI_DATA_VINTAGES = {
+        # 'DMR': [x for x in range(2011, 2023, 1)],
+        # 'GHGRP': [x for x in range(2011, 2023, 1)],
+        'eGRID': [2014, 2016, 2018, 2019, 2020, 2021],
+        'NEI': [2011, 2014, 2017, 2020],
+        'RCRAInfo': [x for x in range(2011, 2023, 2)],
+        'TRI': [x for x in range(2011, 2023, 1)],
+    }
+
+    r_dict = {}
+    for key in STEWI_DATA_VINTAGES.keys():
+        avail_years = STEWI_DATA_VINTAGES[key]
+        y_idx = linear_search(avail_years, year)
+        if y_idx != -1:
+            r_dict[key] = STEWI_DATA_VINTAGES[key][y_idx]
+    return r_dict
+
+
 def join_with_underscore(items):
     """A helper method to concatenate items together using an underscore.
 
@@ -364,6 +495,40 @@ def join_with_underscore(items):
     if type_cast_to_str:
         items = [str(x) for x in items]
     return "_".join(items)
+
+
+def linear_search(lst, target):
+    """Backwards search for the value less than or equal to a given value.
+
+    Parameters
+    ----------
+    lst : list
+        A list of numerically sorted data (lowest to highest).
+    target : int, float
+        A target value (e.g., year).
+
+    Returns
+    -------
+    int
+        The index of the search list associated with the value equal to or
+        less than the target, else -1 for a target out-of-range (i.e., smaller than the smallest entry in the list).
+
+    Examples
+    --------
+    >>> NEI_YEARS = [2011, 2014, 2017, 2020]
+    >>> linear_search(NEI_YEARS, 2020)
+    3
+    >>> linear_search(NEI_YEARS, 2019)
+    2
+    >>> linear_search(NEI_YEARS, 2018)
+    2
+    >>> linear_search(NEI_YEARS, 2010)
+    -1
+    """
+    for i in range(len(lst) - 1, -1, -1):
+        if lst[i] <= target:
+            return i
+    return -1
 
 
 def make_valid_version_num(foo):
@@ -599,6 +764,24 @@ def read_json(json_path):
             "Expected string file name, received %s" % type(json_path))
 
     return r_dict
+
+
+def rollover_logger(logger):
+    """Helper method to rollover a named Rotating File Handler.
+
+    Parameters
+    ----------
+    logger : logging.Logger
+        A logger (e.g., root logger)
+    """
+    try:
+        idx = [x.name for x in logger.handlers].index("elci_rfh")
+    except ValueError:
+        idx = -1
+
+    # Rollover the rotating file handler (if found)
+    if idx != -1:
+        logger.handlers[idx].doRollover()
 
 
 def set_dir(directory):

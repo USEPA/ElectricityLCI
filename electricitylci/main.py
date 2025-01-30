@@ -32,7 +32,7 @@ options. The selection of configuration file will occur after the start
 of this script or it may be passed following the command-line argument, '-c'.
 
 Last updated:
-    2024-10-28
+    2025-01-23
 
 Changelog:
     -   Address logging handler import for Python 3.12 compatibility.
@@ -231,37 +231,13 @@ def run_generation():
 ##############################################################################
 if __name__ == "__main__":
     import argparse
-    from logging.handlers import RotatingFileHandler
-    import os
     from electricitylci.globals import output_dir
-    from electricitylci.utils import check_output_dir
+    from electricitylci.utils import get_logger
+    from electricitylci.utils import rollover_logger
     from electricitylci import get_facility_level_inventory
 
-    # Define a root logger at lowest logging level.
-    # Ref: https://stackoverflow.com/q/25187083
-    log = logging.getLogger()
-    log.setLevel("DEBUG")
-
-    # Define log format
-    rec_format = (
-        "%(asctime)s.%(msecs)03d:%(levelname)s:%(module)s:%(funcName)s:"
-        "%(message)s")
-    formatter = logging.Formatter(rec_format, datefmt='%Y-%m-%d %H:%M:%S')
-
-    # Create stream handler for info messages
-    s_handler = logging.StreamHandler()
-    s_handler.setLevel("INFO")
-    s_handler.setFormatter(formatter)
-    log.addHandler(s_handler)
-
-    # Create file handler for debug messages
-    log_filename = "elci.log"
-    check_output_dir(output_dir)
-    log_path = os.path.join(output_dir, log_filename)
-    f_handler = RotatingFileHandler(log_path, backupCount=9, encoding='utf-8')
-    f_handler.setLevel("DEBUG")
-    f_handler.setFormatter(formatter)
-    log.addHandler(f_handler)
+    # Define a root logger with two handlers.
+    log = get_logger(stream=True, rfh=True)
 
     # Define argument parser and process specified configuration model
     parser = argparse.ArgumentParser()
@@ -285,4 +261,4 @@ if __name__ == "__main__":
             "You can find your JSON-LD in this folder: %s" % output_dir
         )
     finally:
-        log.handlers[1].doRollover()
+        rollover_logger(log)
