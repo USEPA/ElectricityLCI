@@ -50,46 +50,6 @@ BA_CODES = read_ba_codes()
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def remove_mismatched_inventories(gen_plus_up_df):
-    """This is in response to USEPA issue #282, wherein upstream inventories, 
-    particularly construction, are matched to facilities of a different type. An
-    example of this would be a generator of type COAL that includes an input
-    of solar PV construction because that facility has been reported as having
-    some amount of solar PV capacity. This purpose of this function is filter 
-    these instances out of a given dataframe. 
-
-    Parameters
-    ----------
-    gen_plus_up_df : pandas.Dataframe
-        A dataframe that includes a combination of upstream and generator data.
-
-    Returns
-    -------
-    pandas.DataFrame
-
-    """
-
-    
-    ### This initial block of code will filter out mismatched construction.
-    
-    VALID_COMBINATIONS={
-        "netlsolarthermal":["SOLARTHERMAL","MIXED"],
-        "netlnrelwind": ["WIND","MIXED"],
-        "netlconst": ["GAS","COAL","OIL","MIXED","BIOMASS"],
-        "netlnrelsolarpv" : ["SOLAR","MIXED"],
-    }
-    gen_plus_up_df["mapped_fuel_category"]=gen_plus_up_df["Source"].map(VALID_COMBINATIONS)
-    rows_to_drop=[idx for idx, fc, mfc in zip(gen_plus_up_df.dropna(subset=["mapped_fuel_category"]).index,gen_plus_up_df.dropna(subset=["mapped_fuel_category"])["FuelCategory"],gen_plus_up_df["mapped_fuel_category"].dropna()) if fc not in mfc]
-    gen_plus_up_df.drop(rows_to_drop, inplace=True)
-    gen_plus_up_df.drop("mapped_fuel_category", axis=1, inplace=True)
-    ###
-
-    ### This block of code will filter out renewable O&M operations when
-    #there is a pl
-
-    return gen_plus_up_df
-
-
 
 def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     """Convert the upstream emissions database to fuel inputs and add them
@@ -707,6 +667,66 @@ def map_compartment_path(df):
         ~df['input'], 'Compartment'].map(emission_mapping)
 
     return df
+
+def remove_mismatched_inventories(gen_plus_up_df):
+    """This is in response to USEPA issue #282, wherein upstream inventories, 
+    particularly construction, are matched to facilities of a different type. An
+    example of this would be a generator of type COAL that includes an input
+    of solar PV construction because that facility has been reported as having
+    some amount of solar PV capacity. This purpose of this function is filter 
+    these instances out of a given dataframe. 
+
+    Parameters
+    ----------
+    gen_plus_up_df : pandas.Dataframe
+        A dataframe that includes a combination of upstream and generator data.
+
+    Returns
+    -------
+    pandas.DataFrame
+
+    """
+
+    # This list only includes "Source" names that are known issues in the
+    # inventories. Any source not listed here is assigned NA and is kept by
+    # default. The valid FuelCategories are added as an additional column
+    # to the input dataframe.
+    VALID_COMBINATIONS={
+        "netlsolarthermal":["SOLARTHERMAL","MIXED"],
+        "netlnrelwind": ["WIND","MIXED"],
+        "netlconst": ["GAS","COAL","OIL","MIXED","BIOMASS"],
+        "netlnrelsolarpv" : ["SOLAR","MIXED"],
+    }
+    gen_plus_up_df["mapped_fuel_category"] = gen_plus_up_df["Source"].map(
+        VALID_COMBINATIONS
+    )
+    # This list comprehension checks each row to determine whether the entry
+    # in FuelCategory is in the mapped_fuel_category list assigned from above.
+    # If it is not inlcuded, that index is added and will be removed in subsequent
+    # lines. All rows where mapped_fuel_category is NaN are automatically skipped for
+    # the filter.
+    # idx: index of the row
+    # fc: fuelcategory
+    # mfc: mapped fuel category from VALID_COMBINATIONS.
+    #
+    rows_to_drop = [
+        idx
+        for idx, fc, mfc in zip(
+            gen_plus_up_df.dropna(subset=["mapped_fuel_category"]).index,
+            gen_plus_up_df.dropna(subset=["mapped_fuel_category"])[
+                "FuelCategory"
+            ],
+            gen_plus_up_df["mapped_fuel_category"].dropna(),
+        )
+        if fc not in mfc
+    ]
+    # drop the indexes with mismatches and drop the new mapped_fuel_category
+    #column before returning.
+    gen_plus_up_df.drop(rows_to_drop, inplace=True)
+    gen_plus_up_df.drop("mapped_fuel_category", axis=1, inplace=True)
+
+    return gen_plus_up_df
+
 
 ##############################################################################
 # MAIN
