@@ -1604,6 +1604,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     subregion : str, optional
         Description of a group of regions. Options include 'FERC' for all FERC
         market regions, 'BA' for all balancing authorities.
+        EFFECTIVELY UNUSED---ALL TRADES AT BA LEVEL AND AGGREGATED TO FERC/US.
     regions_to_keep : list, optional
         A list of balancing authority names of interest.
         Otherwise, returns all balancing authorities.
