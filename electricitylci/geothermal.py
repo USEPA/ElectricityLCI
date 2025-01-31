@@ -35,7 +35,7 @@ Last updated:
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def generate_upstream_geo(year):
+def generate_upstream_geo():
     """
     Generate the annual emissions from geothermal power plants. These emissions
     are from an NETL-developed model that takes into account the insoluble gases
@@ -116,7 +116,7 @@ def generate_upstream_geo(year):
 
     # Pull generation data and aggregate across prime movers [25.01.22; TWD]
     # NOTE: there are 3--5 duplicated facilities for years 2016, 2020-2022.
-    geo_generation_data = get_geo_generation(year)
+    geo_generation_data = get_geo_generation(2016)
     geo_generation_data = geo_generation_data.groupby(
         by='Plant Id').agg({
             'State': 'first',

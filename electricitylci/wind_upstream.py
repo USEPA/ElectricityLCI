@@ -193,15 +193,14 @@ def get_wind_generation(year):
     return df
 
 
-def get_wind_om(year):
+def get_wind_om():
     """Generate the operations and maintenance LCI for wind farm power plants.
     For 2016 electricity baseline, this data frame includes the construction
     inventory.
 
     Parameters
     ----------
-    year : int
-        EIA generation year.
+
 
     Returns
     -------
@@ -280,7 +279,7 @@ def get_wind_om(year):
         'FlowAmount': float,
     })
 
-    wind_generation_data = get_wind_generation(year)
+    wind_generation_data = get_wind_generation(RENEWABLE_VINTAGE)
     wind_ops = wind_ops_df_t_melt.merge(
         right=wind_generation_data,
         left_on="plant_id",

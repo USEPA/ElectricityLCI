@@ -253,15 +253,14 @@ def get_solar_pv_construction(year):
     return solar_upstream
 
 
-def get_solar_pv_om(year):
+def get_solar_pv_om():
     """Generate the operations and maintenance LCI for solar PV power plants.
     For 2016 electricity baseline, this data frame includes the construction
     inventory.
 
     Parameters
     ----------
-    year : int
-        EIA generation year.
+    None
 
     Returns
     -------
@@ -327,7 +326,7 @@ def get_solar_pv_om(year):
         'FlowAmount': float,
     })
 
-    solar_generation_data = get_solar_generation(year)
+    solar_generation_data = get_solar_generation(RENEWABLE_VINTAGE)
     solar_ops = solar_df_t_melt.merge(
         right=solar_generation_data,
         left_on='plant_id',

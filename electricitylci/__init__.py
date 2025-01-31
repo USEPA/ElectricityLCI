@@ -227,10 +227,12 @@ def get_gen_plus_netl():
         "Generating inventories for geothermal, solar, wind, hydro, and "
         "solar thermal..."
     )
-    geo_df = geo.generate_upstream_geo(eia_gen_year)
-    solar_df = solar.get_solar_pv_om(eia_gen_year)
-    solartherm_df = solartherm.get_solarthermal_om(eia_gen_year)
-    wind_df = wind.get_wind_om(eia_gen_year)
+    #The year should be based on generation year for the O&M emissions
+    #because the O&M emissions are calculated per MWh externally.
+    geo_df = geo.generate_upstream_geo()
+    solar_df = solar.get_solar_pv_om()
+    solartherm_df = solartherm.get_solarthermal_om()
+    wind_df = wind.get_wind_om()
     hydro_df = hydro.generate_hydro_emissions() # always 2016
 
     # NOTE: hydro is purposefully left out here.

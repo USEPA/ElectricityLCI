@@ -156,15 +156,14 @@ def get_solarthermal_construction(year):
     return solarthermal_upstream
 
 
-def get_solarthermal_om(year):
+def get_solarthermal_om():
     """Generate the operations and maintenance LCI for solar thermal power
     plants. For 2016 electricity baseline, this data frame includes the
     construction inventory.
 
     Parameters
     ----------
-    year : int
-        EIA generation year.
+
 
     Returns
     -------
@@ -237,7 +236,7 @@ def get_solarthermal_om(year):
     # per MWh, so in order for the data to integrate correctly with the
     # rest of the inventory, we need to multiply all inventory by electricity
     # generation (in MWh) for the target year.
-    solar_generation_data = get_solar_generation(year)
+    solar_generation_data = get_solar_generation(RENEWABLE_VINTAGE)
     solarthermal_ops = solar_ops_df_t_melt.merge(
         right=solar_generation_data,
         left_on='plant_id',
