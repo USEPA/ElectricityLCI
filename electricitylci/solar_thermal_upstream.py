@@ -13,9 +13,9 @@ import numpy as np
 import pandas as pd
 
 from electricitylci.globals import data_dir
-from electricitylci.globals import RENEWABLE_VINTAGE
 from electricitylci.solar_upstream import fix_renewable
 from electricitylci.solar_upstream import get_solar_generation
+from electricitylci.model_config import model_specs
 
 
 ##############################################################################
@@ -60,7 +60,7 @@ def get_solarthermal_construction(year):
         If renewable vintage year is unsupported.
     """
     # Iss150, new construction and O&M LCIs
-    if RENEWABLE_VINTAGE == 2020:
+    if model_specs.renewable_vintage == 2020:
         logging.info(
             "Reading 2020 upstream solar thermal construction inventory.")
         solar_df = pd.read_csv(
@@ -72,13 +72,11 @@ def get_solarthermal_construction(year):
                 ),
             header=[0, 1]
         )
-    elif RENEWABLE_VINTAGE == 2016:
+    elif model_specs.renewable_vintage == 2016:
         logging.info(
             "The 2016 solar thermal LCI did not have separate construction "
             "and O&M. Returning none")
         return None
-    else:
-        raise ValueError("Renewable vintage %s undefined!" % RENEWABLE_VINTAGE)
 
     columns = pd.DataFrame(solar_df.columns.tolist())
     columns.loc[columns[0].str.startswith('Unnamed:'), 0] = np.nan
@@ -172,7 +170,8 @@ def get_solarthermal_om():
         If the renewable vintage is not defined or a valid year.
     """
     # Iss150, new construction and O&M LCIs
-    if RENEWABLE_VINTAGE == 2020:
+    logging.info("Reading %d O&M inventory" % model_specs.renewable_vintage)
+    if model_specs.renewable_vintage == 2020:
         solar_ops_df = pd.read_csv(
             os.path.join(
                 data_dir,
@@ -183,7 +182,7 @@ def get_solarthermal_om():
             header=[0, 1],
             na_values=["#VALUE!", "#DIV/0!"],
         )
-    elif RENEWABLE_VINTAGE == 2016:
+    elif model_specs.renewable_vintage == 2016:
         solar_ops_df = pd.read_csv(
             os.path.join(
                 data_dir,
@@ -193,8 +192,6 @@ def get_solarthermal_om():
                 ),
             header=[0, 1]
         )
-    else:
-        raise ValueError("Renewable vintage %s undefined!" % RENEWABLE_VINTAGE)
 
     # Correct the columns
     columns = pd.DataFrame(solar_ops_df.columns.tolist())
@@ -231,8 +228,8 @@ def get_solarthermal_om():
     # Unlike the construction inventory, operations are on the basis of
     # per MWh, so in order for the data to integrate correctly with the
     # rest of the inventory, we need to multiply all inventory by electricity
-    # generation (in MWh) for the target year.
-    solar_generation_data = get_solar_generation(RENEWABLE_VINTAGE)
+    # generation (in MWh) for the inventory's target year.
+    solar_generation_data = get_solar_generation(model_specs.renewable_vintage)
     solarthermal_ops = solar_ops_df_t_melt.merge(
         right=solar_generation_data,
         left_on='plant_id',

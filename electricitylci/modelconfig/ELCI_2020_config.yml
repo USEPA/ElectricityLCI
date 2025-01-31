@@ -23,9 +23,14 @@ egrid_year: 2020
 eia_gen_year: 2020
 replace_egrid: true
 
-# NETL has developed profiles for renewable generation to capture construction
-# impacts (e.g., solar PV manufacturing). Set to true to include these impacts.
+# NETL developed profiles for renewable generation to capture construction
+# and O&M impacts (e.g., solar PV manufacturing and power plant operations).
+# There are two vintages for renewable inventories: 2016 and 2020. The 2016
+# inventories combine construction and operations (recommended for use when
+# re-creating the 2016 baseline). In the 2020 inventory, these were separated
+# into individual inventories (recommended for future baselines).
 include_renewable_generation: true
+renewable_vintage: 2020
 
 # NETL has developed profiles for power plant water use.
 # Set to true to include these impacts.

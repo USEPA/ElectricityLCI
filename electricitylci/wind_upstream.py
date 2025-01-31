@@ -13,9 +13,9 @@ import numpy as np
 import pandas as pd
 
 from electricitylci.globals import data_dir
-from electricitylci.globals import RENEWABLE_VINTAGE
 from electricitylci.eia923_generation import eia923_download_extract
 from electricitylci.solar_upstream import fix_renewable
+from electricitylci.model_config import model_specs
 
 
 ##############################################################################
@@ -63,7 +63,7 @@ def get_wind_construction(year):
         If renewable vintage year is unsupported.
     """
     # Iss150, new construction and O&M LCIs
-    if RENEWABLE_VINTAGE == 2020:
+    if model_specs.renewable_vintage == 2020:
         logging.info("Reading 2020 upstream wind construction inventory.")
         wind_df = pd.read_csv(
             os.path.join(
@@ -75,13 +75,11 @@ def get_wind_construction(year):
             header=[0, 1],
             low_memory=False,
         )
-    elif RENEWABLE_VINTAGE == 2016:
+    elif model_specs.renewable_vintage == 2016:
         logging.info(
             "The 2016 wind LCI does not separate construction and O&M."
             "Returning none.")
         return None
-    else:
-        raise ValueError("Renewable vintage %s undefined!" % RENEWABLE_VINTAGE)
 
     columns = pd.DataFrame(wind_df.columns.tolist())
     columns.loc[columns[0].str.startswith("Unnamed:"), 0] = np.nan
@@ -209,7 +207,8 @@ def get_wind_om():
         If the renewable vintage is not defined or a valid year.
     """
     # Iss150, new construction and O&M LCIs
-    if RENEWABLE_VINTAGE == 2020:
+    logging.info("Reading %d O&M inventory" % model_specs.renewable_vintage)
+    if model_specs.renewable_vintage == 2020:
         wind_ops_df = pd.read_csv(
             os.path.join(
                 data_dir,
@@ -220,7 +219,7 @@ def get_wind_om():
             header=[0, 1],
             na_values=["#VALUE!", "#DIV/0!"],
         )
-    elif RENEWABLE_VINTAGE == 2016:
+    elif model_specs.renewable_vintage == 2016:
         wind_ops_df = pd.read_csv(
             os.path.join(
                 data_dir,
@@ -230,8 +229,6 @@ def get_wind_om():
             ),
             header=[0,1],
         )
-    else:
-        raise ValueError("Renewable vintage %s undefined!" % RENEWABLE_VINTAGE)
 
     # Fix columns
     columns = pd.DataFrame(wind_ops_df.columns.tolist())
@@ -275,7 +272,8 @@ def get_wind_om():
         'FlowAmount': float,
     })
 
-    wind_generation_data = get_wind_generation(RENEWABLE_VINTAGE)
+    # Scale emissions using the inventory's target year.
+    wind_generation_data = get_wind_generation(model_specs.renewable_vintage)
     wind_ops = wind_ops_df_t_melt.merge(
         right=wind_generation_data,
         left_on="plant_id",
