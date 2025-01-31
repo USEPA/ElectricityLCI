@@ -1277,6 +1277,7 @@ def aggregate_data(total_db, subregion="BA"):
         - 'GeomMean' (float): geometric mean of emission factor (units/MWh)
         - 'GeomSD' (float): geometric standard deviation of emission factor
     """
+    from electricitylci.combinator import remove_mismatched_inventories
     region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"]
     if region_agg:
@@ -1303,7 +1304,13 @@ def aggregate_data(total_db, subregion="BA"):
     # Replace primary fuel categories based on EIA Form 923, if requested
     if model_specs.replace_egrid:
         total_db = replace_egrid(total_db, model_specs.eia_gen_year)
-
+    
+    #USEPA Issue #282. After replacing primary fuel categories with EIA data,
+    #in rare instances there will be renewable O&M emissions assigned to plants
+    #of conflicting fuel types - like solar O&M emissions assigned to coal plants.
+    #This should filter those out, along with remove mismatched construction
+    #inputs.
+    total_db = remove_mismatched_inventories(total_db)
     # Use a dummy UUID to avoid groupby errors
     total_db["FlowUUID"] = total_db["FlowUUID"].fillna(value="dummy-uuid")
 
@@ -1317,7 +1324,7 @@ def aggregate_data(total_db, subregion="BA"):
     total_db, electricity_df = calculate_electricity_by_source(
         total_db, subregion
     )
-
+    
     # Assign data score based on percent generation
     total_db = add_data_collection_score(total_db, electricity_df, subregion)
 

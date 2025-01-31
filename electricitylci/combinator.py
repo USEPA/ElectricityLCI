@@ -50,6 +50,47 @@ BA_CODES = read_ba_codes()
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
+def remove_mismatched_inventories(gen_plus_up_df):
+    """This is in response to USEPA issue #282, wherein upstream inventories, 
+    particularly construction, are matched to facilities of a different type. An
+    example of this would be a generator of type COAL that includes an input
+    of solar PV construction because that facility has been reported as having
+    some amount of solar PV capacity. This purpose of this function is filter 
+    these instances out of a given dataframe. 
+
+    Parameters
+    ----------
+    gen_plus_up_df : pandas.Dataframe
+        A dataframe that includes a combination of upstream and generator data.
+
+    Returns
+    -------
+    pandas.DataFrame
+
+    """
+
+    
+    ### This initial block of code will filter out mismatched construction.
+    
+    VALID_COMBINATIONS={
+        "netlsolarthermal":["SOLARTHERMAL","MIXED"],
+        "netlnrelwind": ["WIND","MIXED"],
+        "netlconst": ["GAS","COAL","OIL","MIXED","BIOMASS"],
+        "netlnrelsolarpv" : ["SOLAR","MIXED"],
+    }
+    gen_plus_up_df["mapped_fuel_category"]=gen_plus_up_df["Source"].map(VALID_COMBINATIONS)
+    rows_to_drop=[idx for idx, fc, mfc in zip(gen_plus_up_df.dropna(subset=["mapped_fuel_category"]).index,gen_plus_up_df.dropna(subset=["mapped_fuel_category"])["FuelCategory"],gen_plus_up_df["mapped_fuel_category"].dropna()) if fc not in mfc]
+    gen_plus_up_df.drop(rows_to_drop, inplace=True)
+    gen_plus_up_df.drop("mapped_fuel_category", axis=1, inplace=True)
+    ###
+
+    ### This block of code will filter out renewable O&M operations when
+    #there is a pl
+
+    return gen_plus_up_df
+
+
+
 def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     """Convert the upstream emissions database to fuel inputs and add them
     to the generator data frame.
@@ -165,6 +206,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
 
     # Concatenate the generation processes with their upstream processes.
     gen_plus_up_df = pd.concat([gen_df, fuel_df], ignore_index=True)
+    #gen_plus_up_df = remove_mismatched_inventories(gen_plus_up_df)
     gen_plus_up_df = fill_nans(gen_plus_up_df, model_specs.eia_gen_year)
 
     # Taking out anything with New Brunswick System Operator so that
@@ -174,7 +216,6 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     _ba_name = "New Brunswick System Operator"
     gen_plus_up_df = gen_plus_up_df.loc[
         gen_plus_up_df[_ba_col] != _ba_name, :].reset_index(drop=True)
-
     return gen_plus_up_df
 
 
