@@ -27,7 +27,7 @@ solely the upstream contributions. Emissions from the construction of panels
 are accounted for elsewhere.
 
 Last updated:
-    2024-12-02
+    2025-01-31
 """
 __all__ = [
     "generate_upstream_solarthermal",
@@ -160,10 +160,6 @@ def get_solarthermal_om():
     """Generate the operations and maintenance LCI for solar thermal power
     plants. For 2016 electricity baseline, this data frame includes the
     construction inventory.
-
-    Parameters
-    ----------
-
 
     Returns
     -------
@@ -305,7 +301,7 @@ def generate_upstream_solarthermal(year):
     pandas.DataFrame
     """
     logging.info("Generating upstream solar thermal inventories")
-    solarthermal_ops = get_solarthermal_om(year)
+    solarthermal_ops = get_solarthermal_om()
     solarthermal_cons = get_solarthermal_construction(year)
     if solarthermal_cons is not None:
         solarthermal_df = pd.concat(

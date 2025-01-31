@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 
 from electricitylci.globals import data_dir
+from electricitylci.globals import RENEWABLE_VINTAGE
 from electricitylci.eia923_generation import eia923_download_extract
 
 
@@ -25,7 +26,7 @@ the upstream contributions. Emissions from the construction of panels are
 accounted for elsewhere.
 
 Last updated:
-    2025-01-22
+    2025-01-31
 """
 __all__ = [
     "fix_renewable",
@@ -34,12 +35,6 @@ __all__ = [
     "get_solar_pv_construction",
     "get_solar_pv_om",
 ]
-
-
-##############################################################################
-# GLOBALS
-##############################################################################
-RENEWABLE_VINTAGE = 2020
 
 
 ##############################################################################
@@ -258,10 +253,6 @@ def get_solar_pv_om():
     For 2016 electricity baseline, this data frame includes the construction
     inventory.
 
-    Parameters
-    ----------
-    None
-
     Returns
     -------
     pandas.DataFrame
@@ -399,7 +390,7 @@ def generate_upstream_solar(year):
     """
     logging.info("Generating upstream solar PV inventories")
     solar_pv_cons = get_solar_pv_construction(year)
-    solar_pv_ops = get_solar_pv_om(year)
+    solar_pv_ops = get_solar_pv_om()
 
     if solar_pv_cons is not None:
         solar_pv_df = pd.concat(

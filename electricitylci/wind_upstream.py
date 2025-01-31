@@ -26,7 +26,7 @@ for wind farm construction for each plant in EIA 923 based on upstream
 contributions.
 
 Last updated:
-    2024-12-02
+    2025-01-31
 """
 __all__ = [
     "aggregate_wind",
@@ -198,10 +198,6 @@ def get_wind_om():
     For 2016 electricity baseline, this data frame includes the construction
     inventory.
 
-    Parameters
-    ----------
-
-
     Returns
     -------
     pandas.DataFrame
@@ -346,11 +342,11 @@ def generate_upstream_wind(year):
 
     Returns
     ----------
-    pd.DataFrame
+    pandas.DataFrame
     """
     logging.info("Generating upstream wind inventories")
     wind_cons = get_wind_construction(year)
-    wind_ops = get_wind_om(year)
+    wind_ops = get_wind_om()
 
     if wind_cons is not None:
         wind_df = pd.concat(
