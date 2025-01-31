@@ -14,6 +14,7 @@ import pandas as pd
 
 from electricitylci.globals import data_dir
 from electricitylci.eia923_generation import eia923_download_extract
+from electricitylci.model_config import model_specs
 
 
 ##############################################################################
@@ -25,7 +26,7 @@ the upstream contributions. Emissions from the construction of panels are
 accounted for elsewhere.
 
 Last updated:
-    2025-01-22
+    2025-01-31
 """
 __all__ = [
     "fix_renewable",
@@ -34,12 +35,6 @@ __all__ = [
     "get_solar_pv_construction",
     "get_solar_pv_om",
 ]
-
-
-##############################################################################
-# GLOBALS
-##############################################################################
-RENEWABLE_VINTAGE = 2020
 
 
 ##############################################################################
@@ -167,7 +162,7 @@ def get_solar_pv_construction(year):
         If renewable vintage year is unsupported.
     """
     # Iss150, new construction and O&M LCIs
-    if RENEWABLE_VINTAGE == 2020:
+    if model_specs.renewable_vintage == 2020:
         logging.info(
             "Reading 2020 upstream solar PV construction inventory.")
         solar_df = pd.read_csv(
@@ -180,13 +175,11 @@ def get_solar_pv_construction(year):
             header=[0, 1],
             na_values=["#VALUE!", "#DIV/0!"],
         )
-    elif RENEWABLE_VINTAGE == 2016:
+    elif model_specs.renewable_vintage == 2016:
         logging.info(
             "The 2016 solar PV LCI does not separate construction and O&M. "
             "Returning none.")
         return None
-    else:
-        raise ValueError("Renewable vintage %s undefined!" % RENEWABLE_VINTAGE)
 
     columns = pd.DataFrame(solar_df.columns.tolist())
     columns.loc[columns[0].str.startswith('Unnamed:'), 0] = np.nan
@@ -258,10 +251,6 @@ def get_solar_pv_om():
     For 2016 electricity baseline, this data frame includes the construction
     inventory.
 
-    Parameters
-    ----------
-    None
-
     Returns
     -------
     pandas.DataFrame
@@ -273,7 +262,8 @@ def get_solar_pv_om():
         If the renewable vintage is not defined or a valid year.
     """
     # Iss150, new construction and O&M LCIs
-    if RENEWABLE_VINTAGE == 2020:
+    logging.info("Reading %d O&M inventory" % model_specs.renewable_vintage)
+    if model_specs.renewable_vintage == 2020:
         solar_df = pd.read_csv(
             os.path.join(
                 data_dir,
@@ -284,7 +274,7 @@ def get_solar_pv_om():
             header=[0, 1],
             na_values=["#VALUE!", "#DIV/0!"],
         )
-    elif RENEWABLE_VINTAGE == 2016:
+    elif model_specs.renewable_vintage == 2016:
         solar_df = pd.read_csv(
             os.path.join(
                 data_dir,
@@ -294,8 +284,6 @@ def get_solar_pv_om():
             ),
             header=[0,1],
         )
-    else:
-        raise ValueError("Renewable vintage %s undefined!" % RENEWABLE_VINTAGE)
 
     # Correct the columns
     columns = pd.DataFrame(solar_df.columns.tolist())
@@ -326,7 +314,8 @@ def get_solar_pv_om():
         'FlowAmount': float,
     })
 
-    solar_generation_data = get_solar_generation(RENEWABLE_VINTAGE)
+    # Scale emissions using inventory's target year.
+    solar_generation_data = get_solar_generation(model_specs.renewable_vintage)
     solar_ops = solar_df_t_melt.merge(
         right=solar_generation_data,
         left_on='plant_id',
@@ -399,7 +388,7 @@ def generate_upstream_solar(year):
     """
     logging.info("Generating upstream solar PV inventories")
     solar_pv_cons = get_solar_pv_construction(year)
-    solar_pv_ops = get_solar_pv_om(year)
+    solar_pv_ops = get_solar_pv_om()
 
     if solar_pv_cons is not None:
         solar_pv_df = pd.concat(
