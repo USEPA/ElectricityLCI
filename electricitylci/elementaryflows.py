@@ -16,13 +16,12 @@ import fedelemflowlist
 ##############################################################################
 # MODULE DOCUMENTATION
 ##############################################################################
-__doc__ = """This script compares the names of the wastes and replaces them
-with names in the Federal LCA Commons elementary flows list. Other flows are
-also handled. Along with that, types of flows and compartment information are
-also determined and indexed.
+__doc__ = """This script compares the names of the wastes (and other flows)
+and replaces them with names in the Federal LCA Commons elementary flows list.
+Types of flows and compartment information are also determined and indexed.
 
 Last updated:
-    2024-08-02
+    2025-02-03
 """
 __all__ = [
     "mapping_to_fedelemflows",
@@ -81,6 +80,7 @@ def map_emissions_to_fedelemflows(df_with_flows_compartments):
     Parameters
     ----------
     df_with_flows_compartments : pandas.DataFrame
+        A data frame with 'FlowName' and 'Compartment' columns.
 
     Returns
     -------

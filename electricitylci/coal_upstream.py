@@ -20,6 +20,7 @@ from electricitylci.globals import STATE_ABBREV
 from electricitylci.eia860_facilities import eia860_balancing_authority
 from electricitylci.eia923_generation import eia923_download
 from electricitylci.eia923_generation import eia923_generation_and_fuel
+from electricitylci.elementaryflows import map_emissions_to_fedelemflows
 from electricitylci.model_config import model_specs
 import electricitylci.PhysicalQuantities as pq
 from electricitylci.utils import download
@@ -48,7 +49,7 @@ from a different type of mine, or from a different location.
 For the 2023 coal model, see: https://www.osti.gov/biblio/2370100.
 
 Last updated:
-    2024-12-06
+    2025-02-03
 """
 __all__ = [
     "COAL_MINING_LCI_VINTAGE",
@@ -1169,6 +1170,21 @@ def read_coal_mining():
         cm_df = pd.read_csv(
             os.path.join(data_dir, 'coal', '2023', 'coal_mining_lci.csv')
         )
+        # HOTFIX non-FEDEFL mapped flows in this inventory [250203; TWD]
+        logging.info("Mapping coal mining flows to FEDEFL")
+        # Preserve the original UUID
+        cm_df = cm_df.rename(columns={'FlowUUID': 'FlowUUID_orig'})
+
+        # Map flows to FEDEFL; knowing some flows are technosphere.
+        cm_df_mapped = map_emissions_to_fedelemflows(cm_df)
+
+        # Find unmatched elementary flows and neutralize them!
+        unmapped_idx = cm_df_mapped.query(
+            "(FlowType == 'ELEMENTARY_FLOW') & (FlowUUID != FlowUUID)").index
+        cm_df = cm_df.drop(unmapped_idx)
+
+        # Fix UUID column name:
+        cm_df = cm_df.rename(columns={'FlowUUID_orig': 'FlowUUID'})
     elif COAL_MINING_LCI_VINTAGE == 2020:
         logging.info("Reading 2020 coal mining inventory")
         # The 2020 coal mining LCI needs some help and a results column.
