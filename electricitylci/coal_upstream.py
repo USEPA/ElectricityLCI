@@ -33,20 +33,27 @@ from electricitylci.utils import find_file_in_folder
 __doc__ = """This module generates the annual emissions from coal mining and
 transportation using life cycle inventory developed at the National Energy
 Technology Laboratory combined with fuel receipt data from EIA.
-The provided life cycle inventory for coal mining is based on 2016 data
-(measured methane emissions, etc.) and is provided on a mass basis: per kg of
-coal. As such, the annual inventory developed will not be completely
-representative of any year outside of 2016; however, this isn't necessarily any
-different than other life cycle data that was developed using data in a given
-year and remains static until the next update. Likewise the coal transportation
-data is fixed for the year 2016; however, it does not respond to the EIA data
-in the same manner. The kg-km amounts of transportation by mode are dependent
-only on the power plant location and source of coal, as mapped by the module;
-therefore, the only thing that could change the annual coal transportation
-inventory is if a particular plant began receiving coal of a different type,
-from a different type of mine, or from a different location.
 
-For the 2023 coal model, see: https://www.osti.gov/biblio/2370100.
+There are two inventories for both mining and transportation, which depend  on
+the coal model year selected (in the configuration file).
+
+For the 2016 baseline, the 2020 coal model provides life cycle inventory for
+coal mining based on 2016 data (measured methane emissions, etc.) and is
+provided on a mass basis: per kg of coal. As such, the annual inventory
+developed will not be completely representative of any year outside of 2016;
+however, this isn't necessarily any different than other life cycle data that
+was developed using data in a given year and remains static until the next
+update. Likewise the coal transportation data is fixed for the year 2016;
+however, it does not respond to the EIA data in the same manner. The kg-km
+amounts of transportation by mode are dependent only on the power plant
+location and source of coal, as mapped by the module; therefore, the only thing
+that could change the annual coal transportation inventory is if a particular
+plant began receiving coal of a different type, from a different type of mine,
+or from a different location.
+
+The 2023 coal model (https://www.osti.gov/biblio/2370100) provides updated
+inventories, including newer background data, for coal mining and
+transportation, but still mainly represents 2016.
 
 Last updated:
     2025-02-04
@@ -72,12 +79,6 @@ __all__ = [
 ##############################################################################
 # GLOBALS
 ##############################################################################
-COAL_MINING_LCI_VINTAGE = 2023
-'''int : The life cycle inventory vintage for coal mining (2020 or 2023).'''
-
-COAL_TRANSPORT_LCI_VINTAGE = 2023
-'''int : The life cycle inventory vintage for coal transportation (2020/23).'''
-
 coal_type_codes = {
     'BIT': 'B',
     'LIG': 'L',
@@ -1111,7 +1112,7 @@ def get_coal_transportation():
     (i.e., 'coal_transport_dist.csv' in the coal/2023 folder of data).
     """
     # IN PROGRESS
-    if COAL_TRANSPORT_LCI_VINTAGE == 2020:
+    if model_specs.coal_model_year == 2020:
         # The 2016 transportation data by facility.
         logging.info("Using 2016 coal baseline transportation distance data.")
         coal_transportation = pd.read_csv(
@@ -1139,7 +1140,7 @@ def get_coal_transportation():
         # Correct coal_transportation codes
         coal_transportation['coal_source_code'] = coal_transportation.apply(
             _transport_code, axis=1)
-    elif COAL_TRANSPORT_LCI_VINTAGE == 2023:
+    elif model_specs.coal_model_year == 2023:
         logging.info("Using 2023 coal model transportation distance data")
         coal_transportation = _make_2023_coal_transport_data(
             model_specs.eia_gen_year)
@@ -1165,10 +1166,6 @@ def get_coal_transportation():
         coal_transportation = coal_transportation.rename(
             columns={'variable': 'coal_source_code', 'value': 'quantity'}
         )
-    else:
-        raise ValueError(
-            "The coal transport year, %d, "
-            "is unknown!" % COAL_TRANSPORT_LCI_VINTAGE)
 
     return coal_transportation
 
@@ -1201,15 +1198,15 @@ def read_coal_mining():
     ValueError
         If the global parameter does not match coal mining vintages available.
     """
-    if COAL_MINING_LCI_VINTAGE == 2023:
-        logging.info("Reading 2023 coal mining inventory")
+    if model_specs.coal_model_year == 2023:
+        logging.info("Reading 2023 coal model mining inventory")
         # The 2023 coal mining CSV file has the correct headings and formats.
         cm_df = pd.read_csv(
             os.path.join(data_dir, 'coal', '2023', 'coal_mining_lci.csv')
         )
         cm_df = fix_coal_mining_lci(cm_df)
-    elif COAL_MINING_LCI_VINTAGE == 2020:
-        logging.info("Reading 2020 coal mining inventory")
+    elif model_specs.coal_model_year == 2020:
+        logging.info("Reading 2020 coal model mining inventory")
         # The 2020 coal mining LCI needs some help and a results column.
         cm_df = pd.read_csv(
             os.path.join(data_dir, 'coal', '2020', 'coal_mining_lci.csv')
@@ -1230,8 +1227,6 @@ def read_coal_mining():
         cm_df["Compartment"] = cm_df["Compartment"].str.join("/")
         cm_df["Compartment"] = cm_df["Compartment"].str.replace(
             "Elementary Flows/", "", regex=False)
-    else:
-        raise ValueError("Coal mining LCI vintage must be 2020 or 2023.")
 
     # HOTFIX data type incompatibility [2024-01-09; TWD]
     cm_df["ElementaryFlowPrimeContext"] = ""
@@ -1280,8 +1275,8 @@ def read_coal_transportation():
     coal_transportation = get_coal_transportation()
 
     # FORK IN THE ROAD
-    if COAL_TRANSPORT_LCI_VINTAGE == 2023:
-        logging.info("Reading 2023 coal transport LCI")
+    if model_specs.coal_model_year == 2023:
+        logging.info("Reading 2023 coal model transport LCI")
         coal_inventory_transportation = get_2023_coal_transport_lci()
         merged_transport_coal = coal_transportation.merge(
             coal_inventory_transportation,
@@ -1311,9 +1306,10 @@ def read_coal_transportation():
         merged_transport_coal = merged_transport_coal.rename(columns={
             'Name': 'FlowName'})
         transport_coal = merged_transport_coal
-    elif COAL_TRANSPORT_LCI_VINTAGE == 2020:
+    elif model_specs.coal_model_year == 2020:
         # Read coal transportation emissions inventory (units = kg/kg*km);
         # these are air emissions by transportation mode.
+        logging.info("Reading 2020 coal model transport LCI")
         coal_inventory_transportation = pd.read_excel(
             os.path.join(data_dir, 'Coal_model_transportation_inventory.xlsx'),
             sheet_name='transportation'

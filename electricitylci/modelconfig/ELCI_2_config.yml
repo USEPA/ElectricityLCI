@@ -23,6 +23,14 @@ egrid_year: 2018
 eia_gen_year: 2017
 replace_egrid: true
 
+# In 2023, NETL published the Cradle-to-Gate Life Cycle Analysis Baseline
+# for U.S. Coal Mining and Delivery (https://www.osti.gov/biblio/2370100),
+# which supersedes the 2020 model inventory used in the original baseline.
+# Select between the 2020 and 2023 model inventories. This impacts both
+# the mining and transportation LCIs, but does not impact the coal power plant
+# construction LCI.
+coal_model_year: 2020
+
 # NETL developed profiles for renewable generation to capture construction
 # and O&M impacts (e.g., solar PV manufacturing and power plant operations).
 # There are two vintages for renewable inventories: 2016 and 2020. The 2016
