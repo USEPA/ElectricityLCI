@@ -27,7 +27,7 @@ The following is a summary of input data and years available for use in building
 
 | Dataset | 2015 | 2016 | 2017 | 2018 | 2019 | 2020 | 2021 | 2022 |
 |---|---|---|---|---|---|---|---|---|
-| Coal mining and transport LCI | | x | | | | | | x |
+| Coal mining and transport LCI | | x | | | | | | |
 | Geothermal LCI<sup>1</sup> | | x | | | | | | |
 | Hydro LCI<sup>1</sup> | | x | | | | | | |
 | Natural gas LCI | | x | | | | | | |
