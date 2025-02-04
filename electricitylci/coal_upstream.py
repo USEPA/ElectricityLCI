@@ -49,7 +49,7 @@ from a different type of mine, or from a different location.
 For the 2023 coal model, see: https://www.osti.gov/biblio/2370100.
 
 Last updated:
-    2025-02-03
+    2025-02-04
 """
 __all__ = [
     "COAL_MINING_LCI_VINTAGE",
@@ -572,6 +572,43 @@ def read_eia7a_public_coal(year):
     eia7a_df = _clean_columns(eia7a_df)
 
     return eia7a_df
+
+
+def fix_coal_mining_lci(df):
+    """A helper function to clean un-mapped elementary flows from the 2023
+    coal model mining LCI.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        A data frame of coal mining LCI (e.g., from :func:`read_coal_mining`).
+
+    Returns
+    -------
+    pandas.DataFrame
+        The same data frame sent, but with rows removed that are not found
+        in the FEDEFL.
+    """
+    # HOTFIX non-FEDEFL mapped flows in this inventory [250203; TWD]
+    logging.info("Mapping coal mining flows to FEDEFL")
+
+    # Preserve the original UUID
+    if 'FlowUUID' in df.columns:
+        df = df.rename(columns={'FlowUUID': 'FlowUUID_orig'})
+
+    # Map flows to FEDEFL; knowing some flows are technosphere.
+    df_mapped = map_emissions_to_fedelemflows(df)
+
+    # Find unmatched elementary flows and neutralize them!
+    unmapped_idx = df_mapped.query(
+        "(FlowType == 'ELEMENTARY_FLOW') & (FlowUUID != FlowUUID)").index
+    df = df.drop(unmapped_idx)
+
+    # Fix UUID column name:
+    if 'FlowUUID_orig' in df.columns:
+        df = df.rename(columns={'FlowUUID_orig': 'FlowUUID'})
+
+    return df
 
 
 def generate_upstream_coal_map(year):
@@ -1170,21 +1207,7 @@ def read_coal_mining():
         cm_df = pd.read_csv(
             os.path.join(data_dir, 'coal', '2023', 'coal_mining_lci.csv')
         )
-        # HOTFIX non-FEDEFL mapped flows in this inventory [250203; TWD]
-        logging.info("Mapping coal mining flows to FEDEFL")
-        # Preserve the original UUID
-        cm_df = cm_df.rename(columns={'FlowUUID': 'FlowUUID_orig'})
-
-        # Map flows to FEDEFL; knowing some flows are technosphere.
-        cm_df_mapped = map_emissions_to_fedelemflows(cm_df)
-
-        # Find unmatched elementary flows and neutralize them!
-        unmapped_idx = cm_df_mapped.query(
-            "(FlowType == 'ELEMENTARY_FLOW') & (FlowUUID != FlowUUID)").index
-        cm_df = cm_df.drop(unmapped_idx)
-
-        # Fix UUID column name:
-        cm_df = cm_df.rename(columns={'FlowUUID_orig': 'FlowUUID'})
+        cm_df = fix_coal_mining_lci(cm_df)
     elif COAL_MINING_LCI_VINTAGE == 2020:
         logging.info("Reading 2020 coal mining inventory")
         # The 2020 coal mining LCI needs some help and a results column.
@@ -1488,7 +1511,6 @@ def generate_upstream_coal(year):
         "input",
         "ElementaryFlowPrimeContext"
     ]].drop_duplicates("FlowUUID")
-
 
     # Define sub/bituminous underground and surface mine scenarios
     _u_mines = ['-'.join(x) for x in [('B', 'U'), ('S', 'U')]]
