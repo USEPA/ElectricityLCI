@@ -20,7 +20,7 @@ Data and vintages handled by third-party data providers:
     - Continuous Emission Monitoring System (CEMS); requires a free Clean Air Markets API key ([.html](https://www.epa.gov/power-sector/cam-api-portal#/api-key-signup))
         - The same data are also available through EPA's Clean Air Markets Program Data (CAMPD) custom data download tool ([.html](https://campd.epa.gov/data/custom-data-download))
 - [Canadian Energy Regulator](https://www.cer-rec.gc.ca/en/about/index.html)
-    - Electricity trade summary, 2010--2024 ([.html](https://www.cer-rec.gc.ca/en/data-analysis/energy-commodities/electricity/statistics/electricity-trade-summary/electricity-trade-summary-resume-echanges-commerciaux-electricite.xlsx))
+    - Electricity trade summary, 2010&ndash;2024 ([.html](https://www.cer-rec.gc.ca/en/data-analysis/energy-commodities/electricity/statistics/electricity-trade-summary/electricity-trade-summary-resume-echanges-commerciaux-electricite.xlsx))
     - Electricity generation mix (2023), from EnergyFutures ([.html](https://open.canada.ca/data/en/dataset/7643c948-d661-4d90-ab91-e9ac732fc737))
 
 The following is a summary of input data and years available for use in building electricity models.
@@ -34,7 +34,7 @@ The following is a summary of input data and years available for use in building
 | Nuclear LCI<sup>1</sup> | | x | | | | | | |
 | Solar PV LCI<sup>2</sup> | | x | | | | x | | |
 | Solar thermal LCI<sup>2</sup> | | x | | | | x | | |
-| Wind farm<sup>2</sup> | | x | | | | x | | |
+| Wind farm LCI<sup>2</sup> | | x | | | | x | | |
 
 Notes:
 
