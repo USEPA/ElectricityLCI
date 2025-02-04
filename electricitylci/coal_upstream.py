@@ -604,10 +604,18 @@ def fix_coal_mining_lci(df):
     unmapped_idx = df_mapped.query(
         "(FlowType == 'ELEMENTARY_FLOW') & (FlowUUID != FlowUUID)").index
     df = df.drop(unmapped_idx)
+    df_mapped = df_mapped.drop(unmapped_idx)
 
     # Fix UUID column name:
     if 'FlowUUID_orig' in df.columns:
         df = df.rename(columns={'FlowUUID_orig': 'FlowUUID'})
+
+    # Note that the mapping updates some UUIDs and compartments!
+    # Pull the new ones from the map and pop them in the original data frame.
+    elem_idx = df_mapped.query(
+        "(FlowType == 'ELEMENTARY_FLOW') & (FlowUUID == FlowUUID)").index
+    df.loc[elem_idx, 'FlowUUID'] = df_mapped.loc[elem_idx, 'FlowUUID']
+    df.loc[elem_idx, 'Compartment'] = df_mapped.loc[elem_idx, 'Compartment']
 
     return df
 
