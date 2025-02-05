@@ -29,7 +29,7 @@ nuclear fuel cycle), and maps emissions based on the Federal LCA Commons
 Elementary Flow List in order to provide life cycle inventory.
 
 Last edited:
-    2025-01-22
+    2025-02-05
 """
 __all__ = [
     "BA_CODES",
@@ -668,13 +668,14 @@ def map_compartment_path(df):
 
     return df
 
+
 def remove_mismatched_inventories(gen_plus_up_df):
-    """This is in response to USEPA issue #282, wherein upstream inventories, 
+    """This is in response to USEPA issue #282, wherein upstream inventories,
     particularly construction, are matched to facilities of a different type. An
     example of this would be a generator of type COAL that includes an input
     of solar PV construction because that facility has been reported as having
-    some amount of solar PV capacity. This purpose of this function is filter 
-    these instances out of a given dataframe. 
+    some amount of solar PV capacity. This purpose of this function is filter
+    these instances out of a given dataframe.
 
     Parameters
     ----------
@@ -684,9 +685,7 @@ def remove_mismatched_inventories(gen_plus_up_df):
     Returns
     -------
     pandas.DataFrame
-
     """
-
     # This list only includes "Source" names that are known issues in the
     # inventories. Any source not listed here is assigned NA and is kept by
     # default. The valid FuelCategories are added as an additional column
@@ -702,13 +701,12 @@ def remove_mismatched_inventories(gen_plus_up_df):
     )
     # This list comprehension checks each row to determine whether the entry
     # in FuelCategory is in the mapped_fuel_category list assigned from above.
-    # If it is not inlcuded, that index is added and will be removed in subsequent
-    # lines. All rows where mapped_fuel_category is NaN are automatically skipped for
-    # the filter.
-    # idx: index of the row
-    # fc: fuelcategory
-    # mfc: mapped fuel category from VALID_COMBINATIONS.
-    #
+    # If it is not included, that index is added and will be removed in
+    # subsequent lines. All rows where mapped_fuel_category is NaN are
+    # automatically skipped for the filter.
+    #   idx: index of the row
+    #   fc: fuel category
+    #   mfc: mapped fuel category from VALID_COMBINATIONS.
     rows_to_drop = [
         idx
         for idx, fc, mfc in zip(
@@ -720,8 +718,8 @@ def remove_mismatched_inventories(gen_plus_up_df):
         )
         if fc not in mfc
     ]
-    # drop the indexes with mismatches and drop the new mapped_fuel_category
-    #column before returning.
+    # Drop the indexes with mismatches and drop the new mapped_fuel_category
+    # column before returning.
     gen_plus_up_df.drop(rows_to_drop, inplace=True)
     gen_plus_up_df.drop("mapped_fuel_category", axis=1, inplace=True)
 
