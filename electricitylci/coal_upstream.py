@@ -20,6 +20,7 @@ from electricitylci.globals import STATE_ABBREV
 from electricitylci.eia860_facilities import eia860_balancing_authority
 from electricitylci.eia923_generation import eia923_download
 from electricitylci.eia923_generation import eia923_generation_and_fuel
+from electricitylci.elementaryflows import correct_netl_flow_names
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows
 from electricitylci.model_config import model_specs
 import electricitylci.PhysicalQuantities as pq
@@ -56,7 +57,7 @@ inventories, including newer background data, for coal mining and
 transportation, but still mainly represents 2016.
 
 Last updated:
-    2025-02-04
+    2025-02-05
 """
 __all__ = [
     "COAL_MINING_LCI_VINTAGE",
@@ -66,9 +67,12 @@ __all__ = [
     "basin_codes",
     "transport_dict",
     "eia_7a_download",
+    "fix_coal_mining_lci",
     "generate_upstream_coal",
-    "get_2023_coal_transport_lci",
     "generate_upstream_coal_map",
+    "get_2023_ave_coal_transport",
+    "get_2023_coal_transport_lci",
+    "get_coal_transportation",
     "read_coal_mining",
     "read_coal_transportation",
     "read_eia7a_public_coal",
@@ -593,16 +597,31 @@ def fix_coal_mining_lci(df):
     # HOTFIX non-FEDEFL mapped flows in this inventory [250203; TWD]
     logging.info("Mapping coal mining flows to FEDEFL")
 
-    # Preserve the original UUID
+    # Step 1, correct NETL flow names
+    df = correct_netl_flow_names(df, amount_col='Results')
+
+    # Move UUIDs so we can query where there aren't matches.
     if 'FlowUUID' in df.columns:
         df = df.rename(columns={'FlowUUID': 'FlowUUID_orig'})
 
-    # Map flows to FEDEFL; knowing some flows are technosphere.
-    df_mapped = map_emissions_to_fedelemflows(df)
+    # Step 2. Map flows to FEDEFL; knowing some flows are technosphere
+    #  QC&A; matches for 2023 coal mining go up from 8,756 to 12,232 rows
+    #  after NETL flow corrections. After matching on the same case, jumps
+    #  to 35,970.
+    df_mapped = map_emissions_to_fedelemflows(df, amount_col='Results')
+
+    # HOTFIX: correct indices in the newly returned data frame [250205; TWD]
+    # This is in case the data frame provided is a slice.
+    df_mapped.index = df.index
 
     # Find unmatched elementary flows and neutralize them!
+    #   There are about 1000 unmatched emissions and 120 unmatched inputs.
+    #   Keep the resources [250205; TWD].
     unmapped_idx = df_mapped.query(
-        "(FlowType == 'ELEMENTARY_FLOW') & (FlowUUID != FlowUUID)").index
+        "(FlowType == 'ELEMENTARY_FLOW') "
+        "& (FlowUUID != FlowUUID) "
+        "& (input != True)").index
+    logging.info("Dropping %d unmatched flows" % len(unmapped_idx))
     df = df.drop(unmapped_idx)
     df_mapped = df_mapped.drop(unmapped_idx)
 
@@ -613,9 +632,13 @@ def fix_coal_mining_lci(df):
     # Note that the mapping updates some UUIDs and compartments!
     # Pull the new ones from the map and pop them in the original data frame.
     elem_idx = df_mapped.query(
-        "(FlowType == 'ELEMENTARY_FLOW') & (FlowUUID == FlowUUID)").index
+        "(FlowType == 'ELEMENTARY_FLOW') "
+        "& (FlowUUID == FlowUUID)"
+        "& (input != True)").index
+    logging.info("Updating %d UUIDs and compartments" % len(elem_idx))
     df.loc[elem_idx, 'FlowUUID'] = df_mapped.loc[elem_idx, 'FlowUUID']
     df.loc[elem_idx, 'Compartment'] = df_mapped.loc[elem_idx, 'Compartment']
+    df.loc[elem_idx, 'Unit'] = df_mapped.loc[elem_idx, 'Unit']
 
     return df
 
@@ -1212,6 +1235,7 @@ def read_coal_mining():
         cm_df = pd.read_csv(
             os.path.join(data_dir, 'coal', '2023', 'coal_mining_lci.csv')
         )
+        # Try flow mapping elsewhere.
         cm_df = fix_coal_mining_lci(cm_df)
     elif model_specs.coal_model_year == 2020:
         logging.info("Reading 2020 coal model mining inventory")
