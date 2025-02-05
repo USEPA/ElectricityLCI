@@ -17,43 +17,44 @@ This code was created as part of a collaboration between US EPA Office of Resear
     imply their endorsement, recommendation or favoring by EPA or NETL.
 
 # Setup
-A Python virtual environment (v 3.11 or higher) is required with the following packages installed, which are the latest as of writing (February 2024).
+A Python virtual environment (v 3.11 or higher) is required with the following packages installed, which were recorded in February 2025.
+_Note that Python 3.14 is not supported (yet)._
 
 + `pip install git+https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List#egg=fedelemflowlist`
     * Successfully installs:
         + appdirs-1.4.4
-        + boto3-1.34.40
-        + botocore-1.34.40
-        + certifi-2024.2.2
+        + boto3-1.34.140
+        + botocore-1.34.140
+        + certifi-2024.7.4
         + charset-normalizer-3.3.2
-        + esupy-0.3.3
-        + fedelemflowlist-1.2.4
-        + idna-3.6
+        + esupy-0.4.0
+        + fedelemflowlist-1.3.0
+        + idna-3.7
         + jmespath-1.0.1
-        + numpy-1.26.4
-        + olca-schema-0.0.12
-        + pandas-2.2.0
-        + pyarrow-15.0.0
-        + python-dateutil-2.8.2
+        + numpy-2.0.0
+        + olca-schema-2.4.0
+        + pandas-2.2.2
+        + pyarrow-16.1.0
+        + python-dateutil-2.9.0
         + pytz-2024.1
         + pyyaml-6.0.1
-        + requests-2.31.0
-        + requests_ftp-0.3.1 s
-        + 3transfer-0.10.0
+        + requests-2.32.3
+        + requests_ftp-0.3.1
+        + s3transfer-0.10.2
         + six-1.16.0
         + tzdata-2024.1
-        + urllib3-2.0.7
+        + urllib3-2.2.2
 + `pip install git+https://github.com/USEPA/standardizedinventories#egg=StEWI`
     * Successfully installed:
         + StEWI-1.1.3
         + beautifulsoup4-4.12.3
         + et-xmlfile-1.1.0
-        + openpyxl-3.1.2
+        + openpyxl-3.1.5
         + soupsieve-2.5
         + xlrd-2.0.1
 + `pip install scipy`
     * Successfully installs:
-        + scipy-1.12.0
+        + scipy-1.15.1
 
 # API
 In the latest version of ElectricityLCI, there is a dependency on two external datasets that require the use of an application programming interface (API) key.
