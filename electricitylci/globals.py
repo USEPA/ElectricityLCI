@@ -35,10 +35,9 @@ except NameError:
 
 paths=Paths()
 paths.local_path = os.path.realpath(str(paths.local_path) + "/electricitylci")
-# hotfix PosixPath in os.path.join [TWD; 2023-07-27]
-output_dir = os.path.join(str(paths.local_path), 'output')
 # NOTE: output_dir used in a handful of modules (e.g., combinator)
-#output_dir = os.path.join(modulepath, 'output')
+# HOTFIX PosixPath in os.path.join [TWD; 2023-07-27]
+output_dir = os.path.join(str(paths.local_path), 'output')
 data_dir = os.path.join(modulepath,  'data')
 
 try:

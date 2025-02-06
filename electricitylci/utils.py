@@ -64,6 +64,173 @@ __all__ = [
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
+def _build_data_store(data_file_types=None, skip_dirs=[]):
+    """Create a dictionary of files and folders for the data providers
+    of ElectricityLCI, including stewi, stewicombo, and fedelemflowlist.
+
+    Parameters
+    ----------
+    data_file_types : list, optional
+        A list of data file type extensions (e.g., '.txt'), by default None
+    skip_dirs : list, optional
+        A list of directory names to skip (not paths), by default []
+
+    Returns
+    -------
+    dict
+        A dictionary of data stores for each data provider. Each key has
+        a dictionary with three sub-keys: 'path', 'dirs', and 'files',
+        where 'path' is the location of the data store, 'dirs' is a list of
+        sub-folders within the data store (may be empty if not sub-dirs),
+        and 'files' is a list of data files matching the given data file
+        types (if None, then all files are matched).
+
+    Examples
+    --------
+    >>> ds = _build_data_store()
+    >>> for k in ds.keys():
+    ...     print(k, ds[k]['path'])
+    """
+    ds = _init_data_store()
+
+    for cur_elem in ds.keys():
+        #cur_elem = 'electricitylci'
+        cur_path = ds[cur_elem]['path']
+        for root, _, files in os.walk(cur_path):
+            # This is the directory being searched for files and folders.
+            r_dir = os.path.basename(root)
+
+            # Don't look in any folders that are to be skipped.
+            if r_dir in skip_dirs:
+                continue
+            else:
+                # Only add sub-folders
+                if root != cur_path:
+                    ds[cur_elem]['dirs'].append(root)
+                for f in files:
+                    if data_file_types is None:
+                        # Add all files
+                        ds[cur_elem]['files'].append(f_path)
+                    else:
+                        # Add only requested file types
+                        f_path = os.path.join(root, f)
+                        f_ext = os.path.splitext(f)[1]
+                        if f_ext in data_file_types:
+                            ds[cur_elem]['files'].append(f_path)
+
+    return ds
+
+
+def _init_data_store():
+    """Initialize an empty data store dictionary for data providers in
+    ElectricityLCI.
+
+    Returns
+    -------
+    dict
+        An empty dictionary of data stores for each data provider.
+        The dictionary has a key for each provider and the value of each
+        key is a dictionary with three sub-keys: 'path', 'dirs', and 'files',
+        where 'path' is the location of the data store, 'dirs' is an empty
+        list, and 'files' is an empty list.
+    """
+    from electricitylci.globals import paths
+    import stewi           # stewi.paths.local_path
+    import stewicombo      # stewicombo.globals.path.local_path
+    import fedelemflowlist # fedelemflowlist.globals.fedefl_path.local_path
+
+    data_store = {
+        'electricitylci': {
+            'path': '',
+            'dirs': [],
+            'files': [],
+        },
+        'stewi': {
+            'path': '',
+            'dirs': [],
+            'files': [],
+        },
+        'stewicombo': {
+            'path': '',
+            'dirs': [],
+            'files': [],
+        },
+        'fedelemflowlist': {
+            'path': '',
+            'dirs': [],
+            'files': [],
+        },
+    }
+
+    try:
+        elci_path = str(paths.local_path)
+    except:
+        logging.warning("No eLCI data store folder!")
+        del data_store["electricitylci"]
+    else:
+        data_store["electricitylci"]['path'] = elci_path
+
+    try:
+        stewi_path = str(stewi.paths.local_path)
+    except:
+        logging.warning("Failed to get stewi data store directory!")
+        del data_store["stewi"]
+    else:
+        data_store["stewi"]['path'] = stewi_path
+
+    try:
+        combo_path = str(stewicombo.globals.paths.local_path)
+    except:
+        logging.warning("Failed to find stewicombo data store!")
+        del data_store["stewicombo"]
+    else:
+        data_store['stewicombo']['path'] = combo_path
+
+    try:
+        fedefl_path = str(fedelemflowlist.globals.fedefl_path.local_path)
+    except:
+        logging.warning("Failed to find fedelemflowlist data store directory!")
+        del data_store["fedelemflowlist"]
+    else:
+        data_store["fedelemflowlist"]['path'] = fedefl_path
+
+    return data_store
+
+
+def _process_files(filelist, to_filter=False, filter_txt="n/a"):
+    """Delete files from a file list that match a year filter.
+
+    Parameters
+    ----------
+    filelist : list
+        A list of data file paths.
+    to_filter : bool, optional
+        Whether to filter file paths by text, by default False
+    filter_txt : str, optional
+        The string to search if filtering, by default "n/a"
+
+    Examples
+    --------
+    >>> my_list = ["file-2020.txt", "file-2021.txt", "file-2022.txt"]
+    >>> _process_files(my_list, True, '2020')
+    Deleted file-2020.txt
+    """
+    if not isinstance(filter_txt, str):
+        filter_txt = str(filter_txt)
+
+    for f in filelist:
+        if not os.path.isfile(f):
+            logging.warning("File, '%s', does not exist!" % f)
+        else:
+            msg = "Deleted: " + str(f)
+            if to_filter and filter_txt in f:
+                if not os.remove(f):
+                    logging.info(msg)
+            elif not to_filter:
+                if not os.remove(f):
+                    logging.info(msg)
+
+
 def check_output_dir(out_dir):
     """Helper method to ensure a directory exists.
 
@@ -96,6 +263,56 @@ def check_output_dir(out_dir):
             logging.info("Created %s" % out_dir)
 
     return os.path.isdir(out_dir)
+
+
+def clean_data_store():
+    """This method is designed to delete data files from the various
+    data stores used in ElectricityLCI, skipping certain directories
+    (e.g., hidden and archived), skipping certain file types (i.e.,
+    not defined in the ``data_file_types`` list), and, optionally,
+    filtered by data provider and year.
+
+    For developers only.
+    """
+    ans = input(
+        "Did you mean to clean your data store? If not, ctrl+c to escape now!")
+
+    # Define folders to skip over.
+    skip_dirs = [
+        'archive',
+        'hidden',
+        'netl',
+        'output'
+    ]
+
+    # Target file extensions to clean
+    data_file_types = [
+        '.csv',
+        '.json',
+        '.parquet',
+        '.pdf',
+        '.xls',
+        '.xlsx',
+        '.zip',
+    ]
+
+    incl_elci = True
+    incl_stewi = False
+    incl_combo = False
+    incl_fedefl = False
+    incl_year = True
+    year = 2022
+
+    ds = _build_data_store(data_file_types, skip_dirs)
+    for k in ds.keys():
+        if k == 'electricitylci' and incl_elci:
+            _process_files(ds[k]['files'], incl_year, year)
+        elif k == 'stewi' and incl_stewi:
+            _process_files(ds[k]['files'], incl_year, year)
+        elif k == 'stewicombo' and incl_combo:
+            _process_files(ds[k]['files'], incl_year, year)
+        elif k == 'fedelemflowlist' and incl_fedefl:
+            _process_files(ds[k]['files'], incl_year, year)
 
 
 # TODO: Link this to read_ba_codes(); disconnected!
