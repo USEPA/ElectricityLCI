@@ -20,9 +20,11 @@ from electricitylci.process_dictionary_writer import (
 )
 from electricitylci.utils import make_valid_version_num
 from electricitylci.globals import elci_version
-#NEW Issue #150, needed to get Balancing Authority names for regional construction
+# Issue #150, need Balancing Authority names for regional construction
 from electricitylci.eia860_facilities import eia860_balancing_authority
 import electricitylci.model_config as config
+
+
 ##############################################################################
 # MODULE DOCUMENTATION
 ##############################################################################
@@ -33,7 +35,7 @@ petroleum extraction and processing, coal transport, nuclear fuel extraction,
 processing, and transport, and power plant construction.
 
 Last updated:
-    2024-11-25
+    2025-02-06
 """
 __all__ = [
     "olcaschema_genupstream_processes",
@@ -287,9 +289,9 @@ def _flow_table_creation(data):
             ar["flowType"] = "ELEMENTARY_FLOW"
 
     ar["flowProperties"] = ""
-    # Cutoff flow name at length 255 (if longer)
-    ar["name"] = data["FlowName"][0:255]
+    ar["name"] = data["FlowName"][0:255] # Cutoff flow name at length 255
     ar["id"] = data["FlowUUID"]
+
     comp = str(data["Compartment"])
     if (ar["flowType"] == "ELEMENTARY_FLOW") & (comp != ""):
         if "emission" in comp or "resource" in comp:
@@ -297,6 +299,9 @@ def _flow_table_creation(data):
         else:
             ar["category"] = "Elementary flows/" + "emission" + "/" + comp
     elif (ar["flowType"] == "PRODUCT_FLOW") & (comp != ""):
+        # HOTFIX: put technosphere flows in their own sub-category [250206;TWD]
+        if not comp.startswith("Technosphere Flows/"):
+            comp = "Technosphere Flows/" + comp
         ar["category"] = comp
     elif ar["flowType"] == "WASTE_FLOW":
         ar["category"] = "Waste flows/"
