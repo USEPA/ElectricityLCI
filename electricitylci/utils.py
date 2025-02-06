@@ -121,6 +121,44 @@ def _build_data_store(data_file_types=None, skip_dirs=[]):
     return ds
 
 
+def _find_empty_dirs(filepath):
+    """Search for empty sub-folders in the given file path.
+
+    Parameters
+    ----------
+    filepath : str
+        An existing directory path.
+
+    Returns
+    -------
+    list
+        A list of folder paths that are empty (contain no files or folders).
+    """
+    # Find empty directories
+    empty_dirs = []
+    for root, subdirs, files in os.walk(filepath):
+        if len(subdirs) == 0 and len(files) == 0:
+            empty_dirs.append(root)
+
+    return empty_dirs
+
+
+def _process_folders(filepath):
+    """A helper method for deleting empty folders from a computer.
+
+    Parameters
+    ----------
+    filepath : str
+        A folder in which to remove empty sub-folders from.
+    """
+    empty_dirs = _find_empty_dirs(filepath)
+    while len(empty_dirs) > 0:
+        for my_dir in empty_dirs:
+            os.rmdir(my_dir)
+            logging.info("Deleted: %s" % my_dir)
+        empty_dirs = _find_empty_dirs(filepath)
+
+
 def _init_data_store():
     """Initialize an empty data store dictionary for data providers in
     ElectricityLCI.
@@ -307,12 +345,15 @@ def clean_data_store():
     for k in ds.keys():
         if k == 'electricitylci' and incl_elci:
             _process_files(ds[k]['files'], incl_year, year)
+            _process_folders(ds[k]['path'])
         elif k == 'stewi' and incl_stewi:
             _process_files(ds[k]['files'], incl_year, year)
+            _process_folders(ds[k]['path'])
         elif k == 'stewicombo' and incl_combo:
             _process_files(ds[k]['files'], incl_year, year)
         elif k == 'fedelemflowlist' and incl_fedefl:
             _process_files(ds[k]['files'], incl_year, year)
+            _process_folders(ds[k]['path'])
 
 
 # TODO: Link this to read_ba_codes(); disconnected!
