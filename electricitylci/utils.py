@@ -334,6 +334,7 @@ def clean_data_store():
         '.zip',
     ]
 
+    # Currently set to delete 2022 files/folders from electricitylci data store
     incl_elci = True
     incl_stewi = False
     incl_combo = False
