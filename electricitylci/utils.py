@@ -1025,6 +1025,82 @@ def read_json(json_path):
     return r_dict
 
 
+def read_log_file(idx=1):
+    """A helper function for analyzing ElectricityLCI's log files.
+
+    Parameters
+    ----------
+    idx : int, optional
+        The log file index (0--9), by default 1
+
+    Returns
+    -------
+    pandas.DataFrame
+        A data frame with rows equal to number of logging statements.
+        If the log file is not found, an empty data frame is returned.
+        Columns include the following:
+
+        - 'date', timestamp
+        - 'level', str, logging level (e.g., 'DEBUG')
+        - 'module', str, module name (e.g., 'utils')
+        - 'method', str, function name (e.g., 'download_unzip')
+        - 'message', str, logging message
+    """
+    # The standard log file naming scheme
+    search_file = "elci.log.%s" % idx
+    search_path = os.path.join(output_dir, search_file)
+
+    # See :func:`get_logger` for log file format
+    #   (1)date:(2)log lv:(3)log name:(4)function:(5)message
+    p = re.compile(
+        "^(\\d{4}-\\d{2}-\\d{2}\\s{1}\\d{2}:\\d{2}:\\d{2}\\.+\\d{0,3}):"
+        "([A-Z]+):(\\w+):(\\w+):(.*)$"
+    )
+
+    # Initialize lists for storing data
+    date_lst = []
+    level_lst = []
+    name_lst = []
+    func_lst = []
+    msg_lst = []
+
+    # Open the file, parse its contents
+    if os.path.isfile(search_path):
+        logging.info("Found log file, '%s'!" % search_file)
+
+        with open(search_path, 'r') as f:
+            for line in f:
+                r = p.match(line)
+                if r:
+                    date_lst.append(r.group(1))
+                    level_lst.append(r.group(2))
+                    name_lst.append(r.group(3))
+                    func_lst.append(r.group(4))
+                    msg_lst.append(r.group(5))
+
+    # Put data (or empty lists) in a data frame.
+    df = pd.DataFrame({
+        'date': date_lst,
+        'level': level_lst,
+        'module': name_lst,
+        'method': func_lst,
+        'message': msg_lst,
+    })
+
+    # Convert date strings to datetime objects
+    try:
+        # NOTE: The decimal seconds show up in my log files [250211;TWD]
+        df['date'] = pd.to_datetime(df['date'], format="%Y-%m-%d %H:%M:%S.%f")
+    except:
+        logging.error(
+            "Failed to parse datetime string format (e.g., '%s')" % (
+                df.loc[0, 'date'])
+        )
+        pass
+
+    return df
+
+
 def rollover_logger(logger):
     """Helper method to rollover a named Rotating File Handler.
 
