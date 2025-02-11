@@ -72,9 +72,11 @@ if emissions_and_wastes_by_facility is None:
         base_inventory = "RCRAInfo"
 
     # HOTFIX: work-around ParseError [2023-12-19; TWD]
-    # Ref: https://github.com/USEPA/standardizedinventories/issues/151
     # NOTE: Hi! If you are here, then you probably are looking to uncomment
-    # the commented line below to get StEWI's pre-processed data.
+    # the commented line below, then run all the lines of this module in Python
+    # to get StEWI's pre-processed data as a work-around for the RCRAInfo parse
+    # error, then re-comment the previously commented line and restart the
+    # model. See the issue on GitHub:
     # https://github.com/USEPA/standardizedinventories/issues/151
     emissions_and_wastes_by_facility = cbi(
         base_inventory,
