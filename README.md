@@ -23,32 +23,31 @@ _Note that Python 3.14 is not supported (yet)._
 + `pip install git+https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List#egg=fedelemflowlist`
     * Successfully installs:
         + appdirs-1.4.4
-        + boto3-1.34.140
-        + botocore-1.34.140
-        + certifi-2024.7.4
-        + charset-normalizer-3.3.2
+        + boto3-1.36.18
+        + botocore-1.36.18
+        + certifi-2025.1.31
+        + charset-normalizer-3.4.1
         + esupy-0.4.0
         + fedelemflowlist-1.3.0
-        + idna-3.7
+        + idna-3.10
         + jmespath-1.0.1
-        + numpy-2.0.0
+        + numpy-2.2.2
         + olca-schema-2.4.0
-        + pandas-2.2.2
-        + pyarrow-16.1.0
+        + pandas-2.2.3
+        + pyarrow-19.0.0
         + python-dateutil-2.9.0
-        + pytz-2024.1
-        + pyyaml-6.0.1
+        + pytz-2025.1
+        + PyYAML-6.0.2
         + requests-2.32.3
-        + requests_ftp-0.3.1
-        + s3transfer-0.10.2
-        + six-1.16.0
-        + tzdata-2024.1
-        + urllib3-2.2.2
+        + s3transfer-0.11.2
+        + six-1.17.0
+        + tzdata-2025.1
+        + urllib3-2.3.0
 + `pip install git+https://github.com/USEPA/standardizedinventories#egg=StEWI`
     * Successfully installed:
-        + StEWI-1.1.3
+        + StEWI-1.1.4
         + beautifulsoup4-4.12.3
-        + et-xmlfile-1.1.0
+        + et-xmlfile-2.0.0
         + openpyxl-3.1.5
         + soupsieve-2.5
         + xlrd-2.0.1
@@ -385,6 +384,13 @@ Note that once downloaded, these files are referenced (and not downloaded again)
         └── ELCI_2020_v1.1.2_metadata.json (7 KB)
 
 # Developer's Corner
+
+To install the dependencies for this package without installing the package itself, put the following in a text file, called requirements.txt
+
+    fedelemflowlist @ git+https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List#egg=fedelemflowlist
+    StEWI @ git+https://github.com/USEPA/standardizedinventories#egg=StEWI
+    scipy>=1.10
+
 
 To checkout a pull request locally for testing:
 
