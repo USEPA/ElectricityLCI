@@ -488,7 +488,10 @@ def download_unzip(url, unzip_path):
     r = requests.get(url)
     content_type = r.headers["Content-Type"]
     if "zip" not in content_type and "-stream" not in content_type:
-        logging.error(content_type)
+        err_msg = (
+            "Failed to find ZIP stream in HTTP content, '%s'; "
+            "this is not a ZIP file!") % (content_type)
+        logging.error(err_msg)
         raise ValueError("URL does not point to valid zip file")
 
     z = zipfile.ZipFile(io.BytesIO(r.content))
