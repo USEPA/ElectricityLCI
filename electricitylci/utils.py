@@ -28,7 +28,7 @@ from electricitylci.globals import output_dir
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2025-01-23
+    2025-02-12
 
 Changelog:
     -   [25.01.23]: Add logger utility methods
@@ -95,7 +95,6 @@ def _build_data_store(data_file_types=None, skip_dirs=[]):
     ds = _init_data_store()
 
     for cur_elem in ds.keys():
-        #cur_elem = 'electricitylci'
         cur_path = ds[cur_elem]['path']
         for root, _, files in os.walk(cur_path):
             # This is the directory being searched for files and folders.
@@ -109,12 +108,12 @@ def _build_data_store(data_file_types=None, skip_dirs=[]):
                 if root != cur_path:
                     ds[cur_elem]['dirs'].append(root)
                 for f in files:
+                    f_path = os.path.join(root, f)
                     if data_file_types is None:
                         # Add all files
                         ds[cur_elem]['files'].append(f_path)
                     else:
                         # Add only requested file types
-                        f_path = os.path.join(root, f)
                         f_ext = os.path.splitext(f)[1]
                         if f_ext in data_file_types:
                             ds[cur_elem]['files'].append(f_path)
