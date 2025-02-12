@@ -12,6 +12,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 import os
 import re
+import sys
 import zipfile
 
 import requests
@@ -602,7 +603,7 @@ def find_file_in_folder(folder_path, file_pattern_match, return_name=True):
         return (file_path, file_name)
 
 
-def get_logger(stream=True, rfh=True, level='INFO', rfh_lv='DEBUG'):
+def get_logger(stream=True, rfh=True, str_lv='INFO', rfh_lv='DEBUG'):
     """A helper function for creating or retrieving a root logger with
     only one instance of stream and/or rotating file handler.
 
@@ -612,7 +613,7 @@ def get_logger(stream=True, rfh=True, level='INFO', rfh_lv='DEBUG'):
         Whether to create a stream handler, by default True
     rfh : bool, optional
         Whether to create a rotating file handler, by default True
-    level : str, optional
+    str_lv : str, optional
         Stream handler logging level, by default 'INFO'
     rfh_lv : str, optional
         Rotating file handler logging level, by default 'DEBUG'
@@ -649,9 +650,10 @@ def get_logger(stream=True, rfh=True, level='INFO', rfh_lv='DEBUG'):
     # Create stream handler for info messages
     if stream and not has_stream:
         s_handler = logging.StreamHandler()
-        s_handler.setLevel(level)
+        s_handler.setLevel(str_lv)
         s_handler.setFormatter(formatter)
         s_handler.set_name('elci_stream')
+        s_handler.stream = sys.stdout   # won't show pink in Jupyter notebook
         log.addHandler(s_handler)
 
     # Create file handler for debug messages
@@ -665,6 +667,13 @@ def get_logger(stream=True, rfh=True, level='INFO', rfh_lv='DEBUG'):
         f_handler.setFormatter(formatter)
         f_handler.set_name('elci_rfh')
         log.addHandler(f_handler)
+
+    # Clean-up step; all unnamed log handlers get elevated to critical.
+    #  NOTE: alternatively, we could drop all unnamed loggers.
+    num_handlers = len(log.handlers)
+    for i in range(num_handlers):
+        if not log.handlers[i].name:
+            log.handlers[i].setLevel("CRITICAL")
 
     return log
 
