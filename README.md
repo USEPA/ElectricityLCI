@@ -179,6 +179,15 @@ To see where the data store folder is located on your machine, try running the f
 >>> print(get_datastore_dir())
 ```
 
+To see what files you have in your data store, you can call the following function and loop through its dictionaries' lists.
+
+```python
+>>> from electricitylci.utils import _build_data_store
+>>> ds = _build_data_store()
+>>> for file_name in ds['electricitylci']['files']:
+...     print(file_name)
+```
+
 The application folder for this package is 'electricitylci'.
 
 Inventory data is provided by USEPA's Standardized Emission and Waste Inventories ([StEWI](https://github.com/USEPA/standardizedinventories)) package (via stewicombo).
@@ -292,6 +301,12 @@ Note that once downloaded, these files are referenced (and not downloaded again)
     │   │   │     2020_Final_Revision_page_5_reduced.csv (2.3 MB)
     │   │   └── EIA923_Schedules_6_7_NU_SourceNDisposition_\
     │   │         2020_Final_Revision.xlsx (1.0 MB)
+    │   │
+    │   ├── fedcommons/
+    │   │   ├── dq_sources.json (0.5 KB)
+    │   │   ├── dq_systems.json (6 KB)
+    │   │   ├── flow_properties.json (12 KB)
+    │   │   └── unit_groups.json (36 KB)
     │   │
     │   ├── FRS_bridges/
     │   │   └── NEI_2020_RCRAInfo_2019_TRI_2020_eGRID_2020.csv (0.3 MB)
