@@ -67,7 +67,8 @@ __all__ = [
 ##############################################################################
 def _build_data_store(data_file_types=None, skip_dirs=[]):
     """Create a dictionary of files and folders for the data providers
-    of ElectricityLCI, including stewi, stewicombo, and fedelemflowlist.
+    of ElectricityLCI, including stewi, stewicombo, facilitymatcher, and
+    fedelemflowlist.
 
     Parameters
     ----------
@@ -176,6 +177,7 @@ def _init_data_store():
     import stewi           # stewi.paths.local_path
     import stewicombo      # stewicombo.globals.path.local_path
     import fedelemflowlist # fedelemflowlist.globals.fedefl_path.local_path
+    import facilitymatcher as fm  # fm.globals.paths.local_path
 
     data_store = {
         'electricitylci': {
@@ -189,6 +191,11 @@ def _init_data_store():
             'files': [],
         },
         'stewicombo': {
+            'path': '',
+            'dirs': [],
+            'files': [],
+        },
+        'facilitymatcher': {
             'path': '',
             'dirs': [],
             'files': [],
@@ -223,6 +230,14 @@ def _init_data_store():
         del data_store["stewicombo"]
     else:
         data_store['stewicombo']['path'] = combo_path
+
+    try:
+        fm_path = str(fm.globals.path.local_path)
+    except:
+        logging.warning("Failed to find facilitymatcher data store!")
+        del data_store['facilitymatcher']
+    else:
+        data_store['facilitymatcher']['path'] = fm_path
 
     try:
         fedefl_path = str(fedelemflowlist.globals.fedefl_path.local_path)
@@ -310,6 +325,8 @@ def clean_data_store():
     not defined in the ``data_file_types`` list), and, optionally,
     filtered by data provider and year.
 
+    Currently set to delete 2022 files/folders from electricitylci data store.
+
     For developers only.
     """
     ans = input(
@@ -334,10 +351,11 @@ def clean_data_store():
         '.zip',
     ]
 
-    # Currently set to delete 2022 files/folders from electricitylci data store
+    # Bools; to be modified by the user (or as method parameters)
     incl_elci = True
     incl_stewi = False
     incl_combo = False
+    incl_fm = False
     incl_fedefl = False
     incl_year = True
     year = 2022
@@ -352,6 +370,10 @@ def clean_data_store():
             _process_folders(ds[k]['path'])
         elif k == 'stewicombo' and incl_combo:
             _process_files(ds[k]['files'], incl_year, year)
+            _process_folders(ds[k]['path'])
+        elif k == 'facilitymatcher' and incl_fm:
+            _process_files(ds[k]['files'], incl_year, year)
+            _process_folders(ds[k]['path'])
         elif k == 'fedelemflowlist' and incl_fedefl:
             _process_files(ds[k]['files'], incl_year, year)
             _process_folders(ds[k]['path'])
