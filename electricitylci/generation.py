@@ -1435,8 +1435,8 @@ def read_stewi_frs(frs_path="FRS_bridge_file.csv", to_save=False):
     """Helper function for reading the Facility Register Service (FRS)
     bridge file from stewi's facilitymatcher.
 
-    Downloads a local copy of the NATIONAL_ENVIRONMENTAL_INTEREST_FILE.CSV,
-    which take a few minutes.
+    Downloads a local copy of the NATIONAL_ENVIRONMENTAL_INTEREST_FILE.CSV
+    (1 GB) from EPA's state files, which take a few minutes.
 
     Parameters
     ----------
