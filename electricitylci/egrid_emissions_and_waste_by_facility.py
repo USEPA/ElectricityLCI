@@ -71,18 +71,18 @@ if emissions_and_wastes_by_facility is None:
     elif "RCRAInfo" in model_specs.inventories_of_interest.keys():
         base_inventory = "RCRAInfo"
 
-    # HOTFIX: work-around ParseError [2023-12-19; TWD]
-    # NOTE: Hi! If you are here, then you probably are looking to uncomment
-    # the commented line below, then run all the lines of this module in Python
-    # to get StEWI's pre-processed data as a work-around for the RCRAInfo parse
-    # error, then re-comment the previously commented line and restart the
-    # model. See the issue on GitHub:
+    # HOTFIX: work-around ParseError [2024-02-12; TWD]
+    # NOTE: Hi! If you are here, then you might be experiencing trouble with
+    # stewi and stewicombo data files. If this is your only project that
+    # relies on stewicombo, then delete the stewi and stewicombo data store
+    # folders on your computer (see globals.get_datastore_dir), then run
+    # try again. This will pull StEWI's pre-processed data. See GitHub issue:
     # https://github.com/USEPA/standardizedinventories/issues/151
     emissions_and_wastes_by_facility = cbi(
         base_inventory,
         model_specs.inventories_of_interest,
         filter_for_LCI=True,
-        #download_if_missing=True,
+        download_if_missing=True,
     )
     # Drop SRS fields
     emissions_and_wastes_by_facility = emissions_and_wastes_by_facility.drop(
