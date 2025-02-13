@@ -79,7 +79,7 @@ Changelog:
     -   Add EPA's DQI pedigree matrices to JSON-LD
 
 Last edited:
-    2025-02-12
+    2025-02-13
 """
 __all__ = [
     "build_product_systems",
@@ -1662,14 +1662,14 @@ def _read_fedcore():
         with open(d_path, 'r') as f:
             my_list = json.load(f)
         for my_item in my_list:
-            d_list.append(o.UnitGroup.from_dict(my_item))
+            d_list.append(o.DQSystem.from_dict(my_item))
 
     if os.path.exists(s_path) and len(s_list) == 0:
         logging.info("Reading DQI sources from local JSON")
         with open(s_path, 'r') as f:
             my_list = json.load(f)
         for my_item in my_list:
-            s_list.append(o.FlowProperty.from_dict(my_item))
+            s_list.append(o.Source.from_dict(my_item))
 
     return (d_list, s_list)
 
