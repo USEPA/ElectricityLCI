@@ -332,7 +332,11 @@ def clean_data_store():
     ans = input(
         "Did you mean to clean your data store? If not, ctrl+c to escape now!")
 
-    # Define folders to skip over.
+    # NOTE
+    # Define folders to skip over. For example, if you have EBA.zip files
+    # from earlier time periods (e.g., you are trying to run ELCI_1), make
+    # sure you keep a backup version of it in an archive or hidden folder to
+    # avoid getting caught in this cleaner.
     skip_dirs = [
         'archive',
         'hidden',
