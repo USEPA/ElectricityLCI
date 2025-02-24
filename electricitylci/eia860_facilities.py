@@ -30,7 +30,7 @@ For now, this module is using most of the code from eia923_generation.py.
 It could be combined and generalized in the future.
 
 Last updated:
-    2023-12-22
+    2025-02-11
 """
 
 
@@ -52,7 +52,7 @@ def _clean_columns(df):
     """
     df.columns = (
         df.columns.str.lower()
-        .str.replace("[^0-9a-zA-Z\-]+", " ", regex=True)
+        .str.replace("[^0-9a-zA-Z\\-]+", " ", regex=True)
         .str.replace("-", "", regex=False)
         .str.strip()
         .str.replace(" ", "_", regex=False)
@@ -123,6 +123,9 @@ def load_eia860_excel(eia860_path, sheet="Plant", header=1):
 def eia860_balancing_authority(year, regional_aggregation=None):
     """Return a data frame consisting of EIA Plant IDs and other identifying
     information, including balancing authority area.
+
+    Called in combinator.py, eia_io_trading.py, generation.py, and
+    hydro_upstream.py; albeit none send regional aggregation parameter.
     """
 
     expected_860_folder = os.path.join(

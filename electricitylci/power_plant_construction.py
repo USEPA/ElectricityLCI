@@ -6,6 +6,7 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+import logging
 import os
 
 import pandas as pd
@@ -22,17 +23,115 @@ construction to the fossil power generators in the United States and produces
 a data frame that permits the calculation of total construction impact.
 
 Last edited:
-    2024-01-10
+    2024-10-23
 """
 __all__ = [
     "generate_power_plant_construction",
+    "get_coal_ngcc_const",
 ]
 
 
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def generate_power_plant_construction(year):
+def generate_power_plant_construction(year, incl_renew=False):
+    """Create the life-cycle inventory for power plant construction.
+
+    By default includes the coal and natural gas combined cycle power
+    plants, and, optionally, the renewable power plant construction.
+
+    The renewable construction LCIs have a functional unit of 1 item per year,
+    where 1 item is a power plant and the emissions are divided by the
+    estimated lifetime of the facility (e.g., 30 years); hence per year.
+    This allows the impacts over 30 years to be equivalent to the total
+    construction impacts.
+
+    When writing the renewable construction emissions to JSON-LD, they are
+    scaled based on the 'quantity' field, which represents the net electricity
+    generation (MWh) making the emissions per MWh. For coal and natural gas,
+    the 'quantity' field is nameplate capacity (in order to scale between the
+    test facility and any given coal power plant).
+
+    Parameters
+    ----------
+    year : int
+        The year for EIA facilities.
+    incl_renew : bool, optional
+        Option, when true, includes renewable power plant construction (e.g., solar PV, solar thermal, and wind farm), by default False
+
+    Returns
+    -------
+    pandas.DataFrame
+        Life-cycle inventory of power plant construction.
+        Data frame columns include:
+
+        -   'Compartment', emission compartment (e.g., air, soil, water)
+        -   'Compartment_path', compartment path (e.g., emission/air)
+        -   'FlowAmount', emission amount (float)
+        -   'FlowName', emission name
+        -   'Source', source strings (e.g., 'netlconst')
+        -   'Unit', emission unit (e.g., kg)
+        -   'input', boolean for resource (true) or emission (false)
+        -   'fuel_type', 'Construction'
+        -   'plant_id', EIA facility ID
+        -   'quantity', depends on stage (coal, gas, or renewable)
+        -   'stage_code', construction stage code (e.g., 'coal_const')
+        -   'technology', for labeling gas and coal plants (unused)
+    """
+    # Pull the original coal and ngcc power plant construction processes.
+    construction_df = get_coal_ngcc_const(year)
+
+    # NEW: Issue#150; pull in renewable power plant construction.
+    if incl_renew:
+        # 'EIA Sector Number', 'Reported Prime Mover', and
+        # 'Electricity' columns are extra and 'technology' is missing---
+        # the latter is not used, just add empty string to assist with concat,
+        # and set fuel type to construction to make it a construction process.
+        renew_extra_cols = [
+            'EIA Sector Number',
+            'Reported Prime Mover',
+            'Electricity',
+        ]
+
+        from electricitylci.wind_upstream import get_wind_construction
+        wind_const = get_wind_construction(year)
+        wind_extra_cols = [
+            x for x in renew_extra_cols if x in wind_const.columns]
+        wind_const = wind_const.drop(columns=wind_extra_cols)
+        wind_const['technology'] = ''
+        #Issue #150
+        wind_const['fuel_type'] = 'wind_Construction'
+        logging.info("Adding wind power plant construction")
+        construction_df =  pd.concat(
+            [construction_df, wind_const], ignore_index=True)
+
+        # Add solar thermal power plant construction
+        from electricitylci.solar_thermal_upstream import get_solarthermal_construction
+        st_const = get_solarthermal_construction(year)
+        st_extra_cols = [x for x in renew_extra_cols if x in st_const.columns]
+        st_const = st_const.drop(columns=st_extra_cols)
+        st_const['technology'] = ''
+        #Issue #150
+        st_const['fuel_type'] = 'solartherm_Construction'
+        logging.info("Adding solar thermal power plant construction")
+        construction_df = pd.concat(
+            [construction_df, st_const], ignore_index=True)
+
+        # Add solar PV power plant construction
+        from electricitylci.solar_upstream import get_solar_pv_construction
+        spv_const = get_solar_pv_construction(year)
+        spv_extra_cols = [x for x in renew_extra_cols if x in spv_const.columns]
+        spv_const = spv_const.drop(columns=spv_extra_cols)
+        spv_const['technology'] = ''
+        #Issue #150
+        spv_const['fuel_type'] = 'solarpv_Construction'
+        logging.info("Adding solar PV power plant construction")
+        construction_df = pd.concat(
+            [construction_df, spv_const], ignore_index=True)
+    return construction_df
+
+
+def get_coal_ngcc_const(year):
     """
     An NETL study used to generate the life cycle inventory for power plant construction using an economic input output model.
 
@@ -68,19 +167,18 @@ def generate_power_plant_construction(year):
         This dataframe provides construction inventory for each power plant
         reporting to EIA. Columns include:
 
-        - 'plant_id' (int): EIA860 plant identifier
-        - 'technology' (str): coal, nat. gas, petroleum, or other plant type
-        - 'quantity' (float): nameplate capacity, MW
-        - 'FlowAmount' (float): flow amount
-        - 'Unit' (str): units of flow
-        - 'Compartment_path' (str): resource or emission path
-        - 'FlowName' (str): flow name
-        - 'Compartment' (str): resource, air, water, or soil
-        - 'stage_code' (str): 'coal_const' or 'ngcc_const'
-        - 'input' (bool): true for resources; false otherwise
-        - 'fuel_type' (str): 'Construction'
+        - 'plant_id' (int), EIA860 plant identifier
+        - 'technology' (str), coal, nat. gas, petroleum, or other plant type
+        - 'quantity' (float), nameplate capacity, MW
+        - 'FlowAmount' (float), flow amount
+        - 'Unit' (str), units of flow
+        - 'Compartment_path' (str), resource or emission path (to air, soil)
+        - 'FlowName' (str), flow name
+        - 'Compartment' (str), resource, air, water, or soil
+        - 'stage_code' (str), 'coal_const' or 'ngcc_const'
+        - 'input' (bool), true for resources; false otherwise
+        - 'fuel_type' (str), 'Construction'
     """
-    gen_df = eia860_generator_info(year)
     gen_columns=[
         "plant_id",
         "generator_id",
@@ -124,28 +222,41 @@ def generate_power_plant_construction(year):
     gas_prime = ["GT","IC","OT","CT","CS","CE","CA","ST"]
     coal_type = ["BIT","SUB","LIG","WC","RC"]
 
+    # Read EIA generator info for the given year---use this to
+    # query relevant facilities to be linked to plant construction.
+    gen_df = eia860_generator_info(year)
     gen_df = gen_df.loc[
         gen_df["energy_source_1"].isin(energy_sources), gen_columns]
+
+    # Correct data type for merging.
     gen_df["plant_id"] = gen_df["plant_id"].astype(int)
+
+    # Get facility-fuel-mover total nameplate capacities
     groupby_cols = ["plant_id", "technology", "energy_source_1", "prime_mover"]
     gen_df_group = gen_df.groupby(
         by=groupby_cols,
         as_index=False)["nameplate_capacity_mw"].sum()
+
+    # Determine how many prime movers there are for each plant-technology.
     prime_energy_combo = gen_df_group.groupby(
         by=["prime_mover", "energy_source_1"]
     ).size().reset_index().rename(columns={0: 'count'})
 
+    # Assign the construction fuel types (coal and ngcc)
     prime_energy_combo["const_type"] = "coal"
     gas_const_criteria = (
         prime_energy_combo["prime_mover"].isin(gas_prime)) & (
         ~prime_energy_combo["energy_source_1"].isin(coal_type))
     prime_energy_combo.loc[gas_const_criteria, "const_type"] = "ngcc"
+
+    # Add construction type to the grouped database.
     gen_df_group = gen_df_group.merge(
         prime_energy_combo[['prime_mover', 'energy_source_1', 'const_type']],
         on=["prime_mover","energy_source_1"],
         how="left"
     )
 
+    # Read the construction LCI (for coal and ngcc) and expand the columns.
     inventory = pd.read_csv(
         os.path.join(data_dir, "plant_construction_inventory.csv"),
         low_memory=False
@@ -202,6 +313,7 @@ def generate_power_plant_construction(year):
     ngcc_inventory.rename(columns={"NGCC_630_MW":"FlowAmount"}, inplace=True)
     ngcc_inventory["FlowAmount"] = ngcc_inventory["FlowAmount"]/30/630
 
+    # Concatenate the coal and ngcc inventories, correct compartments & inputs
     inventory = pd.concat([scpc_inventory, ngcc_inventory])
     inventory["Compartment_path"] = inventory["Compartment_path"].map(
         compartment_mapping)
@@ -209,6 +321,7 @@ def generate_power_plant_construction(year):
     input_list=["resource" in x for x in inventory["Compartment"]]
     inventory["input"] = input_list
 
+    # Merge facility-level data with construction data.
     construction_df = gen_df_group.merge(
         inventory,
         on="const_type",
@@ -219,15 +332,16 @@ def generate_power_plant_construction(year):
     construction_df["FlowAmount"] = construction_df[
         "FlowAmount"] * construction_df["nameplate_capacity_mw"]
     construction_df.rename(
-        columns={"nameplate_capacity_mw":"quantity"},
+        columns={"nameplate_capacity_mw": "quantity"},
         inplace=True)
     construction_df.drop(
-        columns=["const_type","energy_source_1","prime_mover"],
+        columns=["const_type", "energy_source_1", "prime_mover"],
         inplace=True)
     construction_df["fuel_type"] = "Construction"
     construction_df["Unit"] = construction_df["Unit"].str.replace(
         "mj","MJ", regex=False)
     construction_df["Source"]="netlconst"
+
     return construction_df
 
 
@@ -235,5 +349,5 @@ def generate_power_plant_construction(year):
 # MAIN
 ##############################################################################
 if __name__ == "__main__":
-    year=2016
+    year=2020
     df = generate_power_plant_construction(year)

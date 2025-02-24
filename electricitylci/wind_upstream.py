@@ -14,6 +14,8 @@ import pandas as pd
 
 from electricitylci.globals import data_dir
 from electricitylci.eia923_generation import eia923_download_extract
+from electricitylci.solar_upstream import fix_renewable
+from electricitylci.model_config import model_specs
 
 
 ##############################################################################
@@ -24,23 +26,21 @@ for wind farm construction for each plant in EIA 923 based on upstream
 contributions.
 
 Last updated:
-    2024-10-17
+    2025-01-31
 """
 __all__ = [
+    "aggregate_wind",
     "generate_upstream_wind",
+    "get_wind_construction",
+    "get_wind_generation",
+    "get_wind_om",
 ]
-
-
-##############################################################################
-# GLOBALS
-##############################################################################
-RENEWABLE_VINTAGE = 2020
 
 
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def _wind_construction(year):
+def get_wind_construction(year):
     """Generate wind farm construction inventory.
 
     The construction UP functional unit is normalized per year.
@@ -54,7 +54,7 @@ def _wind_construction(year):
     -------
     pandas.DataFrame
         Emissions inventory for wind farm construction.
-        Returns NoneType for 2016 renewables vintage---the O&M emissions
+        Returns NoneType for 2016 renewable vintage---the O&M emissions
         include the construction inventory.
 
     Raises
@@ -63,7 +63,8 @@ def _wind_construction(year):
         If renewable vintage year is unsupported.
     """
     # Iss150, new construction and O&M LCIs
-    if RENEWABLE_VINTAGE == 2020:
+    if model_specs.renewable_vintage == 2020:
+        logging.info("Reading 2020 upstream wind construction inventory.")
         wind_df = pd.read_csv(
             os.path.join(
                 data_dir,
@@ -74,12 +75,11 @@ def _wind_construction(year):
             header=[0, 1],
             low_memory=False,
         )
-    elif RENEWABLE_VINTAGE == 2016:
-        logging.debug(
-            "The 2016 wind LCI does not separate construction and O&M.")
+    elif model_specs.renewable_vintage == 2016:
+        logging.info(
+            "The 2016 wind LCI does not separate construction and O&M."
+            "Returning none.")
         return None
-    else:
-        raise ValueError("Renewable vintage %s undefined!" % RENEWABLE_VINTAGE)
 
     columns = pd.DataFrame(wind_df.columns.tolist())
     columns.loc[columns[0].str.startswith("Unnamed:"), 0] = np.nan
@@ -117,7 +117,7 @@ def _wind_construction(year):
         'FlowAmount': float,
     })
 
-    wind_generation_data = _wind_generation(year)
+    wind_generation_data = get_wind_generation(year)
     wind_upstream = wind_df_t_melt.merge(
         right=wind_generation_data,
         left_on="plant_id",
@@ -153,10 +153,12 @@ def _wind_construction(year):
     wind_upstream["input"] = False
     wind_upstream["Unit"] = "kg"
 
+    wind_upstream = fix_renewable(wind_upstream, "netlnrelwind")
+
     return wind_upstream
 
 
-def _wind_generation(year):
+def get_wind_generation(year):
     """Return the EIA generation data for wind power plants.
 
     Parameters
@@ -168,6 +170,16 @@ def _wind_generation(year):
     -------
     pandas.DataFrame
         EIA generation data for wind power plants.
+
+        Columns include:
+
+        -   'EIA Sector Number': Classification system for electricity
+            generation sources (e.g., 1: 'coal', 2: 'natural gas',
+            3: 'nuclear', 4: 'oil', 5--10: 'renewable').
+        -   'Reported Prime Mover': The source of mechanical energy used to
+            generate electricity (e.g., steam turbine powered by coal or
+            natural gas or a wind turbine directly powering an electrical
+            generator). 'WT' == wind turbine. 'WS' == solar + wind turbine.
     """
     eia_generation_data = eia923_download_extract(year)
     eia_generation_data["Plant Id"] = eia_generation_data[
@@ -179,15 +191,10 @@ def _wind_generation(year):
     return df
 
 
-def _wind_om(year):
+def get_wind_om():
     """Generate the operations and maintenance LCI for wind farm power plants.
     For 2016 electricity baseline, this data frame includes the construction
     inventory.
-
-    Parameters
-    ----------
-    year : int
-        EIA generation year.
 
     Returns
     -------
@@ -197,10 +204,11 @@ def _wind_om(year):
     Raises
     ------
     ValueError
-        If the renwables vintage is not defined or a valid year.
+        If the renewable vintage is not defined or a valid year.
     """
     # Iss150, new construction and O&M LCIs
-    if RENEWABLE_VINTAGE == 2020:
+    logging.info("Reading %d O&M inventory" % model_specs.renewable_vintage)
+    if model_specs.renewable_vintage == 2020:
         wind_ops_df = pd.read_csv(
             os.path.join(
                 data_dir,
@@ -211,7 +219,7 @@ def _wind_om(year):
             header=[0, 1],
             na_values=["#VALUE!", "#DIV/0!"],
         )
-    elif RENEWABLE_VINTAGE == 2016:
+    elif model_specs.renewable_vintage == 2016:
         wind_ops_df = pd.read_csv(
             os.path.join(
                 data_dir,
@@ -221,8 +229,6 @@ def _wind_om(year):
             ),
             header=[0,1],
         )
-    else:
-        raise ValueError("Renewable vintage %s undefined!" % RENEWABLE_VINTAGE)
 
     # Fix columns
     columns = pd.DataFrame(wind_ops_df.columns.tolist())
@@ -266,7 +272,8 @@ def _wind_om(year):
         'FlowAmount': float,
     })
 
-    wind_generation_data = _wind_generation(year)
+    # Scale emissions using the inventory's target year.
+    wind_generation_data = get_wind_generation(model_specs.renewable_vintage)
     wind_ops = wind_ops_df_t_melt.merge(
         right=wind_generation_data,
         left_on="plant_id",
@@ -306,6 +313,8 @@ def _wind_om(year):
     wind_ops["input"] = False
     wind_ops["Unit"]="kg"
 
+    wind_ops = fix_renewable(wind_ops, "netlnrelwind")
+
     return wind_ops
 
 
@@ -331,11 +340,11 @@ def generate_upstream_wind(year):
 
     Returns
     ----------
-    pd.DataFrame
+    pandas.DataFrame
     """
     logging.info("Generating upstream wind inventories")
-    wind_cons = _wind_construction(year)
-    wind_ops = _wind_om(year)
+    wind_cons = get_wind_construction(year)
+    wind_ops = get_wind_om()
 
     if wind_cons is not None:
         wind_df = pd.concat(
@@ -344,21 +353,6 @@ def generate_upstream_wind(year):
         )
     else:
         wind_df = wind_ops
-
-    # Give unique source code
-    wind_df["Source"] = "netlnrelwind"
-
-    # Set Electricity as input and correct its units.
-    wind_df.loc[wind_df["FlowName"]=="Electricity", "input"] = True
-    wind_df.loc[wind_df["FlowName"]=="Electricity", "Unit"] = "MWh"
-
-    # HOTFIX water as an input (Iss147).
-    #   These are the negative water-to-water emissions.
-    water_filter = (wind_df['Compartment'] == 'water') & (
-        wind_df['FlowAmount'] < 0) & (
-            wind_df['FlowName'].str.startswith('Water'))
-    wind_df.loc[water_filter, 'input'] = True
-    wind_df.loc[water_filter, 'FlowAmount'] *= -1.0
 
     return wind_df
 

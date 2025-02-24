@@ -15,6 +15,8 @@ import yaml
 from electricitylci.globals import modulepath
 from electricitylci.globals import list_model_names_in_config
 from electricitylci.globals import output_dir
+from electricitylci.globals import COAL_MODEL_YEARS
+from electricitylci.globals import RENEWABLE_VINTAGES
 
 
 ##############################################################################
@@ -32,7 +34,7 @@ configuration settings are set once and shared with the rest of the Python
 package. To change configuration settings, restart Python.
 
 Last edited:
-    2024-09-25
+    2025-02-04
 """
 __all__ = [
     "ConfigurationError",
@@ -71,8 +73,17 @@ class ModelSpecs:
         The generation year for EIA data (e.g, 2016).
     replace_egrid : bool
         Whether eGRID should be replaced by EIA data.
+    coal_model_year : int
+        The coal model choice (e.g., 2020 or 2023), which impacts the
+        coal mining and coal transportation life cycle inventories used by
+        the model.
     include_renewable_generation : bool
         Whether renewable fuel types should be included.
+    renewable_vintage : int
+        The renewable construction and O&M inventory vintage; comes in two
+        flavors: 2016 (from the original baseline) and 2020 (updated and
+        separated into construction and O&M). This affects wind, solar PV,
+        and solar thermal upstream.
     include_netl_water : bool
         Whether NETL plant-level water use unit processes should be included.
     include_upstream_processes : bool
@@ -148,6 +159,7 @@ class ModelSpecs:
         # use 923 and cems rather than egrid, but still use the egrid_year
         # parameter to determine the data year
         self.replace_egrid = model_specs["replace_egrid"]
+        self.coal_model_year = model_specs["coal_model_year"]
         self.epa_api_key = model_specs["epa_cam_api"]
         self.eia_api_key = model_specs["eia_api"]
         self.use_eia_bulk_zip = model_specs["use_eia_bulk_zip"]
@@ -155,6 +167,7 @@ class ModelSpecs:
 
         self.include_renewable_generation = model_specs[
             "include_renewable_generation"]
+        self.renewable_vintage = model_specs["renewable_vintage"]
         self.include_netl_water = model_specs["include_netl_water"]
         self.include_upstream_processes = model_specs[
             "include_upstream_processes"]
@@ -311,4 +324,14 @@ def check_model_specs(model_specs):
             "use eia_gen_year to calculate fuel use. The json-ld file "
             "will not import correctly."
         )
+    if not model_specs['coal_model_year'] in COAL_MODEL_YEARS:
+        err_str = "The coal model year must be one of "
+        err_str += " or ".join([str(x) for x in COAL_MODEL_YEARS])
+        err_str += " not %s!" % model_specs['coal_model_year']
+        raise ConfigurationError(err_str)
+    if not model_specs['renewable_vintage'] in RENEWABLE_VINTAGES:
+        err_str = "The renewable inventory vintage must be one of "
+        err_str += " or ".join([str(x) for x in RENEWABLE_VINTAGES])
+        err_str += " not %s!" % model_specs['renewable_vintage']
+        raise ConfigurationError(err_str)
     logging.info("Checks passed!")

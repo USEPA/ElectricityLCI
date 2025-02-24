@@ -13,7 +13,6 @@ from os.path import join
 
 import pandas as pd
 
-from electricitylci.eia860_facilities import eia860_balancing_authority
 from electricitylci.globals import EIA923_BASE_URL
 from electricitylci.globals import FUEL_CAT_CODES
 from electricitylci.globals import paths
@@ -30,11 +29,14 @@ except ImportError:
 ##############################################################################
 # GLOBALS
 ##############################################################################
-__doc__ = """Download and import EIA 923 data, which primarily includes electricity generated and fuel used by facility. This module will download the data as needed and provides functions to access different pages of the Excel workbook.
+__doc__ = """Download and import EIA 923 data, which primarily includes
+electricity generated and fuel used by facility. This module will download the
+data as needed and provides functions to access different pages of the Excel
+workbook.
 
 
 Last edited:
-    2024-08-09
+    2025-01-22
 """
 EIA923_PAGES = {
     "1": "Page 1 Generation and Fuel Data",
@@ -452,12 +454,12 @@ def efficiency_filter(df, egrid_facility_efficiency_filters):
     upper/lower limits for plant efficiency."""
     upper = egrid_facility_efficiency_filters["upper_efficiency"]
     lower = egrid_facility_efficiency_filters["lower_efficiency"]
-    #HOTFIX Issue #247 - errors in calculating plant efficiencies.
-    #Excluding a bunch of plant types from this efficiency filter. It really
-    #was only ever meant to apply to thermal (fossil) power plants anyways.
-    fuel_categories_to_exclude=["NUCLEAR","WIND","SOLAR","SOLARTHERMAL",
-                                "HYDRO"
-                                ]
+    # HOTFIX Issue #247, #278 - errors in calculating plant efficiencies.
+    # Excluding a bunch of plant types from this efficiency filter. It really
+    # was only ever meant to apply to thermal (fossil) power plants anyways.
+    fuel_categories_to_exclude=[
+        "NUCLEAR", "WIND", "SOLAR", "SOLARTHERMAL", "HYDRO", "GEOTHERMAL",
+    ]
     df = df.loc[((df["efficiency"] >= lower) & (df["efficiency"] <= upper)) |
                 (df["FuelCategory"].isin(fuel_categories_to_exclude)), :
                 ]

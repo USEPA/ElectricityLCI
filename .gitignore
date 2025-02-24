@@ -41,4 +41,5 @@ tests/
 !electricitylci/data/petroleum_inventory/*.*
 !electricitylci/data/EFs/*.*
 !electricitylci/data/renewables/**/*.csv
+!electricitylci/data/coal/**/*.csv
 !electricitylci/data/*.yml

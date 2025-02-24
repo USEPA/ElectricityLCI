@@ -8,7 +8,7 @@
 ##############################################################################
 import os
 import glob
-import pkg_resources  # part of setuptools
+from importlib.metadata import version
 
 from esupy.processed_data_mgmt import Paths
 
@@ -20,7 +20,7 @@ __doc__ = """Define paths, variables, and functions used across several
 modules.
 
 Last updated:
-    2024-09-25
+    2025-02-04
 """
 
 
@@ -35,14 +35,14 @@ except NameError:
 
 paths=Paths()
 paths.local_path = os.path.realpath(str(paths.local_path) + "/electricitylci")
-# hotfix PosixPath in os.path.join [TWD; 2023-07-27]
-output_dir = os.path.join(str(paths.local_path), 'output')
 # NOTE: output_dir used in a handful of modules (e.g., combinator)
-#output_dir = os.path.join(modulepath, 'output')
+# HOTFIX PosixPath in os.path.join [TWD; 2023-07-27]
+output_dir = os.path.join(str(paths.local_path), 'output')
 data_dir = os.path.join(modulepath,  'data')
 
 try:
-    elci_version = pkg_resources.require("ElectricityLCI")[0].version
+    # HOTFIX: remove dependency on setuptools and its deprecated pkg_resources
+    elci_version = version("ElectricityLCI")
 except:
     elci_version = "2.0.0"
 
@@ -219,6 +219,12 @@ STATE_ABBREV = {
 API_SLEEP = 0.2
 '''float : A courtesy sleep time between API calls.'''
 
+COAL_MODEL_YEARS = [2020, 2023]
+'''list : The valid coal model years for mining and transportation LCIs.'''
+
+RENEWABLE_VINTAGES = [2016, 2020]
+'''list : The valid years for renewable inventories (i.e., 2016 and 2020).'''
+
 
 ##############################################################################
 # FUNCTIONS
@@ -232,6 +238,11 @@ def get_config_dir():
         Folder path to modelconfig directory.
     """
     return os.path.join(modulepath, 'modelconfig')
+
+
+def get_datastore_dir():
+    """Convenience function to show the path to ElectricityLCI data store."""
+    return paths.local_path
 
 
 def list_model_names_in_config():

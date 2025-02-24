@@ -8,7 +8,7 @@
 # The target year is used to determine the temporal correlation of data with
 # the electricity generation processes, which can be used in uncertainty
 # calculations.
-electricity_lci_target_year: 2024
+electricity_lci_target_year: 2025
 
 # Select a regional aggregation from "eGRID", "NERC", "BA", "US", "FERC",
 # and "EIA". The EPA_eGRID trading method can only be used with "eGRID".
@@ -23,9 +23,22 @@ egrid_year: 2020
 eia_gen_year: 2020
 replace_egrid: true
 
-# NETL has developed profiles for renewable generation to capture construction
-# impacts (e.g., solar PV manufacturing). Set to true to include these impacts.
+# In 2023, NETL published the Cradle-to-Gate Life Cycle Analysis Baseline
+# for U.S. Coal Mining and Delivery (https://www.osti.gov/biblio/2370100),
+# which supersedes the 2020 model inventory used in the original baseline.
+# Select between the 2020 and 2023 model inventories. This impacts both
+# the mining and transportation LCIs, but does not impact the coal power plant
+# construction LCI.
+coal_model_year: 2023
+
+# NETL developed profiles for renewable generation to capture construction
+# and O&M impacts (e.g., solar PV manufacturing and power plant operations).
+# There are two vintages for renewable inventories: 2016 and 2020. The 2016
+# inventories combine construction and operations (recommended for use when
+# re-creating the 2016 baseline). In the 2020 inventory, these were separated
+# into individual inventories (recommended for future baselines).
 include_renewable_generation: true
+renewable_vintage: 2020
 
 # NETL has developed profiles for power plant water use.
 # Set to true to include these impacts.
@@ -43,7 +56,7 @@ inventories_of_interest:
   RCRAInfo: 2019
 
 # Provide uncertainty estimates for emissions.
-calculate_uncertainty: false
+calculate_uncertainty: true
 
 
 # API DATA SOURCES

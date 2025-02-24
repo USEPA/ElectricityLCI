@@ -24,7 +24,7 @@ __doc__ = """This module contains the main API functions to be used by the
 end user.
 
 Last updated:
-    2024-08-02
+    2024-10-22
 """
 __version__ = elci_version
 
@@ -55,10 +55,10 @@ def add_fuels_to_gen(gen_df, fuel_df, canadian_gen, upstream_dict):
     -------
     pandas.DataFrame
     """
-    import electricitylci.combinator as combine
+    from electricitylci.combinator import add_fuel_inputs
 
     logging.info("Adding fuel inputs to generator emissions...")
-    gen_plus_fuel = combine.add_fuel_inputs(gen_df, fuel_df, upstream_dict)
+    gen_plus_fuel = add_fuel_inputs(gen_df, fuel_df, upstream_dict)
 
     logging.info("Adding Canadian generator emissions...")
     gen_plus_fuel = pd.concat([gen_plus_fuel, canadian_gen], ignore_index=True)
@@ -86,7 +86,7 @@ def aggregate_gen(gen_df, subregion="BA"):
     -------
     pandas.DataFrame
     """
-    import electricitylci.generation as gen
+    from electricitylci.generation import aggregate_data
 
     if subregion is None:
         # This change has been made to accommodate the new method of generating
@@ -97,7 +97,7 @@ def aggregate_gen(gen_df, subregion="BA"):
         # through aggregate twice.
         subregion = "BA"
     logging.info(f"Aggregating to subregion - {subregion}")
-    aggregate_df = gen.aggregate_data(gen_df, subregion=subregion)
+    aggregate_df = aggregate_data(gen_df, subregion=subregion)
     return aggregate_df
 
 
@@ -124,13 +124,12 @@ def combine_upstream_and_gen_df(gen_df, upstream_df):
         The first item is the combined generation and upstream data frame.
         The second item is the Canadian generation data frame.
     """
-    import electricitylci.combinator as combine
-    import electricitylci.import_impacts as import_impacts
+    from electricitylci.combinator import concat_clean_upstream_and_plant
+    from electricitylci.import_impacts import generate_canadian_mixes
 
     logging.info("Combining upstream and generation inventories")
-    combined_df = combine.concat_clean_upstream_and_plant(gen_df, upstream_df)
-    # BUG: KeyError in 2021 data
-    canadian_gen = import_impacts.generate_canadian_mixes(
+    combined_df = concat_clean_upstream_and_plant(gen_df, upstream_df)
+    canadian_gen = generate_canadian_mixes(
         combined_df,
         config.model_specs.eia_gen_year)
     combined_df = pd.concat([combined_df, canadian_gen], ignore_index=True)
@@ -162,12 +161,12 @@ def get_consumption_mix_df(subregion=None, regions_to_keep=None):
         transaction amount, total imports for import region, and fraction of
         total.
     """
-    import electricitylci.eia_io_trading as trade
+    from electricitylci.eia_io_trading import ba_io_trading_model
 
     if subregion is None:
         subregion = config.model_specs.regional_aggregation
 
-    io_trade_df = trade.ba_io_trading_model(
+    io_trade_df = ba_io_trading_model(
         year=config.model_specs.NETL_IO_trading_year,
         subregion=subregion,
         regions_to_keep=regions_to_keep
@@ -189,12 +188,12 @@ def get_distribution_mix_df(subregion=None):
         A dataframe of transmission and distribution loss rates as a
         fraction.
     """
-    import electricitylci.eia_trans_dist_grid_loss as tnd
+    from electricitylci.eia_trans_dist_grid_loss import generate_regional_grid_loss
 
     if subregion is None:
         subregion = config.model_specs.regional_aggregation
 
-    td_loss_df = tnd.generate_regional_grid_loss(
+    td_loss_df = generate_regional_grid_loss(
         config.model_specs.eia_gen_year, subregion=subregion
     )
     return td_loss_df
@@ -206,7 +205,7 @@ def get_gen_plus_netl():
 
     Includes impacts (e.g., from construction) that would be omitted from the
     regular sources of emissions, then generates power plant emissions.
-    The two different dataframes are combined to provide a single dataframe
+    The two different data frames are combined to provide a single data frame
     representing annual emissions or life cycle emissions apportioned over the
     appropriate number of years for all reporting power plants.
 
@@ -214,28 +213,31 @@ def get_gen_plus_netl():
     -------
     pandas.DataFrame
     """
-    import electricitylci.combinator as combine
-    import electricitylci.generation as gen
-    import electricitylci.geothermal as geo
-    import electricitylci.solar_upstream as solar
-    import electricitylci.wind_upstream as wind
-    import electricitylci.hydro_upstream as hydro
-    import electricitylci.solar_thermal_upstream as solartherm
+    from electricitylci.combinator import concat_clean_upstream_and_plant
+    from electricitylci.combinator import concat_map_upstream_databases
+    from electricitylci.generation import create_generation_process_df
+    from electricitylci.geothermal import generate_upstream_geo
+    from electricitylci.solar_upstream import get_solar_pv_om
+    from electricitylci.wind_upstream import get_wind_om
+    from electricitylci.hydro_upstream import generate_hydro_emissions
+    from electricitylci.solar_thermal_upstream import get_solarthermal_om
 
     eia_gen_year = config.model_specs.eia_gen_year
     logging.info(
         "Generating inventories for geothermal, solar, wind, hydro, and "
         "solar thermal..."
     )
-    geo_df = geo.generate_upstream_geo(eia_gen_year)
-    solar_df = solar.generate_upstream_solar(eia_gen_year)
-    wind_df = wind.generate_upstream_wind(eia_gen_year)
-    hydro_df = hydro.generate_hydro_emissions() # always 2016
-    solartherm_df = solartherm.generate_upstream_solarthermal(eia_gen_year)
+    # The year should be based on generation year for the O&M emissions
+    # because the O&M emissions are calculated per MWh externally.
+    solar_df = get_solar_pv_om()
+    solartherm_df = get_solarthermal_om()
+    wind_df = get_wind_om()
+    geo_df = generate_upstream_geo() # always 2016
+    hydro_df = generate_hydro_emissions() # always 2016
 
     # NOTE: hydro is purposefully left out here.
     logging.info("Concatenating renewable data frames")
-    netl_gen = combine.concat_map_upstream_databases(
+    netl_gen = concat_map_upstream_databases(
         eia_gen_year, geo_df, solar_df, wind_df, solartherm_df
     )
     netl_gen["DataCollection"] = 5
@@ -254,11 +256,11 @@ def get_gen_plus_netl():
     # This combines EIA 923, EIA 860, with EPA CEMS and StEWI inventories.
     # WARNING: hydro data (above) are for 2016 facilities, other renewables
     # are for EIA generation year and the following looks only at facilities
-    # from years of interest.
+    # from years of interest. Performs 'manual edits' to generation data.
     logging.info("Getting reported emissions for generators...")
-    gen_df = gen.create_generation_process_df()
+    gen_df = create_generation_process_df()
 
-    combined_gen = combine.concat_clean_upstream_and_plant(gen_df, netl_gen)
+    combined_gen = concat_clean_upstream_and_plant(gen_df, netl_gen)
 
     return combined_gen
 
@@ -405,22 +407,23 @@ def get_generation_process_df(regions=None, **kwargs):
     >>> data = get_generation_process_df("BA")
     """
     # These packages depend on model_specs (order matters!)
-    import electricitylci.generation as gen
-    import electricitylci.combinator as combine
+    from electricitylci.generation import create_generation_process_df
+    from electricitylci.combinator import concat_clean_upstream_and_plant
 
-    # Add NETL renewables
+    # Add NETL renewable inventories
+    # NOTE: these should all be 'Power plant' stage code.
     if config.model_specs.include_renewable_generation is True:
         generation_process_df = get_gen_plus_netl()
     else:
-        generation_process_df = gen.create_generation_process_df()
+        generation_process_df = create_generation_process_df()
 
     # Add NETL water
     if config.model_specs.include_netl_water is True:
-        import electricitylci.plant_water_use as water
+        from electricitylci.plant_water_use import generate_plant_water_use
 
-        water_df = water.generate_plant_water_use(
+        water_df = generate_plant_water_use(
             config.model_specs.eia_gen_year)
-        generation_process_df = combine.concat_clean_upstream_and_plant(
+        generation_process_df = concat_clean_upstream_and_plant(
             generation_process_df, water_df)
 
     # Add upstream & Canadian processes
@@ -437,12 +440,14 @@ def get_generation_process_df(regions=None, **kwargs):
         _, canadian_gen = combine_upstream_and_gen_df(
             generation_process_df, upstream_df
         )
-        # Add upstream fuels and Canadian generation to plant gen
+
+        # Add upstream fuels to generation processes, with Canadian generation
+        # along for the ride.
         gen_plus_fuels = add_fuels_to_gen(
             generation_process_df, upstream_df, canadian_gen, upstream_dict
         )
     else:
-        import electricitylci.import_impacts as import_impacts
+        from electricitylci.import_impacts import generate_canadian_mixes
 
         # This change was made to accommodate the new method of generating
         # consumption mixes for FERC regions. They now pull BAs to provide
@@ -450,7 +455,7 @@ def get_generation_process_df(regions=None, **kwargs):
         # possible to make a FERC region generation mix and also provide the
         # consumption mix. Or it could be possible but would require running
         # through aggregate twice.
-        canadian_gen_df = import_impacts.generate_canadian_mixes(
+        canadian_gen_df = generate_canadian_mixes(
             generation_process_df,
             config.model_specs.eia_gen_year
         )
@@ -636,20 +641,20 @@ def get_upstream_process_df(eia_gen_year):
         - 'FlowType' (e.g. PRODUCT_FLOW, ELEMENTARY_FLOW, or WASTE_FLOW)
         - 'Basin': natural gas basin (for GAS only)
     """
-    import electricitylci.coal_upstream as coal
-    import electricitylci.natural_gas_upstream as ng
-    import electricitylci.petroleum_upstream as petro
-    import electricitylci.nuclear_upstream as nuke
-    import electricitylci.power_plant_construction as ppc
-    import electricitylci.combinator as combine
+    from electricitylci.coal_upstream import generate_upstream_coal
+    from electricitylci.natural_gas_upstream import generate_upstream_ng
+    from electricitylci.petroleum_upstream import generate_petroleum_upstream
+    from electricitylci.nuclear_upstream import generate_upstream_nuc
+    from electricitylci.power_plant_construction import generate_power_plant_construction
+    from electricitylci.combinator import concat_map_upstream_databases
 
     logging.info("Generating upstream inventories...")
-    coal_df = coal.generate_upstream_coal(eia_gen_year)
-    ng_df = ng.generate_upstream_ng(eia_gen_year)
-    petro_df = petro.generate_petroleum_upstream(eia_gen_year)
-    nuke_df = nuke.generate_upstream_nuc(eia_gen_year)
-    const = ppc.generate_power_plant_construction(eia_gen_year)
-    upstream_df = combine.concat_map_upstream_databases(
+    coal_df = generate_upstream_coal(eia_gen_year)
+    ng_df = generate_upstream_ng(eia_gen_year)
+    petro_df = generate_petroleum_upstream(eia_gen_year)
+    nuke_df = generate_upstream_nuc(eia_gen_year)
+    const = generate_power_plant_construction(eia_gen_year, incl_renew=True)
+    upstream_df = concat_map_upstream_databases(
         eia_gen_year, petro_df, nuke_df, const
     )
     # coal and ng already conform to mapping so no mapping needed
@@ -793,12 +798,12 @@ def run_post_processes():
 
 
 def write_consumption_mix_to_dict(cons_mix_df, dist_mix_dict, subregion=None):
-    import electricitylci.eia_io_trading as trade
+    from electricitylci.eia_io_trading import olca_schema_consumption_mix
 
     if subregion is None:
         subregion = config.model_specs.regional_aggregation
 
-    cons_mix_dict = trade.olca_schema_consumption_mix(
+    cons_mix_dict = olca_schema_consumption_mix(
         cons_mix_df, dist_mix_dict, subregion=subregion
     )
     return cons_mix_dict
@@ -822,13 +827,13 @@ def write_distribution_dict():
 
 
 def write_distribution_mix_to_dict(dm_dict, gm_dict, subregion=None):
-    import electricitylci.eia_trans_dist_grid_loss as tnd
+    from electricitylci.eia_trans_dist_grid_loss import olca_schema_distribution_mix
 
     if subregion is None:
         subregion = config.model_specs.regional_aggregation
 
     # HOTFIX: send full dicts to method, not region-specific [2024-03-21;TWD]
-    dist_mix_dict = tnd.olca_schema_distribution_mix(
+    dist_mix_dict = olca_schema_distribution_mix(
         dm_dict, gm_dict, subregion=subregion
     )
     return dist_mix_dict
@@ -870,7 +875,7 @@ def write_gen_fuel_database_to_dict(
         A dictionary of generation unit processes ready to be written to
         openLCA.
     """
-    import electricitylci.generation as gen
+    from electricitylci.generation import olcaschema_genprocess
 
     if subregion is None:
         # Another change to accommodate FERC consumption pulling BAs.
@@ -884,7 +889,7 @@ def write_gen_fuel_database_to_dict(
     # if subregion in ["BA","FERC","US"]:
     #     subregion="BA"
     logging.info("Converting generator dataframe to dictionaries...")
-    gen_plus_fuel_dict = gen.olcaschema_genprocess(
+    gen_plus_fuel_dict = olcaschema_genprocess(
         gen_plus_fuel_df, upstream_dict, subregion=subregion
     )
     return gen_plus_fuel_dict
@@ -943,12 +948,12 @@ def write_generation_process_database_to_dict(gen_database, regions=None):
         A dictionary of dictionaries, each of which contains information about
         emissions from a single fuel type in a single region.
     """
-    import electricitylci.generation as gen
+    from electricitylci.generation import olcaschema_genprocess
 
     if regions is None:
         regions = config.model_specs.regional_aggregation
 
-    gen_dict = gen.olcaschema_genprocess(gen_database, subregion=regions)
+    gen_dict = olcaschema_genprocess(gen_database, subregion=regions)
 
     return gen_dict
 
@@ -1028,8 +1033,8 @@ def write_upstream_process_database_to_dict(upstream_df):
     -------
     dict
     """
-    import electricitylci.upstream_dict as upd
+    from electricitylci.upstream_dict import olcaschema_genupstream_processes
 
     logging.info("Writing upstream processes to dictionaries")
-    upstream_dicts = upd.olcaschema_genupstream_processes(upstream_df)
+    upstream_dicts = olcaschema_genupstream_processes(upstream_df)
     return upstream_dicts

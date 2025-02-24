@@ -40,7 +40,7 @@ from electricitylci.process_dictionary_writer import ref_exchange_creator
 from electricitylci.process_dictionary_writer import uncertainty_table_creation
 from electricitylci.process_dictionary_writer import unit
 from electricitylci.utils import make_valid_version_num
-from electricitylci.utils import set_dir
+from electricitylci.utils import check_output_dir
 from electricitylci.utils import write_csv_to_output
 from electricitylci.egrid_emissions_and_waste_by_facility import (
     emissions_and_wastes_by_facility,
@@ -78,11 +78,12 @@ CHANGELOG
 -   Implement Hawkins-Young uncertainty
 -   Add uncertainty switch
 -   Drop NaNs in exchange table
+-   Move FRS file download to its own function
 
 Created:
     2019-06-04
 Last edited:
-    2024-09-25
+    2025-02-12
 """
 __all__ = [
     "add_data_collection_score",
@@ -779,47 +780,28 @@ def create_generation_process_df():
         ])
         inventories_of_interest_str = "_".join(inventories_of_interest_list)
 
+        # Define the folder, and make sure it exists; and the CSV file
+        frs_dir = os.path.join(paths.local_path, "FRS_bridges")
+        check_output_dir(frs_dir)
+        inventories_of_interest_csv = os.path.join(
+            frs_dir,
+            inventories_of_interest_str + ".csv"
+        )
+
         # NOTE: data pulled from Facility Register Service (FRS) program
         # provided by USEPA's FacilityMatcher, now a part of StEWI.
         # https://github.com/USEPA/standardizedinventories
         try:
-            eia860_FRS = pd.read_csv(
-                f"{paths.local_path}/FRS_bridges/"
-                f"{inventories_of_interest_str}.csv")
+            eia860_FRS = pd.read_csv(inventories_of_interest_csv)
             logging.info(
-                "Got EIA860 to FRS ID matches from existing file")
+                "Reading EIA860 to FRS ID matches from existing file")
             eia860_FRS["REGISTRY_ID"] = eia860_FRS["REGISTRY_ID"].astype(str)
         except FileNotFoundError:
             logging.info(
                 "Will need to load EIA860 to FRS matches using stewi "
                 "facility matcher - it may take a while to download "
                 "and read the required data")
-
-            file_ = fmglob.FRS_config['FRS_bridge_file']
-            col_dict = {
-                'REGISTRY_ID': "str",
-                'PGM_SYS_ACRNM': "str",
-                'PGM_SYS_ID': "str"
-            }
-            if not (fmglob.FRSpath / file_).exists():
-                fmglob.download_extract_FRS_combined_national(file_)
-            FRS_bridge = fmglob.read_FRS_file(file_, col_dict)
-            # ^^ these lines could be replaced by a future improved fxn
-            # in FacilityMatcher
-            eia860_FRS = fmglob.filter_by_program_list(
-                df=FRS_bridge, program_list=["EIA-860"]
-            )
-
-            # Define file paths
-            frs_dir = os.path.join(f"{paths.local_path}", "FRS_bridges")
-            frs_csv = f"{inventories_of_interest_str}.csv"
-            frs_path = os.path.join(frs_dir, frs_csv)
-
-            # Ensure output folder exists
-            set_dir(frs_dir)
-
-            # Save a local copy
-            write_csv_to_output(frs_path, eia860_FRS)
+            eia860_FRS = read_stewi_frs(inventories_of_interest_csv, True)
 
         # emissions_and_wastes_by_facility is a StEWICombo inventory based on
         # inventories of interest (e.g., eGRID, RCRAInfo, NEI) and their
@@ -1043,7 +1025,7 @@ def create_generation_process_df():
         "Balancing Authority Code"].map(BA_CODES["FERC_Region"])
 
     # Apply the "manual edits"
-    # See GitHub issues #212, #121, and #77.
+    # See GitHub issues #212, #160, #121, and #77.
     # https://github.com/USEPA/ElectricityLCI/issues/
     final_database = edits.check_for_edits(
         final_database, "generation.py", "create_generation_process_df")
@@ -1277,6 +1259,7 @@ def aggregate_data(total_db, subregion="BA"):
         - 'GeomMean' (float): geometric mean of emission factor (units/MWh)
         - 'GeomSD' (float): geometric standard deviation of emission factor
     """
+    from electricitylci.combinator import remove_mismatched_inventories
     region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"]
     if region_agg:
@@ -1304,6 +1287,12 @@ def aggregate_data(total_db, subregion="BA"):
     if model_specs.replace_egrid:
         total_db = replace_egrid(total_db, model_specs.eia_gen_year)
 
+    #USEPA Issue #282. After replacing primary fuel categories with EIA data,
+    #in rare instances there will be renewable O&M emissions assigned to plants
+    #of conflicting fuel types - like solar O&M emissions assigned to coal plants.
+    #This should filter those out, along with remove mismatched construction
+    #inputs.
+    total_db = remove_mismatched_inventories(total_db)
     # Use a dummy UUID to avoid groupby errors
     total_db["FlowUUID"] = total_db["FlowUUID"].fillna(value="dummy-uuid")
 
@@ -1440,6 +1429,50 @@ def aggregate_data(total_db, subregion="BA"):
     database_f3.sort_values(by=groupby_cols, inplace=True)
 
     return database_f3
+
+
+def read_stewi_frs(frs_path="FRS_bridge_file.csv", to_save=False):
+    """Helper function for reading the Facility Register Service (FRS)
+    bridge file from stewi's facilitymatcher.
+
+    Downloads a local copy of the NATIONAL_ENVIRONMENTAL_INTEREST_FILE.CSV
+    (1 GB) from EPA's state files, which take a few minutes.
+
+    Parameters
+    ----------
+    frs_path : str
+        The CSV file path (used when to_save is true), by default
+        "FRS_bridge_file.csv"
+    to_save : bool, optional
+        Whether to save bridge file to CSV, by default False
+
+    Returns
+    -------
+    pandas.DataFrame
+        A data frame with three columns: REGISTRY_ID, PGM_SYS_ACRNM, and PGM_SYS_ID.
+    """
+    col_dict = {
+        'REGISTRY_ID': "str",
+        'PGM_SYS_ACRNM': "str",
+        'PGM_SYS_ID': "str"
+    }
+
+    # Pull the data file name from global config; download if missing
+    file_ = fmglob.FRS_config['FRS_bridge_file']
+    if not (fmglob.FRSpath / file_).exists():
+        fmglob.download_extract_FRS_combined_national(file_)
+    FRS_bridge = fmglob.read_FRS_file(file_, col_dict)
+    # ^^ these lines could be replaced by a future improved fxn
+    # in FacilityMatcher
+    eia860_FRS = fmglob.filter_by_program_list(
+        df=FRS_bridge, program_list=["EIA-860"]
+    )
+
+    # Save a local copy
+    if to_save:
+        write_csv_to_output(frs_path, eia860_FRS)
+
+    return eia860_FRS
 
 
 def replace_egrid(total_db, year=None):
@@ -1712,12 +1745,30 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     # HOTFIX: only include stage codes found in process_df [241011; TWD]
     sc_list = list(set([x[2] for x in provider_filter]))
     for index, row in process_df.loc(axis=0)[:, :, sc_list].iterrows():
-        provider_dict = {
-            "name": upstream_dict[index[2]]["name"],
-            "categoryPath": upstream_dict[index[2]]["category"],
-            "processType": "UNIT_PROCESS",
-            "@id": upstream_dict[index[2]]["uuid"],
-        }
+        # New Issue #150, try first to match regional construction. Fall back
+        # is US average.
+        if "_const" in index[2]:
+            try:
+                provider_dict = {
+                    "name": upstream_dict[index[2] + " - " +index[0]]["name"],
+                    "categoryPath": upstream_dict[index[2] + " - " +index[0]]["category"],
+                    "processType": "UNIT_PROCESS",
+                    "@id": upstream_dict[index[2] + " - " +index[0]]["uuid"],
+                }
+            except KeyError:
+                provider_dict = {
+                    "name": upstream_dict[index[2]]["name"],
+                    "categoryPath": upstream_dict[index[2]]["category"],
+                    "processType": "UNIT_PROCESS",
+                    "@id": upstream_dict[index[2]]["uuid"],
+                }
+        else:
+            provider_dict = {
+                "name": upstream_dict[index[2]]["name"],
+                "categoryPath": upstream_dict[index[2]]["category"],
+                "processType": "UNIT_PROCESS",
+                "@id": upstream_dict[index[2]]["uuid"],
+            }
         row["exchanges"][0]["provider"] = provider_dict
         row["exchanges"][0]["unit"] = unit(
             upstream_dict[index[2]]["q_reference_unit"]

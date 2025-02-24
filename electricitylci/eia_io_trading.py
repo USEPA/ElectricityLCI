@@ -67,7 +67,7 @@ References:
     52(11), 6666-6675. https://doi.org/10.1021/acs.est.7b05191
 
 Last updated:
-    2024-09-25
+    2025-02-13
 """
 __all__ = [
     "ba_io_trading_model",
@@ -525,9 +525,9 @@ def _read_bulk_zip():
 
     # Changing to regex matches to allow compatibility with past and present
     # bulk data. [2024-08-16; MJ]
-    ngh_matches = "^EBA[\S\w\d]+[^NG]\.NG\.H$"
-    idh_matches = "^EBA.+\.ID\.H$"
-    dh_matches = "^EBA.+\.D\.H$"
+    ngh_matches = "^EBA[\\S\\w\\d]+[^NG]\\.NG\\.H$"
+    idh_matches = "^EBA.+\\.ID\\.H$"
+    dh_matches = "^EBA.+\\.D\\.H$"
 
     # HOTFIX: Check file vintage [2024-03-12; TWD]
     path = os.path.join(paths.local_path, 'bulk_data', 'EBA.zip')
@@ -830,7 +830,7 @@ def _read_ca_imports(year):
         # Either the CSV is gone or the trading year is not available.
         #  ca_us (pandas.DataFrame): Canadian-to-US BA exchanges by year
         #  ca_df (pandas.DataFrame): Canadian BA net exchanges (MWh) by year
-        ca_us, ca_df = _get_ca_imports()
+        ca_us, ca_df = _get_ca_imports(True)
 
         # Create series w/ ca_ba as the index and year as the name.
         ca_df = ca_df.query("Date == %d" % year).copy()
@@ -1604,6 +1604,7 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     subregion : str, optional
         Description of a group of regions. Options include 'FERC' for all FERC
         market regions, 'BA' for all balancing authorities.
+        EFFECTIVELY UNUSED---ALL TRADES AT BA LEVEL AND AGGREGATED TO FERC/US.
     regions_to_keep : list, optional
         A list of balancing authority names of interest.
         Otherwise, returns all balancing authorities.

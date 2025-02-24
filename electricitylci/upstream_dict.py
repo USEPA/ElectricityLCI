@@ -20,6 +20,9 @@ from electricitylci.process_dictionary_writer import (
 )
 from electricitylci.utils import make_valid_version_num
 from electricitylci.globals import elci_version
+# Issue #150, need Balancing Authority names for regional construction
+from electricitylci.eia860_facilities import eia860_balancing_authority
+import electricitylci.model_config as config
 
 
 ##############################################################################
@@ -27,10 +30,12 @@ from electricitylci.globals import elci_version
 ##############################################################################
 __doc__ = """
 This module contains the relevant methods for generating openLCA-compliant
-dictionaries for upstream process inventories.
+dictionaries for upstream process inventories, such as coal/natural gas/
+petroleum extraction and processing, coal transport, nuclear fuel extraction,
+processing, and transport, and power plant construction.
 
 Last updated:
-    2024-08-02
+    2025-02-06
 """
 __all__ = [
     "olcaschema_genupstream_processes",
@@ -99,6 +104,16 @@ def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
         "CONSTRUCTION": (
             "23: Construction/"
             "2371: Utility System Construction"),
+            #New Issue #150
+        "WIND_CONSTRUCTION": (
+            "23: Construction/"
+            "2371: Utility System Construction"),
+        "SOLARPV_CONSTRUCTION": (
+            "23: Construction/"
+            "2371: Utility System Construction"),
+        "SOLARTHERM_CONSTRUCTION": (
+            "23: Construction/"
+            "2371: Utility System Construction"),
     }
 
     ar = dict()
@@ -119,6 +134,13 @@ def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
         ar["category"] = fuel_category_dict["COAL"]
     else:
         ar["category"] = fuel_category_dict[fuel_type]
+
+    # TODO: here is where renewable construction process documentation
+    # is handled; however, the fixes for it are found in generation.py;
+    # here construction_upstream is used to make the default fossil/ngcc
+    # construction documentation as found in process_dictionary_writer.py;
+    # potentially add alternative route in process_description_creation
+    # (e.g., pull construction type from process name).
     ar["description"] = process_description_creation(
         f"{fuel_type.lower()}_upstream")
     ar["version"] = make_valid_version_num(elci_version)
@@ -188,7 +210,8 @@ def _exchange_table_creation_ref(fuel_type):
             "2371: Utility System Construction")
     }
 
-    # the following link provides the undefined variable: https://github.com/KeyLogicLCA/ElectricityLCI/commit/f61d28a3d0cf5b0ef61ca147f870e15a863f8ec3
+    # The following link provides the undefined variables:
+    # https://github.com/KeyLogicLCA/ElectricityLCI/commit/f61d28a3d0cf5b0ef61ca147f870e15a863f8ec3
     ar = dict()
     ar["internalId"] = ""
     ar["@type"] = "Exchange"
@@ -228,7 +251,8 @@ def _exchange_table_creation_ref(fuel_type):
         ar["flow"] = wind_flow
         ar["unit"] = _unit("Item(s)")
         ar["amount"] = 1
-    elif fuel_type == "CONSTRUCTION":
+    # issue #150, catching multiple construction types
+    elif "CONSTRUCTION" in fuel_type:
         ar["flow"] = construction_flow
         ar["unit"] = _unit("Item(s)")
         ar["amount"] = 1
@@ -238,24 +262,36 @@ def _exchange_table_creation_ref(fuel_type):
     ar["baseUncertainty"] = ""
     ar["provider"] = ""
     ar["amountFormula"] = ""
+
     return ar
 
 
 def _flow_table_creation(data):
+    # HOTFIX iss267. v2: Add elementary flow prime context check.
+    # HOTFIX iss267. v1: Construction flows do not have a FlowType assigned;
+    # however, other flows do. Let's check them first.
     ar = dict()
-    if "emission" in data["Compartment"] or "resource" in data["Compartment"]:
-        ar["flowType"] = "ELEMENTARY_FLOW"
-    elif "technosphere" in data["Compartment"].lower() or "valuable" in data["Compartment"].lower():
-        ar["flowType"] = "PRODUCT_FLOW"
-    elif "waste" in data["Compartment"].lower():
-        ar["flowType"] = "WASTE_FLOW"
-    else:
-        ar["flowType"] = "ELEMENTARY_FLOW"
+    try:
+        ar['flowType'] = data['FlowType']
+    except KeyError:
+        # No flow type index
+        if "emission" in data["Compartment"] or "resource" in data["Compartment"]:
+            ar["flowType"] = "ELEMENTARY_FLOW"
+        elif "technosphere" in data["Compartment"].lower() or (
+                "valuable" in data["Compartment"].lower()):
+            ar["flowType"] = "PRODUCT_FLOW"
+        elif data['ElementaryFlowPrimeContext'] == 'technosphere':
+            # Iss267; cross-check prime context for product flows [241125; TWD]
+            ar["flowType"] = "PRODUCT_FLOW"
+        elif "waste" in data["Compartment"].lower():
+            ar["flowType"] = "WASTE_FLOW"
+        else:
+            ar["flowType"] = "ELEMENTARY_FLOW"
+
     ar["flowProperties"] = ""
-    ar["name"] = data["FlowName"][
-        0:255
-    ]  # cutoff name at length 255 if greater than that
+    ar["name"] = data["FlowName"][0:255] # Cutoff flow name at length 255
     ar["id"] = data["FlowUUID"]
+
     comp = str(data["Compartment"])
     if (ar["flowType"] == "ELEMENTARY_FLOW") & (comp != ""):
         if "emission" in comp or "resource" in comp:
@@ -263,6 +299,9 @@ def _flow_table_creation(data):
         else:
             ar["category"] = "Elementary flows/" + "emission" + "/" + comp
     elif (ar["flowType"] == "PRODUCT_FLOW") & (comp != ""):
+        # HOTFIX: put technosphere flows in their own sub-category [250206;TWD]
+        if not comp.startswith("Technosphere Flows/"):
+            comp = "Technosphere Flows/" + comp
         ar["category"] = comp
     elif ar["flowType"] == "WASTE_FLOW":
         ar["category"] = "Waste flows/"
@@ -314,43 +353,93 @@ def olcaschema_genupstream_processes(merged):
     coal_type_codes_inv = dict(map(reversed, coal_type_codes.items()))
     mine_type_codes_inv = dict(map(reversed, mine_type_codes.items()))
     basin_codes_inv = dict(map(reversed, basin_codes.items()))
+    # Hotfix: add 'Belt' to coal transport list [12/16/2024;MBJ]
+    # NOTE: I don't think the belt inventory is actually used anywhere
     coal_transport = [
         "Barge",
         "Lake Vessel",
         "Ocean Vessel",
         "Railroad",
         "Truck",
+        "Belt",
     ]
     # First going to keep plant IDs to account for possible emission repeats
     # for the same compartment, leading to erroneously low emission factors
     merged_summary = merged.groupby(
-        [
+        by=[
             "FuelCategory",
             "stage_code",
             "FlowName",
             "FlowUUID",
             "Compartment",
+            "ElementaryFlowPrimeContext",
             "plant_id",
+            "Unit",
+            "input"
+        ],
+        as_index=False,
+    ).agg({"FlowAmount": "sum", "quantity": "mean"})
+    # NEW Issue #150, adding regional ability for construction of all types
+    plant_region = eia860_balancing_authority(config.model_specs.eia_gen_year)
+    plant_region["Plant Id"] = plant_region["Plant Id"].astype(int)
+    merged_summary_regional = (
+        merged_summary.loc[
+            merged_summary["FuelCategory"].str.contains("CONSTRUCTION"), :
+        ]
+        .merge(
+            plant_region, how="left", left_on="plant_id", right_on="Plant Id"
+        )
+        .copy().reset_index()
+    )
+    merged_summary = merged_summary.groupby(
+        by=[
+            "FuelCategory",
+            "stage_code",
+            "FlowName",
+            "FlowUUID",
+            "Compartment",
+            "ElementaryFlowPrimeContext",
             "Unit",
             "input",
         ],
         as_index=False,
-    ).agg({"FlowAmount": "sum", "quantity": "mean"})
-    merged_summary = merged_summary.groupby(
-        ["FuelCategory", "stage_code", "FlowName", "FlowUUID", "Compartment","Unit","input"],
-        as_index=False,
     )[["quantity", "FlowAmount"]].sum()
 
+    # Issue #150, adding regional ability for construction of all types
+    # NOTE: Added "Balancing Authority Name" below to enable regionalized
+    # construction processes. Only for balancing authorities now but should
+    # be expanded to eGRID, etc.
+    merged_summary_regional = merged_summary_regional.groupby(
+        by=[
+            "FuelCategory",
+            "stage_code",
+            "FlowName",
+            "FlowUUID",
+            "Compartment",
+            "ElementaryFlowPrimeContext",
+            "Unit",
+            "input",
+            "Balancing Authority Name",
+        ],
+        as_index=False,
+    )[["quantity", "FlowAmount"]].sum()
     # For natural gas extraction there are extraction and transportation stages
     # that will get lumped together in the groupby which will double
     # the quantity and erroneously lower emission rates.
+
+    # Calculate emission factor (e.g., total emission per total MWh)
     merged_summary["emission_factor"] = (
         merged_summary["FlowAmount"] / merged_summary["quantity"]
     )
-    merged_summary.dropna(subset=["emission_factor"],inplace=True)
-    upstream_list = [x for x in merged_summary["stage_code"].unique()]
-
+    merged_summary.dropna(subset=["emission_factor"], inplace=True)
+    # NEW Issue #150, adding regional ability for construction of all types
+    merged_summary_regional["emission_factor"] = (
+        merged_summary_regional["FlowAmount"] / merged_summary_regional["quantity"]
+    )
+    merged_summary_regional.dropna(subset=["emission_factor"], inplace=True)
+    # Make upstream processes for each stage code and save to a dictionary.
     upstream_process_dict = dict()
+    upstream_list = [x for x in merged_summary["stage_code"].unique()]
     for upstream in upstream_list:
         logging.info(f"Building dictionary for {upstream}")
         exchanges_list = list()
@@ -363,16 +452,19 @@ def olcaschema_genupstream_processes(merged):
         )
         merged_summary_filter.dropna(subset=["FlowName"], inplace=True)
 
-        # TODO: where does "[no match]" get set?
+        # TODO: where does "[no match]" get set? FEDEFL mapper?
         garbage = merged_summary_filter.loc[
             merged_summary_filter["FlowName"] == "[no match]", :].index
         merged_summary_filter.drop(garbage, inplace=True)
 
         ra = merged_summary_filter.apply(
-            _exchange_table_creation_output, axis=1
-        ).tolist()
+            _exchange_table_creation_output, axis=1).tolist()
         exchanges_list.extend(ra)
 
+        # TODO
+        # Iss253. The fuel type is 'Construction' and stage code is one of
+        # 'solar_pv_const', 'solar_thermal_const', or 'wind_const'
+        # Paths forward could be to make unique calls for
         first_row = min(merged_summary_filter.index)
         fuel_type = merged_summary_filter.loc[first_row, "FuelCategory"]
         stage_code = merged_summary_filter.loc[first_row, "stage_code"]
@@ -424,22 +516,66 @@ def olcaschema_genupstream_processes(merged):
         elif fuel_type == "WIND":
             combined_name = f"wind upstream and operation - {stage_code}"
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
-        elif fuel_type == "CONSTRUCTION":
-            combined_name= f"power plant construction - {stage_code}"
+        #Issue #150, catching multiple types of CONSTRUCTION. Worth noting that
+        #US average is appended to these in case they're needed (unlikely)
+        elif "CONSTRUCTION" in fuel_type:
+            combined_name= f"power plant construction - {stage_code} - US Average"
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
+
         process_name = f"{combined_name}"
         if (fuel_type == "COAL") & (stage_code in coal_transport):
-            final=_process_table_creation_gen(
-                    process_name, exchanges_list, "coal_transport"
+            final = _process_table_creation_gen(
+                process_name, exchanges_list, "coal_transport"
             )
         else:
             final = _process_table_creation_gen(
-                    process_name, exchanges_list, fuel_type
+                process_name, exchanges_list, fuel_type
             )
         upstream_process_dict[
             merged_summary_filter.loc[first_row, "stage_code"]
         ] = final
+    # New, Issue #150 - adding regional construction profiles.
+    merged_summary_regional["scen_name"] = (
+        merged_summary_regional["stage_code"]
+        + " - "
+        + merged_summary_regional["Balancing Authority Name"]
+    )
+    upstream_regional_list = [x for x in merged_summary_regional["scen_name"].unique()]
+    for upstream in upstream_regional_list:
+        logging.info(f"Building dictionary for {upstream}")
+        exchanges_list = list()
 
+        upstream_filter = merged_summary_regional["scen_name"] == upstream
+        merged_summary_filter = merged_summary_regional.loc[upstream_filter, :].copy()
+        merged_summary_filter.drop_duplicates(
+            subset=["FlowName", "Compartment", "FlowAmount"],
+            inplace=True
+        )
+        merged_summary_filter.dropna(subset=["FlowName"], inplace=True)
+
+        # TODO: where does "[no match]" get set? FEDEFL mapper?
+        garbage = merged_summary_filter.loc[
+            merged_summary_filter["FlowName"] == "[no match]", :].index
+        merged_summary_filter.drop(garbage, inplace=True)
+
+        ra = merged_summary_filter.apply(
+            _exchange_table_creation_output, axis=1).tolist()
+        exchanges_list.extend(ra)
+
+        first_row = min(merged_summary_filter.index)
+        fuel_type = merged_summary_filter.loc[first_row, "FuelCategory"]
+        stage_code = merged_summary_filter.loc[first_row, "stage_code"]
+        if "CONSTRUCTION" in fuel_type:
+            combined_name= f"power plant construction - {upstream}"
+            exchanges_list.append(_exchange_table_creation_ref(fuel_type))
+
+        process_name = f"{combined_name}"
+        final = _process_table_creation_gen(
+                process_name, exchanges_list, fuel_type
+            )
+        upstream_process_dict[
+            merged_summary_filter.loc[first_row, "scen_name"]
+        ] = final
     return upstream_process_dict
 
 

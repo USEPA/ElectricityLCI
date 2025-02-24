@@ -13,8 +13,9 @@ import numpy as np
 import pandas as pd
 
 from electricitylci.globals import data_dir
-from electricitylci.eia923_generation import eia923_download_extract
-# ^^^ requires modelspecs
+from electricitylci.solar_upstream import fix_renewable
+from electricitylci.solar_upstream import get_solar_generation
+from electricitylci.model_config import model_specs
 
 
 ##############################################################################
@@ -26,22 +27,19 @@ solely the upstream contributions. Emissions from the construction of panels
 are accounted for elsewhere.
 
 Last updated:
-    2024-10-11
+    2025-01-31
 """
 __all__ = [
     "generate_upstream_solarthermal",
+    "get_solarthermal_construction",
+    "get_solarthermal_om",
 ]
-
-##############################################################################
-# GLOBALS
-##############################################################################
-RENEWABLE_VINTAGE = 2020
 
 
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def _solar_construction(year):
+def get_solarthermal_construction(year):
     """Generate solar thermal construction inventory.
 
     Parameters
@@ -53,7 +51,7 @@ def _solar_construction(year):
     -------
     pandas.DataFrame
         Emissions inventory for solar thermal construction.
-        Returns NoneType for 2016 renewables vintage---the O&M emissions
+        Returns NoneType for 2016 renewable vintage---the O&M emissions
         include the construction inventory.
 
     Raises
@@ -62,7 +60,9 @@ def _solar_construction(year):
         If renewable vintage year is unsupported.
     """
     # Iss150, new construction and O&M LCIs
-    if RENEWABLE_VINTAGE == 2020:
+    if model_specs.renewable_vintage == 2020:
+        logging.info(
+            "Reading 2020 upstream solar thermal construction inventory.")
         solar_df = pd.read_csv(
             os.path.join(
                 data_dir,
@@ -72,13 +72,11 @@ def _solar_construction(year):
                 ),
             header=[0, 1]
         )
-    elif RENEWABLE_VINTAGE == 2016:
-        logging.debug(
+    elif model_specs.renewable_vintage == 2016:
+        logging.info(
             "The 2016 solar thermal LCI did not have separate construction "
-            "and O&M.")
+            "and O&M. Returning none")
         return None
-    else:
-        raise ValueError("Renewable vintage %s undefined!" % RENEWABLE_VINTAGE)
 
     columns = pd.DataFrame(solar_df.columns.tolist())
     columns.loc[columns[0].str.startswith('Unnamed:'), 0] = np.nan
@@ -110,7 +108,7 @@ def _solar_construction(year):
         'FlowAmount': float,
     })
 
-    solar_generation_data = _solar_generation(year)
+    solar_generation_data = get_solar_generation(year)
     solarthermal_upstream = solar_df_t_melt.merge(
         right=solar_generation_data,
         left_on='plant_id',
@@ -149,43 +147,17 @@ def _solar_construction(year):
     solarthermal_upstream["Unit"] = "kg"
     solarthermal_upstream["input"] = False
 
+    # Fix/fill construction LCI
+    solarthermal_upstream = fix_renewable(
+        solarthermal_upstream, "netlsolarthermal")
+
     return solarthermal_upstream
 
 
-def _solar_generation(year):
-    """Return the EIA generation data for solar thermal power plants.
-
-    For 2016 renewables vintage, construction emissions are included.
-
-    Parameters
-    ----------
-    year : int
-        EIA generation year.
-
-    Returns
-    -------
-    pandas.DataFrame
-        EIA generation data for solar thermal power plants.
-    """
-    eia_generation_data = eia923_download_extract(year)
-    eia_generation_data['Plant Id'] = eia_generation_data[
-        'Plant Id'].astype(int)
-
-    column_filt = (eia_generation_data['Reported Fuel Type Code'] == 'SUN')
-    df = eia_generation_data.loc[column_filt, :]
-
-    return df
-
-
-def _solar_om(year):
+def get_solarthermal_om():
     """Generate the operations and maintenance LCI for solar thermal power
     plants. For 2016 electricity baseline, this data frame includes the
     construction inventory.
-
-    Parameters
-    ----------
-    year : int
-        EIA generation year.
 
     Returns
     -------
@@ -195,10 +167,11 @@ def _solar_om(year):
     Raises
     ------
     ValueError
-        If the renwables vintage is not defined or a valid year.
+        If the renewable vintage is not defined or a valid year.
     """
     # Iss150, new construction and O&M LCIs
-    if RENEWABLE_VINTAGE == 2020:
+    logging.info("Reading %d O&M inventory" % model_specs.renewable_vintage)
+    if model_specs.renewable_vintage == 2020:
         solar_ops_df = pd.read_csv(
             os.path.join(
                 data_dir,
@@ -209,7 +182,7 @@ def _solar_om(year):
             header=[0, 1],
             na_values=["#VALUE!", "#DIV/0!"],
         )
-    elif RENEWABLE_VINTAGE == 2016:
+    elif model_specs.renewable_vintage == 2016:
         solar_ops_df = pd.read_csv(
             os.path.join(
                 data_dir,
@@ -219,8 +192,6 @@ def _solar_om(year):
                 ),
             header=[0, 1]
         )
-    else:
-        raise ValueError("Renewable vintage %s undefined!" % RENEWABLE_VINTAGE)
 
     # Correct the columns
     columns = pd.DataFrame(solar_ops_df.columns.tolist())
@@ -257,8 +228,8 @@ def _solar_om(year):
     # Unlike the construction inventory, operations are on the basis of
     # per MWh, so in order for the data to integrate correctly with the
     # rest of the inventory, we need to multiply all inventory by electricity
-    # generation (in MWh) for the target year.
-    solar_generation_data = _solar_generation(year)
+    # generation (in MWh) for the inventory's target year.
+    solar_generation_data = get_solar_generation(model_specs.renewable_vintage)
     solarthermal_ops = solar_ops_df_t_melt.merge(
         right=solar_generation_data,
         left_on='plant_id',
@@ -297,6 +268,8 @@ def _solar_om(year):
     solarthermal_ops["Unit"] = "kg"
     solarthermal_ops["input"] = False
 
+    solarthermal_ops = fix_renewable(solarthermal_ops, "netlsolarthermal")
+
     return solarthermal_ops
 
 
@@ -325,8 +298,8 @@ def generate_upstream_solarthermal(year):
     pandas.DataFrame
     """
     logging.info("Generating upstream solar thermal inventories")
-    solarthermal_ops = _solar_om(year)
-    solarthermal_cons = _solar_construction(year)
+    solarthermal_ops = get_solarthermal_om()
+    solarthermal_cons = get_solarthermal_construction(year)
     if solarthermal_cons is not None:
         solarthermal_df = pd.concat(
             [solarthermal_cons, solarthermal_ops],
@@ -334,23 +307,6 @@ def generate_upstream_solarthermal(year):
         )
     else:
         solarthermal_df = solarthermal_ops
-
-    # HOTFIX: add unique source code for renewables
-    solarthermal_df["Source"] = "netlsolarthermal"
-
-    # HOTFIX the electricity column as an input.
-    solarthermal_df.loc[
-        solarthermal_df["FlowName"]=="Electricity", "input"] = True
-    # HOTFIX electricity resource units.
-    solarthermal_df.loc[
-        solarthermal_df["FlowName"]=="Electricity", "Unit"] = "MWh"
-    # HOTFIX water as an input (Iss147).
-    #   These are the negative water-to-water emissions.
-    water_filter = (solarthermal_df['Compartment'] == 'water') & (
-        solarthermal_df['FlowAmount'] < 0) & (
-            solarthermal_df['FlowName'].str.startswith('Water'))
-    solarthermal_df.loc[water_filter, 'input'] = True
-    solarthermal_df.loc[water_filter, 'FlowAmount'] *= -1.0
 
     return solarthermal_df
 

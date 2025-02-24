@@ -23,8 +23,9 @@ import olca_schema.zipio as zipio
 import pytz
 import requests
 
-from electricitylci.globals import data_dir
+from electricitylci.globals import paths
 from electricitylci.globals import elci_version as VERSION
+from electricitylci.utils import check_output_dir
 
 
 ##############################################################################
@@ -72,11 +73,13 @@ Changelog:
     -   Add missing 'Electricity; at user; consumption mix - US - US' process
         to product system generation
     -   Correct emissions labeled as resource
-    -   Add flow metadata from USEPA's fedelemflowlist.
+    -   Add flow metadata from USEPA's fedelemflowlist
     -   Speed up fedelemflowlist writing
+    -   Move Federal LCA Commons' JSON assets to local data store
+    -   Add EPA's DQI pedigree matrices to JSON-LD
 
 Last edited:
-    2024-09-19
+    2025-02-13
 """
 __all__ = [
     "build_product_systems",
@@ -399,8 +402,8 @@ def _actor(name, dict_s):
     return (actor.to_ref(), dict_s)
 
 
-def _add_unit_groups(spec_map):
-    """Append openLCA unit groups and their flow properties to a spec map
+def _add_fed_commons(spec_map):
+    """Append openLCA unit groups, flow properties, and DQI to a spec map
     dictionary.
 
     Parameters
@@ -412,8 +415,8 @@ def _add_unit_groups(spec_map):
     Returns
     -------
     dict
-        The same spec map with UnitGroup and FlowProperty objects and UUIDs
-        appended appropriately.
+        The same spec map with UnitGroup, FlowProperty, DQSystem, and Source
+        objects and UUIDs appended appropriately.
 
     Raises
     ------
@@ -422,12 +425,17 @@ def _add_unit_groups(spec_map):
     KeyError
         If the spec map is missing the required key(s).
     """
+    # A little bit of error handling :)
     if not isinstance(spec_map, dict):
         raise TypeError("Expected a dictionary, received %s" % type(spec_map))
     if "UnitGroup" not in spec_map.keys():
         raise KeyError("Failed to find required UnitGroup key!")
     if "FlowProperty" not in spec_map.keys():
         raise KeyError("Failed to find required FlowProperty key!")
+    if "DQSystem" not in spec_map.keys():
+        raise KeyError("Failed to find required DQSystem key!")
+    if "Source" not in spec_map.keys():
+        raise KeyError("Failed to find required Source key!")
 
     u_list, p_list = _read_fedefl()
     for u_obj in u_list:
@@ -436,6 +444,14 @@ def _add_unit_groups(spec_map):
     for p_obj in p_list:
         spec_map['FlowProperty']['objs'].append(p_obj)
         spec_map['FlowProperty']['ids'].append(p_obj.id)
+
+    d_list, s_list =  _read_fedcore()
+    for d_obj in d_list:
+        spec_map['DQSystem']['objs'].append(d_obj)
+        spec_map['DQSystem']['ids'].append(d_obj.id)
+    for s_obj in s_list:
+        spec_map['Source']['objs'].append(s_obj)
+        spec_map['Source']['ids'].append(s_obj.id)
 
     return spec_map
 
@@ -1071,16 +1087,16 @@ def _init_root_entities(json_file):
         writing to file. The 'class' is value added (if needed).
     """
     # Create the empty dictionary for each olca schema root entity
-    # (these are the ones that need to be writted to the JSON-LD zip file)
+    # (these are the ones that need to be written to the JSON-LD zip file)
     r_dict = _root_entity_dict()
 
     # Check to see if the JSON-LD file was already written to;
-    # if so, read the old root entity data; otherwise, add unit group and
-    # flow properties data.
+    # if so, read the old root entity data; otherwise, add data from the
+    # Federal LCA Commons (e.g., unit groups, flow properties, and DQI data).
     if os.path.exists(json_file):
         r_dict = _read_jsonld(json_file, r_dict)
     else:
-        r_dict = _add_unit_groups(r_dict)
+        r_dict = _add_fed_commons(r_dict)
 
     return r_dict
 
@@ -1472,6 +1488,9 @@ def _process_doc(dict_d, dict_s):
 def _read_fedefl():
     """Return list of GreenDelta's unit group and flow property objects.
 
+    This utilizes the Federal LCA Commons' public API to pull data from the
+    Elementary Flow List repository.
+
     A local copy of the LCA Commons' Federal Elementary Flow List unit groups
     is either accessed (in eLCI's data directory) or created (using requests).
 
@@ -1489,22 +1508,25 @@ def _read_fedefl():
         First item is a list of 27 olca-schema UnitGroup objects.
         Second item is a list of 33 olca-schema FlowProperty objects.
     """
-    url_token = (
-        "https://www.lcacommons.gov/"
-        "lca-collaboration/ws/public/download/json/prepare/"
-        "Federal_LCA_Commons/elementary_flow_list?path=FLOW_PROPERTY"
-    )
-    # using "path=FLOW_PROPERTY" obtains all Flow properties and all unit groups
-
+    # Define the base URL for the public API
     url = (
         "https://www.lcacommons.gov/"
         "lca-collaboration/ws/public/download/json"
     )
+
+    # Using "path=FLOW_PROPERTY" obtains all Flow properties and unit groups
+    token_url = url + (
+        "/prepare/Federal_LCA_Commons/elementary_flow_list?path=FLOW_PROPERTY"
+    )
+
+    # NEW data store [25.02.12; TWD]
+    data_dir = os.path.join(paths.local_path, "fedcommons")
+    check_output_dir(data_dir)
+
     u_file = "unit_groups.json"
     u_path = os.path.join(data_dir, u_file)
     u_list = []
 
-    # HOTFIX: add flow properties
     p_file = "flow_properties.json"
     p_path = os.path.join(data_dir, p_file)
     p_list = []
@@ -1512,23 +1534,27 @@ def _read_fedefl():
     if not os.path.exists(u_path) or not os.path.exists(p_path):
         # Pull from Federal Elementary Flow List
         logging.info("Reading data from Federal LCA Commons")
-        token = requests.get(url_token).content.decode()
+        token = requests.get(token_url).content.decode()
         r = requests.get(f"{url}/{token}")
-        with ZipFile(io.BytesIO(r.content)) as zippy:
-            # Find the unit groups, convert them to UnitGroup class
-            for name in zippy.namelist():
-                # Note there are only three folders in the zip file:
-                # 'flow_properties', 'flows', and 'unit_groups';
-                # we want the 27 JSON files under unit_groups
-                # and the 33 JSON files under flow_properties.
-                if name.startswith("unit") and name.endswith("json"):
-                    u_dict = json.loads(zippy.read(name))
-                    u_obj = o.UnitGroup.from_dict(u_dict)
-                    u_list.append(u_obj)
-                elif name.startswith("flow_") and name.endswith("json"):
-                    p_dict = json.loads(zippy.read(name))
-                    p_obj = o.FlowProperty.from_dict(p_dict)
-                    p_list.append(p_obj)
+        if r.ok:
+            with ZipFile(io.BytesIO(r.content)) as z:
+                # Find the unit groups, convert them to UnitGroup class
+                for name in z.namelist():
+                    # Note there are only three folders in the zip file:
+                    # 'flow_properties', 'flows', and 'unit_groups';
+                    # we want the 27 JSON files under unit_groups
+                    # and the 33 JSON files under flow_properties.
+                    if name.startswith("unit") and name.endswith("json"):
+                        u_dict = json.loads(z.read(name))
+                        u_obj = o.UnitGroup.from_dict(u_dict)
+                        u_list.append(u_obj)
+                    elif name.startswith("flow_") and name.endswith("json"):
+                        p_dict = json.loads(z.read(name))
+                        p_obj = o.FlowProperty.from_dict(p_dict)
+                        p_list.append(p_obj)
+        else:
+            logging.error(
+                "Failed to access Elementary Flow List on Fed Commons!")
 
         # Archive to avoid running requests again.
         _archive_json(u_list, u_path)
@@ -1553,6 +1579,99 @@ def _read_fedefl():
             p_list.append(o.FlowProperty.from_dict(my_item))
 
     return (u_list, p_list)
+
+
+def _read_fedcore():
+    """Return list of GreenDelta's DQSystem and Source objects.
+
+    This utilizes the Federal LCA Commons' public API to pull data from the
+    core database repository.
+
+    A local copy of the LCA Commons' DQSystems and Source objects
+    is either accessed (in user's data directory) or created (using requests).
+
+    Notes
+    -----
+    This method writes up to two files in electricitylci's data store:
+
+    -   dq_systems.json
+    -   dq_sources.json
+
+    Returns
+    -------
+    tuple
+        A tuple of length two.
+        First item is a list of 2 olca-schema DQSystem objects.
+        Second item is a list of 1 olca-schema Source objects.
+    """
+    # Define the base URL for the public API
+    url = (
+        "https://www.lcacommons.gov/"
+        "lca-collaboration/ws/public/download/json"
+    )
+
+    # Token for JSON-LD with data quality indicators
+    token_url = url + (
+        "/prepare/Federal_LCA_Commons/Fed_Commons_core_database?path=DQ_SYSTEM"
+    )
+
+    # Save data to the user's electricitylci data store.
+    data_dir = os.path.join(paths.local_path, "fedcommons")
+    check_output_dir(data_dir)
+
+    d_file = "dq_systems.json"
+    d_path = os.path.join(data_dir, d_file)
+    d_list = []
+
+    s_file = "dq_sources.json"
+    s_path = os.path.join(data_dir, s_file)
+    s_list = []
+
+    if not os.path.exists(d_path) or not os.path.exists(s_path):
+        # Pull from Federal Elementary Flow List
+        logging.info("Reading data from Federal LCA Commons")
+        token = requests.get(token_url).content.decode()
+        r = requests.get(f"{url}/{token}")
+        if r.ok:
+            with ZipFile(io.BytesIO(r.content)) as z:
+                for name in z.namelist():
+                    # Note there are only two folders in the zip file:
+                    # 'dq_systems' and 'sources'
+                    if name.startswith("dq_systems") and name.endswith("json"):
+                        d_dict = json.loads(z.read(name))
+                        d_obj = o.DQSystem.from_dict(d_dict)
+                        d_list.append(d_obj)
+                    elif name.startswith("sources") and name.endswith("json"):
+                        s_dict = json.loads(z.read(name))
+                        s_obj = o.Source.from_dict(s_dict)
+                        s_list.append(s_obj)
+        else:
+            logging.error(
+                "Failed to access Elementary Flow List on Fed Commons!")
+
+        # Archive to avoid running requests again.
+        _archive_json(d_list, d_path)
+        logging.info("Saved DQSystems from LCA Commons to JSON")
+
+        _archive_json(s_list, s_path)
+        logging.info("Saved DQI sources from LCA Commons to JSON")
+
+    # Only read locally if needed (i.e., if data wasn't just downloaded)
+    if os.path.exists(d_path) and len(d_list) == 0:
+        logging.info("Reading DQSystems from local JSON")
+        with open(d_path, 'r') as f:
+            my_list = json.load(f)
+        for my_item in my_list:
+            d_list.append(o.DQSystem.from_dict(my_item))
+
+    if os.path.exists(s_path) and len(s_list) == 0:
+        logging.info("Reading DQI sources from local JSON")
+        with open(s_path, 'r') as f:
+            my_list = json.load(f)
+        for my_item in my_list:
+            s_list.append(o.Source.from_dict(my_item))
+
+    return (d_list, s_list)
 
 
 def _read_jsonld(json_file, root_dict, id_only=False):
@@ -1765,6 +1884,7 @@ def _save_to_json(json_file, e_dict):
                 flowlist = fedelemflowlist.get_flows()
                 flows = flowlist[flowlist['Flow UUID'].isin(e_dict[k]['ids'])]
                 fedelemflowlist.write_jsonld(flows, path=None, zw=writer)
+
             for k_obj in e_dict[k]['objs']:
                 # Last chance to fix Ref's and it's not perfect.
                 if isinstance(k_obj, o.Ref):
@@ -2091,7 +2211,7 @@ def _val(dict_d, *path, **kvargs):
     1
     >>> _val(d,'x') # NoneType for missing key
     None
-    >>> _val(d, 'x', 'y' 'z', 'a', 'b', 'c') # firs real key's value
+    >>> _val(d, 'x', 'y' 'z', 'a', 'b', 'c') # first real key's value
     1
     >>> _val(d, 'z', default=4) # default for missing key
     4
