@@ -43,7 +43,7 @@ from electricitylci.utils import make_valid_version_num
 from electricitylci.utils import check_output_dir
 from electricitylci.utils import write_csv_to_output
 from electricitylci.egrid_emissions_and_waste_by_facility import (
-    emissions_and_wastes_by_facility,
+    get_combined_stewicombo_file,
 )
 import facilitymatcher.globals as fmglob  # provided by StEWI
 
@@ -812,6 +812,7 @@ def create_generation_process_df():
         # numbers and maps them to eGRID facility numbers.
         # NOTE: there are unmatched facilities that are found in FRS_bridge,
         # but not in EIA (e.g., EGRID, RCRA).
+        emissions_and_wastes_by_facility = get_combined_stewicombo_file(model_specs)
         ewf_df = pd.merge(
             left=emissions_and_wastes_by_facility,
             right=eia860_FRS,

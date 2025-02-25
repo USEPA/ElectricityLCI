@@ -22,7 +22,7 @@ from electricitylci.egrid_energy import (
     egrid_net_generation
 )
 from electricitylci.egrid_emissions_and_waste_by_facility import (
-    emissions_and_wastes_by_facility
+    get_combined_stewicombo_file
 )
 from electricitylci.egrid_FRS_matches import list_FRS_ids_filtered_for_NAICS
 
@@ -113,6 +113,7 @@ electricity_for_selected_egrid_facilities = egrid_net_generation[
 
 # Emissions and wastes filtering
 # Start with all emissions and wastes; these are in this file
+emissions_and_wastes_by_facility = get_combined_stewicombo_file(model_specs)
 emissions_and_waste_for_selected_egrid_facilities = emissions_and_wastes_by_facility[
      emissions_and_wastes_by_facility['eGRID_ID'].isin(
          egrid_facilities_to_include)
