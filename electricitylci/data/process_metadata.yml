@@ -152,8 +152,8 @@ default:
     DE-FE0025912. Support was provided by the National Renewable Energy
     Laboratory through interagency agreement DW-89-92448301-1, by Eastern
     Research Group (ERG) through USEPA contract EP-C-16-015, task order 008, and
-    by the National Energy Technology Laboratory (NETL) through contract number
-    DE-FE0025912'
+    by the National Energy Technology Laboratory (NETL) through contract numbers
+    DE-FE0025912 and  23CFE000075'
 
   LCIMethod: 'Attributional'
 
@@ -421,16 +421,19 @@ geothermal:
 solar:
 
   techno_intro: &solar_techno_intro
-  - 'This process represents the cradle-to-gate inventory for
-    electricity production from US solar photovoltaic power plants. '
+  - 'Solar inventories are provided in two parts -
+    construction and from operations. Together they represent the cradle-to
+    -gate inventories for electricity production from US solar photovoltaic 
+    power plants. '
 
   techno_process: &solar_techno_process
-  - 'Inventories were developed for each solar PV plant in the 2016 EIA 860
-    data. Boundaries include plant construction and minor operating emissions
-    from fuel combustion, etc. The inventory for the plant is allocated over
-    an assumed 30 year life. The aggregation performed in the electricity LCI
-    code will then divide those inventories by the generation in the selected
-    year to provide results on the basis of MWh.'
+  - 'Inventories were developed for each solar PV plant in the 2016 or 2020 
+    EIA 860 data, as specified in the model configuration, using a custom life
+    cycle model. Boundaries include plant construction and minor operating 
+    emissions from fuel combustion, etc. The total inventory for the plant 
+    construction is allocated over an assumed 30 year life. The resulting yearly
+    construction emissions are divided by the generation for the specified year
+    to provide inventories per MWh (e.g., kg CO2/MWh).'
 
   Description:
   - *solar_techno_intro
@@ -445,19 +448,27 @@ solar:
   DataDocumentor: 'NETL'
 
   DataTreatment: 'Material requirements to construct the solar PV panels and
-    the balance of system are calculated using plant capacity and local
-    insolation estimates to scale the inventories from the referenced studies.
-    The total inventory from construction and operations over the plant life
-    are then divided by the assumed 30 year lifetime to provide emissions per
-    year. When these emissions are divided by the generation for the specified
-    year in the electricity baseline code, the inventory is placed on the basis
-    of 1 MWh.'
+    the balance of system are calculated using plant nameplate capacity and local
+    insolation estimates to calculate the required area of solar panels, which
+    are then used to scale inventories provided by literature.
+    The total inventory from construction over the plant life is then divided by 
+    the assumed 30 year lifetime to provide emissions per year. When these 
+    emissions are divided by the generation for the specified year in the 
+    electricitylci, the inventory is placed on the basis of 1 MWh.
+
+    There also inventories for plant operations that are calculated for each plant
+    and are representative of yearly operations. There may also be 
+    publicly-reported emissions assigned to the plant. Both sets
+    of annual emissions estimates are again divided by the generation of the specified
+    year to place these emissions on the basis of 1 MWh.
+    '
 
   DataSelection: 'Where possible data is sourced from freely available life
     cycle data, such as NETL unit processes or USLCI. If the material was not
     available there then ecoinvent processes are used.'
-
-  DataCollectionPeriod: '2018'
+  #Entering the year 2024 for DataCollection Period to show
+  #when the most recent data was generated (representing 202). 
+  DataCollectionPeriod: '2024'
 
   sampling_procedure :
     - 'BOUNDARY CONDITIONS
@@ -477,6 +488,53 @@ solar:
   Sources:
     Source1:
       <<: *ingwersen_2024
+
+    Source2:
+      Name: 'Thin-Film Photovoltaic Power Generation Offers Decreasing 
+      Greenhouse Gas Emissions and Increasing Environmental Co-benefits in 
+      the Long Term'
+      
+      Year: 2014
+
+      TextReference: 'Bergesen, J. D., Heath, G. A., Gibon, T., & Suh, S. 
+      (2014). Thin-film photovoltaic power generation offers decreasing 
+      greenhouse gas emissions and increasing environmental co-benefits 
+      in the long term. Environmental Science & Technology, 48(16), 9834–9843.'
+
+      Url: 'https://doi.org/10.1021/es405539z'
+
+      Category: 'NREL'
+      
+    Source3:
+      Name: 'Life cycle inventories and life cycle assessment of photovoltaic 
+      systems'
+      
+      Year: 2015
+
+      TextReference: 'Frischknecht, R., Itten, R., Sinha, P., 
+      de Wild-Scholten, M., Zhang, J., Fthenakis, V., Kim, H. C., Raugei, M.,
+      & Stucki, M. (2015). Life cycle inventories and life cycle assessment 
+      of photovoltaic systems. International Energy Agency (IEA) PVPS Task 
+      12, Report T12, 4, 2015.'
+
+      Url: 'https://iea-pvps.org/wp-content/uploads/2020/01/IEA-PVPS_Task_12_LCI_LCA.pdf'
+
+      Category: 'NREL'
+      
+     Source4:
+      Name: 'Energy payback and life‐cycle CO2 emissions of the BOS in an optimized 
+      3.5 MW PV installation'
+      
+      Year: 2015
+
+      TextReference: 'Mason, J. E., Fthenakis, V. M., Hansen, T., & Kim, H. C. 
+      (2006). Energy payback and life‐cycle CO2 emissions of the BOS in an optimized 
+      3.5 MW PV installation. Progress in Photovoltaics: Research and Applications, 
+      14(2), 179–190.'
+
+      Url: 'https://doi.org/10.1002/pip.652'
+      
+      Category: 'Brookhaven'     
 
 solarthermal:
 
