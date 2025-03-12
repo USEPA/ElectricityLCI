@@ -4,28 +4,27 @@ default_boundary_statement: &boundary_statement
     All processes are compiled by US regions. The regions are specified by the
     user via the configuration files or passed parameters - Balancing Authority
     Areas, Federal Energy Regulatory Commission (FERC) regions, eGRID
-    subregions. Generation processes are aggregated by fuel or energy source
-    and provide the flow of electricity after it has been transformed for
+    subregions. Generation processes are aggregated by fuel or energy source and
+    provide the flow of electricity after it has been transformed for
     transmission on average US high voltage transmission lines (230 - 765 kV ).
     Generation and consumption mix processes are mixes of electricity by fuel
     type and region representing the average mix of electricity generated or
-    consumed within the region. Delivery to the final user is targeted toward
-    an average end user without separation between different user types and
-    included transmission loses. '
+    consumed within the region. Delivery to the final user is targeted toward an
+    average end user without separation between different user types and
+    included transmission loses.'
 
 default_datacollection_statement: &datacollection_statement
   - 'DATA COLLECTION
 
-    All inventories were calculated using secondary data from publicly
-    available datasets.
-    '
+    All inventories were calculated using secondary data from publicly available
+    datasets. '
 
 default_uncertainty_statement: &uncertainty_statement
   - 'UNCERTAINTY ESTIMATION
 
-    Flow-level data quality scores are assigned to each elementary flow
-    exchange and process-level scores to each process using the USEPA LCA Data
-    Quality Assessment guidance
+    Flow-level data quality scores are assigned to each elementary flow exchange
+    and process-level scores to each process using the USEPA LCA Data Quality
+    Assessment guidance
     (https://cfpub.epa.gov/si/si_public_record_report.cfm?Lab=NRMRL&dirEntryId=321834).
     In the generation processes, for each emission factor, five data quality
     scores were assigned on flow-level data quality scoring. Process data
@@ -42,55 +41,56 @@ default_uncertainty_statement: &uncertainty_statement
     inputs are determined based on flows reported for the relevant electricity
     generation fuel type in existing LCI datasets such as ANL''s GREET model,
     NREL''s USLCI, and ecoinvent. Expected nutrient discharges to water are
-    derived from a sample of electric facilities reporting to USEPA''s
-    Discharge Monitoring Report (DMR). The actual flows evaluated for each fuel
-    type by eGRID subregion can then be documented and compared to the U.S.
-    average electrical fuel generation profiles to determine the overall
-    process completeness according to the method described in USEPA LCA Data
-    Quality Assessment guidance. Air emission flow data collection scores can
-    also draw on these fuel-specific profiles by documenting whether an
-    expected flow is being reported by the fuel type in the relevant eGRID
-    subregion. An expected emission may not be captured if there are
-    discrepancies between the facilities covered in eGRID and those reporting
-    to the USEPA databases TRI, NEI, RCRAInfo. '
+    derived from a sample of electric facilities reporting to USEPA''s Discharge
+    Monitoring Report (DMR). The actual flows evaluated for each fuel type by
+    eGRID subregion can then be documented and compared to the U.S. average
+    electrical fuel generation profiles to determine the overall process
+    completeness according to the method described in USEPA LCA Data Quality
+    Assessment guidance. Air emission flow data collection scores can also draw
+    on these fuel-specific profiles by documenting whether an expected flow is
+    being reported by the fuel type in the relevant eGRID subregion. An expected
+    emission may not be captured if there are discrepancies between the
+    facilities covered in eGRID and those reporting to the USEPA databases TRI,
+    NEI, RCRAInfo. '
 
 no_uncertainty_statement: &no_uncertainty
   - 'UNCERTAINTY ESTIMATION
 
     This process does not contain any uncertainty.'
 
-source_ingwersen_2024: &ingwersen_2024
+source_ingwersen_2024:
 
-    Name: 'Ingwersen, et al. ElectricityLCI: A Python Package for U.S.
-      Regionalized Electricity Life Cycle Inventory Data Creation'
+  &ingwersen_2024
+  Name: 'Ingwersen, et al. ElectricityLCI: A Python Package for U.S. Regionalized
+    Electricity Life Cycle Inventory Data Creation'
 
-    TextReference: 'Ingwersen, et al. (2024). ElectricityLCI: A Python
-      Package for U.S. Regionalized Electricity Life Cycle Inventory Data
-      Creation. Manuscript in preparation.'
+  TextReference: 'Ingwersen, et al. (2024). ElectricityLCI: A Python Package for
+    U.S. Regionalized Electricity Life Cycle Inventory Data Creation. Manuscript
+    in preparation.'
 
-    Year: 2024
+  Year: 2024
 
-    Version: '1.0.2'
+  Version: '1.0.2'
 
-    Category: 'In_Development'
+  Category: 'In_Development'
 
-source_netl_coal_baseline_2024: &netl_coal_baseline
+source_netl_coal_baseline_2024:
 
-      Name: 'NETL (2023). Cradle-to-Gate Life Cycle Analysis Baseline for
-        United States Coal Mining and Delivery'
+  &netl_coal_baseline
+  Name: 'NETL (2023). Cradle-to-Gate Life Cycle Analysis Baseline for United
+    States Coal Mining and Delivery'
 
-      Url: 'https://doi.org/10.2172/2370100'
+  Url: 'https://doi.org/10.2172/2370100'
 
-      Category: 'NETL'
+  Category: 'NETL'
 
-      Year: 2023
+  Year: 2023
 
-      Version: '1.00.00'
+  Version: '1.00.00'
 
-      TextReference: 'NETL (2023). Cradle-to-Gate Life Cycle Analysis Baseline
-        for United States Coal Mining and Delivery,
-        U.S. Department of Energy National Energy Technology Laboratory,
-        Pittsburgh, PA. Report DOE/NETL-2024/4846.'
+  TextReference: 'NETL (2023). Cradle-to-Gate Life Cycle Analysis Baseline for
+    United States Coal Mining and Delivery, U.S. Department of Energy National
+    Energy Technology Laboratory, Pittsburgh, PA. Report DOE/NETL-2024/4846.'
 
 # The default documentation is going to serve as the documentation for
 # generation processes wherein the inventory is reported emissions from
@@ -100,17 +100,17 @@ source_netl_coal_baseline_2024: &netl_coal_baseline
 default:
 
   techno_intro: &default_techno_intro
-  - 'This is an electricity generation process that represents the
-    stated fuel type (e.g. coal, gas) aggregated to the stated region (e.g.
-    balancing authority area: California ISO).'
+    - 'This is an electricity generation process that represents
+      the stated fuel type (e.g. coal, gas) aggregated to the stated region
+      (e.g. balancing authority area: California ISO).'
 
   techno_process: &default_techno_process
-  - 'The emissions contained in this process are the reported emissions of all
-    of the facilities in the stated region/fuel type per MWh. The boundary
-    of these emissions are within the boundaries of the electricity generating
-    facilities. For the mixed plant category, the emissions can be from any
-    facility within the region that does not match the threshold set in the
-    model configuration file.'
+    - 'The emissions contained in this process are the
+      reported emissions of all of the facilities in the stated region/fuel type
+      per MWh. The boundary of these emissions are within the boundaries of the
+      electricity generating facilities. For the mixed plant category, the
+      emissions can be from any facility within the region that does not match
+      the threshold set in the model configuration file.'
 
   Description:
   - *default_techno_intro
@@ -130,12 +130,11 @@ default:
   IntendedApplication: 'The intended application for these inventories is to
     provide high-resolution electricity data for the establishment of robust
     background data used in LCIs of US systems. These data were developed as
-    regionally specific, average electricity generation/consumption LCI for
-    use in the application of LCAs where accurate electricity inventories
-    are needed to assess the system of interest and/or to evaluate the
-    sensitivity to changes in supplied electricity. A full inventory of
-    environmental flows are included enabling use of a full range of LCIA
-    impact categories.'
+    regionally specific, average electricity generation/consumption LCI for use
+    in the application of LCAs where accurate electricity inventories are needed
+    to assess the system of interest and/or to evaluate the sensitivity to
+    changes in supplied electricity. A full inventory of environmental flows are
+    included enabling use of a full range of LCIA impact categories.'
 
   DatasetOwner: 'NETL'
 
@@ -145,8 +144,8 @@ default:
 
   AccessUseRestrictions: 'No Restrictions'
 
-  ProjectDescription: 'US EPA contribution to this research was conducted as
-    part of the USEPA Air, Climate, and Energy national research program. US DOE
+  ProjectDescription: 'US EPA contribution to this research was conducted as part
+    of the USEPA Air, Climate, and Energy national research program. US DOE
     National Energy Technology Laboratory contribution to this research was
     prepared by MESA for the US DOE NETL, under DOE NETL Contract Number
     DE-FE0025912. Support was provided by the National Renewable Energy
@@ -175,79 +174,77 @@ default:
       RCRAInfo. Alternative generation data was gathered from EIA-923 when the
       emissions or waste inventories correspond to a non-egrid year. The eGRID
       subregion identifier in the ''Plants'' list was used to associate a
-      facility with a region. The fuel and energy types used for the
-      aggregation are the eGRID fuel categories -- oil, natural gas, synthetic
-      gas, nuclear fuel, hydroelectric, biomass, wind, solar, geothermal and
-      other fuel -- except for the coal sources, which are further
-      disaggregated by the eGRID reported primary fuel. The coal fuels are
-      bituminous coal, lignite coal, sub-bituminous coal, refined coal, and
-      waste coal. Each generation process, defined by fuel type and regions,
-      includes a fuel or energy input, linkage to an infrastructure process,
-      and emissions to air, water, and soil, and hazardous waste reported by
-      facilities in that region in the form of emission and waste factors. '
+      facility with a region. The fuel and energy types used for the aggregation
+      are the eGRID fuel categories -- oil, natural gas, synthetic gas, nuclear
+      fuel, hydroelectric, biomass, wind, solar, geothermal and other fuel --
+      except for the coal sources, which are further disaggregated by the eGRID
+      reported primary fuel. The coal fuels are bituminous coal, lignite coal,
+      sub-bituminous coal, refined coal, and waste coal. Each generation
+      process, defined by fuel type and regions, includes a fuel or energy
+      input, linkage to an infrastructure process, and emissions to air, water,
+      and soil, and hazardous waste reported by facilities in that region in the
+      form of emission and waste factors. '
 
-    DataSelection: 'eGRID is a US EPA compiled inventory of electricity
-      generation and selected greenhouse gas and criteria air pollutant
-      emissions for electric power generators that sell electricity to the grid
-      in the United States. eGRID is a primary source along with other USEPA
-      maintained national emission and waste inventories for modeling
-      generation. These inventories include the Toxic Release Inventory (TRI),
-      the National Emissions Inventory (NEI), and Resources Conservation and
-      Recycling Acts'' Biennial Report, which is stored in system called
-      RCRAInfo. The Energy Information Administration (EIA) compiles generation
-      and fuel use data in EIA-923 report used for generation data for odd
-      years when eGRID generation data are not available. EIA also provides
-      heat-content data on fossil and nuclear fuel inputs which are used to
-      relate heat input data to mass quantities of fuel. The Federal Energy
-      Regulatory Commission (FERC) receives and reports electricity trading
-      data on the grid in its 714 form. These data are used for modeling
-      electricity trade across regions.'
+    DataSelection: 'eGRID is a US EPA compiled inventory of electricity generation
+      and selected greenhouse gas and criteria air pollutant emissions for
+      electric power generators that sell electricity to the grid in the United
+      States. eGRID is a primary source along with other USEPA maintained
+      national emission and waste inventories for modeling generation. These
+      inventories include the Toxic Release Inventory (TRI), the National
+      Emissions Inventory (NEI), and Resources Conservation and Recycling Acts''
+      Biennial Report, which is stored in system called RCRAInfo. The Energy
+      Information Administration (EIA) compiles generation and fuel use data in
+      EIA-923 report used for generation data for odd years when eGRID
+      generation data are not available. EIA also provides heat-content data on
+      fossil and nuclear fuel inputs which are used to relate heat input data to
+      mass quantities of fuel. The Federal Energy Regulatory Commission (FERC)
+      receives and reports electricity trading data on the grid in its 714 form.
+      These data are used for modeling electricity trade across regions.'
   replace_egrid:
     DataTreatment: 'Electricity generation processes are primarily based on
       facility-reported data. All the facilities defined in the eGRID ''Plants''
       list are the electricity generators used as the pool for creating the LCI
       or if the configuration parameter replace_egrid is True then all
       facilities reported in EIA 923 data are used. The net generation quantity
-      reported in the ''Plants'' list was used for generation amount.
-      The annual heat input was used to estimate the energy in the fuel or
-      directly captured energy. The heat input to the plant is converted to a
-      physical flow by using information about the fuel source being used and
-      the EIA data for heat content of those respective fuel sources.
-      Emissions and wastes from these facilities are gathered from eGRID as
-      well as the USEPA emissions and waste inventories, NEI, TRI, and
-      RCRAInfo. Alternative generation data was gathered from EIA-923 when the
-      emissions or waste inventories correspond to a non-egrid year. The plants
-      are associated with various regions depending on model configuration with
-      region names coming from eGRID and EIA. The fuel and energy types used
-      for the aggregation are the eGRID fuel categories -- oil, natural gas,
-      synthetic gas, nuclear fuel, hydroelectric, biomass, wind, solar, solar
-      thermal, geothermal and other fuel. Coal sources can be further
-      disaggregated by the reported primary fuel: bituminous coal, lignite
-      coal, sub-bituminous coal, refined coal, and waste coal. Each generation
-      process, defined by fuel type and regions, includes a fuel or energy
-      input, linkage to an infrastructure process, and emissions to air, water,
-      and soil, and hazardous waste reported by facilities in that region in
-      the form of emission and waste factors. '
+      reported in the ''Plants'' list was used for generation amount. The annual
+      heat input was used to estimate the energy in the fuel or directly
+      captured energy. The heat input to the plant is converted to a physical
+      flow by using information about the fuel source being used and the EIA
+      data for heat content of those respective fuel sources. Emissions and
+      wastes from these facilities are gathered from eGRID as well as the USEPA
+      emissions and waste inventories, NEI, TRI, and RCRAInfo. Alternative
+      generation data was gathered from EIA-923 when the emissions or waste
+      inventories correspond to a non-egrid year. The plants are associated with
+      various regions depending on model configuration with region names coming
+      from eGRID and EIA. The fuel and energy types used for the aggregation are
+      the eGRID fuel categories -- oil, natural gas, synthetic gas, nuclear
+      fuel, hydroelectric, biomass, wind, solar, solar thermal, geothermal and
+      other fuel. Coal sources can be further disaggregated by the reported
+      primary fuel: bituminous coal, lignite coal, sub-bituminous coal, refined
+      coal, and waste coal. Each generation process, defined by fuel type and
+      regions, includes a fuel or energy input, linkage to an infrastructure
+      process, and emissions to air, water, and soil, and hazardous waste
+      reported by facilities in that region in the form of emission and waste
+      factors. '
 
-    DataSelection: 'eGRID is a US EPA compiled inventory of electricity
-      generation and selected greenhouse gas and criteria air pollutant
-      emissions for electric power generators that sell electricity to the grid
-      in the United States. eGRID is a primary source along with other USEPA
-      maintained national emission and waste inventories for modeling
-      generation. These inventories include the Toxic Release Inventory (TRI),
-      the National Emissions Inventory (NEI), and Resources Conservation and
-      Recycling Acts'' Biennial Report, which is stored in system called
-      RCRAInfo. The Energy Information Administration (EIA) compiles generation
-      and fuel use data in EIA-923 report used for generation data for odd
-      years when eGRID generation data are not available. EIA also provides
-      heat-content data on fossil and nuclear fuel inputs which are used to
-      relate heat input data to mass quantities of fuel. The Federal Energy
-      Regulatory Commission (FERC) receives and reports electricity trading
-      data on the grid in its 714 form. These data are used for modeling
-      electricity trade across regions.'
+    DataSelection: 'eGRID is a US EPA compiled inventory of electricity generation
+      and selected greenhouse gas and criteria air pollutant emissions for
+      electric power generators that sell electricity to the grid in the United
+      States. eGRID is a primary source along with other USEPA maintained
+      national emission and waste inventories for modeling generation. These
+      inventories include the Toxic Release Inventory (TRI), the National
+      Emissions Inventory (NEI), and Resources Conservation and Recycling Acts''
+      Biennial Report, which is stored in system called RCRAInfo. The Energy
+      Information Administration (EIA) compiles generation and fuel use data in
+      EIA-923 report used for generation data for odd years when eGRID
+      generation data are not available. EIA also provides heat-content data on
+      fossil and nuclear fuel inputs which are used to relate heat input data to
+      mass quantities of fuel. The Federal Energy Regulatory Commission (FERC)
+      receives and reports electricity trading data on the grid in its 714 form.
+      These data are used for modeling electricity trade across regions.'
 
-  DataCollectionPeriod: 'Generation and emissions data should be from the
-    year(s) specified in the model configuration file.'
+  DataCollectionPeriod: 'Generation and emissions data should be from the year(s)
+    specified in the model configuration file.'
 
   Reviewer: 'NETL and USDA and EPA'
 
@@ -260,20 +257,20 @@ default:
 nuclear_upstream:
 
   techno_intro: &nuclear_techno_intro
-  - 'This process represents the cradle-to-gate inventory for the
-    production of electricity from US generation II nuclear reactors, including
-    uranium extraction, enrichment, fuel fabrication, fuel transport, power
-    plant construction, and power plant emissions. '
+    - 'This process represents the cradle-to-gate inventory for
+      the production of electricity from US generation II nuclear reactors,
+      including uranium extraction, enrichment, fuel fabrication, fuel
+      transport, power plant construction, and power plant emissions. '
 
   techno_process: &nuclear_techno_process
-  - 'Documentation for the original model
-    is available at http://www.netl.doe.gov/energy-analysis/details?id=620. This
-    inventory represents an update to some portions of the model to represent
-    2016 operations, namely the retirement of US gaseous diffusion enrichment
-    operations and to a lesser extent an updated mix of nuclear fuel sources.
+    - 'Documentation for the original model is available at
+      http://www.netl.doe.gov/energy-analysis/details?id=620. This inventory
+      represents an update to some portions of the model to represent 2016
+      operations, namely the retirement of US gaseous diffusion enrichment
+      operations and to a lesser extent an updated mix of nuclear fuel sources.
 
-    The inventory is on the basis of 1 MWh generated electricity and as a
-    result, is the same for all nuclear power plants.'
+      The inventory is on the basis of 1 MWh generated electricity and as a
+      result, is the same for all nuclear power plants.'
 
   Description:
   - *nuclear_techno_intro
@@ -296,29 +293,29 @@ nuclear_upstream:
     newer versions.'
 
   DataSelection: 'The full description of data selection is available at
-      http://www.netl.doe.gov/energy-analysis/details?id=620'
+    http://www.netl.doe.gov/energy-analysis/details?id=620'
 
-  sampling_procedure :
-    - 'BOUNDARY CONDITIONS
+  sampling_procedure:
+  - 'BOUNDARY CONDITIONS
 
-      The system boundary includes the extraction of uranium from mining
-      operations, fuel enrichment, fuel fabrication, fuel transportation,
-      power plant construction, and power plant operations.
+    The system boundary includes the extraction of uranium from mining
+    operations, fuel enrichment, fuel fabrication, fuel transportation, power
+    plant construction, and power plant operations.
 
-      '
+    '
 
-    - 'DATA COLLECTION
+  - 'DATA COLLECTION
 
-      The full description of data collection is available at
-      http://www.netl.doe.gov/energy-analysis/details?id=620
+    The full description of data collection is available at
+    http://www.netl.doe.gov/energy-analysis/details?id=620
 
-      '
+    '
 
-    - *no_uncertainty
+  - *no_uncertainty
 
-    - 'FURTHER DOCUMENTATION
+  - 'FURTHER DOCUMENTATION
 
-      https://www.netl.doe.gov/energy-analysis/details?id=620'
+    https://www.netl.doe.gov/energy-analysis/details?id=620'
 
   DataCollectionPeriod: '2011 to present. Secondary/tertiary material inputs
     provided via thinkstep data are from service pack 34 - 2016'
@@ -342,27 +339,26 @@ nuclear_upstream:
 biomass:
 
   techno_intro: &biomass_techno_intro
-
-  - 'This process represents the operational emissions from power plants
-  categorized as biomass by the electricitylci aggregated to the stated region (e.g.
-  balancing authority area: California ISO). These include primary fuels of:
-  black liquor (BLQ), wood/wood waste solids (WDS), wood/wood waste liquids (WDL),
-  biogenic municipal solid waste (MSB), landfill gas (LFG), agricultural 
-  byproducts (AB), other biomass liquids (OBL), sludge waste (SLW), other biomass
-  gas (OBG), and other biomass solids (OBS). Currently there are no fuel profiles
-  for these fuel types in part because of the wide array and likely unique
-  characteristics of the fuel used in each plant. Ideally, the fuel inventories
-  would include the uptake of CO2 (biogenic CO2) that would offset the generally
-  higher emissions of these plants, particular for solid fuels.'
+    - 'This process represents the operational emissions from
+      power plants categorized as biomass by the electricitylci aggregated to
+      the stated region (e.g. balancing authority area: California ISO). These
+      include primary fuels of: black liquor (BLQ), wood/wood waste solids
+      (WDS), wood/wood waste liquids (WDL), biogenic municipal solid waste
+      (MSB), landfill gas (LFG), agricultural byproducts (AB), other biomass
+      liquids (OBL), sludge waste (SLW), other biomass gas (OBG), and other
+      biomass solids (OBS). Currently there are no fuel profiles for these fuel
+      types in part because of the wide array and likely unique characteristics
+      of the fuel used in each plant. Ideally, the fuel inventories would
+      include the uptake of CO2 (biogenic CO2) that would offset the generally
+      higher emissions of these plants, particular for solid fuels.'
 
   techno_process: &biomass_techno_process
+    - 'The emissions contained in this process are the
+      reported emissions of all of the facilities in the stated region/fuel type
+      per MWh. The boundary of these emissions are within the boundaries of the
+      electricity generating facilities.'
 
-  - 'The emissions contained in this process are the reported emissions of all
-    of the facilities in the stated region/fuel type per MWh. The boundary
-    of these emissions are within the boundaries of the electricity generating
-    facilities.'
-
-  Description:  
+  Description:
   - *biomass_techno_intro
   - *biomass_techno_process
 
@@ -373,10 +369,10 @@ biomass:
   DataGenerator: 'NETL'
 
   DataDocumentor: 'NETL'
-  
+
   # Intent is to use the default entries for DataTreatment and DataSelection
   #DataTreatment:
-  
+
   #DataSelection:
 
   #DataCollectionPeriod: '2018'
@@ -385,12 +381,12 @@ biomass:
 
   Sources:
     Source1:
-      Name: 'Ingwersen, et al. electricitylci: A Python Package for U.S.
-      Regionalized Electricity Life Cycle Inventory Data Creation'
+      Name: 'Ingwersen, et al. electricitylci: A Python Package for U.S. Regionalized
+        Electricity Life Cycle Inventory Data Creation'
 
-      TextReference: 'Ingwersen, et al. (2020). electricitylci: A Python Package for U.S.
-      Regionalized Electricity Life Cycle Inventory Data Creation. Manuscript in
-      preparation.'
+      TextReference: 'Ingwersen, et al. (2020). electricitylci: A Python Package for
+        U.S.Regionalized Electricity Life Cycle Inventory Data Creation.
+        Manuscript in preparation.'
 
       Year: 2020
 
@@ -400,17 +396,18 @@ biomass:
 geothermal:
 
   techno_intro: &geothermal_techno_intro
-  - 'This process represents the cradle-to-gate inventory for
-    electricity production from US geothermal power plants. '
+    - 'This process represents the cradle-to-gate inventory
+      for electricity production from US geothermal power plants. '
 
   techno_process: &geothermal_techno_process
-  - 'Power plant construction and operations are included in the boundaries.
-    Power plant emissions include the release of non-condensible gases in the
-    geofluid product at the plant. Profiles were developed for different states
-    based on the available data. Geothermal power plants are based on a variety
-    of technologies. All technologies are captured within the state-level
-    profiles. This inventory is an extension of that described in
-    http://www.netl.doe.gov/energy-analysis/details?id=591'
+    - 'Power plant construction and operations are included
+      in the boundaries. Power plant emissions include the release of
+      non-condensible gases in the geofluid product at the plant. Profiles were
+      developed for different states based on the available data. Geothermal
+      power plants are based on a variety of technologies. All technologies are
+      captured within the state-level profiles. This inventory is an extension
+      of that described in
+      http://www.netl.doe.gov/energy-analysis/details?id=591'
 
   Description:
   - *geothermal_techno_intro
@@ -426,16 +423,16 @@ geothermal:
 
   DataTreatment: 'http://www.netl.doe.gov/energy-analysis/details?id=591'
 
-  DataSelection: 'Non-condensible gas species are from Argonne National
-    Laboratory Geochemical database. Details on the types of geothermal power
-    plants in each state are provided by EIA 860 and openei.org. Electricity
-    generation information is provided by EIA Form 923.'
+  DataSelection: 'Non-condensible gas species are from Argonne National Laboratory
+    Geochemical database. Details on the types of geothermal power plants in
+    each state are provided by EIA 860 and openei.org. Electricity generation
+    information is provided by EIA Form 923.'
 
-  sampling_procedure :
+  sampling_procedure:
   - 'BOUNDARY CONDITIONS
 
-    The system boundary includes the construction of geothermal wells,
-    facility installation/deinstallation, and power plant operations.
+    The system boundary includes the construction of geothermal wells, facility
+    installation/deinstallation, and power plant operations.
     http://www.netl.doe.gov/energy-analysis/details?id=591
 
     '
@@ -458,15 +455,13 @@ geothermal:
   Sources:
 
     Source1:
-      Name: 'Role of Alternative Energy Sources: Geothermal Technology
-        Assessment'
+      Name: 'Role of Alternative Energy Sources: Geothermal Technology Assessment'
 
       Year: 2012
 
-      TextReference: 'NETL. (2012). Role of Alternative Energy Sources:
-        Geothermal Technology Assessment. Document Number: National Energy
-        Technology Laboratory, from
-        https://netl.doe.gov/energy-analysis/details?id=591
+      TextReference: 'NETL. (2012). Role of Alternative Energy Sources: Geothermal
+        Technology Assessment. Document Number: National Energy Technology
+        Laboratory, from https://netl.doe.gov/energy-analysis/details?id=591
         Pittsburgh, PA.'
 
       Version: '1.0.1'
@@ -477,20 +472,24 @@ geothermal:
 
 hydro:
 
-  techno_intro: &hydro_techno_intro
+  techno_intro:
 
-  - 'This process represents the operational emissions from hydro-electric power 
-  plants aggregated to the stated region (e.g. balancing authority area: California ISO).'
+    &hydro_techno_intro
+    - 'This process represents the operational emissions from
+      hydro-electric power plants aggregated to the stated region (e.g.
+      balancing authority area: California ISO).'
 
-  techno_process: &biomass_techno_process
+  techno_process:
 
-  - 'The emissions contained in this process are mostly calculated emissions from measured
-    GHG emissions from reservoirs associated with hydro power plants. Emissions are 
-    then allocated according to share of economic use of the reservoir. The boundary
-    of these emissions are within the boundaries of the electricity generating
-    facilities and the associated reservoir. See Data Treatment section for more details.' 
+    &hydro_techno_process
+    - 'The emissions contained in this process are mostly
+      calculated emissions from measured GHG emissions from reservoirs
+      associated with hydro power plants. Emissions are then allocated according
+      to share of economic use of the reservoir. The boundary of these emissions
+      are within the boundaries of the electricity generating facilities and the
+      associated reservoir. See Data Treatment section for more details.'
 
-  Description:  
+  Description:
   - *hydro_techno_intro
   - *hydro_techno_process
 
@@ -501,30 +500,35 @@ hydro:
   DataGenerator: 'NETL'
 
   DataDocumentor: 'NETL'
-  
+
   # Intent is to use the default entries for DataTreatment and DataSelection
-  DataTreatment: 'Emissions from hydrolectric (hydro) power plants are representative of power 
-  plants located at reservoirs. Run-of-river hydro plants are considered to have minimal 
-  GHG emissions. Emissions from reservoir power plants are taken from Sherer L. and Pfister S. 
-  (2016). The emissions from that study are not exhaustive, so a regression model was used
-  to predict methane and CO2 emissions from reservoirs based on the data within that study and
-  U.S. reservoir environment and characteristics taken from the National Oceanic and Atmospheric 
-  Administration (NOAA), national inventory of dams (NID) database, EIA-923/60 with the goal 
-  of allocating either directly measured emissions or prediced emissions by major economic 
-  uses of the reservoir uses, such as electric power, recreation, irrigation, water supply etc.
-  
-  In some instances there may also be reported data for the power plant in EPA databases. The
-  sources of those emissions will be annotated by source/year for the flow in the database.'
-  
+  DataTreatment: 'Emissions from hydrolectric (hydro) power plants are
+    representative of power plants located at reservoirs. Run-of-river hydro
+    plants are considered to have minimal GHG emissions. Emissions from
+    reservoir power plants are taken from Sherer L. and Pfister S. (2016). The
+    emissions from that study are not exhaustive, so a regression model was used
+    to predict methane and CO2 emissions from reservoirs based on the data
+    within that study and U.S. reservoir environment and characteristics taken
+    from the National Oceanic and Atmospheric Administration (NOAA), national
+    inventory of dams (NID) database, EIA-923/60 with the goal of allocating
+    either directly measured emissions or prediced emissions by major economic
+    uses of the reservoir uses, such as electric power, recreation, irrigation,
+    water supply etc.
+
+    In some instances there may also be reported data for the power plant in EPA
+    databases. The sources of those emissions will be annotated by source/year
+    for the flow in the database.'
+
   DataSelection: 'NOAA: Pan evaporation, temperature minimum/maximum
-  
-  National Inventory of Dams Database: reservoir surface area, date of completion, primary
-  purproses, construction volume, construction material, reservoir lat/long
 
-  EIA-8923/860: Power plant lat/long, capacity and net generation, cooling water consumption
+    National Inventory of Dams Database: reservoir surface area, date of
+    completion, primary purproses, construction volume, construction material,
+    reservoir lat/long
 
-  Sherer and Pfister: training datasets for regression model.
-  '
+    EIA-8923/860: Power plant lat/long, capacity and net generation, cooling
+    water consumption
+
+    Sherer and Pfister: training datasets for regression model.'
 
   DataCollectionPeriod: '2018'
 
@@ -532,12 +536,12 @@ hydro:
 
   Sources:
     Source1:
-      Name: 'Ingwersen, et al. electricitylci: A Python Package for U.S.
-      Regionalized Electricity Life Cycle Inventory Data Creation'
+      Name: 'Ingwersen, et al. electricitylci: A Python Package for U.S. Regionalized
+        Electricity Life Cycle Inventory Data Creation'
 
-      TextReference: 'Ingwersen, et al. (2020). electricitylci: A Python Package for U.S.
-      Regionalized Electricity Life Cycle Inventory Data Creation. Manuscript in
-      preparation.'
+      TextReference: 'Ingwersen, et al. (2020). electricitylci: A Python Package for
+        U.S. Regionalized Electricity Life Cycle Inventory Data Creation.
+        Manuscript in preparation.'
 
       Year: 2020
 
@@ -545,10 +549,11 @@ hydro:
 
       Category: 'In_Development'
     Source2:
-      Name: 'Hydropower's Biogenic Carbon Footprint'
+      Name: "Hydropower's Biogenic Carbon Footprint"
 
-      TextReference: 'Scherer L, Pfister S (2016) Hydropower's Biogenic Carbon Footprint. 
-      PLoS ONE 11(9): e0161947. https://doi.org/10.1371/journal.pone.0161947'
+      TextReference: "Scherer L, Pfister S (2016) Hydropower's Biogenic Carbon
+        Footprint. PLoS ONE 11(9): e0161947.
+        https://doi.org/10.1371/journal.pone.0161947"
 
       Year: '2016'
 
@@ -557,19 +562,19 @@ hydro:
 solar:
 
   techno_intro: &solar_techno_intro
-  - 'Solar inventories are provided in two parts -
-    construction and from operations. Together they represent the cradle-to
-    -gate inventories for electricity production from US solar photovoltaic 
-    power plants. '
+    - 'Solar inventories are provided in two parts - construction
+      and from operations. Together they represent the cradle-to -gate
+      inventories for electricity production from US solar photovoltaic power
+      plants. '
 
   techno_process: &solar_techno_process
-  - 'Inventories were developed for each solar PV plant in the 2016 or 2020 
-    EIA 860 data, as specified in the model configuration, using a custom life
-    cycle model. Boundaries include plant construction and minor operating 
-    emissions from fuel combustion, etc. The total inventory for the plant 
-    construction is allocated over an assumed 30 year life. The resulting yearly
-    construction emissions are divided by the generation for the specified year
-    to provide inventories per MWh (e.g., kg CO2/MWh).'
+    - 'Inventories were developed for each solar PV plant in the
+      2016 or 2020 EIA 860 data, as specified in the model configuration, using
+      a custom life cycle model. Boundaries include plant construction and minor
+      operating emissions from fuel combustion, etc. The total inventory for the
+      plant construction is allocated over an assumed 30 year life. The
+      resulting yearly construction emissions are divided by the generation for
+      the specified year to provide inventories per MWh (e.g., kg CO2/MWh).'
 
   Description:
   - *solar_techno_intro
@@ -583,121 +588,120 @@ solar:
 
   DataDocumentor: 'NETL'
 
-  DataTreatment: 'Material requirements to construct the solar PV panels and
-    the balance of system are calculated using plant nameplate capacity and local
+  DataTreatment: 'Material requirements to construct the solar PV panels and the
+    balance of system are calculated using plant nameplate capacity and local
     insolation estimates to calculate the required area of solar panels, which
-    are then used to scale inventories provided by literature.
-    The total inventory from construction over the plant life is then divided by 
-    the assumed 30 year lifetime to provide emissions per year. When these 
-    emissions are divided by the generation for the specified year in the 
-    electricitylci, the inventory is placed on the basis of 1 MWh.
+    are then used to scale inventories provided by literature. The total
+    inventory from construction over the plant life is then divided by the
+    assumed 30 year lifetime to provide emissions per year. When these emissions
+    are divided by the generation for the specified year in the electricitylci,
+    the inventory is placed on the basis of 1 MWh.
 
-    There also inventories for plant operations that are calculated for each plant
-    and are placed on the basis of a MWh before importing to the electricitylci. 
-    These emissions are mostly from fossil fuel combustion, hydraulic oil, and external
-    electricity use associated with operations. There may also be publicly-reported 
-    emissions assigned to the plant.'
+    There also inventories for plant operations that are calculated for each
+    plant and are placed on the basis of a MWh before importing to the
+    electricitylci. These emissions are mostly from fossil fuel combustion,
+    hydraulic oil, and external electricity use associated with operations.
+    There may also be publicly-reported emissions assigned to the plant.'
 
-  DataSelection: 'Where possible data is sourced from freely available life
-    cycle data, such as NETL unit processes or USLCI. If the material was not
+  DataSelection: 'Where possible data is sourced from freely available life cycle
+    data, such as NETL unit processes or USLCI. If the material was not
     available there then ecoinvent processes are used.'
   #Entering the year 2024 for DataCollection Period to show
   #when the most recent data was generated (representing 202). 
   DataCollectionPeriod: '2024'
 
-  sampling_procedure :
-    - 'BOUNDARY CONDITIONS
+  sampling_procedure:
+  - 'BOUNDARY CONDITIONS
 
-      The boundaries include power plant construction with all known material
-      inputs (e.g., steel, glass, concrete) and some minor material
-      requirements and fuel combustion for plant operation. '
+    The boundaries include power plant construction with all known material
+    inputs (e.g., steel, glass, concrete) and some minor material requirements
+    and fuel combustion for plant operation. '
 
-    - 'DATA COLLECTION
+  - 'DATA COLLECTION
 
-      Data for the material inputs to the plant are from:
-      NETL unit processes, US LCI, and ecoinvent.
-      '
+    Data for the material inputs to the plant are from: NETL unit processes, US
+    LCI, and ecoinvent. '
 
-    - *no_uncertainty
+  - *no_uncertainty
 
   Sources:
     Source1:
       <<: *ingwersen_2024
 
     Source2:
-      Name: 'Thin-Film Photovoltaic Power Generation Offers Decreasing 
-      Greenhouse Gas Emissions and Increasing Environmental Co-benefits in 
-      the Long Term'
-      
+      Name: 'Thin-Film Photovoltaic Power Generation Offers Decreasing Greenhouse Gas
+        Emissions and Increasing Environmental Co-benefits in the Long Term'
+
       Year: 2014
 
-      TextReference: 'Bergesen, J. D., Heath, G. A., Gibon, T., & Suh, S. 
-      (2014). Thin-film photovoltaic power generation offers decreasing 
-      greenhouse gas emissions and increasing environmental co-benefits 
-      in the long term. Environmental Science & Technology, 48(16), 9834–9843.'
+      TextReference: 'Bergesen, J. D., Heath, G. A., Gibon, T., & Suh, S. (2014).
+        Thin-film photovoltaic power generation offers decreasing greenhouse gas
+        emissions and increasing environmental co-benefits in the long term.
+        Environmental Science & Technology, 48(16), 9834–9843.'
 
       Url: 'https://doi.org/10.1021/es405539z'
 
       Category: 'NREL'
-      
+
     Source3:
-      Name: 'Life cycle inventories and life cycle assessment of photovoltaic 
-      systems'
-      
+      Name: 'Life cycle inventories and life cycle assessment of photovoltaic systems'
+
       Year: 2015
 
-      TextReference: 'Frischknecht, R., Itten, R., Sinha, P., 
-      de Wild-Scholten, M., Zhang, J., Fthenakis, V., Kim, H. C., Raugei, M.,
-      & Stucki, M. (2015). Life cycle inventories and life cycle assessment 
-      of photovoltaic systems. International Energy Agency (IEA) PVPS Task 
-      12, Report T12, 4, 2015.'
+      TextReference: 'Frischknecht, R., Itten, R., Sinha, P., de Wild-Scholten, M.,
+        Zhang, J., Fthenakis, V., Kim, H. C., Raugei, M., & Stucki, M. (2015).
+        Life cycle inventories and life cycle assessment of photovoltaic
+        systems. International Energy Agency (IEA) PVPS Task 12, Report T12, 4,
+        2015.'
 
       Url: 'https://iea-pvps.org/wp-content/uploads/2020/01/IEA-PVPS_Task_12_LCI_LCA.pdf'
 
       Category: 'NREL'
-      
-     Source4:
-      Name: 'Energy payback and life‐cycle CO2 emissions of the BOS in an optimized 
-      3.5 MW PV installation'
-      
+
+    Source4:
+      Name: 'Energy payback and life‐cycle CO2 emissions of the BOS in an optimized
+        3.5 MW PV installation'
+
       Year: 2015
 
-      TextReference: 'Mason, J. E., Fthenakis, V. M., Hansen, T., & Kim, H. C. 
-      (2006). Energy payback and life‐cycle CO2 emissions of the BOS in an optimized 
-      3.5 MW PV installation. Progress in Photovoltaics: Research and Applications, 
-      14(2), 179–190.'
+      TextReference: 'Mason, J. E., Fthenakis, V. M., Hansen, T., & Kim, H. C. (2006).
+        Energy payback and life‐cycle CO2 emissions of the BOS in an optimized
+        3.5 MW PV installation. Progress in Photovoltaics: Research and
+        Applications, 14(2), 179–190.'
 
       Url: 'https://doi.org/10.1002/pip.652'
-      
+
       Category: 'Brookhaven'
 
-     Source5:
+    Source5:
       Name: 'National Solar Radiation Database (NSRDB)'
-      
+
       Year: 2018
 
-      TextReference: 'National Renewable Energy Laboratory. (2018). National Solar 
-      Radiation Database (NSRDB) [data set]. Retrieved from 
-      https://dx.doi.org/10.25984/1810289.'
+      TextReference: 'National Renewable Energy Laboratory. (2018). National Solar
+        Radiation Database (NSRDB) [data set]. Retrieved from
+        https://dx.doi.org/10.25984/1810289.'
 
       Url: 'https://dx.doi.org/10.25984/1810289'
-      
+
       Category: 'NREL'
 solarthermal:
 
-  techno_intro: &solarthermal_techno_intro
+  techno_intro:
 
-  - 'This process represents the cradle-to-gate inventory for electricity
-    production from US solar thermal power plants. '
+    &solarthermal_techno_intro
+    - 'This process represents the cradle-to-gate inventory
+      for electricity production from US solar thermal power plants. '
 
-  techno_process: &solarthermal_techno_process
+  techno_process:
 
-  - 'Inventories were developed for each solar thermal plant in the 2016 EIA
-    860 data. Boundaries include plant construction and minor operating
-    emissions from fuel combustion, etc. The inventory for the plant is
-    allocated over an assumed 30 year life. The aggregation performed in the
-    electricity LCI code will then divide those inventories by the generation
-    in the selected year to provide results on the basis of MWh.'
+    &solarthermal_techno_process
+    - 'Inventories were developed for each solar thermal
+      plant in the 2016 EIA 860 data. Boundaries include plant construction and
+      minor operating emissions from fuel combustion, etc. The inventory for the
+      plant is allocated over an assumed 30 year life. The aggregation performed
+      in the electricity LCI code will then divide those inventories by the
+      generation in the selected year to provide results on the basis of MWh.'
 
   Description:
   - *solarthermal_techno_intro
@@ -711,34 +715,32 @@ solarthermal:
 
   DataDocumentor: 'NETL'
 
-  DataTreatment: 'Material requirements to construct the wind farm are
-    calculated using turbine manufacturer and size information. The total
-    inventory from construction and operations of the wind farm are then
-    divided by the assumed 30 year lifetime to provide emissions per year.
-    When these emissions are divided by the generation for the specified year
-    in the electricity baseline code, the inventory is placed on the basis of
-    1 MWh.'
+  DataTreatment: 'Material requirements to construct the wind farm are calculated
+    using turbine manufacturer and size information. The total inventory from
+    construction and operations of the wind farm are then divided by the assumed
+    30 year lifetime to provide emissions per year. When these emissions are
+    divided by the generation for the specified year in the electricity baseline
+    code, the inventory is placed on the basis of 1 MWh.'
 
-  DataSelection: 'Where possible data is sourced from freely available life
-    cycle data, such as NETL unit processes or USLCI. If the material was not
+  DataSelection: 'Where possible data is sourced from freely available life cycle
+    data, such as NETL unit processes or USLCI. If the material was not
     available there then ecoinvent processes are used.'
 
   DataCollectionPeriod: '2018'
 
-  sampling_procedure :
-    - 'BOUNDARY CONDITIONS
+  sampling_procedure:
+  - 'BOUNDARY CONDITIONS
 
-      The boundaries include power plant construction with all known material
-      inputs (e.g., steel, glass, concrete) and some minor material
-      requirements and fuel combustion for plant operation. '
+    The boundaries include power plant construction with all known material
+    inputs (e.g., steel, glass, concrete) and some minor material requirements
+    and fuel combustion for plant operation. '
 
-    - 'DATA COLLECTION
+  - 'DATA COLLECTION
 
-      Data for the material inputs to the plant are from:
-      NETL unit processes, US LCI, and ecoinvent.
-      '
+    Data for the material inputs to the plant are from: NETL unit processes, US
+    LCI, and ecoinvent. '
 
-    - *no_uncertainty
+  - *no_uncertainty
 
   Sources:
     Source1:
@@ -746,19 +748,22 @@ solarthermal:
 
 wind:
 
-  techno_intro: &wind_techno_intro
+  techno_intro:
 
-  - 'This process represents the cradle-to-gate inventory for electricity
-    production from US wind farms. '
+    &wind_techno_intro
+    - 'This process represents the cradle-to-gate inventory for
+      electricity production from US wind farms. '
 
-  techno_process: &wind_techno_process
+  techno_process:
 
-  - 'Inventories were developed for each wind farm in the 2016 EIA 860 data.
-    Boundaries include wind turbine construction and minor operating emissions
-    from fuel combustion, maintenance, etc. The inventory for the wind farm is
-    allocated over an assumed 30 year life. The aggregation performed in the
-    electricity LCI code will then divide those inventories by the generation in
-    the selected year to provide results on the basis of MWh.'
+    &wind_techno_process
+    - 'Inventories were developed for each wind farm in the 2016
+      EIA 860 data. Boundaries include wind turbine construction and minor
+      operating emissions from fuel combustion, maintenance, etc. The inventory
+      for the wind farm is allocated over an assumed 30 year life. The
+      aggregation performed in the electricity LCI code will then divide those
+      inventories by the generation in the selected year to provide results on
+      the basis of MWh.'
 
   Description:
   - *wind_techno_intro
@@ -772,36 +777,33 @@ wind:
 
   DataDocumentor: 'NETL'
 
-  DataTreatment: 'Material requirements to construct the wind farm are
-    calculated using wind turbine manufacturer and size information
-    to for each turbine and aggregating all of the turbines in the wind farm.
-    The total inventory from construction and operations over the plant life
-    are then divided by the assumed 30 year lifetime to provide emissions per
-    year. When these emissions are divided by the generation for the specified
-    year in the electricity baseline code, the inventory is placed on the basis
-    of 1 MWh.'
+  DataTreatment: 'Material requirements to construct the wind farm are calculated
+    using wind turbine manufacturer and size information to for each turbine and
+    aggregating all of the turbines in the wind farm. The total inventory from
+    construction and operations over the plant life are then divided by the
+    assumed 30 year lifetime to provide emissions per year. When these emissions
+    are divided by the generation for the specified year in the electricity
+    baseline code, the inventory is placed on the basis of 1 MWh.'
 
-  DataSelection: 'Where possible data is sourced from freely available life
-    cycle data, such as NETL unit processes or USLCI. If the material was not
+  DataSelection: 'Where possible data is sourced from freely available life cycle
+    data, such as NETL unit processes or USLCI. If the material was not
     available there then ecoinvent processes are used.'
 
   DataCollectionPeriod: '2018'
 
-  sampling_procedure :
-    - 'BOUNDARY CONDITIONS
+  sampling_procedure:
+  - 'BOUNDARY CONDITIONS
 
-      The boundaries include power plant construction with all known material
-      inputs (e.g., steel, glass fiber, concrete) and some minor material
-      requirements and fuel combustion for plant operation.
-      '
+    The boundaries include power plant construction with all known material
+    inputs (e.g., steel, glass fiber, concrete) and some minor material
+    requirements and fuel combustion for plant operation. '
 
-    - 'DATA COLLECTION
+  - 'DATA COLLECTION
 
-      Data for the material inputs to the plant are from:
-      NETL unit processes, US LCI, and ecoinvent.
-      '
+    Data for the material inputs to the plant are from: NETL unit processes, US
+    LCI, and ecoinvent. '
 
-    - *no_uncertainty
+  - *no_uncertainty
 
   Sources:
     Source1:
@@ -809,18 +811,20 @@ wind:
 
 consumption_mix:
 
-  techno_intro: &cons_mix_techno_intro
+  techno_intro:
 
-  - 'This process provides the electricity inputs from the various balancing
-    authority areas or eGRID subregions that makes up the consumption mix for
-    the stated region.'
+    &cons_mix_techno_intro
+    - 'This process provides the electricity inputs from the
+      various balancing authority areas or eGRID subregions that makes up the
+      consumption mix for the stated region.'
 
-  techno_process: &cons_mix_techno_process
+  techno_process:
 
-  - 'There should exist inputs for all generation mixes that contribute to the
-    consumption mix of the stated region, but in some cases there may not be
-    an available provider. This likely means that there was no available data
-    for the generation mix for that region.'
+    &cons_mix_techno_process
+    - 'There should exist inputs for all generation mixes
+      that contribute to the consumption mix of the stated region, but in some
+      cases there may not be an available provider. This likely means that there
+      was no available data for the generation mix for that region.'
 
   Description:
   - *cons_mix_techno_intro
@@ -829,8 +833,8 @@ consumption_mix:
   TechnologyDescription:
 
   use_egrid:
-    DataTreatment: 'FERC Form 714 and international trading data in conjunction
-      with the updated generation mixes. There are two different approaches to
+    DataTreatment: 'FERC Form 714 and international trading data in conjunction with
+      the updated generation mixes. There are two different approaches to
       estimating generation mixes described here: 1) Net Trading and 2) Gross
       Trading. Both approaches are based on a trading methodology intended to
       replicate real-world electricity trading between eGRID subregions within
@@ -838,32 +842,31 @@ consumption_mix:
       first provide electricity for their own demand and provide any surpluses
       (generation>demand) to the shared pool for their respective NERC region
       whereas the Gross Trading approach contributes all trades out to the
-      shared NERC pool then the eGRID regions draw from that shared pool to
-      meet their annual demand. '
+      shared NERC pool then the eGRID regions draw from that shared pool to meet
+      their annual demand. '
 
-    DataCollectionPeriod: 'The FERC Form 714 data used to model the trading for
-      the consumption inventories is based on 2014 reported trades.'
+    DataCollectionPeriod: 'The FERC Form 714 data used to model the trading for the
+      consumption inventories is based on 2014 reported trades.'
 
     DataSelection: 'FERC Form 714'
 
     Sources:
       Source1:
-        Name: 'Hottle & Ghosh (2021) Regional electricity consumption mixes
-          using trade data for representative inventories'
+        Name: 'Hottle & Ghosh (2021) Regional electricity consumption mixes using trade
+          data for representative inventories'
 
         Url: 'https://doi.org/10.1007/s11367-021-01876-3'
 
         TextReference: 'Hottle, T., and Ghosh, T. (2021), Regional electricity
-          consumption mixes using trade data for representative inventories,
-          The International Journal of Life Cycle Assessment 26(6):1211-1222,
-          doi: 10.1007/s11367-021-01876-3'
+          consumption mixes using trade data for representative inventories, The
+          International Journal of Life Cycle Assessment 26(6):1211-1222, doi:
+          10.1007/s11367-021-01876-3'
 
         Year: 2021
 
         Version: '1.0.2'
 
         Category: ''
-
 
   replace_egrid:
     DataTreatment: 'US Energy Information Administration (EIA) Form EIA-930
@@ -874,23 +877,23 @@ consumption_mix:
       levels of aggregation (BA, FERC, and US) are linked to balancing authority
       area generation mixes. '
 
-    DataCollectionPeriod: 'Form EIA-930 data is available from the last half of
-      2015 through today via the bulk data download that the module uses. All
-      years between are available for generating consumption mixes.'
+    DataCollectionPeriod: 'Form EIA-930 data is available from the last half of 2015
+      through today via the bulk data download that the module uses. All years
+      between are available for generating consumption mixes.'
 
     DataSelection: 'EIA Form 930 and EIA 923'
 
     Sources:
       Source1:
-        Name: 'de Chalendar et al. (2019). Tracking emissions in the US
-          electricity system'
+        Name: 'de Chalendar et al. (2019). Tracking emissions in the US electricity
+          system'
 
         Url: 'https://doi.org/10.1073/pnas.1912950116'
 
-        TextReference: 'de Chalendar, J. A., Taggart, J., & Benson, S. M.
-          (2019). Tracking emissions in the US electricity system.
-          Proceedings of the National Academy of Sciences, 116(51),
-          25497-25502. doi: 10.1073/pnas.1912950116'
+        TextReference: 'de Chalendar, J. A., Taggart, J., & Benson, S. M. (2019).
+          Tracking emissions in the US electricity system. Proceedings of the
+          National Academy of Sciences, 116(51), 25497-25502. doi:
+          10.1073/pnas.1912950116'
 
         Year: 2020
 
@@ -899,17 +902,15 @@ consumption_mix:
         Category: ''
 
       Source2:
-        Name: 'Qu et al. (2017). A Quasi-Input-Output model to improve the
-          estimation of emission factors for purchased electricity from
-          interconnected grids.'
+        Name: 'Qu et al. (2017). A Quasi-Input-Output model to improve the estimation of
+          emission factors for purchased electricity from interconnected grids.'
 
         Url: 'https://doi.org/10.1016/j.apenergy.2017.05.046'
 
-        TextReference: 'Qu, S., Wang, H., Liang, S., Shapiro, A.M., Suh, S.,
-          Sheldon, S., Zik, O., Fang, H., and Xu, M. (2017).
-          A Quasi-Input-Output model to improve the estimation of emission
-          factors for purchased electricity from interconnected grids.
-          Applied Energy, 200, 249-259.'
+        TextReference: 'Qu, S., Wang, H., Liang, S., Shapiro, A.M., Suh, S., Sheldon,
+          S., Zik, O., Fang, H., and Xu, M. (2017). A Quasi-Input-Output model
+          to improve the estimation of emission factors for purchased
+          electricity from interconnected grids. Applied Energy, 200, 249-259.'
 
         Year: 2017
 
@@ -919,14 +920,14 @@ consumption_mix:
 
       Source3:
 
-        Name: 'Qu et al. (2018). Virtual CO2 Emission Flows in the
-          Global Electricity Trade Network'
+        Name: 'Qu et al. (2018). Virtual CO2 Emission Flows in the Global Electricity
+          Trade Network'
 
         Url: 'https://doi.org/10.1021/acs.est.7b05191'
 
-        TextReference: 'Qu, S., Li, Y., Yuan, J., and Xu, M.  (2018). Virtual
-          CO2 Emission Flows in the Global Electricity Trade Network.
-          Environmental Science & Technology, 52(11), 6666-6675.'
+        TextReference: 'Qu, S., Li, Y., Yuan, J., and Xu, M.  (2018). Virtual CO2
+          Emission Flows in the Global Electricity Trade Network. Environmental
+          Science & Technology, 52(11), 6666-6675.'
 
         Year: 2018
 
@@ -935,23 +936,25 @@ consumption_mix:
         Category: ''
 
       Source4:
-          <<: *ingwersen_2024
-
+        <<: *ingwersen_2024
 
 generation_mix:
 
-  techno_intro: &gen_mix_techno_intro
+  techno_intro:
 
-  - 'This process provides the electricity inputs from the various generation
-    technologies within the region that make up the regions electricity
-    generation mix.'
+    &gen_mix_techno_intro
+    - 'This process provides the electricity inputs from the
+      various generation technologies within the region that make up the regions
+      electricity generation mix.'
 
-  techno_process: &gen_mix_techno_process
+  techno_process:
 
-  - 'There should exist inputs for all generation technologies that contribute
-    to the generation mix of the stated region, but in some cases there may not
-    be an available provider. This likely means that there was no available data
-    for the technology type in that region.'
+    &gen_mix_techno_process
+    - 'There should exist inputs for all generation
+      technologies that contribute to the generation mix of the stated region,
+      but in some cases there may not be an available provider. This likely
+      means that there was no available data for the technology type in that
+      region.'
 
   Description:
   - *gen_mix_techno_intro
@@ -960,8 +963,8 @@ generation_mix:
   TechnologyDescription:
 
   use_egrid:
-    DataTreatment: 'FERC Form 714 and international trading data in conjunction
-      with the updated generation mixes. There are two different approaches to
+    DataTreatment: 'FERC Form 714 and international trading data in conjunction with
+      the updated generation mixes. There are two different approaches to
       estimating generation mixes described here: 1) Net Trading and 2) Gross
       Trading. Both approaches are based on a trading methodology intended to
       replicate real-world electricity trading between eGRID subregions within
@@ -969,11 +972,11 @@ generation_mix:
       first provide electricity for their own demand and provide any surpluses
       (generation>demand) to the shared pool for their respective NERC region
       whereas the Gross Trading approach contributes all trades out to the
-      shared NERC pool then the eGRID regions draw from that shared pool to
-      meet their annual demand. '
+      shared NERC pool then the eGRID regions draw from that shared pool to meet
+      their annual demand. '
 
-    DataCollectionPeriod: 'The FERC Form 714 data used to model the trading for
-      the consumption inventories is based on 2014 reported trades.'
+    DataCollectionPeriod: 'The FERC Form 714 data used to model the trading for the
+      consumption inventories is based on 2014 reported trades.'
 
     DataSelection: 'FERC Form 714'
 
@@ -986,27 +989,31 @@ generation_mix:
       levels of aggregation (BA, FERC, and US) are linked to balancing authority
       area generation mixes. '
 
-    DataCollectionPeriod: 'Form EIA-930 data is available from the last half of
-      2015 through today via the bulk data download that the module uses. All
-      years between are available for generating consumption mixes.'
+    DataCollectionPeriod: 'Form EIA-930 data is available from the last half of 2015
+      through today via the bulk data download that the module uses. All years
+      between are available for generating consumption mixes.'
 
     DataSelection: 'EIA Form 930 and EIA 923'
 
 coal_upstream:
 
-  techno_intro: &coal_upstream_techno_intro
+  techno_intro:
 
-  - 'The cradle-to-gate inventory for production of coal aggregated to basin,
-    mine type, and coal type groups. '
+    &coal_upstream_techno_intro
+    - 'The cradle-to-gate inventory for production of coal
+      aggregated to basin, mine type, and coal type groups. '
 
-  techno_process: &coal_upstream_techno_process
+  techno_process:
 
-  - 'For coal extraction there are two major processes that form the basis
-    of the coal life cycle model - underground and surface coal mining. These
-    are connected to auxiliary processes that provide inventories from things
-    like coal mine methane emissions, water use, water emissions, etc. All processes use parameters that allow some differentiation based on region or
-    coal type. Details on the coal modeling can be found in the NETL Coal
-    Baseline report published in 2023: https://doi.org/10.2172/2370100.'
+    &coal_upstream_techno_process
+    - 'For coal extraction there are two major processes
+      that form the basis of the coal life cycle model - underground and surface
+      coal mining. These are connected to auxiliary processes that provide
+      inventories from things like coal mine methane emissions, water use, water
+      emissions, etc. All processes use parameters that allow some
+      differentiation based on region or coal type. Details on the coal modeling
+      can be found in the NETL Coal Baseline report published in 2023:
+      https://doi.org/10.2172/2370100.'
 
   Description:
   - *coal_upstream_techno_intro
@@ -1024,14 +1031,14 @@ coal_upstream:
 
   DataDocumentor: 'NETL'
 
-  ModelingConstants: 'The model scope is intended to include fossil fuel
-    resource production through delivery to the end user via the vehicle or
-    pipeline transport in the United States. This scope is broken down into
-    stages for production, mixes of produced fuel, mixes of consumed fuel, and
-    distribution to the final user. Inputs to fuel production including fuels,
-    capital infrastructure and other purchased goods or extracted resources, and
-    any chemical release and hazardous wastes generated. One megajoule (MJ) is
-    the declared unit used in processes within upstream life cycle stages. '
+  ModelingConstants: 'The model scope is intended to include fossil fuel resource
+    production through delivery to the end user via the vehicle or pipeline
+    transport in the United States. This scope is broken down into stages for
+    production, mixes of produced fuel, mixes of consumed fuel, and distribution
+    to the final user. Inputs to fuel production including fuels, capital
+    infrastructure and other purchased goods or extracted resources, and any
+    chemical release and hazardous wastes generated. One megajoule (MJ) is the
+    declared unit used in processes within upstream life cycle stages. '
 
   DataSelection: 'USGS data was crucial in contributing data on coal production
     and blending through their guidelines on coal resource estimation and
@@ -1040,29 +1047,29 @@ coal_upstream:
     also provide heat-content data on fossil and nuclear fuel inputs which are
     used to relate heat input data to mass quantities of fuel and air emissions
     factors for fuels. These data are used for modeling fossil fuel production
-    across regions. Further information can be found in the coal baseline
-    report published in 2023: https://doi.org/10.2172/2370100.'
+    across regions. Further information can be found in the coal baseline report
+    published in 2023: https://doi.org/10.2172/2370100.'
 
-  DataTreatment: 'The coal model divides annual reported and calculated
-    emissions by either the production rate at a mine or the throughput at a
-    facility to provide results on the basis of 1 kg coal.'
+  DataTreatment: 'The coal model divides annual reported and calculated emissions
+    by either the production rate at a mine or the throughput at a facility to
+    provide results on the basis of 1 kg coal.'
 
   SamplingProcedure:
-    - 'BOUNDARY CONDITIONS
+  - 'BOUNDARY CONDITIONS
 
-      The coal life cycle model includes emissions from coal mining itself, the
-      manufacturing of coal mining equipment, site construction and
-      commissioning, and coal cleaning as applicable.'
+    The coal life cycle model includes emissions from coal mining itself, the
+    manufacturing of coal mining equipment, site construction and commissioning,
+    and coal cleaning as applicable.'
 
-    - 'DATA COLLECTION
+  - 'DATA COLLECTION
 
-      All inventories were calculated using secondary data
-      from publicly available datasets.'
+    All inventories were calculated using secondary data from publicly available
+    datasets.'
 
-    - *no_uncertainty
+  - *no_uncertainty
 
-  DataCollectionPeriod: 'Data from 2016 were used to define the amount, type,
-    and origin of the coal used by each power plant, as well as year-specific
+  DataCollectionPeriod: 'Data from 2016 were used to define the amount, type, and
+    origin of the coal used by each power plant, as well as year-specific
     parameters such as coal mine methane emissions.'
 
   Sources:
@@ -1071,25 +1078,25 @@ coal_upstream:
 
       <<: *netl_coal_baseline
 
-
-
 gas_upstream:
 
-  techno_intro: &gas_upstream_techno_intro
+  techno_intro:
 
-  - 'The cradle-to-gate inventory for production of gas aggregated to basin. '
+    &gas_upstream_techno_intro
+    - 'The cradle-to-gate inventory for production of gas aggregated to basin. '
 
-  techno_process: &gas_upstream_techno_process
+  techno_process:
 
-  - 'The NETL natural gas life cycle model includes parameters to generate
-    inventories for natural gas extraction based on basin and geology which
-    determines the gas extraction type (e.g., Appalachian Shale using hydraulic
-    fracturing). 2016 natural gas production then informs the amount of each
-    type of technology/region that form the mix in the regions. These can be
-    further aggregated to a US average. More details are in the natural gas
-    upstream report at the link below
+    &gas_upstream_techno_process
+    - 'The NETL natural gas life cycle model includes
+      parameters to generate inventories for natural gas extraction based on
+      basin and geology which determines the gas extraction type (e.g.,
+      Appalachian Shale using hydraulic fracturing). 2016 natural gas production
+      then informs the amount of each type of technology/region that form the
+      mix in the regions. These can be further aggregated to a US average. More
+      details are in the natural gas upstream report at the link below
 
-    https://www.netl.doe.gov/energy-analysis/details?id=3198'
+      https://www.netl.doe.gov/energy-analysis/details?id=3198'
 
   Description:
   - *gas_upstream_techno_intro
@@ -1107,13 +1114,13 @@ gas_upstream:
 
   DataDocumentor: 'NETL'
 
-  ModelingConstants: 'The model scope is intended to include fossil fuel
-    resource production through delivery to the end user via the vehicle or
-    pipeline transport in the United States. This scope is broken down into
-    stages for production, mixes of produced fuel, mixes of consumed fuel, and
-    distribution to the final user. Inputs to fuel production including fuels,
-    capital infrastructure and other purchased goods or extracted resources,
-    and any chemical release and hazardous wastes generated.'
+  ModelingConstants: 'The model scope is intended to include fossil fuel resource
+    production through delivery to the end user via the vehicle or pipeline
+    transport in the United States. This scope is broken down into stages for
+    production, mixes of produced fuel, mixes of consumed fuel, and distribution
+    to the final user. Inputs to fuel production including fuels, capital
+    infrastructure and other purchased goods or extracted resources, and any
+    chemical release and hazardous wastes generated.'
 
   DataSelection: 'Data for this system process comes from a variety of sources.
     Main sources for emissions are EPA Greenhouse Gas Reporting Program and
@@ -1124,36 +1131,33 @@ gas_upstream:
     facility to provide results on the basis of 1 MJ natural gas (HHV).'
 
   SamplingProcedure:
-    - 'BOUNDARY CONDITIONS
+  - 'BOUNDARY CONDITIONS
 
-      These are system processes that provide cradle-to-gate inventory for
-      the US production of natural gas.'
+    These are system processes that provide cradle-to-gate inventory for the US
+    production of natural gas.'
 
-    - 'DATA COLLECTION
+  - 'DATA COLLECTION
 
-      All inventories were calculated using secondary data
-      from publicly available datasets.'
+    All inventories were calculated using secondary data from publicly available
+    datasets.'
 
-    - 'UNCERTAINTY
+  - 'UNCERTAINTY
 
-      Portions (mainly greenhouse gasses) of this inventory provided by this
-      unit process are the average of a bootstrapping approach to find the
-      average based on a relatively small sample of facilities in the natural
-      gas supply chain. Other portions of the natural gas life cycle did not
-      consider uncertainty. In either case, the unit process used for the
-      inventory does not provide any uncertainty - i.e., all emissions are
-      static values.'
+    Portions (mainly greenhouse gasses) of this inventory provided by this unit
+    process are the average of a bootstrapping approach to find the average
+    based on a relatively small sample of facilities in the natural gas supply
+    chain. Other portions of the natural gas life cycle did not consider
+    uncertainty. In either case, the unit process used for the inventory does
+    not provide any uncertainty - i.e., all emissions are static values.'
 
-    - 'MORE INFORMATION
-      More information on the inventory is available at
-      https://www.netl.doe.gov/energy-analysis/details?id=3198
-      '
+  - 'MORE INFORMATION More information on the inventory is available at
+    https://www.netl.doe.gov/energy-analysis/details?id=3198 '
   Sources:
 
     Source1:
 
-      Name: 'NETL (2019). Life Cycle Analysis of Natural Gas Extraction and
-        Power Generation'
+      Name: 'NETL (2019). Life Cycle Analysis of Natural Gas Extraction and Power
+        Generation'
 
       Url: 'https://netl.doe.gov/energy-analysis/details?id=3198'
 
@@ -1161,37 +1165,39 @@ gas_upstream:
 
       Year: 2019
 
-      TextReference: 'NETL. (2019). Life Cycle Analysis of Natural Gas
-        Extraction and Power Generation. DOE/NETL-2019/2039. U.S. DOE National
-        Energy Technology Laboratory, Pittsburgh, PA.
+      TextReference: 'NETL. (2019). Life Cycle Analysis of Natural Gas Extraction and
+        Power Generation. DOE/NETL-2019/2039. U.S. DOE National Energy
+        Technology Laboratory, Pittsburgh, PA.
         https://netl.doe.gov/energy-analysis/details?id=3198'
 
       Category: 'NETL'
 
 oil_upstream:
 
-  techno_intro: &oil_upstream_techno_intro
+  techno_intro:
 
-  - 'The cradle-to-gate inventory for production of refinery products (residual
-    fuel oil or diesel fuel oil) for each U.S. Petroleum Administration for
-    Defense District (PADD). '
+    &oil_upstream_techno_intro
+    - 'The cradle-to-gate inventory for production of
+      refinery products (residual fuel oil or diesel fuel oil) for each U.S.
+      Petroleum Administration for Defense District (PADD). '
 
-  techno_process: &oil_upstream_techno_process
+  techno_process:
 
-  - 'The method for generating the inventory largely follows the method detailed
-    in the journal article below, but in this case 2016 data was used for
-    determining crude mixes new versions of the model were used.
-    Additionally, OPGEE was used to provide only the amounts of various fuels
-    used in the production of crude, and NETL unit processes were used for
-    combustion of those fuels to provide a more complete inventory.
+    &oil_upstream_techno_process
+    - 'The method for generating the inventory largely
+      follows the method detailed in the journal article below, but in this case
+      2016 data was used for determining crude mixes new versions of the model
+      were used. Additionally, OPGEE was used to provide only the amounts of
+      various fuels used in the production of crude, and NETL unit processes
+      were used for combustion of those fuels to provide a more complete
+      inventory.
 
-    https://pubs.acs.org/doi/abs/10.1021/acs.est.6b02819
+      https://pubs.acs.org/doi/abs/10.1021/acs.est.6b02819
 
-    The model is constructed to provide the inventory for diesel fuel oil or
-    residual fuel oil based on PADD. This inventory includes crude extraction
-    (foreign and domestic), crude transportation, crude refining, and fuel
-    transportation.
-    '
+      The model is constructed to provide the inventory for diesel fuel oil or
+      residual fuel oil based on PADD. This inventory includes crude extraction
+      (foreign and domestic), crude transportation, crude refining, and fuel
+      transportation. '
 
   Description:
   - *oil_upstream_techno_intro
@@ -1209,14 +1215,14 @@ oil_upstream:
 
   DataDocumentor: 'Stanford University, University of Calgary, and NETL'
 
-  ModelingConstants: 'The model scope is intended to include fossil fuel
-    resource production through delivery to the end user via the vehicle or
-    pipeline transport in the United States. This scope is broken down into
-    stages for production, mixes of produced fuel, mixes of consumed fuel, and
-    distribution to the final user. Inputs to fuel production including fuels,
-    capital infrastructure and other purchased goods or extracted resources, and
-    any chemical release and hazardous wastes generated. One megajoule (MJ) is
-    the declared unit used in processes within upstream life cycle stages. '
+  ModelingConstants: 'The model scope is intended to include fossil fuel resource
+    production through delivery to the end user via the vehicle or pipeline
+    transport in the United States. This scope is broken down into stages for
+    production, mixes of produced fuel, mixes of consumed fuel, and distribution
+    to the final user. Inputs to fuel production including fuels, capital
+    infrastructure and other purchased goods or extracted resources, and any
+    chemical release and hazardous wastes generated. One megajoule (MJ) is the
+    declared unit used in processes within upstream life cycle stages. '
 
   DataSelection: 'The Oil Production Greenhouse gas Emissions Estimator (OPGEE)
     and the Petroleum Refinery Life Cycle Inventory Model (PRELIM) were the main
@@ -1226,49 +1232,48 @@ oil_upstream:
     emissions for crude oil from its extraction until it arrives at a refinery,
     including transport. PRELIM is mass and energy-based process model that
     estimates of energy use and GHG emissions with processing crude oil in a
-    refinery.
-    Further information can be found in the petroleum baseline report.'
+    refinery. Further information can be found in the petroleum baseline
+    report.'
 
   DataTreatment: 'Resource extraction processes are primarily based on
     PADD-reported data. All the fields defined through OPGEE were used as the
     pool for creating the LCI. The production quantities reported throughout the
     baselines list were used for the physical flows and to generate the
-    emissions and wastes values from facilities like refineries.
-    Locational data was used to associate a field with a region. Each fuel
-    production process, defined by fuel type and regions, includes emissions
-    to air and water.'
+    emissions and wastes values from facilities like refineries. Locational data
+    was used to associate a field with a region. Each fuel production process,
+    defined by fuel type and regions, includes emissions to air and water.'
 
   SamplingProcedure:
-    - 'BOUNDARY CONDITIONS
+  - 'BOUNDARY CONDITIONS
 
-      All processes are compiled by US region using boundaries based on PADDs
-      defined as ''subregions'' by the Energy Information Administration (EIA).
-      Upstream fuel processes are also aggregated by energy source. Delivery to
-      the final user is targeted toward an average end user without separation
-      between different user types. The time span for all processes is one
-      year, with the goal to represent the current (2018) year.'
+    All processes are compiled by US region using boundaries based on PADDs
+    defined as ''subregions'' by the Energy Information Administration (EIA).
+    Upstream fuel processes are also aggregated by energy source. Delivery to
+    the final user is targeted toward an average end user without separation
+    between different user types. The time span for all processes is one year,
+    with the goal to represent the current (2018) year.'
 
-    - 'DATA COLLECTION
+  - 'DATA COLLECTION
 
-      All inventories were calculated using secondary data
-      from publicly available datasets.'
+    All inventories were calculated using secondary data from publicly available
+    datasets.'
 
-    - *no_uncertainty
+  - *no_uncertainty
 
-  DataCollectionPeriod: 'Data from 2016 was used to define the mix of crudes
-    and petroleum refinery types.'
+  DataCollectionPeriod: 'Data from 2016 was used to define the mix of crudes and
+    petroleum refinery types.'
 
   Sources:
     Source1:
-      Name: 'Cooney et al. (2016). Updating the U.S. Life Cycle GHG
-        Petroleum Baseline to 2014 with Projections to 2040 Using Open-Source
-        Engineering-Based Models.'
+      Name: 'Cooney et al. (2016). Updating the U.S. Life Cycle GHG Petroleum Baseline
+        to 2014 with Projections to 2040 Using Open-Source Engineering-Based
+        Models.'
 
-      TextReference: 'Cooney, G., Jamieson, M., Marriott, J., Bergerson, J.,
-        Brandt, A., & Skone, T. (2016). Updating the U.S. Life Cycle GHG
-        Petroleum Baseline to 2014 with Projections to 2040 Using Open-Source
-        Engineering-Based Models. Environmental Science & Technology.
-        doi: 10.1021/acs.est.6b02819'
+      TextReference: 'Cooney, G., Jamieson, M., Marriott, J., Bergerson, J., Brandt,
+        A., & Skone, T. (2016). Updating the U.S. Life Cycle GHG Petroleum
+        Baseline to 2014 with Projections to 2040 Using Open-Source
+        Engineering-Based Models. Environmental Science & Technology. doi:
+        10.1021/acs.est.6b02819'
 
       Year: 2016
 
@@ -1280,22 +1285,25 @@ oil_upstream:
 
 coal_transport_upstream:
 
-  techno_intro: &coal_transport_techno_intro
+  techno_intro:
 
-  - 'The cradle-to-gate inventory for the transportation
-    of coal aggregated to basin, mine type, and coal type groups and also for
-    the various modes of coal transportation. '
+    &coal_transport_techno_intro
+    - 'The cradle-to-gate inventory for the
+      transportation of coal aggregated to basin, mine type, and coal type
+      groups and also for the various modes of coal transportation. '
 
-  techno_process: &coal_transport_techno_process
+  techno_process:
 
-  - 'This inventory includes impacts from fuel combustion for the various modes
-    of coal transportation to power plants - train, truck, tug and barge, ocean
-    vessel, lake vessel, and conveyer. The aggregated inventory is created by
-    using the transportation distances for each mode of transportation for each
-    power plant reporting coal receipts in EIA for the year 2016. These
-    inventories are then added to the power plant as upstream impacts similar
-    to upstream coal. Details on the coal modeling can be found in the NETL
-    Coal Baseline published in 2023: https://doi.org/10.2172/2370100.'
+    &coal_transport_techno_process
+    - 'This inventory includes impacts from fuel
+      combustion for the various modes of coal transportation to power plants -
+      train, truck, tug and barge, ocean vessel, lake vessel, and conveyer. The
+      aggregated inventory is created by using the transportation distances for
+      each mode of transportation for each power plant reporting coal receipts
+      in EIA for the year 2016. These inventories are then added to the power
+      plant as upstream impacts similar to upstream coal. Details on the coal
+      modeling can be found in the NETL Coal Baseline published in 2023:
+      https://doi.org/10.2172/2370100.'
 
   Description:
   - *coal_transport_techno_intro
@@ -1313,25 +1321,25 @@ coal_transport_upstream:
 
   DataDocumentor: 'NETL'
 
-  ModelingConstants: 'The model scope is intended to include fossil fuel
-    resource production through delivery to the end user via the vehicle or
-    pipeline transport in the United States. This scope is broken down into
-    stages for production, mixes of produced fuel, mixes of consumed fuel, and
-    distribution to the final user. Inputs to fuel production including fuels,
-    capital infrastructure and other purchased goods or extracted resources, and
-    any chemical release and hazardous wastes generated. One megajoule (MJ) is
-    the declared unit used in processes within upstream life cycle stages. '
+  ModelingConstants: 'The model scope is intended to include fossil fuel resource
+    production through delivery to the end user via the vehicle or pipeline
+    transport in the United States. This scope is broken down into stages for
+    production, mixes of produced fuel, mixes of consumed fuel, and distribution
+    to the final user. Inputs to fuel production including fuels, capital
+    infrastructure and other purchased goods or extracted resources, and any
+    chemical release and hazardous wastes generated. One megajoule (MJ) is the
+    declared unit used in processes within upstream life cycle stages. '
 
-  DataSelection: 'AP-42 is a compilation of air emissions factors for over 200
-    air pollution source categories across various industries. AP-42 and EIA
-    also provide heat-content data on petroleum fuel inputs which are used to
-    relate heat input data to mass quantities of fuel and air emissions factors
-    for fuels. These data are used for modeling fossil fuel transport. Further
-    information can be found in the coal baseline report.
-    Transportation distances are provided by ABB Velocity Suite. The source
-    data has been obfuscated by aggregating transportation distances to
-    transportation - the source includes transportation from power plants to
-    individual mines or processing plants.'
+  DataSelection: 'AP-42 is a compilation of air emissions factors for over 200 air
+    pollution source categories across various industries. AP-42 and EIA also
+    provide heat-content data on petroleum fuel inputs which are used to relate
+    heat input data to mass quantities of fuel and air emissions factors for
+    fuels. These data are used for modeling fossil fuel transport. Further
+    information can be found in the coal baseline report. Transportation
+    distances are provided by ABB Velocity Suite. The source data has been
+    obfuscated by aggregating transportation distances to transportation - the
+    source includes transportation from power plants to individual mines or
+    processing plants.'
 
   DataTreatment: 'Resource extraction processes are primarily based on
     transportation-reported data. All the transportation defined through NETL
@@ -1341,20 +1349,20 @@ coal_transport_upstream:
     type is defined by mode and includes emissions to air and water.'
 
   SamplingProcedure:
-    - 'BOUNDARY CONDITIONS
+  - 'BOUNDARY CONDITIONS
 
-      Coal transportation includes the combustion of fuels to transport
-      coal using the various modes of transportation.'
+    Coal transportation includes the combustion of fuels to transport coal using
+    the various modes of transportation.'
 
-    - 'DATA COLLECTION
+  - 'DATA COLLECTION
 
-      All inventories were calculated using secondary data
-      from publicly available datasets.'
+    All inventories were calculated using secondary data from publicly available
+    datasets.'
 
-    - *no_uncertainty
+  - *no_uncertainty
 
-  DataCollectionPeriod: 'Data from 2016 were used to define the amount, type,
-    and origin of the coal used by each power plant, as well as year-specific
+  DataCollectionPeriod: 'Data from 2016 were used to define the amount, type, and
+    origin of the coal used by each power plant, as well as year-specific
     parameters such as coal mine methane emissions.'
 
   Sources:
@@ -1365,24 +1373,27 @@ coal_transport_upstream:
 
 construction_upstream:
 
-  techno_intro: &construction_techno_intro
+  techno_intro:
 
-  - 'The cradle-to-gate inventory for the construction of the fossil fuel
-    generators (coal, gas, and oil). '
+    &construction_techno_intro
+    - 'The cradle-to-gate inventory for the construction of
+      the fossil fuel generators (coal, gas, and oil). '
 
-  techno_process: &construction_techno_process
+  techno_process:
 
-  - 'The inventories represent the construction of either natural gas
-    combined cycle or coal power plants using an economic input output life
-    cycle inventory model (https://doi.org/10.1016/j.jclepro.2017.04.150) and
-    the construction costs for these plants as detailed by NETL techno-economics
-    analysis (https://www.netl.doe.gov/energy-analysis/details?id=729). These
-    type different types of power plants are then assigned to the various power
-    plants according to the plant they most resemble. The inventories are then
-    scaled according to power plant capacity relative to the source power
-    plants and the allocated over an assumed 30 year life. The single year of
-    impacts are then divided by the generation of the year selected in the
-    model configuration.'
+    &construction_techno_process
+    - 'The inventories represent the construction of
+      either natural gas combined cycle or coal power plants using an economic
+      input output life cycle inventory model
+      (https://doi.org/10.1016/j.jclepro.2017.04.150) and the construction costs
+      for these plants as detailed by NETL techno-economics analysis
+      (https://www.netl.doe.gov/energy-analysis/details?id=729). These type
+      different types of power plants are then assigned to the various power
+      plants according to the plant they most resemble. The inventories are then
+      scaled according to power plant capacity relative to the source power
+      plants and the allocated over an assumed 30 year life. The single year of
+      impacts are then divided by the generation of the year selected in the
+      model configuration.'
 
   Description:
   - *construction_techno_intro
@@ -1398,32 +1409,32 @@ construction_upstream:
 
   ModelingConstants: ''
 
-  DataSelection: 'The inventories represent the construction of either natural
-    gas combined cycle or coal power plants using an economic input output life
+  DataSelection: 'The inventories represent the construction of either natural gas
+    combined cycle or coal power plants using an economic input output life
     cycle inventory model (https://doi.org/10.1016/j.jclepro.2017.04.150) and
     the construction costs for these plants as detailed by NETL techno-economics
     analysis (https://www.netl.doe.gov/energy-analysis/details?id=729).'
 
-  DataTreatment: 'These type different types of power plants are then assigned
-    to the various power plants according to the plant they most resemble. The
+  DataTreatment: 'These type different types of power plants are then assigned to
+    the various power plants according to the plant they most resemble. The
     inventories are then scaled according to power plant capacity relative to
-    the source power plants and the allocated over an assumed 30 year life.
-    The single year of impacts are then divided by the generation of the year
+    the source power plants and the allocated over an assumed 30 year life. The
+    single year of impacts are then divided by the generation of the year
     selected in the model configuration.'
 
   SamplingProcedure:
-    - 'BOUNDARY CONDITIONS
+  - 'BOUNDARY CONDITIONS
 
-      The construction inventories are generated using an economic input output
-      model and so should catch all materials and manufacturing processes that
-      go into creating the power plant.'
+    The construction inventories are generated using an economic input output
+    model and so should catch all materials and manufacturing processes that go
+    into creating the power plant.'
 
-    - 'DATA COLLECTION
+  - 'DATA COLLECTION
 
-      All inventories were calculated using secondary data
-      from publicly available datasets.'
+    All inventories were calculated using secondary data from publicly available
+    datasets.'
 
-    - *no_uncertainty
+  - *no_uncertainty
 
   DataCollectionPeriod: 'Data from a 2015 techo-economics analysis were used to
     define the construction costs for each type of power plant.'
@@ -1437,11 +1448,10 @@ construction_upstream:
 
       Url: 'https://doi.org/10.1016/j.jclepro.2017.04.150'
 
-      TextReference: 'Yang, Y.,
-        Ingwersen, W. W., Hawkins, T. R., Srocka, M., & Meyer, D. E. (2017).
-        USEEIO: A new and transparent United States environmentally-extended
-        input-output model. Journal of Cleaner Production, 158, 308-318. doi:
-        10.1016/j.jclepro.2017.04.150'
+      TextReference: 'Yang, Y., Ingwersen, W. W., Hawkins, T. R., Srocka, M., & Meyer,
+        D. E. (2017). USEEIO: A new and transparent United States
+        environmentally-extended input-output model. Journal of Cleaner
+        Production, 158, 308-318. doi: 10.1016/j.jclepro.2017.04.150'
 
       Year: 2017
 
@@ -1449,19 +1459,17 @@ construction_upstream:
 
       Category: ''
 
-
     Source2:
-      Name: 'NETL. (2015). Cost and Performance Baseline for Fossil
-        Energy Plants Volume 1a: Bituminous Coal (PC) and Natural Gas to
-        Electricity Revision 3.'
+      Name: 'NETL. (2015). Cost and Performance Baseline for Fossil Energy Plants
+        Volume 1a: Bituminous Coal (PC) and Natural Gas to Electricity Revision
+        3.'
 
       Url: 'https://netl.doe.gov/energy-analysis/details?id=729'
 
-      TextReference: 'NETL. (2015). Cost and Performance Baseline for Fossil
-        Energy Plants Volume 1a: Bituminous Coal (PC) and Natural Gas to
-        Electricity Revision 3. Document Number: National Energy Technology
-        Laboratory, from netl.doe.gov/energy-analysis/details?id=729 Pittsburgh,
-        PA.'
+      TextReference: 'NETL. (2015). Cost and Performance Baseline for Fossil Energy
+        Plants Volume 1a: Bituminous Coal (PC) and Natural Gas to Electricity
+        Revision 3. Document Number: National Energy Technology Laboratory, from
+        netl.doe.gov/energy-analysis/details?id=729 Pittsburgh, PA.'
 
       Year: 2015
 
@@ -1470,16 +1478,16 @@ construction_upstream:
       Category: 'NETL'
 solarpv_construction_upstream:
   techno_intro: &solar_const_techno_intro
-  - 'This process represents the cradle-to-gate inventory for
-    electricity production from US solar photovoltaic power plants. '
+    - 'This process represents the cradle-to-gate inventory
+      for electricity production from US solar photovoltaic power plants. '
 
   techno_process: &solar_const_techno_process
-  - 'Inventories were developed for each solar PV plant in the 2016 EIA 860
-    data. Boundaries include plant construction and minor operating emissions
-    from fuel combustion, etc. The inventory for the plant is allocated over
-    an assumed 30 year life. The aggregation performed in the electricity LCI
-    code will then divide those inventories by the generation in the selected
-    year to provide results on the basis of MWh.'
+    - 'Inventories were developed for each solar PV plant
+      in the 2016 EIA 860 data. Boundaries include plant construction and minor
+      operating emissions from fuel combustion, etc. The inventory for the plant
+      is allocated over an assumed 30 year life. The aggregation performed in
+      the electricity LCI code will then divide those inventories by the
+      generation in the selected year to provide results on the basis of MWh.'
 
   Description:
   - *solar_const_techno_intro
@@ -1493,53 +1501,54 @@ solarpv_construction_upstream:
 
   DataDocumentor: 'NETL'
 
-  DataTreatment: 'Material requirements to construct the solar PV panels and
-    the balance of system are calculated using plant capacity and local
-    insolation estimates to scale the inventories from the referenced studies.
-    The total inventory from construction and operations over the plant life
-    are then divided by the assumed 30 year lifetime to provide emissions per
-    year. When these emissions are divided by the generation for the specified
-    year in the electricity baseline code, the inventory is placed on the basis
-    of 1 MWh.'
+  DataTreatment: 'Material requirements to construct the solar PV panels and the
+    balance of system are calculated using plant capacity and local insolation
+    estimates to scale the inventories from the referenced studies. The total
+    inventory from construction and operations over the plant life are then
+    divided by the assumed 30 year lifetime to provide emissions per year. When
+    these emissions are divided by the generation for the specified year in the
+    electricity baseline code, the inventory is placed on the basis of 1 MWh.'
 
-  DataSelection: 'Where possible data is sourced from freely available life
-    cycle data, such as NETL unit processes or USLCI. If the material was not
+  DataSelection: 'Where possible data is sourced from freely available life cycle
+    data, such as NETL unit processes or USLCI. If the material was not
     available there then ecoinvent processes are used.'
 
   DataCollectionPeriod: '2018'
 
-  sampling_procedure :
-    - 'BOUNDARY CONDITIONS
+  sampling_procedure:
+  - 'BOUNDARY CONDITIONS
 
-      The boundaries include power plant construction with all known material
-      inputs (e.g., steel, glass, concrete) and some minor material
-      requirements and fuel combustion for plant operation. '
+    The boundaries include power plant construction with all known material
+    inputs (e.g., steel, glass, concrete) and some minor material requirements
+    and fuel combustion for plant operation. '
 
-    - 'DATA COLLECTION
+  - 'DATA COLLECTION
 
-      Data for the material inputs to the plant are from:
-      NETL unit processes, US LCI, and ecoinvent.
-      '
+    Data for the material inputs to the plant are from: NETL unit processes, US
+    LCI, and ecoinvent. '
 
-    - *no_uncertainty
+  - *no_uncertainty
 
   Sources:
     Source1:
       <<: *ingwersen_2024
 solartherm_construction_upstream:
-  techno_intro: &solarthermal_const_techno_intro
+  techno_intro:
 
-  - 'This process represents the cradle-to-gate inventory for electricity
-    production from US solar thermal power plants. '
+    &solarthermal_const_techno_intro
+    - 'This process represents the cradle-to-gate
+      inventory for electricity production from US solar thermal power plants. '
 
-  techno_process: &solarthermal_const_techno_process
+  techno_process:
 
-  - 'Inventories were developed for each solar thermal plant in the 2016 EIA
-    860 data. Boundaries include plant construction and minor operating
-    emissions from fuel combustion, etc. The inventory for the plant is
-    allocated over an assumed 30 year life. The aggregation performed in the
-    electricity LCI code will then divide those inventories by the generation
-    in the selected year to provide results on the basis of MWh.'
+    &solarthermal_const_techno_process
+    - 'Inventories were developed for each solar
+      thermal plant in the 2016 EIA 860 data. Boundaries include plant
+      construction and minor operating emissions from fuel combustion, etc. The
+      inventory for the plant is allocated over an assumed 30 year life. The
+      aggregation performed in the electricity LCI code will then divide those
+      inventories by the generation in the selected year to provide results on
+      the basis of MWh.'
 
   Description:
   - *solarthermal_const_techno_intro
@@ -1553,53 +1562,54 @@ solartherm_construction_upstream:
 
   DataDocumentor: 'NETL'
 
-  DataTreatment: 'Material requirements to construct the wind farm are
-    calculated using turbine manufacturer and size information. The total
-    inventory from construction and operations of the wind farm are then
-    divided by the assumed 30 year lifetime to provide emissions per year.
-    When these emissions are divided by the generation for the specified year
-    in the electricity baseline code, the inventory is placed on the basis of
-    1 MWh.'
+  DataTreatment: 'Material requirements to construct the wind farm are calculated
+    using turbine manufacturer and size information. The total inventory from
+    construction and operations of the wind farm are then divided by the assumed
+    30 year lifetime to provide emissions per year. When these emissions are
+    divided by the generation for the specified year in the electricity baseline
+    code, the inventory is placed on the basis of 1 MWh.'
 
-  DataSelection: 'Where possible data is sourced from freely available life
-    cycle data, such as NETL unit processes or USLCI. If the material was not
+  DataSelection: 'Where possible data is sourced from freely available life cycle
+    data, such as NETL unit processes or USLCI. If the material was not
     available there then ecoinvent processes are used.'
 
   DataCollectionPeriod: '2018'
 
-  sampling_procedure :
-    - 'BOUNDARY CONDITIONS
+  sampling_procedure:
+  - 'BOUNDARY CONDITIONS
 
-      The boundaries include power plant construction with all known material
-      inputs (e.g., steel, glass, concrete) and some minor material
-      requirements and fuel combustion for plant operation. '
+    The boundaries include power plant construction with all known material
+    inputs (e.g., steel, glass, concrete) and some minor material requirements
+    and fuel combustion for plant operation. '
 
-    - 'DATA COLLECTION
+  - 'DATA COLLECTION
 
-      Data for the material inputs to the plant are from:
-      NETL unit processes, US LCI, and ecoinvent.
-      '
+    Data for the material inputs to the plant are from: NETL unit processes, US
+    LCI, and ecoinvent. '
 
-    - *no_uncertainty
+  - *no_uncertainty
 
   Sources:
     Source1:
       <<: *ingwersen_2024
 
 wind_construction_upstream:
-  techno_intro: &wind_const_techno_intro
+  techno_intro:
 
-  - 'This process represents the cradle-to-gate inventory for electricity
-    production from US wind farms. '
+    &wind_const_techno_intro
+    - 'This process represents the cradle-to-gate inventory
+      for electricity production from US wind farms. '
 
-  techno_process: &wind_const_techno_process
+  techno_process:
 
-  - 'Inventories were developed for each wind farm in the 2016 EIA 860 data.
-    Boundaries include wind turbine construction and minor operating emissions
-    from fuel combustion, maintenance, etc. The inventory for the wind farm is
-    allocated over an assumed 30 year life. The aggregation performed in the
-    electricity LCI code will then divide those inventories by the generation in
-    the selected year to provide results on the basis of MWh.'
+    &wind_const_techno_process
+    - 'Inventories were developed for each wind farm in the
+      2016 EIA 860 data. Boundaries include wind turbine construction and minor
+      operating emissions from fuel combustion, maintenance, etc. The inventory
+      for the wind farm is allocated over an assumed 30 year life. The
+      aggregation performed in the electricity LCI code will then divide those
+      inventories by the generation in the selected year to provide results on
+      the basis of MWh.'
 
   Description:
   - *wind_const_techno_intro
@@ -1613,36 +1623,33 @@ wind_construction_upstream:
 
   DataDocumentor: 'NETL'
 
-  DataTreatment: 'Material requirements to construct the wind farm are
-    calculated using wind turbine manufacturer and size information
-    to for each turbine and aggregating all of the turbines in the wind farm.
-    The total inventory from construction and operations over the plant life
-    are then divided by the assumed 30 year lifetime to provide emissions per
-    year. When these emissions are divided by the generation for the specified
-    year in the electricity baseline code, the inventory is placed on the basis
-    of 1 MWh.'
+  DataTreatment: 'Material requirements to construct the wind farm are calculated
+    using wind turbine manufacturer and size information to for each turbine and
+    aggregating all of the turbines in the wind farm. The total inventory from
+    construction and operations over the plant life are then divided by the
+    assumed 30 year lifetime to provide emissions per year. When these emissions
+    are divided by the generation for the specified year in the electricity
+    baseline code, the inventory is placed on the basis of 1 MWh.'
 
-  DataSelection: 'Where possible data is sourced from freely available life
-    cycle data, such as NETL unit processes or USLCI. If the material was not
+  DataSelection: 'Where possible data is sourced from freely available life cycle
+    data, such as NETL unit processes or USLCI. If the material was not
     available there then ecoinvent processes are used.'
 
   DataCollectionPeriod: '2018'
 
-  sampling_procedure :
-    - 'BOUNDARY CONDITIONS
+  sampling_procedure:
+  - 'BOUNDARY CONDITIONS
 
-      The boundaries include power plant construction with all known material
-      inputs (e.g., steel, glass fiber, concrete) and some minor material
-      requirements and fuel combustion for plant operation.
-      '
+    The boundaries include power plant construction with all known material
+    inputs (e.g., steel, glass fiber, concrete) and some minor material
+    requirements and fuel combustion for plant operation. '
 
-    - 'DATA COLLECTION
+  - 'DATA COLLECTION
 
-      Data for the material inputs to the plant are from:
-      NETL unit processes, US LCI, and ecoinvent.
-      '
+    Data for the material inputs to the plant are from: NETL unit processes, US
+    LCI, and ecoinvent. '
 
-    - *no_uncertainty
+  - *no_uncertainty
 
   Sources:
     Source1:
