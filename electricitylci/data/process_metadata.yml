@@ -339,7 +339,63 @@ nuclear_upstream:
       Url: 'https://netl.doe.gov/energy-analysis/details?id=620'
 
       Category: 'NETL'
+biomass:
 
+  techno_intro: &biomass_techno_intro
+
+  - 'This process represents the operational emissions from power plants
+  categorized as biomass by the electricitylci. These include primary fuels of:
+  black liquor (BLQ), wood/wood waste solids (WDS), wood/wood waste liquids (WDL),
+  biogenic municipal solid waste (MSB), landfill gas (LFG), agricultural 
+  byproducts (AB), other biomass liquids (OBL), sludge waste (SLW), other biomass
+  gas (OBG), and other biomass solids (OBS). Currently there are no fuel profiles
+  for these fuel types in part because of the wide array and likely unique
+  characteristics of the fuel used in each plant. Ideally, the fuel inventories
+  would include the uptake of CO2 (biogenic CO2) that would offset the generally
+  higher emissions of these plants, particular for solid fuels.'
+
+  techno_process: &biomass_techno_process
+
+  - 'The emissions contained in this process are the reported emissions of all
+    of the facilities in the stated region/fuel type per MWh. The boundary
+    of these emissions are within the boundaries of the electricity generating
+    facilities.'
+
+  Description:  
+  - *biomass_techno_intro
+  - *biomass_techno_process
+
+  TechnologyDescription:
+
+  DatasetOwner: 'NETL'
+
+  DataGenerator: 'NETL'
+
+  DataDocumentor: 'NETL'
+  
+  # Intent is to use the default entries for DataTreatment and DataSelection
+  #DataTreatment:
+  
+  #DataSelection:
+
+  #DataCollectionPeriod: '2018'
+
+  #sampling_procedure :
+
+  Sources:
+    Source1:
+      Name: 'Ingwersen, et al. electricitylci: A Python Package for U.S.
+      Regionalized Electricity Life Cycle Inventory Data Creation'
+
+      TextReference: 'Ingwersen, et al. (2020). electricitylci: A Python Package for U.S.
+      Regionalized Electricity Life Cycle Inventory Data Creation. Manuscript in
+      preparation.'
+
+      Year: 2020
+
+      Version: '1.0.1'
+
+      Category: 'In_Development'
 geothermal:
 
   techno_intro: &geothermal_techno_intro
