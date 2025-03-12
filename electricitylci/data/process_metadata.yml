@@ -344,7 +344,8 @@ biomass:
   techno_intro: &biomass_techno_intro
 
   - 'This process represents the operational emissions from power plants
-  categorized as biomass by the electricitylci. These include primary fuels of:
+  categorized as biomass by the electricitylci aggregated to the stated region (e.g.
+  balancing authority area: California ISO). These include primary fuels of:
   black liquor (BLQ), wood/wood waste solids (WDS), wood/wood waste liquids (WDL),
   biogenic municipal solid waste (MSB), landfill gas (LFG), agricultural 
   byproducts (AB), other biomass liquids (OBL), sludge waste (SLW), other biomass
@@ -473,6 +474,85 @@ geothermal:
       Url: 'https://netl.doe.gov/energy-analysis/details?id=591'
 
       Category: 'NETL'
+
+hydro:
+
+  techno_intro: &hydro_techno_intro
+
+  - 'This process represents the operational emissions from hydro-electric power 
+  plants aggregated to the stated region (e.g. balancing authority area: California ISO).'
+
+  techno_process: &biomass_techno_process
+
+  - 'The emissions contained in this process are mostly calculated emissions from measured
+    GHG emissions from reservoirs associated with hydro power plants. Emissions are 
+    then allocated according to share of economic use of the reservoir. The boundary
+    of these emissions are within the boundaries of the electricity generating
+    facilities and the associated reservoir. See Data Treatment section for more details.' 
+
+  Description:  
+  - *hydro_techno_intro
+  - *hydro_techno_process
+
+  TechnologyDescription:
+
+  DatasetOwner: 'NETL'
+
+  DataGenerator: 'NETL'
+
+  DataDocumentor: 'NETL'
+  
+  # Intent is to use the default entries for DataTreatment and DataSelection
+  DataTreatment: 'Emissions from hydrolectric (hydro) power plants are representative of power 
+  plants located at reservoirs. Run-of-river hydro plants are considered to have minimal 
+  GHG emissions. Emissions from reservoir power plants are taken from Sherer L. and Pfister S. 
+  (2016). The emissions from that study are not exhaustive, so a regression model was used
+  to predict methane and CO2 emissions from reservoirs based on the data within that study and
+  U.S. reservoir environment and characteristics taken from the National Oceanic and Atmospheric 
+  Administration (NOAA), national inventory of dams (NID) database, EIA-923/60 with the goal 
+  of allocating either directly measured emissions or prediced emissions by major economic 
+  uses of the reservoir uses, such as electric power, recreation, irrigation, water supply etc.
+  
+  In some instances there may also be reported data for the power plant in EPA databases. The
+  sources of those emissions will be annotated by source/year for the flow in the database.'
+  
+  DataSelection: 'NOAA: Pan evaporation, temperature minimum/maximum
+  
+  National Inventory of Dams Database: reservoir surface area, date of completion, primary
+  purproses, construction volume, construction material, reservoir lat/long
+
+  EIA-8923/860: Power plant lat/long, capacity and net generation, cooling water consumption
+
+  Sherer and Pfister: training datasets for regression model.
+  '
+
+  DataCollectionPeriod: '2018'
+
+  #sampling_procedure :
+
+  Sources:
+    Source1:
+      Name: 'Ingwersen, et al. electricitylci: A Python Package for U.S.
+      Regionalized Electricity Life Cycle Inventory Data Creation'
+
+      TextReference: 'Ingwersen, et al. (2020). electricitylci: A Python Package for U.S.
+      Regionalized Electricity Life Cycle Inventory Data Creation. Manuscript in
+      preparation.'
+
+      Year: 2020
+
+      Version: '1.0.1'
+
+      Category: 'In_Development'
+    Source2:
+      Name: 'Hydropower's Biogenic Carbon Footprint'
+
+      TextReference: 'Scherer L, Pfister S (2016) Hydropower's Biogenic Carbon Footprint. 
+      PLoS ONE 11(9): e0161947. https://doi.org/10.1371/journal.pone.0161947'
+
+      Year: '2016'
+
+      Url: 'https://doi.org/10.1371/journal.pone.0161947'
 
 solar:
 
