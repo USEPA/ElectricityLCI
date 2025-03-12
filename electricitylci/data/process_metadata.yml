@@ -457,11 +457,10 @@ solar:
     electricitylci, the inventory is placed on the basis of 1 MWh.
 
     There also inventories for plant operations that are calculated for each plant
-    and are representative of yearly operations. There may also be 
-    publicly-reported emissions assigned to the plant. Both sets
-    of annual emissions estimates are again divided by the generation of the specified
-    year to place these emissions on the basis of 1 MWh.
-    '
+    and are placed on the basis of a MWh before importing to the electricitylci. 
+    These emissions are mostly from fossil fuel combustion, hydraulic oil, and external
+    electricity use associated with operations. There may also be publicly-reported 
+    emissions assigned to the plant.'
 
   DataSelection: 'Where possible data is sourced from freely available life
     cycle data, such as NETL unit processes or USLCI. If the material was not
@@ -534,8 +533,20 @@ solar:
 
       Url: 'https://doi.org/10.1002/pip.652'
       
-      Category: 'Brookhaven'     
+      Category: 'Brookhaven'
 
+     Source5:
+      Name: 'National Solar Radiation Database (NSRDB)'
+      
+      Year: 2018
+
+      TextReference: 'National Renewable Energy Laboratory. (2018). National Solar 
+      Radiation Database (NSRDB) [data set]. Retrieved from 
+      https://dx.doi.org/10.25984/1810289.'
+
+      Url: 'https://dx.doi.org/10.25984/1810289'
+      
+      Category: 'NREL'
 solarthermal:
 
   techno_intro: &solarthermal_techno_intro
