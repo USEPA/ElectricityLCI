@@ -54,6 +54,7 @@ inventories_of_interest:
   TRI: 2021
   NEI: 2020
   RCRAInfo: 2021
+stewicombo_file: 'ELCI_2021_v1.1.4'
 
 # Provide uncertainty estimates for emissions.
 calculate_uncertainty: true
