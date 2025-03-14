@@ -251,7 +251,9 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
                 df = map_compartment_path(df)
             upstream_df_list.append(df)
     upstream_df = pd.concat(upstream_df_list, ignore_index=True, sort=False)
-
+    # Hoping to reduce memory usage or at least make more of it available
+    # for the later groupby.
+    del(arg)
     # See https://github.com/USEPA/fedelemflowlist
     # The mapping data includes a conversion factor to convert everything into
     # standard units (e.g., kg, MJ, m2*a). Note that 'SourceFlowContext' is
@@ -317,20 +319,71 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         upstream_df_grp = upstream_df.groupby(
             groupby_cols, as_index=False,
         ).agg({"FlowAmount": "sum", "quantity": "mean", "Electricity": "mean"})
+        grp_columns=groupby_cols+["FlowAmount","quantity","Electricity"]
     else:
         upstream_df_grp = upstream_df.groupby(
             groupby_cols, as_index=False,
         ).agg({"FlowAmount": "sum", "quantity": "mean"})
-
+        grp_columns=groupby_cols+["FlowAmount","quantity"]
+    # Trying to reduce memory usage. There's a section below that will re-use
+    # upstream_df if kwargs are provided. If kwargs is empty, we can delete
+    # this and hopefully save some memory.
+    if len(kwargs)==0:
+        del(upstream_df)
     logging.info("Merging upstream database and flow mapping")
+    # Hoping to save some memory by only mapping the index of the flow_mapping
+    # dataframe to a slice of upstream_df_grp, so that we only copy a small
+    # dataframe during the merge. Then we can used the matched indeces to assign
+    # column values later on.
+    flowmapping_small = (
+        flow_mapping[["SourceFlowName", "SourceFlowContext"]]
+        .reset_index()
+        .rename(columns={"index": "orig_fm_index"})
+    )
+    upstream_df_grp_small = (
+        upstream_df_grp[["FlowName", "Compartment_path"]]
+        .reset_index()
+        .rename(columns={"index": "orig_up_index"})
+    )
     upstream_mapped_df = pd.merge(
-        left=upstream_df_grp,
-        right=flow_mapping,
+        left=upstream_df_grp_small,
+        right=flowmapping_small,
         left_on=["FlowName", "Compartment_path"],
         right_on=["SourceFlowName", "SourceFlowContext"],
         how="left",
     )
-
+    for col in [
+        "TargetFlowContext",
+        "TargetFlowName",
+        "TargetUnit",
+        "ConversionFactor",
+        "TargetFlowUUID"
+    ]:
+        upstream_mapped_df[col] = pd.NA
+        upstream_mapped_df.loc[
+            ~upstream_mapped_df["orig_fm_index"].isna(), col
+        ] = flow_mapping.loc[
+            upstream_mapped_df.loc[
+                ~upstream_mapped_df["orig_fm_index"].isna(), "orig_fm_index"
+            ].values,
+            col,
+        ].values
+    for col in grp_columns:
+        upstream_mapped_df[col]=pd.NA
+        upstream_mapped_df.loc[
+            ~upstream_mapped_df["orig_up_index"].isna(), col
+        ] = upstream_df_grp.loc[
+            upstream_mapped_df.loc[
+                ~upstream_mapped_df["orig_up_index"].isna(), "orig_up_index"
+            ].values,
+            col,
+        ].values
+    #The new piecewise merging is causing FlowAmount, quantity, and electricity
+    #columns to be converted to floats, so undoing that here:
+    upstream_mapped_df["FlowAmount"]=upstream_mapped_df["FlowAmount"].astype(float)
+    upstream_mapped_df["quantity"]=upstream_mapped_df["quantity"].astype(float)
+    if "Electricity" in grp_columns:
+        upstream_mapped_df["Electricity"]=upstream_mapped_df["Electricity"].astype(float)
     # Preserve unmapped resource flows;
     #   copy over the flow name, compartment and units and
     #   set conversion factor equal to 1.0.
@@ -517,6 +570,10 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
 
     # Add plant-level data to upstream
     combined_df = pd.concat([pl_df, up_df], ignore_index=True)
+
+    #Memory management
+    del(pl_df)
+    del(up_df)
 
     # Remove unnecessary columns
     categories_to_delete = [
