@@ -18,7 +18,7 @@ for Life Cycle Inventory Data (2016).
 This module provides the ranges to apply for different DQI scores (1-5) and a
 function to apply those ranges on any given raw score.
 
-Last updated: 2023-11-03
+Last updated: 2025-03-14
 """
 __all__ = [
     'temporal_correlation_lower_bound_to_dqi',
@@ -39,6 +39,8 @@ flow_data_quality_fields = [
     'DataCollection'
 ]
 
+# These bounds are based on US EPA - Flow Pedigree Matrix temporal correlation
+# values (http://dx.doi.org/10.1007/s11367-017-1348-1)
 temporal_correlation_lower_bound_to_dqi = {
     3: 1,
     6: 2,
