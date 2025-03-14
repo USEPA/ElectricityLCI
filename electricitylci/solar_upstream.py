@@ -356,7 +356,7 @@ def get_solar_pv_om():
     solar_ops['Compartment'] = solar_ops['Compartment'].map(compartment_map)
     solar_ops["Unit"] = "kg"
     solar_ops["input"] = False
-
+    solar_ops["Year"] = model_specs.renewable_vintage
     solar_ops = fix_renewable(solar_ops, "netlnrelsolarpv")
 
     return solar_ops

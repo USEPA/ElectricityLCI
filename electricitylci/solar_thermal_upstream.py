@@ -267,7 +267,7 @@ def get_solarthermal_om():
         compartment_map)
     solarthermal_ops["Unit"] = "kg"
     solarthermal_ops["input"] = False
-
+    solarthermal_ops["Year"]=model_specs.renewable_vintage
     solarthermal_ops = fix_renewable(solarthermal_ops, "netlsolarthermal")
 
     return solarthermal_ops

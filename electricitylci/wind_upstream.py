@@ -312,7 +312,7 @@ def get_wind_om():
     )
     wind_ops["input"] = False
     wind_ops["Unit"]="kg"
-
+    wind_ops["Year"]=model_specs.renewable_vintage
     wind_ops = fix_renewable(wind_ops, "netlnrelwind")
 
     return wind_ops
