@@ -428,11 +428,17 @@ def olcaschema_genupstream_processes(merged):
     # the quantity and erroneously lower emission rates.
 
     # Calculate emission factor (e.g., total emission per total MWh)
+    merged_summary["FlowAmount"]=merged_summary["FlowAmount"].astype(float)
+    merged_summary["quantity"]=merged_summary["quantity"].astype(float)
+    
     merged_summary["emission_factor"] = (
         merged_summary["FlowAmount"] / merged_summary["quantity"]
     )
     merged_summary.dropna(subset=["emission_factor"], inplace=True)
     # NEW Issue #150, adding regional ability for construction of all types
+    merged_summary_regional["FlowAmount"]=merged_summary_regional["FlowAmount"].astype(float)
+    merged_summary_regional["quantity"]=merged_summary_regional["quantity"].astype(float)
+
     merged_summary_regional["emission_factor"] = (
         merged_summary_regional["FlowAmount"] / merged_summary_regional["quantity"]
     )
