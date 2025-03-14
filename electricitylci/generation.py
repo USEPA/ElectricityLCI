@@ -83,7 +83,7 @@ CHANGELOG
 Created:
     2019-06-04
 Last edited:
-    2025-02-12
+    2025-03-14
 """
 __all__ = [
     "add_data_collection_score",
@@ -1666,7 +1666,8 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     """Turn a database containing generator facility emissions into a
     dictionary that contains required data for an openLCA-compatible JSON-LD.
 
-    Additionally, default providers for fuel inputs are mapped using the information contained in the dictionary containing openLCA-formatted
+    Additionally, default providers for fuel inputs are mapped using the
+    information contained in the dictionary containing openLCA-formatted
     data for the fuels.
 
     Parameters
@@ -1776,6 +1777,8 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         row["exchanges"][0]["FlowType"] = "PRODUCT_FLOW"
         process_df.loc[index[0], index[1], "Power plant"]["exchanges"].append(
             row["exchanges"][0])
+
+    # These are now only power plant stage codes
     process_df = process_df.drop(provider_filter)
     process_df.reset_index(inplace=True)
 

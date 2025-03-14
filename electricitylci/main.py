@@ -32,7 +32,7 @@ options. The selection of configuration file will occur after the start
 of this script or it may be passed following the command-line argument, '-c'.
 
 Last updated:
-    2025-01-23
+    2025-03-14
 
 Changelog:
     -   Address logging handler import for Python 3.12 compatibility.
@@ -213,6 +213,7 @@ def run_generation():
             generation_process_df, upstream_dict, subregion="BA"
         )
     else:
+        # NOTE: a daisy-chain to generation.py's olcaschema_genprocess
         generation_process_dict = write_gen_fuel_database_to_dict(
             generation_process_df, upstream_dict
         )

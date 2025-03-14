@@ -38,7 +38,7 @@ JSON-LD format as prescribed by OpenLCA software.
 Portions of this code were cleaned using ChatGPTv3.5.
 
 Last updated:
-    2024-08-09
+    2025-03-14
 """
 __all__ = [
     'con_process_ref',
@@ -215,13 +215,17 @@ def process_metadata(entry):
     Examples
     --------
     >>> entry = "This is a single string."
-    >>> processed_entry = process_metadata(entry)
+    >>> process_metadata(entry)
+    'This is a single string.'
     >>> entry = ["Item 1", "Item 2", "Item 3"]
-    >>> processed_entry = process_metadata(entry)
-    >>> entry = [["Subitem 1", "Subitem 2"], ["Subitem 3"]]
-    >>> processed_entry = process_metadata(entry)
+    >>> process_metadata(entry)
+    'Item 1\nItem 2\nItem 3\n'
+    >>> entry = [["A", "B"], ["C"]]
+    >>> process_metadata(entry)
+    'A\nBC'
     >>> entry = {"key1": "Value 1", "key2": ["Subvalue 1", "Subvalue 2"]}
-    >>> processed_entry = process_metadata(entry)
+    >>> process_metadata(entry)
+    {'key1': 'Value 1', 'key2': 'Subvalue 1\nSubvalue 2\n'}
     """
     if isinstance(entry, (str, int)):
         return entry

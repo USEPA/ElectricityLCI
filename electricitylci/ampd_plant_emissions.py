@@ -37,7 +37,7 @@ and returns a data frame ready for concatenation with other facility-level
 emissions.
 
 Last updated:
-    2024-09-25
+    2025-03-14
 """
 __all__ = [
     "generate_plant_emissions",
@@ -265,7 +265,23 @@ def generate_plant_emissions(year):
         return emissions_check
 
     def eia_gen_fuel_co2_ch4_n2o_emissions(eia923_gen_fuel):
-        """Add docstring."""
+        """Calculate CO2, CH4, and N2O emissions from generation fuel.
+
+        Parameters
+        ----------
+        eia923_gen_fuel :
+            Unused.
+
+        Returns
+        -------
+        pandas.DataFrame
+
+        Notes
+        -----
+        Depends on locally scoped data frame, ``ef_co2_ch4_n2o``, and
+        ``eia923_gen_fuel_sub``. Is the latter supposed to be the method
+        parameter?
+        """
         emissions = pd.DataFrame()
 
         for row in ef_co2_ch4_n2o.itertuples():
@@ -372,7 +388,18 @@ def generate_plant_emissions(year):
         return emissions_agg
 
     def eia_gen_fuel_net_gen(eia923_gen_fuel):
-        """Add docstring."""
+        """Calculate the facility-level annual net generation from monthly
+        fuel generation data.
+
+        Parameters
+        ----------
+        eia923_gen_fuel : pandas.DataFrame
+            Monthly fuel generation data.
+
+        Returns
+        -------
+        pandas.DataFrame
+        """
         net_gen_monthly = [
             "netgen_january",
             "netgen_february",
@@ -423,7 +450,16 @@ def generate_plant_emissions(year):
         return eia_923_gen_fuel_agg
 
     def eia_gen_fuel_so2_emissions(eia923_gen_fuel_sub):
-        """Add docstring."""
+        """Calculate SO2 emissions from fuel generation data.
+
+        Parameters
+        ----------
+        eia923_gen_fuel_sub : pandas.DataFrame
+
+        Returns
+        -------
+        pandas.DataFrame
+        """
         emissions = eia923_gen_fuel_sub.merge(
             ef_so2.loc[ef_so2["Boiler_Firing_Type_Code"] == "None", :],
             left_on=["reported_prime_mover", "reported_fuel_type_code"],
