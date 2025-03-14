@@ -162,7 +162,7 @@ def generate_upstream_geo():
     geo_merged["Electricity"] = geo_merged["quantity"]
     geo_merged["fuel_type"] = "GEOTHERMAL"
     geo_merged["stage_code"] = "Power plant"
-
+    geo_merged["Year"]=2016
     # Map directionality to resources (true) or emissions (false)
     input_dict = {"emission": False, "resource": True}
     geo_merged["Directionality"] = geo_merged["Directionality"].map(input_dict)

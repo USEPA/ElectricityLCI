@@ -313,16 +313,20 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         "Unit_orig",
         "Source"
     ]
+    # Addings years to the groupby when data is passed to the function
+    # that includes years. 
+    if "Year" in upstream_df.columns:
+        groupby_cols=groupby_cols+["Year"]
     # Ensure flow amounts are floats
     upstream_df["FlowAmount"] = upstream_df["FlowAmount"].astype(float)
     if "Electricity" in upstream_df.columns:
         upstream_df_grp = upstream_df.groupby(
-            groupby_cols, as_index=False,
+            groupby_cols, as_index=False, dropna=False
         ).agg({"FlowAmount": "sum", "quantity": "mean", "Electricity": "mean"})
         grp_columns=groupby_cols+["FlowAmount","quantity","Electricity"]
     else:
         upstream_df_grp = upstream_df.groupby(
-            groupby_cols, as_index=False,
+            groupby_cols, as_index=False, dropna=False
         ).agg({"FlowAmount": "sum", "quantity": "mean"})
         grp_columns=groupby_cols+["FlowAmount","quantity"]
     # Trying to reduce memory usage. There's a section below that will re-use
@@ -441,7 +445,12 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         "ElementaryFlowPrimeContext"] = "resource"
 
     # WARNING: don't use with HYDRO, which has its own data year
-    upstream_mapped_df["Year"] = eia_gen_year
+    # 3/14/25 MBJ Ran into issue where this was overwriting years that were
+    # defined upstream (renewable O&M). I think in almost all cases year
+    # will already be defined now. But just in case...
+    if "Year" not in upstream_mapped_df.columns:
+        upstream_mapped_df["Year"]=pd.NA
+    upstream_mapped_df.loc[upstream_mapped_df["Year"].isna(),"Year"] = eia_gen_year
     final_columns = [
         "plant_id",
         "FuelCategory",
