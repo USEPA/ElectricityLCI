@@ -38,7 +38,7 @@ JSON-LD format as prescribed by OpenLCA software.
 Portions of this code were cleaned using ChatGPTv3.5.
 
 Last updated:
-    2025-03-14
+    2025-03-18
 """
 __all__ = [
     'con_process_ref',
@@ -82,7 +82,7 @@ international = pd.read_csv(
 international_reg = list(pd.unique(international['Subregion']))
 
 # Read in general metadata to be used by all processes
-with open(os.path.join(data_dir, "process_metadata.yml")) as f:
+with open(os.path.join(data_dir, "process_metadata.yml"), encoding='utf-8') as f:
     metadata = yaml.safe_load(f)
 
 # Read in process location uuids
