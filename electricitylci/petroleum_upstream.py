@@ -15,7 +15,8 @@ from electricitylci.coal_upstream import read_eia923_fuel_receipts
 from electricitylci.globals import data_dir
 import electricitylci.PhysicalQuantities as pq
 import electricitylci.eia923_generation as eia923
-
+from electricitylci.generation import add_temporal_correlation_score
+from electricitylci.model_config import model_specs
 
 ##############################################################################
 # MODULE DOCUMENTATION
@@ -220,6 +221,17 @@ def generate_petroleum_upstream(year):
         'Compartment'].map(compartment_dict)
     merged_inventory.dropna(inplace=True)
     merged_inventory["Source"] = "netlpetro"
+    # Issue #296 - adding DQI information for upstream processes
+    # Setting year to be equal to the year that the costs were generated
+    # to develop this USEEIO-based inventory
+    merged_inventory["Year"] = 2016
+    merged_inventory["FlowReliability"] = 3
+    merged_inventory["TemporalCorrelation"] = add_temporal_correlation_score(
+        merged_inventory["Year"], model_specs.electricity_lci_target_year
+    )
+    merged_inventory["GeographicalCorrelation"] = 3
+    merged_inventory["TechnologicalCorrelation"] = 3
+    merged_inventory["DataCollection"] = 4
     return merged_inventory
 
 

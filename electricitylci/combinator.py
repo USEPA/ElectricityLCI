@@ -147,8 +147,8 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     fuel_df.dropna(subset=["Electricity"], inplace=True)
 
     # Add data quality indicators and elementary flow prime context (inputs)
-    fuel_df = add_temporal_correlation_score(
-        fuel_df, model_specs.electricity_lci_target_year)
+    fuel_df["TemporalCorrelation"] = add_temporal_correlation_score(
+        fuel_df["Year"], model_specs.electricity_lci_target_year)
     fuel_df["DataCollection"] = 5
     fuel_df["GeographicalCorrelation"] = 1
     fuel_df["TechnologicalCorrelation"] = 1
@@ -314,21 +314,50 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         "Source"
     ]
     # Addings years to the groupby when data is passed to the function
-    # that includes years. 
+    # that includes years.
     if "Year" in upstream_df.columns:
         groupby_cols=groupby_cols+["Year"]
     # Ensure flow amounts are floats
     upstream_df["FlowAmount"] = upstream_df["FlowAmount"].astype(float)
-    if "Electricity" in upstream_df.columns:
-        upstream_df_grp = upstream_df.groupby(
-            groupby_cols, as_index=False, dropna=False
-        ).agg({"FlowAmount": "sum", "quantity": "mean", "Electricity": "mean"})
-        grp_columns=groupby_cols+["FlowAmount","quantity","Electricity"]
-    else:
-        upstream_df_grp = upstream_df.groupby(
-            groupby_cols, as_index=False, dropna=False
-        ).agg({"FlowAmount": "sum", "quantity": "mean"})
-        grp_columns=groupby_cols+["FlowAmount","quantity"]
+    # Refactoring this a bit due to possibility of some columns not being present.
+    # Also gets rid of an if statement!
+    possible_quant_columns = [
+        "FlowAmount",
+        "quantity",
+        "Electricity",
+        # Issue #296 Adding the DQI categories so that they aren't lost
+        # I think mean is an okay operation here because given how
+        # the groupby is done, I don't believe there will be any variation
+        # in these values. If I did think so, a weighted mean might be
+        # more appropriate (and also more computationally intensive).
+        # It might also be appropriate to even just use a first-value
+        # approach.
+        "DataCollection",
+        "TemporalCorrelation",
+        "GeographicalCorrelation",
+        "TechnologicalCorrelation",
+        "FlowReliability"
+    ]
+    actual_quant_columns = [
+        x for x in possible_quant_columns if x in upstream_df.columns
+    ]
+    aggregation_dictionary = {
+        "FlowAmount": "sum",
+        "quantity": "mean",
+        "Electricity": "mean",
+        "DataCollection": "mean",
+        "TemporalCorrelation": "mean",
+        "GeographicalCorrelation": "mean",
+        "TechnologicalCorrelation": "mean",
+        "FlowReliability": "mean"
+    }
+    actual_aggregation_dictionary = {
+        x: aggregation_dictionary[x] for x in actual_quant_columns
+    }
+    upstream_df_grp = upstream_df.groupby(
+        groupby_cols, as_index=False, dropna=False
+        ).agg(actual_aggregation_dictionary)
+    grp_columns = groupby_cols + actual_quant_columns
     # Trying to reduce memory usage. There's a section below that will re-use
     # upstream_df if kwargs are provided. If kwargs is empty, we can delete
     # this and hopefully save some memory.
@@ -382,12 +411,11 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
             ].values,
             col,
         ].values
-    #The new piecewise merging is causing FlowAmount, quantity, and electricity
-    #columns to be converted to floats, so undoing that here:
-    upstream_mapped_df["FlowAmount"]=upstream_mapped_df["FlowAmount"].astype(float)
-    upstream_mapped_df["quantity"]=upstream_mapped_df["quantity"].astype(float)
-    if "Electricity" in grp_columns:
-        upstream_mapped_df["Electricity"]=upstream_mapped_df["Electricity"].astype(float)
+    # The new piecewise merging is causing quantitative
+    # columns to be converted to objects, so undoing that here
+    for col in actual_quant_columns:
+        upstream_mapped_df[col]=upstream_mapped_df[col].astype(float)
+    
     # Preserve unmapped resource flows;
     #   copy over the flow name, compartment and units and
     #   set conversion factor equal to 1.0.
@@ -461,13 +489,10 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         "FlowUUID",
         "Unit",
         "ElementaryFlowPrimeContext",
-        "FlowAmount",
-        "quantity",
         "Source",
         "Year",
-    ]
-    if "Electricity" in upstream_columns:
-        final_columns = final_columns + ["Electricity"]
+    ] + actual_quant_columns
+    
     if "input" in upstream_columns:
         final_columns = final_columns + ["input"]
 
