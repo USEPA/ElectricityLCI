@@ -90,7 +90,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     >>> gen_plus_fuel = add_fuel_inputs(generation_df, ups_df, ups_dict)
     """
     upstream_reduced = upstream_df.drop_duplicates(
-        subset=["plant_id", "stage_code", "quantity"]
+        subset=["eGRID_ID", "stage_code", "quantity"]
     )
     fuel_df = pd.DataFrame(columns=gen_df.columns)
 
@@ -113,8 +113,8 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     fuel_df["FlowAmount"] = upstream_reduced["quantity"]
     fuel_df["FlowUUID"] = expand_fuel_df["q_reference_id"]
     fuel_df["Unit"] = expand_fuel_df["q_reference_unit"]
-    fuel_df["eGRID_ID"] = upstream_reduced["plant_id"]
-    fuel_df["FacilityID"] = upstream_reduced["plant_id"]
+    fuel_df["eGRID_ID"] = upstream_reduced["eGRID_ID"]
+    fuel_df["FacilityID"] = upstream_reduced["eGRID_ID"]
     fuel_df["FuelCategory"] = upstream_reduced["FuelCategory"]
     fuel_df["Year"] = upstream_reduced["Year"]
     fuel_df["Source"] = upstream_reduced["Source"]
@@ -336,7 +336,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         "TemporalCorrelation",
         "GeographicalCorrelation",
         "TechnologicalCorrelation",
-        "FlowReliability"
+        "DataReliability"
     ]
     actual_quant_columns = [
         x for x in possible_quant_columns if x in upstream_df.columns
@@ -349,7 +349,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         "TemporalCorrelation": "mean",
         "GeographicalCorrelation": "mean",
         "TechnologicalCorrelation": "mean",
-        "FlowReliability": "mean"
+        "DataReliability": "mean"
     }
     actual_aggregation_dictionary = {
         x: aggregation_dictionary[x] for x in actual_quant_columns
@@ -577,19 +577,32 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
     ]
     existing_region_cols=[x for x in pl_df.columns if x in region_cols]
 
-    if "eGRID_ID" in up_df.columns:
-        up_df = up_df.drop(columns='eGRID_ID')
-    reg_map = pl_df[["eGRID_ID"] + existing_region_cols].drop_duplicates()
-    up_df = up_df.merge(
-        right=reg_map,
-        left_on="plant_id",
-        right_on="eGRID_ID",
-        how="left",
+    up_df.drop(columns='eGRID_ID', errors="ignore", inplace=True)
+    # 3/19/2025 MBJ reg_map eGRID_ID is int64. Setting plant_id to the same
+    up_df["plant_id"]=up_df["plant_id"].astype("int64")
+    reg_map = (
+        pl_df[["eGRID_ID"] + existing_region_cols]
+        .drop_duplicates()
+        .set_index("eGRID_ID")
     )
+    # 3/19/2025 MBJ: more memory management. When this process is called from
+    # __init__.combine_upstream_and_gen_df the up_df is 12GB big. Previously
+    # we used a merge to add all the regional columns, but that requires a 
+    # tremendous amount of memory. Invidually assigning columns will be a bit
+    # slower but will greatly reduce memory usage...and ultimately end up 
+    # faster if your computer tends to run out of memory using the previous
+    # merge.
+    for col in existing_region_cols:
+        up_df[col]=up_df["plant_id"].map(reg_map[col])
+
     # HOTFIX: during the merge, a lot eGRID_IDs are unmatched, so fill them in!
     # NOTE: triggers a pandas futurewarning on downcasting object datatypes.
-    up_df['eGRID_ID'] = up_df['eGRID_ID'].fillna(up_df['plant_id'])
-    up_df['eGRID_ID'] = up_df['eGRID_ID'].astype('int')
+    # 3/19/2025 - these would be instances where there is a plant_id in up_df
+    # but not a matching eGRID_ID. With the new, by-column mapping performed above
+    # eGRID_ID does not exist so no Nans to fill. In previous versions, I believe
+    # the use of fillnans with plant_id being the source would result in the 
+    # same thing as below.
+    up_df['eGRID_ID'] = up_df['plant_id'].astype("int")
 
     # NOTE: the only columns in up_df not in pl_df should be:
     # 'plant_id', 'quantity', and 'input'
@@ -603,24 +616,37 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
     # 'Age'
     # 'TemporalCorrelation'
 
-    # Add plant-level data to upstream
-    combined_df = pd.concat([pl_df, up_df], ignore_index=True)
-
-    #Memory management
-    del(pl_df)
-    del(up_df)
-
-    # Remove unnecessary columns
-    categories_to_delete = [
+    # 3/18/25 MBJ some more changes to try reduce memory usage.
+    columns_to_delete=[
         "plant_id",
         "FuelCategory_right",
         "Net Generation (MWh)",
         "PrimaryFuel_right",
+        "plant_name"
     ]
-    categories_to_delete = [
-        x for x in categories_to_delete if x in combined_df.columns]
-    if len(categories_to_delete) > 0:
-        combined_df.drop(columns=categories_to_delete, inplace=True)
+    pl_df.drop(columns=columns_to_delete, errors="ignore", inplace=True)
+    up_df.drop(columns=columns_to_delete, errors="ignore", inplace=True)
+    # Fixing a mismatch in datatypes between up_df and pl_df that I think
+    # was causing massive slow down.
+    up_df["FlowAmount"]=up_df["FlowAmount"].astype(float)
+    # Add plant-level data to upstream
+    combined_df = pd.concat([pl_df, up_df], ignore_index=True)
+
+    # Memory management
+    del(pl_df)
+    del(up_df)
+
+    # Remove unnecessary columns
+    # categories_to_delete = [
+    #     "plant_id",
+    #     "FuelCategory_right",
+    #     "Net Generation (MWh)",
+    #     "PrimaryFuel_right",
+    # ]
+    # categories_to_delete = [
+    #     x for x in categories_to_delete if x in combined_df.columns]
+    # if len(categories_to_delete) > 0:
+    #     combined_df.drop(columns=categories_to_delete, inplace=True)
 
     combined_df["FacilityID"] = combined_df["eGRID_ID"]
 
@@ -731,8 +757,11 @@ def fill_nans(
     df.loc[df["State"].isna(), "State"] = df.loc[
         df["State"].isna(), "eGRID_ID"].map(plant_ba["State"])
     if dropna:
-        df.dropna(subset=confirmed_target, inplace=True, how="all")
-        df.dropna(subset=["Electricity"],inplace=True)
+        import numpy as np
+        df["target_nans"]=np.where(df[confirmed_target].isnull().all(1),1,0)
+        df=df.loc[(df["target_nans"]==0)|(df["Electricity"].isna()),:]
+        #df.dropna(subset=confirmed_target, inplace=True, how="all")
+        #df.dropna(subset=["Electricity"],inplace=True)
     return df
 
 
