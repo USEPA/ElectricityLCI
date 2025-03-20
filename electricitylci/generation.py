@@ -1384,14 +1384,14 @@ def aggregate_data(total_db, subregion="BA"):
     if region_agg:
         canada_db = pd.merge(
             left=database_f3.loc[canadian_criteria, :],
-            right=total_db[groupby_cols + ["Electricity"]],
+            right=total_db[groupby_cols + ["Electricity","DataReliability"]],
             left_on=groupby_cols,
             right_on=groupby_cols,
             how="left",
         ).drop_duplicates(subset=groupby_cols)
     else:
         total_grouped = total_db.groupby(
-            by=groupby_cols, as_index=False)["Electricity"].sum()
+            by=groupby_cols+["DataReliability"], as_index=False)["Electricity"].sum()
         canada_db = pd.merge(
             left=database_f3.loc[canadian_criteria, :],
             right=total_grouped,
