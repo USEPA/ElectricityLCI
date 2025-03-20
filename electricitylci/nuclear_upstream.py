@@ -129,7 +129,7 @@ def generate_upstream_nuc(year):
     # Setting year to be equal to the year that the costs were generated
     # to develop this USEEIO-based inventory
     nuc_merged["Year"] = 2016
-    nuc_merged["FlowReliability"] = 3
+    nuc_merged["DataReliability"] = 3
     nuc_merged["TemporalCorrelation"] = add_temporal_correlation_score(
         nuc_merged["Year"], model_specs.electricity_lci_target_year
     )

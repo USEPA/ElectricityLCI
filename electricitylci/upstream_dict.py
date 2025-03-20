@@ -334,7 +334,7 @@ def _exchange_table_creation_output(data):
     try:
         ar["dqEntry"] = (
         "("
-        + str(round(data["FlowReliability"], 1))
+        + str(round(data["DataReliability"], 1))
         + ";"
         + str(round(data["TemporalCorrelation"], 1))
         + ";"
@@ -499,7 +499,7 @@ def olcaschema_genupstream_processes(merged):
                     "TemporalCorrelation",
                     "GeographicalCorrelation",
                     "TechnologicalCorrelation",
-                    "FlowReliability",
+                    "DataReliability",
                 ]
             ].drop_duplicates(subset=["FlowUUID"]),
             on=["FlowUUID"],
@@ -596,7 +596,7 @@ def olcaschema_genupstream_processes(merged):
             "TemporalCorrelation",
             "GeographicalCorrelation",
             "TechnologicalCorrelation",
-            "FlowReliability",
+            "DataReliability",
             "plant_id",
             "stage_code"
         ]

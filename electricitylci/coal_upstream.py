@@ -1429,7 +1429,7 @@ def read_coal_transportation():
     # Coal transport data is from data collected for the year 2016.
     transport_coal["Year"] = 2016
     # Issue #296 - adding DQI information for upstream processes
-    transport_coal["FlowReliability"] = 3
+    transport_coal["DataReliability"] = 3
     transport_coal["TemporalCorrelation"] = add_temporal_correlation_score(
         transport_coal["Year"], model_specs.electricity_lci_target_year
     )
@@ -1678,7 +1678,7 @@ def generate_upstream_coal(year):
     # Coal emissions data is from data collected for the year 2016.
     coal_mining_inventory_df["Year"] = 2016
     # Issue #296 - adding DQI information for upstream processes
-    coal_mining_inventory_df["FlowReliability"] = 3
+    coal_mining_inventory_df["DataReliability"] = 3
     coal_mining_inventory_df["TemporalCorrelation"] = add_temporal_correlation_score(
         coal_mining_inventory_df["Year"], model_specs.electricity_lci_target_year
     )

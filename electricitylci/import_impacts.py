@@ -231,7 +231,7 @@ def generate_canadian_mixes(us_inventory, gen_year):
     ca_mix_inventory["EIA_Region"] = ca_mix_inventory[
         "Balancing Authority Code"
     ].map(BA_CODES["EIA_Region"])
-    ca_mix_inventory["FlowReliability"] = 3
+    ca_mix_inventory["DataReliability"] = 3
     ca_mix_inventory["TemporalCorrelation"] = add_temporal_correlation_score(
         ca_mix_inventory["Year"], model_specs.electricity_lci_target_year
     )

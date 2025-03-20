@@ -347,7 +347,7 @@ def get_coal_ngcc_const(year):
     # Setting year to be equal to the year that the costs were generated
     # to develop this USEEIO-based inventory
     construction_df["Year"] = 2018
-    construction_df["FlowReliability"] = 3
+    construction_df["DataReliability"] = 3
     construction_df["TemporalCorrelation"] = add_temporal_correlation_score(
         construction_df["Year"], model_specs.electricity_lci_target_year
     )

@@ -152,7 +152,7 @@ def get_solarthermal_construction(year):
         solarthermal_upstream, "netlsolarthermal")
             # Issue #296 - adding DQI information for upstream processes
     solarthermal_upstream["Year"] = model_specs.renewable_vintage
-    solarthermal_upstream["FlowReliability"] = 3
+    solarthermal_upstream["DataReliability"] = 3
     solarthermal_upstream["TemporalCorrelation"] = add_temporal_correlation_score(
         solarthermal_upstream["Year"], model_specs.electricity_lci_target_year
     )

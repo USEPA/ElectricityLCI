@@ -156,7 +156,7 @@ def get_wind_construction(year):
     wind_upstream = fix_renewable(wind_upstream, "netlnrelwind")
     # Issue #296 - adding DQI information for upstream processes
     wind_upstream["Year"] = model_specs.renewable_vintage
-    wind_upstream["FlowReliability"] = 3
+    wind_upstream["DataReliability"] = 3
     wind_upstream["TemporalCorrelation"] = add_temporal_correlation_score(
         wind_upstream["Year"], model_specs.electricity_lci_target_year
     )

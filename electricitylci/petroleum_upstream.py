@@ -225,7 +225,7 @@ def generate_petroleum_upstream(year):
     # Setting year to be equal to the year that the costs were generated
     # to develop this USEEIO-based inventory
     merged_inventory["Year"] = 2016
-    merged_inventory["FlowReliability"] = 3
+    merged_inventory["DataReliability"] = 3
     merged_inventory["TemporalCorrelation"] = add_temporal_correlation_score(
         merged_inventory["Year"], model_specs.electricity_lci_target_year
     )

@@ -162,7 +162,7 @@ def generate_upstream_ng(year):
         "ElementaryFlowPrimeContext"] = "technosphere"
     # Issue #296 - adding DQI information for upstream processes
     ng_lci_basin["Year"] = 2016
-    ng_lci_basin["FlowReliability"] = 3
+    ng_lci_basin["DataReliability"] = 3
     ng_lci_basin["TemporalCorrelation"] = add_temporal_correlation_score(
         ng_lci_basin["Year"], model_specs.electricity_lci_target_year
     )
