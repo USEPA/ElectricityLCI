@@ -1845,6 +1845,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
             + process_df.loc[sc_filter, region_agg[0]].squeeze().values
         )
 
+    # TODO: use `process_description_creation` from process_disctionary_writer to fill in this portion; note that the default text below is captured in the return string from that method.
     process_df["description"] += (
         " This process was created with ElectricityLCI "
         + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version

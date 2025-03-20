@@ -562,6 +562,7 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
         how="left",
     )
     # HOTFIX: during the merge, a lot eGRID_IDs are unmatched, so fill them in!
+    # NOTE: triggers a pandas futurewarning on downcasting object datatypes.
     up_df['eGRID_ID'] = up_df['eGRID_ID'].fillna(up_df['plant_id'])
     up_df['eGRID_ID'] = up_df['eGRID_ID'].astype('int')
 
