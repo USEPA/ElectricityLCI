@@ -163,7 +163,7 @@ def get_solarthermal_construction(year):
     #is based on the year the inventory is based on, but when electricity
     #generation is combined, it needs to be based on the target year for the
     #inventory.
-    solartherma_upstream["Year"] = year
+    solarthermal_upstream["Year"] = year
     return solarthermal_upstream
 
 
