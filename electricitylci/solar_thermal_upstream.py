@@ -159,6 +159,11 @@ def get_solarthermal_construction(year):
     solarthermal_upstream["GeographicalCorrelation"] = 1
     solarthermal_upstream["TechnologicalCorrelation"] = 1
     solarthermal_upstream["DataCollection"] = 1
+    #3/20/2025 MBJ - replacing renewable vintage here so that temporal correlation
+    #is based on the year the inventory is based on, but when electricity
+    #generation is combined, it needs to be based on the target year for the
+    #inventory.
+    solartherma_upstream["Year"] = year
     return solarthermal_upstream
 
 

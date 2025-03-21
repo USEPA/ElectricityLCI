@@ -136,7 +136,11 @@ def generate_upstream_nuc(year):
     nuc_merged["GeographicalCorrelation"] = 3
     nuc_merged["TechnologicalCorrelation"] = 3
     nuc_merged["DataCollection"] = 4
-
+    #3/20/2025 MBJ - replacing 2016 here so that temporal correlation
+    #is based on the year the inventory is based on, but when electricity
+    #generation is combined, it needs to be based on the target year for the
+    #inventory.
+    nuc_merged["Year"] = year
     return nuc_merged
 
 

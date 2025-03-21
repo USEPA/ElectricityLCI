@@ -360,7 +360,11 @@ def get_coal_ngcc_const(year):
     # a three.
     construction_df["TechnologicalCorrelation"] = 4
     construction_df["DataCollection"] = 4
-    
+    #3/20/2025 MBJ - replacing 2018 here so that temporal correlation
+    #is based on the year the inventory is based on, but when electricity
+    #generation is combined, it needs to be based on the target year for the
+    #inventory.
+    construction_df["Year"]=year
     return construction_df
 
 

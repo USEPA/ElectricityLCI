@@ -163,6 +163,11 @@ def get_wind_construction(year):
     wind_upstream["GeographicalCorrelation"] = 1
     wind_upstream["TechnologicalCorrelation"] = 1
     wind_upstream["DataCollection"] = 1
+    #3/20/2025 MBJ - replacing renewable vintage here so that temporal correlation
+    #is based on the year the inventory is based on, but when electricity
+    #generation is combined, it needs to be based on the target year for the
+    #inventory.
+    wind_upstream["Year"]=year
     return wind_upstream
 
 

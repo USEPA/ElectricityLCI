@@ -232,6 +232,11 @@ def generate_petroleum_upstream(year):
     merged_inventory["GeographicalCorrelation"] = 3
     merged_inventory["TechnologicalCorrelation"] = 3
     merged_inventory["DataCollection"] = 4
+    #3/20/2025 MBJ - replacing 2016 here so that temporal correlation
+    #is based on the year the inventory is based on, but when electricity
+    #generation is combined, it needs to be based on the target year for the
+    #inventory.
+    merged_inventory["Year"] = year
     return merged_inventory
 
 

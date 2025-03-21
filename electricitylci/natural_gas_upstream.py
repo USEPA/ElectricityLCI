@@ -169,6 +169,11 @@ def generate_upstream_ng(year):
     ng_lci_basin["GeographicalCorrelation"] = 1
     ng_lci_basin["TechnologicalCorrelation"] = 1
     ng_lci_basin["DataCollection"] = 1
+    #3/20/2025 MBJ - replacing renewable vintage here so that temporal correlation
+    #is based on the year the inventory is based on, but when electricity
+    #generation is combined, it needs to be based on the target year for the
+    #inventory.
+    ng_lci_basin["Year"]=year
     return ng_lci_basin
 
 
