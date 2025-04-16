@@ -57,11 +57,9 @@ inventories, including newer background data, for coal mining and
 transportation, but still mainly represents 2016.
 
 Last updated:
-    2025-02-05
+    2025-04-16
 """
 __all__ = [
-    "COAL_MINING_LCI_VINTAGE",
-    "COAL_TRANSPORT_LCI_VINTAGE",
     "coal_type_codes",
     "mine_type_codes",
     "basin_codes",
@@ -1136,7 +1134,7 @@ def get_coal_transportation():
 
     Notes
     -----
-    Method depends on the global parameter, `COAL_TRANSPORT_LCI_VINTAGE`.
+    Method depends on the configuration parameter, `coal_model_year`.
     For 2020, the 2016 baseline's ABB data file is referenced (i.e.,
     '2016_Coal_Trans_By_Plant_ABB_Data.csv').
     For 2023, the 2023 coal baseline data file is referenced
