@@ -777,15 +777,17 @@ def run_post_processes():
     easy way of remove files from a zip without just creating a new zip,
     so that's what's done here.
 
-    1. There should be only one instance of each .json file;
-       addressed in the new _save_to_json (olca_jsonld_writer.py)
-    2. Remove flows/*.json that are not found in a process exchange.
-       See cleanup SQL queries in GitHub issue
-       https://github.com/USEPA/ElectricityLCI/issues/216
-    3. Remove zero flows from quantitative reference exchanges
-       https://github.com/USEPA/ElectricityLCI/issues/217
-    4. DO NOT ADD NETL TRACI 2.1 characterization factors
-    5. Create product systems for select processes (user, consumption mixes)
+    1.  There should be only one instance of each .json file;
+        addressed in the new _save_to_json (olca_jsonld_writer.py)
+    2.  Remove flows/*.json that are not found in a process exchange.
+        See cleanup SQL queries in GitHub issue
+        https://github.com/USEPA/ElectricityLCI/issues/216
+    3.  Remove zero flows from quantitative reference exchanges
+        https://github.com/USEPA/ElectricityLCI/issues/217
+    4.  DO NOT ADD NETL TRACI 2.1 characterization factors
+    5.  Fix labeling of Heat input to elementary flow
+        https://github.com/USEPA/ElectricityLCI/issues/293
+    6.  Create product systems for select processes (user, consumption mixes)
     """
     from electricitylci.olca_jsonld_writer import build_product_systems
     from electricitylci.olca_jsonld_writer import clean_json

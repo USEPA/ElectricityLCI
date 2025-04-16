@@ -187,6 +187,7 @@ def clean_json(file_path):
     2.  Remove untracked flows (i.e., not found in a process exchange).
     3.  Consecutively number exchange internal IDs.
     4.  Update flows with FEDEFL metadata.
+    5.  Re-label heat inputs as elementary flow.
 
     Parameters
     ----------
@@ -221,6 +222,7 @@ def clean_json(file_path):
                             e.flow.name, p.name))
                     p.exchanges.remove(e)
                 else:
+                    # Add to list of tracked exchanges
                     e_list.append(e.flow.id)
 
                 # Check to see if output exchange is labeled as a
@@ -234,6 +236,31 @@ def clean_json(file_path):
                     p.exchanges.remove(e)
                     e.is_input = True
                     e.description = "mislabeled resources"
+                    p.exchanges.append(e)
+
+                # Check to see if exchange is heat resource;
+                # https://github.com/USEPA/ElectricityLCI/issues/293
+                if e.is_input and e.flow.name == 'Heat':
+                    # The new FEDEFL heat resource flow
+                    h_flow = _heat_elem_flow()
+                    # Add elementary flow if missing
+                    if h_flow.id not in data['Flow']['ids']:
+                        data['Flow']['ids'].append(h_flow.id)
+                        data['Flow']['objs'].append(h_flow)
+                    # Add new heat to tracked list (if not already)
+                    if h_flow.id not in e_list:
+                        e_list.append(h_flow.id)
+                    # Remove the defunct heat flow from tracked list
+                    if e.flow.id in e_list:
+                        e_fid = e_list.index(e.flow.id)
+                        e_list.pop(e_fid)
+                    # Remove old exchange, add new with updated description.
+                    p.exchanges.remove(e)
+                    e.flow = h_flow.to_ref()
+                    if e.description:
+                        e.description = "mapped to FEDEFL; " + e.description
+                    else:
+                        e.description = "mapped to FEDEFL"
                     p.exchanges.append(e)
 
             # Loop through exchanges a second time and re-number their
@@ -1070,6 +1097,38 @@ def _format_dq_entry(entry):
         else:
             nums[i] = str(round(float(nums[i])))
     return '(%s)' % ';'.join(nums)
+
+
+def _heat_elem_flow():
+    # JSON Data Pulled from Fed Commons:
+    # https://www.lcacommons.gov/lca-collaboration/Federal_LCA_Commons/elementary_flow_list/dataset/FLOW/8c959db8-d359-36e3-8517-588e1c21df4a
+    # To address https://github.com/USEPA/ElectricityLCI/issues/293
+    json_dict = {
+        "@type":"Flow",
+        "@id":"8c959db8-d359-36e3-8517-588e1c21df4a",
+        "name":"Energy, heat",
+        "description":"From Federal Elementary Flow List v1.3.0, written by fedelemflowlist v1.3.0. Flow Class: Energy. Preferred flow.",
+        "category":"Elementary flows/resource/air",
+        "version":"01.03.000",
+        "lastChange":"2024-12-28T13:02:35.764Z",
+        "flowType":"ELEMENTARY_FLOW",
+        "isInfrastructureFlow":False,
+        "flowProperties":[{
+            "@type":"FlowPropertyFactor",
+            "isRefFlowProperty":True,
+            "flowProperty":{
+                "@type":"FlowProperty",
+                "@id":"f6811440-ee37-11de-8a39-0800200c9a66",
+                "name":"Energy",
+                "category":"Technical flow properties",
+                "refUnit":"MJ"
+            },
+            "conversionFactor":1.0
+        }]
+    }
+    heat_flow = o.Flow.from_dict(json_dict)
+
+    return heat_flow
 
 
 def _init_root_entities(json_file):
