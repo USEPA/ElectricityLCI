@@ -1100,9 +1100,18 @@ def _format_dq_entry(entry):
 
 
 def _heat_elem_flow():
-    # JSON Data Pulled from Fed Commons:
-    # https://www.lcacommons.gov/lca-collaboration/Federal_LCA_Commons/elementary_flow_list/dataset/FLOW/8c959db8-d359-36e3-8517-588e1c21df4a
-    # To address https://github.com/USEPA/ElectricityLCI/issues/293
+    """Returns Energy, heat resource from FEDEFL Elementary Flow List
+
+    Returns
+    -------
+    o.Flow
+        Flow object for 'Energy, heat' as found in the Commons' FEDEFL.
+
+    Notes
+    -----
+    The dictionary used to create this flow object is based on the downloaded
+    JSON-LD found `here <https://www.lcacommons.gov/lca-collaboration/Federal_LCA_Commons/elementary_flow_list/dataset/FLOW/8c959db8-d359-36e3-8517-588e1c21df4a>`_.
+    """
     json_dict = {
         "@type":"Flow",
         "@id":"8c959db8-d359-36e3-8517-588e1c21df4a",
