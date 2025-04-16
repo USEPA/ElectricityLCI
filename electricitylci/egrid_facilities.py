@@ -31,7 +31,7 @@ returned after merging the primary percentage into it.
 Model specs (in model_config) must be defined before calling this module.
 
 Last updated:
-    2023-12-22
+    2025-04-16
 """
 __all__ = [
     "egrid_subregions",
@@ -146,7 +146,11 @@ def make_egrid_subregion_ref(year):
 # GLOBALS
 ##############################################################################
 # Get egrid facility file from stewi
-egrid_facilities = stewi.getInventoryFacilities("eGRID", model_specs.egrid_year)
+egrid_facilities = stewi.getInventoryFacilities(
+    inventory_acronym="eGRID",
+    year=model_specs.egrid_year,
+    download_if_missing=True,
+)
 '''pandas.DataFrame : eGRID facility-level information.'''
 
 # Rename columns. NOTE: missing names resolved
