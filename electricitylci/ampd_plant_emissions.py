@@ -58,7 +58,7 @@ def generate_plant_emissions(year):
     or Page 5 (generator vs boiler-level data).
 
     Emissions factors from AP42 are used to calculate emissions from the plant
-    if the fuel input from EPA air markets program data does not matche EIA 923
+    if the fuel input from EPA air markets program data does not match EIA 923
     data. This data is meant to replace the eGRID-sourced data provided by
     STEWi.
 

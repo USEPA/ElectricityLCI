@@ -47,8 +47,11 @@ include_netl_water: true
 # Upstream data from NETL can be included in the outputs.
 include_upstream_processes: true
 
-# Inventory vintages taken from StEWI.
-# https://github.com/USEPA/standardizedinventories
+# For the inventories of interest, see vintages available from StEWI
+# (https://github.com/USEPA/standardizedinventories).
+# If you plan to run a baseline, use the prescribed stewicombo file for
+# consistent results. Stewicombo files are listed in their corresponding folder
+# on the AWS site (https://dmap-data-commons-ord.s3.amazonaws.com/index.html).
 inventories_of_interest:
   eGRID: 2020
   TRI: 2020

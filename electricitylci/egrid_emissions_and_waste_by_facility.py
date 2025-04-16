@@ -26,10 +26,10 @@ specified by the 'stewicombo_file' parameter, or will create one from the
 `stewicombo` package from Standardized Emission and Waste Inventories (StEWI).
 
 If there is no existing parquet file stored in the local data directory,
-stewicombo will generate one. 
+stewicombo will generate one.
 
 Last edited:
-    2025-02-24
+    2025-04-16
 """
 __all__ = [
     'get_combined_stewicombo_file',
@@ -53,8 +53,8 @@ def get_combined_stewicombo_file(model_specs):
         The combined inventories for all facilities from all of the
         specified sources.
     """
+    # Initialize the return data frame
     df = None
-    '''pandas.DataFrame : Facility-level inventory. Defaults to none.'''
 
     if model_specs.stewicombo_file is not None:
         df = getInventory(model_specs.stewicombo_file, download_if_missing=True)
@@ -78,8 +78,8 @@ def get_combined_stewicombo_file(model_specs):
         # stewi and stewicombo data files. If this is your only project that
         # relies on stewicombo, then delete the stewi and stewicombo data store
         # folders on your computer (see globals.get_datastore_dir), then run
-        # try again. This will pull StEWI's pre-processed data. See GitHub issue:
-        # https://github.com/USEPA/standardizedinventories/issues/151
+        # try again. This will pull StEWI's pre-processed data. See GitHub
+        # issue: https://github.com/USEPA/standardizedinventories/issues/151
         df = cbi(
             base_inventory = base_inventory,
             inventory_dict = model_specs.inventories_of_interest,
@@ -101,6 +101,7 @@ def get_combined_stewicombo_file(model_specs):
         )
     return df
 
+
 ##############################################################################
 # MAIN
 ##############################################################################
@@ -108,11 +109,11 @@ if __name__ == "__main__":
     from electricitylci.model_config import build_model_class
     model_config = build_model_class('ELCI_2020')
 
-    emissions_and_wastes_by_facility = get_combined_stewicombo_file(model_config)
+    emissions_and_wastes_by_facility = get_combined_stewicombo_file(
+        model_config)
     len(emissions_and_wastes_by_facility)
-    # with egrid 2016, tri 2016, nei 2016, rcrainfo 2015: 106284
+    # for 'ELCI_2020': 88005 [250416; TWD]
+    # for 'ELCI_1': 106284 (recorded as 88310 [250416;TWD])
 
     # Get a list of unique years in the emissions data
-    years_in_emissions_and_wastes_by_facility = list(
-        pd.unique(emissions_and_wastes_by_facility['Year'])
-    )
+    years_list = emissions_and_wastes_by_facility['Year'].unique().tolist()
