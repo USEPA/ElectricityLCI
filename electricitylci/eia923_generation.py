@@ -24,6 +24,7 @@ try:
 except ImportError:
     import electricitylci.model_config as config
     config.model_specs = config.build_model_class()
+    from electricitylci.model_config import model_specs
 
 
 ##############################################################################
@@ -36,7 +37,7 @@ workbook.
 
 
 Last edited:
-    2025-01-22
+    2025-04-18
 """
 EIA923_PAGES = {
     "1": "Page 1 Generation and Fuel Data",
