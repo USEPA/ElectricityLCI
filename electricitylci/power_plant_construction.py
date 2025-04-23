@@ -218,7 +218,8 @@ def get_coal_ngcc_const(year):
         '/':"",
         'resource/groundwater':"resource",
         'resource/surface water':"resource",
-        'water/surface water':"resource"
+        'water/surface water':"resource",
+        "resource/":"resource"
     }
     gas_prime = ["GT","IC","OT","CT","CS","CE","CA","ST"]
     coal_type = ["BIT","SUB","LIG","WC","RC"]
