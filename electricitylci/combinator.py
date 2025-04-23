@@ -761,12 +761,12 @@ def map_compartment_path(df):
         "soil": "emission/ground",
         "resource": "resource",
         "NETL database/emissions": "NETL database/emissions",
-        "NETL database/resources": "NETL database/resources",
     }
     resource_mapping = {
         'water': "resource/water",
         'input': "input",  # should keep electricity as a resource
         "resource": "resource",  # hotfix geothermal resource flows
+        "NETL database/resources": "NETL database/resources",
     }
     # Map resources
     df.loc[df['input'], 'Compartment_path'] = df.loc[
