@@ -332,19 +332,15 @@ def _exchange_table_creation_output(data):
     # against possible missing entries, we'll try adding the entry using
     # the expected keys and if that fails, give the worst dqi score of (5;5;5;5;5)
     try:
-        ar["dqEntry"] = (
-        "("
-        + str(round(data["DataReliability"], 1))
-        + ";"
-        + str(round(data["TemporalCorrelation"], 1))
-        + ";"
-        + str(round(data["GeographicalCorrelation"], 1))
-        + ";"
-        + str(round(data["TechnologicalCorrelation"], 1))
-        + ";"
-        + str(round(data["DataCollection"], 1))
-        + ")"
-    )
+        dqi_keys = [
+            'DataReliability',
+            'TemporalCorrelation',
+            'GeographicalCorrelation',
+            'TechnologicalCorrelation',
+            'DataCollection'
+        ]
+        dqi_str = '(' + ";".join([str(data[x]) for x in dqi_keys]) + ')'
+        ar["dqEntry"] = dqi_str
     except KeyError:
         ar["dqEntry"]="(5;5;5;5;5)"
     ar["pedigreeUncertainty"] = ""
@@ -600,7 +596,7 @@ def olcaschema_genupstream_processes(merged):
             "plant_id",
             "stage_code"
         ]
-    ]
+    ].copy()
     small_merged["plant_id"]=small_merged["plant_id"].astype("int32")
     small_merged["Balancing Authority Name"] = small_merged["plant_id"].map(
         plant_region_dict
@@ -642,7 +638,7 @@ def olcaschema_genupstream_processes(merged):
 
         first_row = min(merged_summary_filter.index)
         fuel_type = merged_summary_filter.loc[first_row, "FuelCategory"]
-        stage_code = merged_summary_filter.loc[first_row, "stage_code"] ##<<<<<<-
+        #stage_code = merged_summary_filter.loc[first_row, "stage_code"] ##<<<<<<-
         if "CONSTRUCTION" in fuel_type:
             combined_name= f"power plant construction - {upstream}"
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
