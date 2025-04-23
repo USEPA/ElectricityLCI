@@ -9,7 +9,7 @@
 import logging
 
 import pandas as pd
-
+import numpy as np
 from electricitylci.globals import output_dir
 from electricitylci.model_config import model_specs
 from electricitylci.eia860_facilities import eia860_balancing_authority
@@ -636,18 +636,6 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
     del(pl_df)
     del(up_df)
 
-    # Remove unnecessary columns
-    # categories_to_delete = [
-    #     "plant_id",
-    #     "FuelCategory_right",
-    #     "Net Generation (MWh)",
-    #     "PrimaryFuel_right",
-    # ]
-    # categories_to_delete = [
-    #     x for x in categories_to_delete if x in combined_df.columns]
-    # if len(categories_to_delete) > 0:
-    #     combined_df.drop(columns=categories_to_delete, inplace=True)
-
     combined_df["FacilityID"] = combined_df["eGRID_ID"]
 
     # I think without the following, given the way the data is created for
@@ -757,9 +745,9 @@ def fill_nans(
     df.loc[df["State"].isna(), "State"] = df.loc[
         df["State"].isna(), "eGRID_ID"].map(plant_ba["State"])
     if dropna:
-        import numpy as np
         df["target_nans"]=np.where(df[confirmed_target].isnull().all(1),1,0)
         df=df.loc[(df["target_nans"]==0)|(df["Electricity"].isna()),:]
+        df.drop(columns=["target_nans"], errors="ignore", inplace=True)
         #df.dropna(subset=confirmed_target, inplace=True, how="all")
         #df.dropna(subset=["Electricity"],inplace=True)
     return df
