@@ -356,13 +356,21 @@ def aggregate_facility_flows(df):
     ]
     groupby_cols = [
         "FuelCategory",
-        "FacilityID",
         "Electricity",
         "FlowName",
         "Source",
         "Compartment",
         "stage_code"
     ]
+    if "FacilityID" in df.columns:
+        groupby_cols=groupby_cols+["FacilityID"]
+    elif "eGRID_ID" in df.columns:
+        groupby_cols=groupby_cols+["eGRID_ID"]
+    else:
+        logging.error(
+            "generation.aggregate_facility_flows: Missing eGRID_ID and " \
+            "FacilityID in dataframe"
+        )
 
     wm = lambda x: _wtd_mean(x, df)
     emissions = df["Compartment"].isin(emission_compartments)
