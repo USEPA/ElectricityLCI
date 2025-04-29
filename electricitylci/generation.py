@@ -774,6 +774,7 @@ def create_generation_process_df():
         "air": "air",
         "water": "water",
         "ground": "ground",
+        "emission/air/troposphere/rural/ground-level": "air",
     }
     if model_specs.replace_egrid:
         # Create data frame with EIA's info on:
