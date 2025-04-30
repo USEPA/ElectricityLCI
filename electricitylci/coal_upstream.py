@@ -26,6 +26,7 @@ from electricitylci.model_config import model_specs
 import electricitylci.PhysicalQuantities as pq
 from electricitylci.utils import download
 from electricitylci.utils import find_file_in_folder
+from electricitylci.generation import add_temporal_correlation_score
 
 
 ##############################################################################
@@ -1423,7 +1424,16 @@ def read_coal_transportation():
     transport_coal["ElementaryFlowPrimeContext"] = "emission"
     transport_coal["FlowType"] = "ELEMENTARY_FLOW"
     transport_coal["input"] = False
-
+    # Coal transport data is from data collected for the year 2016.
+    transport_coal["Year"] = 2016
+    # Issue #296 - adding DQI information for upstream processes
+    transport_coal["DataReliability"] = 3
+    transport_coal["TemporalCorrelation"] = add_temporal_correlation_score(
+        transport_coal["Year"], model_specs.electricity_lci_target_year
+    )
+    transport_coal["GeographicalCorrelation"] = 1
+    transport_coal["TechnologicalCorrelation"] = 1
+    transport_coal["DataCollection"] = 1
     return transport_coal
 
 
@@ -1663,7 +1673,16 @@ def generate_upstream_coal(year):
         "Unit",
         "FlowType"
     ]].copy()
-
+    # Coal emissions data is from data collected for the year 2016.
+    coal_mining_inventory_df["Year"] = 2016
+    # Issue #296 - adding DQI information for upstream processes
+    coal_mining_inventory_df["DataReliability"] = 3
+    coal_mining_inventory_df["TemporalCorrelation"] = add_temporal_correlation_score(
+        coal_mining_inventory_df["Year"], model_specs.electricity_lci_target_year
+    )
+    coal_mining_inventory_df["GeographicalCorrelation"] = 1
+    coal_mining_inventory_df["TechnologicalCorrelation"] = 1
+    coal_mining_inventory_df["DataCollection"] = 1
     # Read coal transportation data
     coal_transport_df = read_coal_transportation()
 
@@ -1720,9 +1739,13 @@ def generate_upstream_coal(year):
         inplace=True
     )
     merged_coal_upstream.reset_index(drop=True, inplace=True)
+    # 3/17/25 Think it's okay at this point to keep this year redefinition. The
+    # DQI scores have been already been calculated based on the year the 
+    # emissions factors were developed. I'm worried that if the year is kept at
+    # 2016, there may be downstream effects where electricity generation is 
+    # requested for the year 2016.
     merged_coal_upstream["Year"] = year
     merged_coal_upstream["Source"] = "netlcoaleiafuel"
-
     return merged_coal_upstream
 
 

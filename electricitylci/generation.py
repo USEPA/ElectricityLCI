@@ -288,31 +288,36 @@ def add_technological_correlation_score(db):
     return db
 
 
-def add_temporal_correlation_score(db, electricity_lci_target_year):
+def add_temporal_correlation_score(years, electricity_lci_target_year):
     """Generates columns in a data frame for data age and its quality score.
+    
+    3/17/25 MBJ - changing this to take a dataseries containing years
+    and return a dataseries that should have the same
+    index as the input data series. There's no need to maintain an "Age" column in the
+    dataframe, and I think this is also makes the changes to the dataframe
+    a bit more transparent. There may also be times where we would prefer
+    this temporal correlation to be determined by somthing other than the 
+    "Year" column in a complete dataframe.
 
     Parameters
     ----------
-    db : pandas.DataFrame
-        A data frame with column 'Year' representing the data source year.
+    years : pandas.DataSeries
+        A data series representing the data source year.
     electricity_lci_target_year : int
         The year associated with data use (see model_config attribute,
         'electricity_lci_target_year').
 
     Returns
     -------
-    pandas.DataFrame
-        The same data frame received with two new columns:
-
-        - 'Age' : int, difference between target year and data source year.
+    pandas.DataSeries
         - 'TemporalCorrelation' : int, DQI score based on age.
     """
     # Could be more precise here with year
-    db['Age'] =  electricity_lci_target_year - pd.to_numeric(db['Year'])
-    db['TemporalCorrelation'] = db['Age'].apply(
+    age_dataseries =  electricity_lci_target_year - pd.to_numeric(years)
+    TemporalCorrelation = age_dataseries.apply(
         lambda x: lookup_score_with_bound_key(
             x, temporal_correlation_lower_bound_to_dqi))
-    return db
+    return TemporalCorrelation
 
 
 def aggregate_facility_flows(df):
@@ -351,13 +356,21 @@ def aggregate_facility_flows(df):
     ]
     groupby_cols = [
         "FuelCategory",
-        "FacilityID",
         "Electricity",
         "FlowName",
         "Source",
         "Compartment",
         "stage_code"
     ]
+    if "FacilityID" in df.columns:
+        groupby_cols=groupby_cols+["FacilityID"]
+    elif "eGRID_ID" in df.columns:
+        groupby_cols=groupby_cols+["eGRID_ID"]
+    else:
+        logging.error(
+            "generation.aggregate_facility_flows: Missing eGRID_ID and " \
+            "FacilityID in dataframe"
+        )
 
     wm = lambda x: _wtd_mean(x, df)
     emissions = df["Compartment"].isin(emission_compartments)
@@ -761,6 +774,7 @@ def create_generation_process_df():
         "air": "air",
         "water": "water",
         "ground": "ground",
+        "emission/air/troposphere/rural/ground-level": "air",
     }
     if model_specs.replace_egrid:
         # Create data frame with EIA's info on:
@@ -994,8 +1008,8 @@ def create_generation_process_df():
     )
 
     # Add DQI
-    final_database = add_temporal_correlation_score(
-        final_database, model_specs.electricity_lci_target_year)
+    final_database["TemporalCorrelation"] = add_temporal_correlation_score(
+        final_database["Year"], model_specs.electricity_lci_target_year)
     final_database = add_technological_correlation_score(final_database)
     final_database["DataCollection"] = 5
     final_database["GeographicalCorrelation"] = 1
@@ -1380,14 +1394,14 @@ def aggregate_data(total_db, subregion="BA"):
     if region_agg:
         canada_db = pd.merge(
             left=database_f3.loc[canadian_criteria, :],
-            right=total_db[groupby_cols + ["Electricity"]],
+            right=total_db[groupby_cols + ["Electricity","DataReliability"]],
             left_on=groupby_cols,
             right_on=groupby_cols,
             how="left",
         ).drop_duplicates(subset=groupby_cols)
     else:
         total_grouped = total_db.groupby(
-            by=groupby_cols, as_index=False)["Electricity"].sum()
+            by=groupby_cols+["DataReliability"], as_index=False)["Electricity"].sum()
         canada_db = pd.merge(
             left=database_f3.loc[canadian_criteria, :],
             right=total_grouped,

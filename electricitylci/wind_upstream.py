@@ -16,7 +16,7 @@ from electricitylci.globals import data_dir
 from electricitylci.eia923_generation import eia923_download_extract
 from electricitylci.solar_upstream import fix_renewable
 from electricitylci.model_config import model_specs
-
+from electricitylci.generation import add_temporal_correlation_score
 
 ##############################################################################
 # MODULE DOCUMENTATION
@@ -154,7 +154,20 @@ def get_wind_construction(year):
     wind_upstream["Unit"] = "kg"
 
     wind_upstream = fix_renewable(wind_upstream, "netlnrelwind")
-
+    # Issue #296 - adding DQI information for upstream processes
+    wind_upstream["Year"] = model_specs.renewable_vintage
+    wind_upstream["DataReliability"] = 3
+    wind_upstream["TemporalCorrelation"] = add_temporal_correlation_score(
+        wind_upstream["Year"], model_specs.electricity_lci_target_year
+    )
+    wind_upstream["GeographicalCorrelation"] = 1
+    wind_upstream["TechnologicalCorrelation"] = 1
+    wind_upstream["DataCollection"] = 1
+    #3/20/2025 MBJ - replacing renewable vintage here so that temporal correlation
+    #is based on the year the inventory is based on, but when electricity
+    #generation is combined, it needs to be based on the target year for the
+    #inventory.
+    wind_upstream["Year"]=year
     return wind_upstream
 
 
