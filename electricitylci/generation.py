@@ -1812,55 +1812,47 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     )
     sc_filter = process_df["stage_code"].isin(renewables_const_stage_codes)
     if region_agg is None:
-        process_df["location"] = "US"
-        process_df["description"] = (
-            "Electricity from "
-            + process_df[fuel_agg].squeeze().values
-            + " produced at generating facilities in the US."
-        )
-        process_df["name"] = (
-            "Electricity - " + process_df[fuel_agg].squeeze().values + " - US"
-        )
+        process_df = (process_df
+            .assign(location = 'US')
+            .assign(description = (
+                "Electricity from " + process_df[fuel_agg]
+                + " produced at generating facilities in the US."))
+            .assign(name = (
+                "Electricity - " + process_df[fuel_agg] + " - US"))
+            )
+
         # Iss150, correct construction stage code name and description
-        process_df.loc[sc_filter, "description"] = (
-            "Construction of "
-            + process_df[fuel_agg].values
-            + " in the US"
-        )
-        process_df.loc[sc_filter,"name"] = (
-            "Construction - "
-            + process_df[fuel_agg].values
-            + " - US"
+        process_df = (process_df
+            .assign(description = lambda x: np.where(
+                sc_filter, ("Construction of " + x[fuel_agg[0]] + " in the US"),
+                x['description']))
+            .assign(name = lambda x: np.where(
+                sc_filter, "Construction - " + x[fuel_agg[0]] + " - US",
+                x['name']))
         )
     else:
         # HOTFIX: remove .values, which throws ValueError [2023-11-13; TWD]
-        process_df["location"] = process_df[region_agg]
-        process_df["description"] = (
-            "Electricity from "
-            + process_df[fuel_agg].squeeze().values
-            + " produced at generating facilities in the "
-            + process_df[region_agg].squeeze().values
-            + " region."
-        )
-        process_df["name"] = (
-            "Electricity - "
-            + process_df[fuel_agg].squeeze().values
-            + " - "
-            + process_df[region_agg].squeeze().values
-        )
+        process_df = (process_df
+            .assign(location = process_df[region_agg])
+            .assign(description = (
+                "Electricity from " + process_df[fuel_agg]
+                + " produced at generating facilities in the "
+                + process_df[region_agg] + " region."))
+            .assign(name = (
+                "Electricity - " + process_df[fuel_agg] + " - "
+                + process_df[region_agg]))
+            )
+
         # Iss150, correct construction name and description
-        process_df.loc[sc_filter, "description"] = (
-            "Construction of "
-            + process_df.loc[sc_filter, fuel_agg[0]].squeeze().values
-            + " in the "
-            + process_df.loc[sc_filter, region_agg[0]].squeeze().values
-            + " region."
-        )
-        process_df.loc[sc_filter, "name"] = (
-            "Construction - "
-            + process_df.loc[sc_filter, fuel_agg[0]].squeeze().values
-            + " - "
-            + process_df.loc[sc_filter, region_agg[0]].squeeze().values
+        process_df = (process_df
+            .assign(description = lambda x: np.where(
+                sc_filter, ("Construction of " + x[fuel_agg[0]] + " in the "
+                            + x[region_agg[0]] + " region."),
+                x['description']))
+            .assign(name = lambda x: np.where(
+                sc_filter, ("Construction - " + x[fuel_agg[0]] + " - "
+                            + x[region_agg[0]]),
+                x['name']))
         )
 
     # TODO: use `process_description_creation` from process_disctionary_writer to fill in this portion; note that the default text below is captured in the return string from that method.
