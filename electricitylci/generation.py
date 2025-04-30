@@ -1757,40 +1757,43 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     # should be.
     # First, get indices where upstream process exists.
     provider_filter = [
-        x for x in process_df.index.values if x[2] in upstream_dict.keys()]
+        x for x in process_df.index.values if x[-1] in upstream_dict.keys()]
     # HOTFIX: only include stage codes found in process_df [241011; TWD]
-    sc_list = list(set([x[2] for x in provider_filter]))
-    for index, row in process_df.loc(axis=0)[:, :, sc_list].iterrows():
+    sc_list = list(set([x[-1] for x in provider_filter]))
+    for index, row in process_df[process_df.index.get_level_values('stage_code').isin(sc_list)].iterrows():
         # New Issue #150, try first to match regional construction. Fall back
         # is US average.
-        if "_const" in index[2]:
+        sc = index[-1]
+        fuel_cat = index[-2]
+        region = index[0] if region_agg else 'US'
+        if "_const" in sc:
             try:
                 provider_dict = {
-                    "name": upstream_dict[index[2] + " - " +index[0]]["name"],
-                    "categoryPath": upstream_dict[index[2] + " - " +index[0]]["category"],
+                    "name": upstream_dict[sc + " - " + region]["name"],
+                    "categoryPath": upstream_dict[sc + " - " + region]["category"],
                     "processType": "UNIT_PROCESS",
-                    "@id": upstream_dict[index[2] + " - " +index[0]]["uuid"],
+                    "@id": upstream_dict[sc + " - " + region]["uuid"],
                 }
             except KeyError:
                 provider_dict = {
-                    "name": upstream_dict[index[2]]["name"],
-                    "categoryPath": upstream_dict[index[2]]["category"],
+                    "name": upstream_dict[sc]["name"],
+                    "categoryPath": upstream_dict[sc]["category"],
                     "processType": "UNIT_PROCESS",
-                    "@id": upstream_dict[index[2]]["uuid"],
+                    "@id": upstream_dict[sc]["uuid"],
                 }
         else:
             provider_dict = {
-                "name": upstream_dict[index[2]]["name"],
-                "categoryPath": upstream_dict[index[2]]["category"],
+                "name": upstream_dict[sc]["name"],
+                "categoryPath": upstream_dict[sc]["category"],
                 "processType": "UNIT_PROCESS",
-                "@id": upstream_dict[index[2]]["uuid"],
+                "@id": upstream_dict[sc]["uuid"],
             }
         row["exchanges"][0]["provider"] = provider_dict
         row["exchanges"][0]["unit"] = unit(
-            upstream_dict[index[2]]["q_reference_unit"]
+            upstream_dict[sc]["q_reference_unit"]
         )
         row["exchanges"][0]["FlowType"] = "PRODUCT_FLOW"
-        process_df.loc[index[0], index[1], "Power plant"]["exchanges"].append(
+        process_df.loc[index[:-1] + ('Power plant',)]["exchanges"].append(
             row["exchanges"][0])
 
     # These are now only power plant stage codes
