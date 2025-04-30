@@ -207,8 +207,10 @@ def run_generation():
         to_agg=True
     )
 
+
+
     logging.info("write generation process to dict")
-    if config.model_specs.regional_aggregation in ["FERC", "US"]:
+    if config.model_specs.regional_aggregation in ["FERC"]:
         generation_process_dict = write_gen_fuel_database_to_dict(
             generation_process_df, upstream_dict, subregion="BA"
         )
