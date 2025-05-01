@@ -15,7 +15,7 @@ import pandas as pd
 from electricitylci.globals import data_dir
 from electricitylci.eia923_generation import eia923_download_extract
 from electricitylci.model_config import model_specs
-
+from electricitylci.generation import add_temporal_correlation_score
 
 ##############################################################################
 # MODULE DOCUMENTATION
@@ -242,7 +242,20 @@ def get_solar_pv_construction(year):
     solar_upstream["input"] = False
 
     solar_upstream = fix_renewable(solar_upstream, "netlnrelsolarpv")
-
+        # Issue #296 - adding DQI information for upstream processes
+    solar_upstream["Year"] = model_specs.renewable_vintage
+    solar_upstream["DataReliability"] = 3
+    solar_upstream["TemporalCorrelation"] = add_temporal_correlation_score(
+        solar_upstream["Year"], model_specs.electricity_lci_target_year
+    )
+    solar_upstream["GeographicalCorrelation"] = 1
+    solar_upstream["TechnologicalCorrelation"] = 1
+    solar_upstream["DataCollection"] = 1
+    #3/20/2025 MBJ - replacing renewable vintage here so that temporal correlation
+    #is based on the year the inventory is based on, but when electricity
+    #generation is combined, it needs to be based on the target year for the
+    #inventory.
+    solar_upstream["Year"] = year
     return solar_upstream
 
 

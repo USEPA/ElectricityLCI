@@ -233,6 +233,7 @@ def get_gen_plus_netl():
     from electricitylci.wind_upstream import get_wind_om
     from electricitylci.hydro_upstream import generate_hydro_emissions
     from electricitylci.solar_thermal_upstream import get_solarthermal_om
+    from electricitylci.generation import add_temporal_correlation_score
 
     eia_gen_year = config.model_specs.eia_gen_year
     logging.info(
@@ -253,9 +254,12 @@ def get_gen_plus_netl():
         eia_gen_year, geo_df, solar_df, wind_df, solartherm_df
     )
     netl_gen["DataCollection"] = 5
+    netl_gen["TemporalCorrelation"] = add_temporal_correlation_score(
+        netl_gen["Year"], config.model_specs.electricity_lci_target_year
+    )
     netl_gen["GeographicalCorrelation"] = 1
     netl_gen["TechnologicalCorrelation"] = 1
-    netl_gen["DataReliability"] = 1
+    netl_gen["DataReliability"] = 3
 
     # Add hydro, which already has DQI information associated with it:
     logging.info("Concatenating hydro facilities with renewables")

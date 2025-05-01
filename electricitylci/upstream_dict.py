@@ -327,6 +327,22 @@ def _exchange_table_creation_output(data):
     ar["amount"] = data["emission_factor"]
     ar["amountFormula"] = ""
     ar["unit"] = _unit(data["Unit"])
+    # Issue 296 - changes to get data quality scores into final
+    # dictionaries. Just to make sure _something_ makes it in and to guard
+    # against possible missing entries, we'll try adding the entry using
+    # the expected keys and if that fails, give the worst dqi score of (5;5;5;5;5)
+    try:
+        dqi_keys = [
+            'DataReliability',
+            'TemporalCorrelation',
+            'GeographicalCorrelation',
+            'TechnologicalCorrelation',
+            'DataCollection'
+        ]
+        dqi_str = '(' + ";".join([str(data[x]) for x in dqi_keys]) + ')'
+        ar["dqEntry"] = dqi_str
+    except KeyError:
+        ar["dqEntry"]="(5;5;5;5;5)"
     ar["pedigreeUncertainty"] = ""
     if type(ar) == "DataFrame":
         print(data)
@@ -381,7 +397,7 @@ def olcaschema_genupstream_processes(merged):
     ).agg({"FlowAmount": "sum", "quantity": "mean"})
     # NEW Issue #150, adding regional ability for construction of all types
     plant_region = eia860_balancing_authority(config.model_specs.eia_gen_year)
-    plant_region["Plant Id"] = plant_region["Plant Id"].astype(int)
+    plant_region["Plant Id"] = plant_region["Plant Id"].astype("int32")
     merged_summary_regional = (
         merged_summary.loc[
             merged_summary["FuelCategory"].str.contains("CONSTRUCTION"), :
@@ -391,6 +407,13 @@ def olcaschema_genupstream_processes(merged):
         )
         .copy().reset_index()
     )
+    plant_region_dict = {
+        x[0]: x[1]
+        for x in zip(
+            plant_region["Plant Id"],
+            plant_region["Balancing Authority Name"],
+        )
+    }
     merged_summary = merged_summary.groupby(
         by=[
             "FuelCategory",
@@ -430,7 +453,7 @@ def olcaschema_genupstream_processes(merged):
     # Calculate emission factor (e.g., total emission per total MWh)
     merged_summary["FlowAmount"]=merged_summary["FlowAmount"].astype(float)
     merged_summary["quantity"]=merged_summary["quantity"].astype(float)
-    
+
     merged_summary["emission_factor"] = (
         merged_summary["FlowAmount"] / merged_summary["quantity"]
     )
@@ -462,7 +485,22 @@ def olcaschema_genupstream_processes(merged):
         garbage = merged_summary_filter.loc[
             merged_summary_filter["FlowName"] == "[no match]", :].index
         merged_summary_filter.drop(garbage, inplace=True)
-
+        # Issue 296 - changes to get data quality scores into final
+        # dictionaries
+        merged_summary_filter = merged_summary_filter.merge(
+            merged.loc[merged["stage_code"]==upstream,
+                [
+                    "FlowUUID",
+                    "DataCollection",
+                    "TemporalCorrelation",
+                    "GeographicalCorrelation",
+                    "TechnologicalCorrelation",
+                    "DataReliability",
+                ]
+            ].drop_duplicates(subset=["FlowUUID"]),
+            on=["FlowUUID"],
+            how="left",
+        )
         ra = merged_summary_filter.apply(
             _exchange_table_creation_output, axis=1).tolist()
         exchanges_list.extend(ra)
@@ -522,8 +560,8 @@ def olcaschema_genupstream_processes(merged):
         elif fuel_type == "WIND":
             combined_name = f"wind upstream and operation - {stage_code}"
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
-        #Issue #150, catching multiple types of CONSTRUCTION. Worth noting that
-        #US average is appended to these in case they're needed (unlikely)
+        # Issue #150, catching multiple types of CONSTRUCTION. Worth noting that
+        # US average is appended to these in case they're needed (unlikely)
         elif "CONSTRUCTION" in fuel_type:
             combined_name= f"power plant construction - {stage_code} - US Average"
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
@@ -546,6 +584,29 @@ def olcaschema_genupstream_processes(merged):
         + " - "
         + merged_summary_regional["Balancing Authority Name"]
     )
+    # Issue 296 - changes to get data quality scores into final
+    # dictionaries
+    small_merged=merged[[
+            "FlowUUID",
+            "DataCollection",
+            "TemporalCorrelation",
+            "GeographicalCorrelation",
+            "TechnologicalCorrelation",
+            "DataReliability",
+            "plant_id",
+            "stage_code"
+        ]
+    ].copy()
+    small_merged["plant_id"]=small_merged["plant_id"].astype("int32")
+    small_merged["Balancing Authority Name"] = small_merged["plant_id"].map(
+        plant_region_dict
+    )
+    small_merged["scen_name"]=(
+        small_merged["stage_code"]
+        + " - "
+        + small_merged["Balancing Authority Name"]
+    )
+    small_merged=small_merged.drop_duplicates(subset=["scen_name","FlowUUID"])
     upstream_regional_list = [x for x in merged_summary_regional["scen_name"].unique()]
     for upstream in upstream_regional_list:
         logging.info(f"Building dictionary for {upstream}")
@@ -563,14 +624,21 @@ def olcaschema_genupstream_processes(merged):
         garbage = merged_summary_filter.loc[
             merged_summary_filter["FlowName"] == "[no match]", :].index
         merged_summary_filter.drop(garbage, inplace=True)
-
+        # Issue 296 - changes to get data quality scores into final
+        # dictionaries
+        merged_summary_filter = merged_summary_filter.merge(
+            small_merged.loc[small_merged["scen_name"]==upstream,:],
+            on=["FlowUUID"],
+            how="left",
+            suffixes=["","_right"]
+        )
         ra = merged_summary_filter.apply(
             _exchange_table_creation_output, axis=1).tolist()
         exchanges_list.extend(ra)
 
         first_row = min(merged_summary_filter.index)
         fuel_type = merged_summary_filter.loc[first_row, "FuelCategory"]
-        stage_code = merged_summary_filter.loc[first_row, "stage_code"]
+        #stage_code = merged_summary_filter.loc[first_row, "stage_code"] ##<<<<<<-
         if "CONSTRUCTION" in fuel_type:
             combined_name= f"power plant construction - {upstream}"
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))

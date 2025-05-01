@@ -16,7 +16,7 @@ from electricitylci.globals import data_dir
 from electricitylci.solar_upstream import fix_renewable
 from electricitylci.solar_upstream import get_solar_generation
 from electricitylci.model_config import model_specs
-
+from electricitylci.generation import add_temporal_correlation_score
 
 ##############################################################################
 # MODULE DOCUMENTATION
@@ -150,7 +150,20 @@ def get_solarthermal_construction(year):
     # Fix/fill construction LCI
     solarthermal_upstream = fix_renewable(
         solarthermal_upstream, "netlsolarthermal")
-
+            # Issue #296 - adding DQI information for upstream processes
+    solarthermal_upstream["Year"] = model_specs.renewable_vintage
+    solarthermal_upstream["DataReliability"] = 3
+    solarthermal_upstream["TemporalCorrelation"] = add_temporal_correlation_score(
+        solarthermal_upstream["Year"], model_specs.electricity_lci_target_year
+    )
+    solarthermal_upstream["GeographicalCorrelation"] = 1
+    solarthermal_upstream["TechnologicalCorrelation"] = 1
+    solarthermal_upstream["DataCollection"] = 1
+    #3/20/2025 MBJ - replacing renewable vintage here so that temporal correlation
+    #is based on the year the inventory is based on, but when electricity
+    #generation is combined, it needs to be based on the target year for the
+    #inventory.
+    solarthermal_upstream["Year"] = year
     return solarthermal_upstream
 
 

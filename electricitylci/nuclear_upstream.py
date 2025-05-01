@@ -13,8 +13,8 @@ import pandas as pd
 
 from electricitylci.globals import data_dir
 from electricitylci.eia923_generation import eia923_download_extract
-
-
+from electricitylci.generation import add_temporal_correlation_score
+from electricitylci.model_config import model_specs
 ##############################################################################
 # MODULE DOCUMENTATION
 ##############################################################################
@@ -124,6 +124,23 @@ def generate_upstream_nuc(year):
     nuc_merged["directionality"] = nuc_merged["directionality"].map(input_dict)
     nuc_merged.rename(columns={"directionality":"input"}, inplace=True)
     nuc_merged["Source"]="netlnuceiafuel"
+
+    # Issue #296 - adding DQI information for upstream processes
+    # Setting year to be equal to the year that the costs were generated
+    # to develop this USEEIO-based inventory
+    nuc_merged["Year"] = 2016
+    nuc_merged["DataReliability"] = 3
+    nuc_merged["TemporalCorrelation"] = add_temporal_correlation_score(
+        nuc_merged["Year"], model_specs.electricity_lci_target_year
+    )
+    nuc_merged["GeographicalCorrelation"] = 3
+    nuc_merged["TechnologicalCorrelation"] = 3
+    nuc_merged["DataCollection"] = 4
+    #3/20/2025 MBJ - replacing 2016 here so that temporal correlation
+    #is based on the year the inventory is based on, but when electricity
+    #generation is combined, it needs to be based on the target year for the
+    #inventory.
+    nuc_merged["Year"] = year
     return nuc_merged
 
 

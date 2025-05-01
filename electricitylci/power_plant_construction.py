@@ -13,7 +13,8 @@ import pandas as pd
 
 from electricitylci.globals import data_dir
 from electricitylci.eia860_facilities import eia860_generator_info
-
+from electricitylci.generation import add_temporal_correlation_score
+from electricitylci.model_config import model_specs
 
 ##############################################################################
 # MODULE DOCUMENTATION
@@ -217,7 +218,8 @@ def get_coal_ngcc_const(year):
         '/':"",
         'resource/groundwater':"resource",
         'resource/surface water':"resource",
-        'water/surface water':"resource"
+        'water/surface water':"resource",
+        "resource/":"resource"
     }
     gas_prime = ["GT","IC","OT","CT","CS","CE","CA","ST"]
     coal_type = ["BIT","SUB","LIG","WC","RC"]
@@ -341,7 +343,29 @@ def get_coal_ngcc_const(year):
     construction_df["Unit"] = construction_df["Unit"].str.replace(
         "mj","MJ", regex=False)
     construction_df["Source"]="netlconst"
-
+    
+    # Issue #296 - adding DQI information for upstream processes
+    # Setting year to be equal to the year that the costs were generated
+    # to develop this USEEIO-based inventory
+    construction_df["Year"] = 2018
+    construction_df["DataReliability"] = 3
+    construction_df["TemporalCorrelation"] = add_temporal_correlation_score(
+        construction_df["Year"], model_specs.electricity_lci_target_year
+    )
+    construction_df["GeographicalCorrelation"] = 3
+    
+    # Since the estimates are based on greenfield power plants and are from
+    # TEA results, scoring this as 4 - 'ONE of the technology cartegories is
+    # equivlent'. This is a bit of a judgment call. I these inventories
+    # are worthy of more than a 5 DQI, but given the methods, probably not worth
+    # a three.
+    construction_df["TechnologicalCorrelation"] = 4
+    construction_df["DataCollection"] = 4
+    #3/20/2025 MBJ - replacing 2018 here so that temporal correlation
+    #is based on the year the inventory is based on, but when electricity
+    #generation is combined, it needs to be based on the target year for the
+    #inventory.
+    construction_df["Year"]=year
     return construction_df
 
 
