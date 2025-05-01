@@ -1,7 +1,7 @@
-from distutils.core import setup
+from setuptools import setup
 
 setup(
-    name='ElectricityLCI',
+    name='electricitylci',
     version='2.0.0',
     packages=['electricitylci'],
     package_data={
