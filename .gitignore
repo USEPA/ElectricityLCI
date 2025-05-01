@@ -34,9 +34,6 @@ electricitylci/modelconfig/testing*.yml
 # output files
 electricitylci/output/*
 
-# internal files
-tests/
-
 # Whitelist
 !electricitylci/data/petroleum_inventory/*.*
 !electricitylci/data/EFs/*.*
