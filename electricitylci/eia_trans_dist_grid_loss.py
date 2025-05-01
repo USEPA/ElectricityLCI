@@ -44,7 +44,7 @@ state-wide transmission and distribution losses for the user-specified year.
 See also: https://www.eia.gov/tools/faqs/faq.php?id=105&t=3
 
 Last updated:
-    2024-03-11
+    2025-05-01
 """
 __all__ = [
     "eia_trans_dist_download_extract",
@@ -180,6 +180,11 @@ def generate_regional_grid_loss(year, subregion="all"):
         fraction. This dataframe can be used to generate unit processes
         for transmission and distribution to match the regionally-
         aggregated emissions unit processes.
+
+    Notes
+    -----
+    Method fails on 'all' and 'eGRID' subregions if 'replace eGRID' is true
+    in model specs.
     """
     logging.info(
         "Generating %d factors for transmission and distribution losses" % year)
@@ -234,6 +239,7 @@ def generate_regional_grid_loss(year, subregion="all"):
     td_by_plant.dropna(subset=["t_d_losses"], inplace=True)
     td_by_plant["t_d_losses"] = td_by_plant["t_d_losses"].astype(float)
 
+    # NOTE: fails on 'all' and 'eGRID' if replace eGRID is true.
     aggregation_column = subregion_col(subregion)
     wm = lambda x: np.average(
         x, weights=td_by_plant.loc[x.index, "Electricity"]

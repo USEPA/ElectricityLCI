@@ -24,7 +24,7 @@ __doc__ = """This module contains the main API functions to be used by the
 end user.
 
 Last updated:
-    2024-10-22
+    2025-05-01
 """
 __version__ = elci_version
 
@@ -174,19 +174,31 @@ def get_consumption_mix_df(subregion=None, regions_to_keep=None):
     return io_trade_df
 
 
-def get_distribution_mix_df(subregion=None):
-    """Generate transmission and distribution losses aggregated by subregion.
+def get_td_losses(subregion=None):
+    """Generate annual transmission and distribution losses aggregated by
+    subregion.
 
     Parameters
     ----------
     subregion : str, optional
-        Subregion name, by default None
+        Subregion name (e.g., BA, eGRID, EIA, NERC, FERC, or US).
+        If not provided, defaults to regional aggregation level defined in
+        the model specs.
 
     Returns
     -------
     pandas.DataFrame
         A dataframe of transmission and distribution loss rates as a
         fraction.
+
+    Notes
+    -----
+    This acts as a wrapper to :module:`eia_trans_dist_grid_loss`\\
+    :func:`generation_regional_grid_loss` using the EIA generation year
+    defined in the model specifications.
+
+    The method fails on subregion, 'eGRID', if 'replace eGRID' is true in
+    the model specs.
     """
     from electricitylci.eia_trans_dist_grid_loss import generate_regional_grid_loss
 
@@ -749,7 +761,7 @@ def run_net_trade(generation_mix_dict):
     logging.info("get t&d losses")
     dist_mix_df_dict = {}
     for subreg in cons_mix_dicts.keys():
-        dist_mix_df_dict[subreg] = get_distribution_mix_df(subregion=subreg)
+        dist_mix_df_dict[subreg] = get_td_losses(subregion=subreg)
 
     # NOTE: fails to find 'New Smyrna Beach' and 'City of Homestead'
     logging.info("write dist mix to dict")
