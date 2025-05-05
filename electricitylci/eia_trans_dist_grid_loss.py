@@ -112,11 +112,13 @@ def eia_trans_dist_download_extract(year):
                 + filename
             )
             # HOTFIX: https://github.com/USEPA/ElectricityLCI/issues/235
-            r = requests.get(url_a)
+            #adding 20s timeout to avoid long delays due to server issues.
+            r = requests.get(url_a, timeout=20)
             r_head = r.headers.get("Content-Type", "")
             if not r.ok or r_head.startswith("text"):
                 logging.info(f"Trying alternative site {STATE_ABBREV[key]}")
-                r = requests.get(url_b)
+                #adding 20s timeout to avoid long delays due to server issues.
+                r = requests.get(url_b, timeout=20)
                 r_head = r.headers.get("Content-Type", "")
 
             if r.ok and not r_head.startswith("text"):

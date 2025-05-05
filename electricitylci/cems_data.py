@@ -475,7 +475,9 @@ def read_cems_api(api_key, year, state=None, force=False):
             'page': 1,
             'perPage': 500}  # max allowable by API is 500
         try:
-            r = requests.get(s_url, params=params)
+            #Adding a timeout of 20s in case there are issues with server
+            #causing non-responses or long waits.
+            r = requests.get(s_url, params=params, timeout=20)
         except:
             raise OSError("Unexpected error during EPA data API call!")
         else:

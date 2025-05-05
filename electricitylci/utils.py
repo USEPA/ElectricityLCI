@@ -487,7 +487,8 @@ def download(url, file_path):
         Whether the resource file was downloaded successfully.
     """
     is_success = True
-    r = requests.get(url)
+    #adding 20s timeout to avoid long delays due to server issues.
+    r = requests.get(url, timeout=20)
     if r.ok:
         with open(file_path, 'bw') as f:
             f.write(r.content)
@@ -511,7 +512,8 @@ def download_unzip(url, unzip_path):
     unzip_path : str or path object
         Destination to unzip the data
     """
-    r = requests.get(url)
+    #adding 20s timeout to avoid long delays due to server issues.
+    r = requests.get(url, timeout=20)
     content_type = r.headers["Content-Type"]
     if "zip" not in content_type and "-stream" not in content_type:
         err_msg = (
@@ -1010,7 +1012,8 @@ def read_eia_api(url, url_try=0, max_tries=5):
     """
     r_dict = {}
     url_try += 1
-    r = requests.get(url)
+    #adding 20s timeout to avoid long delays due to server issues.
+    r = requests.get(url, timeout=20)
     r_status = r.status_code
     if r_status == 200:
         r_content = r.content

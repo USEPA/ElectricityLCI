@@ -1602,8 +1602,9 @@ def _read_fedefl():
     if not os.path.exists(u_path) or not os.path.exists(p_path):
         # Pull from Federal Elementary Flow List
         logging.info("Reading data from Federal LCA Commons")
-        token = requests.get(token_url).content.decode()
-        r = requests.get(f"{url}/{token}")
+        #adding 20s timeout to avoid long delays due to server issues.
+        token = requests.get(token_url, timeout=20).content.decode()
+        r = requests.get(f"{url}/{token}", timeout=20)
         if r.ok:
             with ZipFile(io.BytesIO(r.content)) as z:
                 # Find the unit groups, convert them to UnitGroup class
@@ -1698,8 +1699,9 @@ def _read_fedcore():
     if not os.path.exists(d_path) or not os.path.exists(s_path):
         # Pull from Federal Elementary Flow List
         logging.info("Reading data from Federal LCA Commons")
-        token = requests.get(token_url).content.decode()
-        r = requests.get(f"{url}/{token}")
+        #adding 20s timeout to avoid long delays due to server issues.
+        token = requests.get(token_url, timeout=20).content.decode()
+        r = requests.get(f"{url}/{token}", timeout=20)
         if r.ok:
             with ZipFile(io.BytesIO(r.content)) as z:
                 for name in z.namelist():
