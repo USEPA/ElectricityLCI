@@ -934,6 +934,11 @@ def read_ba_codes():
         "Southeast": "Southeast",
         "Southwest": "Southwest",
         "Tennessee Valley Authority": "Southeast",
+        # Issue #291 - Entries in EIA930 have changed - adding those here
+        "Texas": "ERCOT",
+        "New York": "NYISO",
+        "New England": "ISO-NE",
+        "Tennessee": "Southeast",
         # Add Canada and Mexico
         "Canada": "Canada",
         "Mexico": "Mexico",
