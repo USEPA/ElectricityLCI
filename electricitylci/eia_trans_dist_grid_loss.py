@@ -190,10 +190,14 @@ def generate_regional_grid_loss(year, subregion="all"):
     """
     logging.info(
         "Generating %d factors for transmission and distribution losses" % year)
+    # Gathers facility, electricity, and year columns
     plant_generation = build_generation_data(generation_years=[year])
-
+    # Force facility ID to integer
     plant_generation["FacilityID"] = plant_generation["FacilityID"].astype(int)
     if config.model_specs.replace_egrid:
+        # Adds fuel category, primary fuel, percent generation from designated
+        # fuel category, as well as location data (state, NERC, BA);
+        # NOTE that location data are incomplete (nans exist).
         plant_data = eia_facility_fuel_region(year)
         plant_data["FacilityID"] = plant_data["FacilityID"].astype(int)
         plant_generation = pd.merge(
