@@ -18,6 +18,7 @@ import zipfile
 import requests
 import pandas as pd
 
+from electricitylci.globals import paths
 from electricitylci.globals import data_dir
 from electricitylci.globals import output_dir
 
@@ -28,20 +29,21 @@ from electricitylci.globals import output_dir
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2025-02-12
+    2025-05-08
 
 Changelog:
+    -   [25.05.08]: Make EIA930 reference table an offline file
     -   [25.01.23]: Add logger utility methods
     -   [25.01.14]: Add StEWI inventories of interest method.
     -   [24.10.09]: Update find file in folder to not crash.
     -   [24.08.05]: Create new BA code getter w/ FERC mapping.
     -   TODO: update create_ba_region_map to link with new BA code getter
-    -   TODO: write BA code w/ FERC mapping to file for offline use
     -   TODO: create a "wipe clean" method to remove all downloaded data
         within the electricitylci folder.
 """
 __all__ = [
     "check_output_dir",
+    "clean_data_store",
     "create_ba_region_map",
     "decode_str",
     "download",
@@ -56,6 +58,7 @@ __all__ = [
     "read_ba_codes",
     "read_eia_api",
     "read_json",
+    "read_log_file",
     "rollover_logger",
     "set_dir",
     "write_csv_to_output",
@@ -490,9 +493,11 @@ def download(url, file_path):
     #adding 20s timeout to avoid long delays due to server issues.
     r = requests.get(url, timeout=20)
     if r.ok:
+        logging.info("Downloading from %s" % url)
         with open(file_path, 'bw') as f:
             f.write(r.content)
     else:
+        logging.warning("Download failed!")
         is_success = False
 
     return is_success
@@ -902,6 +907,9 @@ def read_ba_codes_old():
 def read_ba_codes():
     # IN PROGRESS
     #
+    # The new BA codes utility function reads the EIA 930 reference
+    # table, which includes a comprehensive list of balancing authorities.
+    #
     # Referenced in combinatory.py, eia_io_trading.py, import_impacts.py
     #
     # Columns for sheet, "BAs" (as of 2024), include:
@@ -916,7 +924,13 @@ def read_ba_codes():
     # - Active BA (str): "Yes" or "No"
     # - Activation Date: (str/NA): mostly empty, a few years are available
     # - Retirement Date (str/NA): mostly empty, a few years are available
-    eia_ref_url = "https://www.eia.gov/electricity/930-content/EIA930_Reference_Tables.xlsx"
+    data_store = os.path.join(paths.local_path, 'eia930')
+    data_url = "https://www.eia.gov/electricity/930-content/EIA930_Reference_Tables.xlsx"
+    data_file = os.path.basename(data_url)
+    data_path_local = os.path.join(data_store, data_file)
+
+    if not os.path.isfile(data_path_local) and check_output_dir(data_store):
+        download(data_url, data_path_local)
 
     # BA-to-FERC mapping is based on an intermediate EIA-to-FERC map,
     # which was completed as a part of Electricity Grid Mix Explorer v4.2.
@@ -958,7 +972,8 @@ def read_ba_codes():
         "Canada": "CAN",
         "Mexico": "MEX",
     }
-    df = pd.read_excel(eia_ref_url)
+    logging.info("Reading EIA930 reference table")
+    df = pd.read_excel(data_path_local)
     df = df.rename(columns={
         'BA Code': 'BA_Acronym',
         'BA Name': 'BA_Name',
@@ -968,8 +983,6 @@ def read_ba_codes():
     df['FERC_Region'] = df['EIA_Region'].map(EIA_to_FERC)
     df['FERC_Region_Abbr'] = df['FERC_Region'].map(FERC_ABBR)
     df = df.set_index("BA_Acronym")
-
-    # TODO: save this as a CSV and read it if available.
 
     return df
 
