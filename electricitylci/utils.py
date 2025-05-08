@@ -905,57 +905,68 @@ def read_ba_codes_old():
 
 
 def read_ba_codes():
-    # IN PROGRESS
-    #
-    # The new BA codes utility function reads the EIA 930 reference
-    # table, which includes a comprehensive list of balancing authorities.
-    #
-    # Referenced in combinatory.py, eia_io_trading.py, import_impacts.py
-    #
-    # Columns for sheet, "BAs" (as of 2024), include:
-    # - BA Code (str)
-    # - BA Name (str)
-    # - Time Zone (str): For example, "Eastern," "Central" or "Pacific"
-    # - Region/Country Code (str): EIA region code
-    # - Region/Country Name (str): EIA region name
-    # - Generation Only BA (str): "Yes" or "No"
-    # - Demand by BA Subregion (str): "Yes" or "No"
-    # - U.S. BA (str): "Yes" or "No"
-    # - Active BA (str): "Yes" or "No"
-    # - Activation Date: (str/NA): mostly empty, a few years are available
-    # - Retirement Date (str/NA): mostly empty, a few years are available
+    """Create a balancing authority reference table based on EIA 930.
+
+    The new BA codes utility function reads the EIA 930 reference
+    table, which includes a comprehensive list of balancing authorities, see
+    https://www.eia.gov/electricity/930-content/EIA930_Reference_Tables.xlsx
+
+    Referenced in combinatory.py, eia_io_trading.py, and import_impacts.py
+    and is utilized elsewhere (e.g., via importing `BA_CODES` from combinator).
+
+    Returns
+    -------
+    pandas.DataFrame
+        A data frame with index BA_CODES and columns:
+
+        - 'BA_Name'
+        - 'Time Zone', for example "Eastern," "Central" or "Pacific"
+        - 'EIA_Region_Abbr', EIA region code
+        - 'EIA_Region', EIA region name
+        - 'Generation Only BA', "Yes", "No", or "Unknown"
+        - 'Demand by BA Subregion', "Yes", "No", or "Unknown"
+        - 'U.S. BA', "Yes" or "No"
+        - 'Active BA', "Yes", "No", or "Unknown"
+        - 'Activation Date' (str)
+        - 'Retirement Date' (str)
+        - 'FERC_Region'
+        - 'FERC_Region_Abbr'
+    """
+    # Work with offline file, if possible.
     data_store = os.path.join(paths.local_path, 'eia930')
     data_url = "https://www.eia.gov/electricity/930-content/EIA930_Reference_Tables.xlsx"
     data_file = os.path.basename(data_url)
     data_path_local = os.path.join(data_store, data_file)
 
+    # Download if not available.
     if not os.path.isfile(data_path_local) and check_output_dir(data_store):
         download(data_url, data_path_local)
 
     # BA-to-FERC mapping is based on an intermediate EIA-to-FERC map,
     # which was completed as a part of Electricity Grid Mix Explorer v4.2.
+    # HOTFIX: use region abbreviation to avoid naming conflicts [250508; TWD]
+    # See also Issue 291.
     EIA_to_FERC = {
-        "California": "CAISO",
-        "Carolinas": "Southeast",
-        "Central": "SPP",
-        "Electric Reliability Council of Texas, Inc.": "ERCOT",
-        "Florida": "Southeast",
-        "Mid-Atlantic": "PJM",
-        "Midwest": "MISO",
-        "New England ISO": "ISO-NE",
-        "New York Independent System Operator": "NYISO",
-        "Northwest": "Northwest",
-        "Southeast": "Southeast",
-        "Southwest": "Southwest",
-        "Tennessee Valley Authority": "Southeast",
-        # Issue #291 - Entries in EIA930 have changed - adding those here
-        "Texas": "ERCOT",
-        "New York": "NYISO",
-        "New England": "ISO-NE",
-        "Tennessee": "Southeast",
+        "CAL": "CAISO",
+        "CAR": "Southeast",
+        "CENT": "SPP",
+        "SPSO": "SPP",  # new; double-check [250508; TWD]
+        "TEX": "ERCOT",
+        "FLA": "Southeast",
+        "MIDA": "PJM",
+        "MIDW": "MISO",
+        "NE": "ISO-NE",
+        "NY": "NYISO",
+        "NW": "Northwest",
+        "SE": "Southeast",
+        "SW": "Southwest",
+        "TEN": "Southeast",
         # Add Canada and Mexico
-        "Canada": "Canada",
-        "Mexico": "Mexico",
+        "CAN": "Canada",
+        "MEX": "Mexico",
+        # Add Alaska and Hawaii [25.05.08; TWD]
+        "AKGD": "Alaska",
+        "HIOA": "Hawaii",
     }
     FERC_ABBR = {
         "CAISO": "CAISO",
@@ -971,6 +982,9 @@ def read_ba_codes():
         # Add Canada and Mexico
         "Canada": "CAN",
         "Mexico": "MEX",
+        # Add Alaska and Hawaii
+        "Alaska": "AK",
+        "Hawaii": "HI",
     }
     logging.info("Reading EIA930 reference table")
     df = pd.read_excel(data_path_local)
@@ -980,7 +994,49 @@ def read_ba_codes():
         'Region/Country Code': 'EIA_Region_Abbr',
         'Region/Country Name': 'EIA_Region',
     })
-    df['FERC_Region'] = df['EIA_Region'].map(EIA_to_FERC)
+
+    # HOTFIX: missing BAs [25.05.08; TWD]
+    # Sources:
+    #   https://www.energy.gov/femp/balancing-authority-lookup-tool
+    #   https://bedes.lbl.gov/bedes-online/egrid-subregion-code
+    #   https://www.epa.gov/egrid/detailed-data
+    #   https://www.timeanddate.com/time/zone/usa/alaska
+    tmp_dict = {
+        'BA_Acronym': [
+            'GRIS', 'AMPL', 'CEA', 'HECO'],
+        'BA_Name': [
+            'Gridforce South',
+            'Anchorage Municipal Light & Power',
+            'Chugach Electric Assn Inc',
+            'Hawaiian Electric Co Inc'],
+        'EIA_Region_Abbr': [
+            'SPSO', 'AKGD', 'AKGD', 'HIOA'],
+        'EIA_Region': [
+            'SPP South',
+            'Alaska Grid',
+            'Alaska Grid',
+            'Oahu Hawaii Power Grid'],
+        'U.S. BA': [
+            'Yes', 'Yes', 'Yes', 'Yes'],
+        'Time Zone': [
+            'Central', 'Alaska', 'Alaska', 'Hawaii'],
+        'Active BA': [
+            'Unknown', 'Unknown', 'Unknown', 'Unknown'],
+        'Generation Only BA': [
+            'Unknown', 'Unknown', 'Unknown', 'Unknown'],
+        'Demand by BA Subregion': [
+            'Unknown', 'Unknown', 'Unknown', 'Unknown'],
+    }
+    # Remove any new codes already represented in the reference table.
+    for _code in tmp_dict['BA_Acronym']:
+        if _code in df['BA_Acronym'].values:
+            _idx = tmp_dict["BA_Acronym"].index(_code)
+            for k in tmp_dict.keys():
+                tmp_dict[k].pop(_idx)
+    # Append new codes
+    df = pd.concat([df, pd.DataFrame(tmp_dict)])
+
+    df['FERC_Region'] = df['EIA_Region_Abbr'].map(EIA_to_FERC)
     df['FERC_Region_Abbr'] = df['FERC_Region'].map(FERC_ABBR)
     df = df.set_index("BA_Acronym")
 
