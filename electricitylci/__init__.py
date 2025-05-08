@@ -892,6 +892,12 @@ def write_gen_fuel_database_to_dict(
     dict
         A dictionary of generation unit processes ready to be written to
         openLCA.
+
+    Notes
+    -----
+    If you are looking for :func:`write_generation_process_database_to_dict`,
+    use this function instead, and pass an empty dictionary for
+    `upstream_dict`.
     """
     from electricitylci.generation import olcaschema_genprocess
 
@@ -946,34 +952,6 @@ def write_generation_mix_database_to_dict(genmix_db, gen_dict, regions=None):
     genmix_dict = olcaschema_genmix(genmix_db, gen_dict, regions)
 
     return genmix_dict
-
-# TODO: find if/where this is called.
-def write_generation_process_database_to_dict(gen_database, regions=None):
-    """Create olca-formatted dictionaries of individual processes.
-
-    Parameters
-    ----------
-    gen_database : pandas.DataFrame
-        Each row represents information about a single emission from a fuel
-        category in a single region.
-    regions : str, optional
-        Not currently used.
-        Defaults to None.
-
-    Returns
-    -------
-    dict
-        A dictionary of dictionaries, each of which contains information about
-        emissions from a single fuel type in a single region.
-    """
-    from electricitylci.generation import olcaschema_genprocess
-
-    if regions is None:
-        regions = config.model_specs.regional_aggregation
-
-    gen_dict = olcaschema_genprocess(gen_database, subregion=regions)
-
-    return gen_dict
 
 
 def write_international_mix_database_to_dict(genmix_db, us_mix, regions=None):
