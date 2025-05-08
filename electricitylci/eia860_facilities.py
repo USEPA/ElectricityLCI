@@ -126,6 +126,37 @@ def eia860_balancing_authority(year, regional_aggregation=None):
 
     Called in combinator.py, eia_io_trading.py, generation.py, and
     hydro_upstream.py; albeit none send regional aggregation parameter.
+
+    Parameters
+    ----------
+    year : int
+        The Form EIA860 year. Will be downloaded and parsed into CSV files
+        locally, if not already.
+    regional_aggregation : str
+        An additional region column to add to the data frame (e.g.,
+        BA, NERC, FERC, EIA).
+
+    Returns
+    -------
+    pandas.DataFrame
+        A data frame with columns:
+
+        - 'Plant Id'
+        - 'State'
+        - 'NERC Region'
+        - 'Balancing Authority Code'
+        - 'Balancing Authority Name'
+        - `regional_aggregation` (if not none)
+
+    Notes
+    -----
+    Notable deficiencies in NERC and Balancing Authority categories include:
+
+    - Most, if not all, facilities in AK and HI.
+    - WECC (AZ, CA)
+    - SERC (FL, GA)
+
+    14 plants in 2020 are labeled as 'No BA' (see AK, HI, RI, ME).
     """
 
     expected_860_folder = os.path.join(
