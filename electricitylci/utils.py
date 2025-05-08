@@ -144,22 +144,6 @@ def _find_empty_dirs(filepath):
     return empty_dirs
 
 
-def _process_folders(filepath):
-    """A helper method for deleting empty folders from a computer.
-
-    Parameters
-    ----------
-    filepath : str
-        A folder in which to remove empty sub-folders from.
-    """
-    empty_dirs = _find_empty_dirs(filepath)
-    while len(empty_dirs) > 0:
-        for my_dir in empty_dirs:
-            os.rmdir(my_dir)
-            logging.info("Deleted: %s" % my_dir)
-        empty_dirs = _find_empty_dirs(filepath)
-
-
 def _init_data_store():
     """Initialize an empty data store dictionary for data providers in
     ElectricityLCI.
@@ -248,6 +232,22 @@ def _init_data_store():
         data_store["fedelemflowlist"]['path'] = fedefl_path
 
     return data_store
+
+
+def _process_folders(filepath):
+    """A helper method for deleting empty folders from a computer.
+
+    Parameters
+    ----------
+    filepath : str
+        A folder in which to remove empty sub-folders from.
+    """
+    empty_dirs = _find_empty_dirs(filepath)
+    while len(empty_dirs) > 0:
+        for my_dir in empty_dirs:
+            os.rmdir(my_dir)
+            logging.info("Deleted: %s" % my_dir)
+        empty_dirs = _find_empty_dirs(filepath)
 
 
 def _process_files(filelist, to_filter=False, filter_txt="n/a"):
