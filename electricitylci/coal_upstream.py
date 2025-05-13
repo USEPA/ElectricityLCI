@@ -24,7 +24,7 @@ from electricitylci.elementaryflows import correct_netl_flow_names
 from electricitylci.elementaryflows import map_emissions_to_fedelemflows
 from electricitylci.model_config import model_specs
 import electricitylci.PhysicalQuantities as pq
-from electricitylci.utils import download
+from electricitylci.utils import download_edx
 from electricitylci.utils import find_file_in_folder
 from electricitylci.generation import add_temporal_correlation_score
 
@@ -58,7 +58,7 @@ inventories, including newer background data, for coal mining and
 transportation, but still mainly represents 2016.
 
 Last updated:
-    2025-04-16
+    2025-05-13
 """
 __all__ = [
     "coal_type_codes",
@@ -980,6 +980,11 @@ def get_2023_coal_transport_lci(coal_xlsx="Transportation-Inventories.xlsx"):
     The source Excel workbook is available online here:
     https://www.netl.doe.gov/energy-analysis/details?id=27ea1ba4-6ea9-4ee5-8b32-d7fce7f4e1e0
 
+    The updated version of the transportation workbook is found on EDX here:
+    https://edx.netl.doe.gov/dataset/lca-baseline-for-us-coal-mining-and-delivery-data-products
+
+    The new workbook name is 'Transportation_Inventories_02262025.xlsx'.
+
     Parameters
     ----------
     coal_xlsx : str, optional
@@ -1000,32 +1005,38 @@ def get_2023_coal_transport_lci(coal_xlsx="Transportation-Inventories.xlsx"):
         - 'FlowAmount', the emission in units per kg*km
     """
     if coal_xlsx is None or coal_xlsx == "" or not os.path.isfile(coal_xlsx):
-        # NETL VUE URL for transportation inventory Excel workbook.
-        trans_url = (
-            "https://www.netl.doe.gov/projects/VueConnection"
-            "/download.aspx?id=403d0bc0-4752-4225-9bc5-5a402ebad020"
-            "&filename=Transportation+Inventories.xlsx"
-        )
-
-        # The data store for NETL transportation inventories workbook.
+        # NEW: EDX resource download
+        edx_resource = "d4ecb3b0-cc71-422c-9421-fd78988d2738"
+        edx_api = model_specs.edx_api_key
         data_folder = os.path.join(paths.local_path, 'netl')
-        if not os.path.isdir(data_folder):
-            logging.info("Creating local data folder, %s" % data_folder)
-            os.mkdir(data_folder)
-        data_path = os.path.join(data_folder, "Transportation-Inventories.xlsx")
+        coal_file = "Transportation_Inventories_02262025.xlsx"
+        data_path = os.path.join(data_folder, coal_file)
+        _is_good = True
 
-        # Check to see data file already exists
-        if os.path.isfile(data_path):
+        # If the local file is not found, try downloading it:
+        # Avoids the lockout if no EDX API key.
+        if not os.path.isfile(data_path):
+            _is_good, coal_file = download_edx(
+                edx_resource, edx_api, data_folder)
+            data_path = os.path.join(data_folder, coal_file)
+
+        # Check to see data file exists now
+        if _is_good and os.path.isfile(data_path):
             logging.info("Reading existing Excel file")
             coal_xlsx = data_path
         else:
-            _is_good = download(trans_url, data_path)
-            if _is_good:
-                logging.info("Downloaded NETL transportation file")
-                coal_xlsx = data_path
-            else:
-                raise OSError(
-                    "Failed to acquire NETL transportation inventory!")
+            edx_package = "fc1e9337-d762-4688-8415-9abf4528c428"
+            edx_url = "https://edx.netl.doe.gov/dataset/%s/resource/%s" % (
+                edx_package,
+                edx_resource
+            )
+            err_str = (
+                "Failed to acquire NETL transportation inventory! "
+                "If you do not have an EDX API key, you can manually "
+                "download the resource here: %s; and copy it to your "
+                "local data directory, here: %s, and re-run the model."
+            ) % (edx_url, data_folder)
+            raise OSError(err_str)
 
     # There is a workbook for each transportation mode.
     sheets = ['Conveyor Belt', 'Truck', 'Barge', 'Ocean Vessel', 'Train']
@@ -1740,9 +1751,9 @@ def generate_upstream_coal(year):
     )
     merged_coal_upstream.reset_index(drop=True, inplace=True)
     # 3/17/25 Think it's okay at this point to keep this year redefinition. The
-    # DQI scores have been already been calculated based on the year the 
+    # DQI scores have been already been calculated based on the year the
     # emissions factors were developed. I'm worried that if the year is kept at
-    # 2016, there may be downstream effects where electricity generation is 
+    # 2016, there may be downstream effects where electricity generation is
     # requested for the year 2016.
     merged_coal_upstream["Year"] = year
     merged_coal_upstream["Source"] = "netlcoaleiafuel"

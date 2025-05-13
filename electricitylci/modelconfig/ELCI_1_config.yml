@@ -57,6 +57,9 @@ calculate_uncertainty: true
 
 
 # API DATA SOURCES
+# The API to access NETL EDX data resources (https://edx.netl.doe.gov).
+edx_api: ""
+
 # If replacing eGRID, then EPA CEMS from CAMPD is used. This data is available
 # from EPA's API (https://www.epa.gov/power-sector/cam-api-portal). Request
 # for a free API key and copy-and-paste it here:

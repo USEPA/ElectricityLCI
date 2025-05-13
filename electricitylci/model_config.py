@@ -34,7 +34,7 @@ configuration settings are set once and shared with the rest of the Python
 package. To change configuration settings, restart Python.
 
 Last edited:
-    2025-02-04
+    2025-05-13
 """
 __all__ = [
     "ConfigurationError",
@@ -65,6 +65,9 @@ class ModelSpecs:
         The target year (e.g., 2018).
     regional_aggregation : str
         The aggregation level (e.g., 'BA' for Balancing Authority area).
+    edx_api_key : str
+        A user's individual API key for automating data downloads through
+        NETL's Energy Data eXchange.
     egrid_year : int
         The eGRID year (e.g., 2016) used to fetch facilities and flows from
         stewi (see egrid_facilities.py and egrid_flowbyfacility.py) and to
@@ -161,6 +164,7 @@ class ModelSpecs:
         self.replace_egrid = model_specs["replace_egrid"]
         self.coal_model_year = model_specs["coal_model_year"]
         self.epa_api_key = model_specs["epa_cam_api"]
+        self.edx_api_key = model_specs["edx_api"]
         self.eia_api_key = model_specs["eia_api"]
         self.use_eia_bulk_zip = model_specs["use_eia_bulk_zip"]
         self.bypass_bulk_vintage = model_specs["bypass_bulk_vintage"]
