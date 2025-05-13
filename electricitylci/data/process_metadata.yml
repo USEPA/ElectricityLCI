@@ -197,7 +197,7 @@ nuclear_upstream:
 
   DataSelection: 'The full description of data selection is available at http://www.netl.doe.gov/energy-analysis/details?id=620'
 
-  sampling_procedure:
+  SamplingProcedure:
   - 'BOUNDARY CONDITIONS
 
     The system boundary includes the extraction of uranium from mining operations, fuel enrichment, fuel fabrication, fuel transportation, power plant construction, and power plant operations.
@@ -294,7 +294,7 @@ geothermal:
     Details on the types of geothermal power plants in each state are provided by EIA 860 and openei.org.
     Electricity generation information is provided by EIA Form 923.'
 
-  sampling_procedure:
+  SamplingProcedure:
   - 'BOUNDARY CONDITIONS
 
     The system boundary includes the construction of geothermal wells, facility installation/deinstallation, and power plant operations.
@@ -430,7 +430,7 @@ solar:
   # when the most recent data was generated (representing 202).
   DataCollectionPeriod: '2024'
 
-  sampling_procedure:
+  SamplingProcedure:
   - 'BOUNDARY CONDITIONS
 
     The boundaries include power plant construction with all known material inputs (e.g., steel, glass, concrete) and some minor material requirements and fuel combustion for plant operation.
@@ -534,7 +534,7 @@ solarthermal:
 
   DataCollectionPeriod: '2018'
 
-  sampling_procedure:
+  SamplingProcedure:
   - 'BOUNDARY CONDITIONS
 
     The boundaries include power plant construction with all known material inputs (e.g., steel, glass, concrete) and some minor material requirements and fuel combustion for plant operation.
@@ -585,7 +585,7 @@ wind:
 
   DataCollectionPeriod: '2018'
 
-  sampling_procedure:
+  SamplingProcedure:
   - 'BOUNDARY CONDITIONS
 
     The boundaries include power plant construction with all known material inputs (e.g., steel, glass fiber, concrete) and some minor material requirements and fuel combustion for plant operation.
@@ -1150,7 +1150,7 @@ solarpv_construction_upstream:
 
   DataCollectionPeriod: '2018'
 
-  sampling_procedure:
+  SamplingProcedure:
   - 'BOUNDARY CONDITIONS
 
     The boundaries include power plant construction with all known material inputs (e.g., steel, glass, concrete) and some minor material requirements and fuel combustion for plant operation.
@@ -1200,7 +1200,7 @@ solartherm_construction_upstream:
 
   DataCollectionPeriod: '2018'
 
-  sampling_procedure:
+  SamplingProcedure:
   - 'BOUNDARY CONDITIONS
 
     The boundaries include power plant construction with all known material
@@ -1253,7 +1253,7 @@ wind_construction_upstream:
 
   DataCollectionPeriod: '2018'
 
-  sampling_procedure:
+  SamplingProcedure:
   - 'BOUNDARY CONDITIONS
 
     The boundaries include power plant construction with all known material inputs (e.g., steel, glass fiber, concrete) and some minor material requirements and fuel combustion for plant operation.
