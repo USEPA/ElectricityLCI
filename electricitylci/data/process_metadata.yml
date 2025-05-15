@@ -34,18 +34,16 @@ no_uncertainty_statement: &no_uncertainty
 
     This process does not contain any uncertainty.'
 
-source_ingwersen_2024: &ingwersen_2024
+source_ingwersen_etal: &ingwersen_etal
   Name: 'Ingwersen, et al. ElectricityLCI: A Python Package for U.S. Regionalized Electricity Life Cycle Inventory Data Creation'
 
-  TextReference: 'Ingwersen, et al. (2024).
+  TextReference: 'Ingwersen, et al. (in preparation).
     ElectricityLCI: A Python Package for U.S. Regionalized Electricity Life Cycle Inventory Data Creation.
     Manuscript in preparation.'
 
-  Year: 2024
+  Version: '2.0.0'
 
-  Version: '1.0.2'
-
-  Category: 'In_Development'
+  Category: 'In_Preparation'
 
 source_netl_coal_baseline_2024: &netl_coal_baseline
   Name: 'NETL (2023). Cradle-to-Gate Life Cycle Analysis Baseline for United States Coal Mining and Delivery'
@@ -165,7 +163,7 @@ default:
 
   Sources:
     Source1:
-      <<: *ingwersen_2024
+      <<: *ingwersen_etal
 
 nuclear_upstream:
 
@@ -261,7 +259,7 @@ biomass:
 
   Sources:
     Source1:
-      <<: *ingwersen_2024
+      <<: *ingwersen_etal
 
 geothermal:
 
@@ -378,7 +376,7 @@ hydro:
 
   Sources:
     Source1:
-      <<: *ingwersen_2024
+      <<: *ingwersen_etal
 
     Source2:
       Name: "Hydropower's Biogenic Carbon Footprint"
@@ -447,7 +445,7 @@ solar:
 
   Sources:
     Source1:
-      <<: *ingwersen_2024
+      <<: *ingwersen_etal
 
     Source2:
       Name: 'Thin-Film Photovoltaic Power Generation Offers Decreasing Greenhouse Gas Emissions and Increasing Environmental Co-benefits in the Long Term'
@@ -551,7 +549,7 @@ solarthermal:
 
   Sources:
     Source1:
-      <<: *ingwersen_2024
+      <<: *ingwersen_etal
 
 wind:
 
@@ -602,7 +600,7 @@ wind:
 
   Sources:
     Source1:
-      <<: *ingwersen_2024
+      <<: *ingwersen_etal
 
 consumption_mix:
 
@@ -704,7 +702,7 @@ consumption_mix:
         Category: ''
 
       Source4:
-        <<: *ingwersen_2024
+        <<: *ingwersen_etal
 
 generation_mix:
 
@@ -1167,7 +1165,7 @@ solarpv_construction_upstream:
 
   Sources:
     Source1:
-      <<: *ingwersen_2024
+      <<: *ingwersen_etal
 
 solartherm_construction_upstream:
   techno_intro: &solarthermal_const_techno_intro
@@ -1220,7 +1218,7 @@ solartherm_construction_upstream:
 
   Sources:
     Source1:
-      <<: *ingwersen_2024
+      <<: *ingwersen_etal
 
 wind_construction_upstream:
   techno_intro: &wind_const_techno_intro
@@ -1270,4 +1268,4 @@ wind_construction_upstream:
 
   Sources:
     Source1:
-      <<: *ingwersen_2024
+      <<: *ingwersen_etal
