@@ -38,7 +38,7 @@ JSON-LD format as prescribed by OpenLCA software.
 Portions of this code were cleaned using ChatGPTv3.5.
 
 Last updated:
-    2025-03-18
+    2025-05-15
 """
 __all__ = [
     'con_process_ref',
@@ -164,8 +164,10 @@ OLCA_TO_METADATA = {
 
 VALID_FUEL_CATS=[
     "default",
+    "biomass", # NEW
     "nuclear_upstream",
     "geothermal",
+    "hydro",  # NEW
     "solar",
     "solarthermal",
     "wind",
@@ -866,6 +868,7 @@ def process_doc_creation(process_type="default"):
     ar = dict()
 
     for key in OLCA_TO_METADATA.keys():
+        # Skips specific metadata keys (e.g., copyright, publication, DQI).
         if OLCA_TO_METADATA[key] is not None:
             try:
                 ar[key] = metadata[process_type][OLCA_TO_METADATA[key]]
