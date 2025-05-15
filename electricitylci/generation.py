@@ -1470,17 +1470,12 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     Returns
     -------
     dict
-        Dictionary contaning openLCA-formatted data.
+        Dictionary containing openLCA-formatted data.
     """
     region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"]
     # Iss150, add stage code to catch renewable construction
     stage_code = ["stage_code"]
-    renewables_const_stage_codes = [
-        "solar_pv_const",
-        "wind_const",
-        "solar_thermal_const"
-    ]
     if region_agg:
         base_cols = region_agg + fuel_agg + stage_code
     else:
@@ -1562,9 +1557,16 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         process_df.loc[index[0], index[1], "Power plant"]["exchanges"].append(
             row["exchanges"][0])
 
-    # These are now only power plant stage codes
+    # These are now only power plant stage codes (and life cycle for CAN)
     process_df = process_df.drop(provider_filter)
     process_df.reset_index(inplace=True)
+
+    # The columns now are:
+    # - Balancing Authority Name (or whatever the subregion text is)
+    # - FuelCategory (i.e., the all caps 'SOLAR' 'COAL' 'MIXED')
+    # - stage_code ('Power plant' or 'life cycle')
+    # - exchanges (list of dictionaries representing inputs/outputs)
+    # Next, build out the rest of the properties for openLCA Process.
 
     process_df["@type"] = "Process"
     process_df["allocationFactors"] = ""
@@ -1576,7 +1578,9 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         "22: Utilities/2211: Electric Power Generation, "
         "Transmission and Distribution/" + process_df[fuel_agg].squeeze().values
     )
-    sc_filter = process_df["stage_code"].isin(renewables_const_stage_codes)
+
+    # HOTFIX: construction processes are handled in upstream_dict.py;
+    # remove filter and assignment from here.
     if region_agg is None:
         process_df["location"] = "US"
         process_df["description"] = (
@@ -1586,17 +1590,6 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         )
         process_df["name"] = (
             "Electricity - " + process_df[fuel_agg].squeeze().values + " - US"
-        )
-        # Iss150, correct construction stage code name and description
-        process_df.loc[sc_filter, "description"] = (
-            "Construction of "
-            + process_df[fuel_agg].values
-            + " in the US"
-        )
-        process_df.loc[sc_filter,"name"] = (
-            "Construction - "
-            + process_df[fuel_agg].values
-            + " - US"
         )
     else:
         # HOTFIX: remove .values, which throws ValueError [2023-11-13; TWD]
@@ -1614,28 +1607,20 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
             + " - "
             + process_df[region_agg].squeeze().values
         )
-        # Iss150, correct construction name and description
-        process_df.loc[sc_filter, "description"] = (
-            "Construction of "
-            + process_df.loc[sc_filter, fuel_agg[0]].squeeze().values
-            + " in the "
-            + process_df.loc[sc_filter, region_agg[0]].squeeze().values
-            + " region."
-        )
-        process_df.loc[sc_filter, "name"] = (
-            "Construction - "
-            + process_df.loc[sc_filter, fuel_agg[0]].squeeze().values
-            + " - "
-            + process_df.loc[sc_filter, region_agg[0]].squeeze().values
-        )
 
-    # TODO: use `process_description_creation` from process_disctionary_writer to fill in this portion; note that the default text below is captured in the return string from that method.
+    # Add model reference and version number
     process_df["description"] += (
         " This process was created with ElectricityLCI "
         + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
         + " using the " + model_specs.model_name + " configuration."
     )
     process_df["version"] = make_valid_version_num(elci_version)
+
+    # TODO: use `process_description_creation` from process_dictionary_writer to fill in this portion; note that the default text below is captured in the return string from that method.
+
+
+    # Create the dictionaries for process documentation based on fuel type.
+    # NOTE: this creates process-level DQI (5;5)
     process_df["processDocumentation"] = [
         process_doc_creation(x) for x in list(
             process_df["FuelCategory"].str.lower())
