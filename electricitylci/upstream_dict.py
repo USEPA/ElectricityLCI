@@ -505,10 +505,6 @@ def olcaschema_genupstream_processes(merged):
             _exchange_table_creation_output, axis=1).tolist()
         exchanges_list.extend(ra)
 
-        # TODO
-        # Iss253. The fuel type is 'Construction' and stage code is one of
-        # 'solar_pv_const', 'solar_thermal_const', or 'wind_const'
-        # Paths forward could be to make unique calls for
         first_row = min(merged_summary_filter.index)
         fuel_type = merged_summary_filter.loc[first_row, "FuelCategory"]
         stage_code = merged_summary_filter.loc[first_row, "stage_code"]
@@ -638,9 +634,9 @@ def olcaschema_genupstream_processes(merged):
 
         first_row = min(merged_summary_filter.index)
         fuel_type = merged_summary_filter.loc[first_row, "FuelCategory"]
-        #stage_code = merged_summary_filter.loc[first_row, "stage_code"] ##<<<<<<-
+
         if "CONSTRUCTION" in fuel_type:
-            combined_name= f"power plant construction - {upstream}"
+            combined_name = f"power plant construction - {upstream}"
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
 
         process_name = f"{combined_name}"
