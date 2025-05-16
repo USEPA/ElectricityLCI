@@ -38,7 +38,7 @@ JSON-LD format as prescribed by OpenLCA software.
 Portions of this code were cleaned using ChatGPTv3.5.
 
 Last updated:
-    2025-05-15
+    2025-05-16
 """
 __all__ = [
     'con_process_ref',
@@ -82,7 +82,9 @@ international = pd.read_csv(
 international_reg = list(pd.unique(international['Subregion']))
 
 # Read in general metadata to be used by all processes
-with open(os.path.join(data_dir, "process_metadata.yml"), encoding='utf-8') as f:
+METADATA_FILE = "process_metadata.yml"
+METADATA_PATH = os.path.join(data_dir, METADATA_FILE)
+with open(METADATA_PATH, encoding='utf-8') as f:
     metadata = yaml.safe_load(f)
 
 # Read in process location uuids
@@ -867,27 +869,34 @@ def process_doc_creation(process_type="default"):
     global year
     ar = dict()
 
-    for key in OLCA_TO_METADATA.keys():
+    for kw, key in OLCA_TO_METADATA.items():
         # Skips specific metadata keys (e.g., copyright, publication, DQI).
-        if OLCA_TO_METADATA[key] is not None:
+        if key is not None:
             try:
-                ar[key] = metadata[process_type][OLCA_TO_METADATA[key]]
+                # First try the key at the process level
+                ar[kw] = metadata[process_type][key]
             except KeyError:
                 logging.debug(
-                    f"Failed first key ({key}), trying subkey: {subkey}")
+                    f"Failed first key ({kw}), trying subkey: {subkey}")
                 try:
-                    ar[key] = metadata[process_type][subkey][OLCA_TO_METADATA[key]]
+                    # Try looking at the subkey level
+                    ar[kw] = metadata[process_type][subkey][key]
                     logging.debug(
                         "Failed subkey, likely no entry in metadata for "
-                        f"{process_type}:{key}")
-                except KeyError:
-                    ar[key] = metadata["default"][OLCA_TO_METADATA[key]]
+                        f"{process_type}:{kw}")
+                except:
+                    try:
+                        # Check to see if default has the key
+                        ar[kw] = metadata["default"][key]
+                    except KeyError:
+                        # Lastly, check to see if the default has the subkey
+                        ar[kw] = metadata['default'][subkey][key]
             except TypeError:
                 logging.debug(
                     "Failed first key, likely no metadata defined for "
                     f"{process_type}")
                 process_type = "default"
-                ar[key] = metadata[process_type][OLCA_TO_METADATA[key]]
+                ar[kw] = metadata[process_type][key]
 
     ar["timeDescription"] = ""
     # default valid year is the range of generation years
