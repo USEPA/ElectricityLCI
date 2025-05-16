@@ -454,11 +454,11 @@ def aggregate_data(total_db, subregion="BA"):
     if model_specs.replace_egrid:
         total_db = replace_egrid(total_db, model_specs.eia_gen_year)
 
-    #USEPA Issue #282. After replacing primary fuel categories with EIA data,
-    #in rare instances there will be renewable O&M emissions assigned to plants
-    #of conflicting fuel types - like solar O&M emissions assigned to coal plants.
-    #This should filter those out, along with remove mismatched construction
-    #inputs.
+    # USEPA Issue #282. After replacing primary fuel categories with EIA data,
+    # in rare instances there will be renewable O&M emissions assigned to plants
+    # of conflicting fuel types - like solar O&M emissions assigned to coal
+    # plants. This should filter those out, along with remove mismatched
+    # construction inputs.
     total_db = remove_mismatched_inventories(total_db)
     # Use a dummy UUID to avoid groupby errors
     total_db["FlowUUID"] = total_db["FlowUUID"].fillna(value="dummy-uuid")
@@ -498,6 +498,11 @@ def aggregate_data(total_db, subregion="BA"):
     if model_specs.calculate_uncertainty:
         info_txt += ", calculating uncertainty"
     logging.info(info_txt)
+
+    # BUG: Getting occasional ValueError, zero-size array reduction operation
+    # minimum which has no identity; likely due to an empty group.
+    # Consider iterating over groups, checking their size, and concatenating
+    # the results.
     database_f3 = total_db.groupby(
         groupby_cols + ["Year", "source_string"], as_index=False
     ).agg({
