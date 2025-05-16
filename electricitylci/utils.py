@@ -29,7 +29,7 @@ from electricitylci.globals import output_dir
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2025-05-08
+    2025-05-16
 
 Changelog:
     -   [25.05.08]: Make EIA930 reference table an offline file
@@ -592,7 +592,7 @@ def download_edx(resource_id, api_key, output_dir):
         logging.info(f"Starting download for: {filename}")
 
     # Begin download stream
-    logging.debug(headers, url)
+    logging.debug(" ".join([str(headers), url]))
     response = requests.get(url, headers=headers, params=params, stream=True)
 
     logging.debug(f"Download response status code: {response.status_code}")
