@@ -56,7 +56,7 @@ _Note that Python 3.14 is not supported (yet)._
         + scipy-1.15.1
 
 # API
-In the latest version of ElectricityLCI, there is a dependency on two external datasets that require the use of an application programming interface (API) key.
+In the latest version of ElectricityLCI, there is a dependency on three external datasets that require the use of an application programming interface (API) key.
 These keys are free to request and assist their governing agencies with reporting and justifying their data service.
 
 The EPA's Continuous Emissions Monitors (CEMs) background data are provided by the Clean Air Markets API Portal.
@@ -70,9 +70,18 @@ Request a free API key by registering at the following address.
 
 - https://www.eia.gov/opendata/.
 
-Be careful when the ElectricityLCI prompts you for an API key, as there are two (EPA and EIA).
-For convenience, the API keys may be stored in the configuration YAML file in the `epa_cam_api` and `eia_api` parameters.
-Make sure you supply the right one!
+NETL's coal transportation inventory update is provided through a public URL on [EDX](https://edx.netl.doe.gov), found within the [Life Cycle Analysis](https://edx.netl.doe.gov/group/life-cycle-analysis) group.
+An automated download of the Excel workbook will trigger a request for an EDX API key.
+API keys require registration.
+
+- https://edx.netl.doe.gov/user/register
+
+Non-government users are required to list a point of contact for registration.
+Please raise as an issue on this GitHub repository to request this additional information.
+
+Be careful when the ElectricityLCI prompts you for an API key, as there are three you need to keep track of (EDX, EPA and EIA).
+For convenience, the API keys may be stored in the configuration YAML files in the `epa_cam_api`, `eia_api`, and `edx_api` parameters.
+Make sure you paste the right ones!
 
 # Use
 Check which eLCI model configuration you want to use, or create a new configuration.
@@ -128,6 +137,10 @@ The `main()` method has four steps:
     - Builds the product systems for balancing authority areas, FERC regions, and US.
 
 # Known Issues
+* `Enter EDX API key: ` prompt encountered during 2020-2022 baseline runs.
+    - The NETL coal model transportation inventories were corrected in late 2024.
+    - The new Excel model is available on NETL's EDX [here](https://edx.netl.doe.gov/dataset/fc1e9337-d762-4688-8415-9abf4528c428/resource/d4ecb3b0-cc71-422c-9421-fd78988d2738)
+    - If you do not have an API key, download the linked resource, Transportation_Inventories_02262025.xlsx, and add it to the netl data store on your computer (indicated in the data store section below); the prompt will be skipped on subsequent model runs.
 * `Enter EIA API key: ` prompt used for EBA.zip data (issues with ZIP file found in August 2024; see [Discussion](https://github.com/USEPA/ElectricityLCI/discussions/254) on GitHub)
     - In globals.py, there is a parameter `EIA_API` that can be toggled to true
     - You will need an EIA API key (https://www.eia.gov/opendata/)
@@ -148,6 +161,7 @@ The `main()` method has four steps:
     - [Process Pedigree](https://www.lcacommons.gov/lca-collaboration/National_Renewable_Energy_Laboratory/USLCI_Database_Public/dataset/DQ_SYSTEM/70bf370f-9912-4ec1-baa3-fbd4eaf85a10)
 * The mapping of Balancing Authorities to FERC regions may need updating as BAs are introduced to the grid.
     - See GitHub [Issue #215](https://github.com/USEPA/ElectricityLCI/issues/215)
+
 
 # Troubleshooting
 If you receive a TypeError in `write_jsonld`, got unexpected keyword argument 'zw', then it's likely you have an outdated version of [fedelemflowlist](https://github.com/USEPA/fedelemflowlist).
@@ -312,7 +326,7 @@ Note that once downloaded, these files are referenced (and not downloaded again)
     │   │   └── NEI_2020_RCRAInfo_2019_TRI_2020_eGRID_2020.csv (0.3 MB)
     │   │
     │   ├── netl/
-    │   │   └── Transportation-Inventories.xlsx (0.5 MB)
+    │   │   └── Transportation_Inventories_02262025.xlsx (0.5 MB)
     │   │
     │   ├── output/
     │   │   ├── BAA_final_trade_2020.csv (65 KB)
