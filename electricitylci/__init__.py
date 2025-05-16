@@ -395,25 +395,23 @@ def get_generation_process_df(regions=None, **kwargs):
         Each row represents information about a single emission from a fuel
         category in a single region. Aggregated columns include the following.
 
-       - 'Subregion' (str)
-       - 'FuelCategory'
-       - 'FlowName'
-       - 'FlowUUID'
-       - 'Compartment'
-       - 'Year'
-       - 'Source'
-       - 'Unit'
-       - 'ElementaryFlowPrimeContext' (str): either 'emission' or 'resource'
-       - 'TechnologicalCorrelation'
-       - 'TemporalCorrelation'
-       - 'DataCollection'
-       - 'Emission_factor'
-       - 'Reliability_Score'
-       - 'GeographicalCorrelation
-       - 'GeomMean'
-       - 'GeomSD'
-       - 'Maximum'
-       - 'Minimum'
+        - 'source_string'
+        - 'FlowAmount'
+        - 'FlowAmountCount'
+        - 'TemporalCorrelation'
+        - 'TechnologicalCorrelation'
+        - 'GeographicalCorrelation'
+        - 'DataCollection'
+        - 'DataReliability'
+        - 'uncertaintyMin'
+        - 'uncertaintyMax'
+        - 'uncertaintySigma'
+        - 'electricity_sum'
+        - 'electricity_mean'
+        - 'facility_count'
+        - 'Emission_factor'
+        - 'GeomMean'
+        - 'GeomSD'
 
     Examples
     --------
@@ -495,6 +493,10 @@ def get_generation_process_df(regions=None, **kwargs):
         # WARNING, Canada is BA level. Probably not useful and should be
         # filtered out.
         generation_process_df = gen_plus_fuels
+
+    # TODO: consider converting DQI columns from floats to integers for better
+    # memory management (i.e., TemporalCorrelation, TechnologicalCorrelation,
+    # GeographicalCorrelation, DataCollection, DataReliability)
 
     return generation_process_df
 
