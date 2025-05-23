@@ -1118,18 +1118,18 @@ construction_upstream:
       Category: 'NETL'
 
 solarpv_construction_upstream:
-  techno_intro: &solar_const_techno_intro
-    - 'This process represents the cradle-to-gate inventory for electricity production from US solar photovoltaic power plants. '
+  # techno_intro: &solar_const_techno_intro
+  #   - 'This process represents the cradle-to-gate inventory for electricity production from US solar photovoltaic power plants. '
 
-  techno_process: &solar_const_techno_process
-    - 'Inventories were developed for each solar PV plant in the 2016 EIA 860 data.
-      Boundaries include plant construction and minor operating emissions from fuel combustion, etc.
-      The inventory for the plant is allocated over an assumed 30 year life.
-      The aggregation performed in the electricityLCI code then divides those inventories by the generation in the selected year to provide results on the basis of MWh.'
+  # techno_process: &solar_const_techno_process
+  #   - 'Inventories were developed for each solar PV plant in the 2016 EIA 860 data.
+  #     Boundaries include plant construction and minor operating emissions from fuel combustion, etc.
+  #     The inventory for the plant is allocated over an assumed 30 year life.
+  #     The aggregation performed in the electricityLCI code then divides those inventories by the generation in the selected year to provide results on the basis of MWh.'
 
   Description:
-  - *solar_const_techno_intro
-  - *solar_const_techno_process
+  - *solar_techno_intro
+  - *solar_techno_process
 
   TechnologyDescription:
 
@@ -1139,14 +1139,18 @@ solarpv_construction_upstream:
 
   DataDocumentor: 'NETL'
 
-  DataTreatment: 'Material requirements to construct the solar PV panels and the balance of system are calculated using plant capacity and local insolation estimates to scale the inventories from the referenced studies.
-    The total inventory from construction and operations over the plant life are then divided by the assumed 30 year lifetime to provide emissions per year.
-    When these emissions are divided by the generation for the specified year in the electricity baseline code, the inventory is placed on the basis of 1 MWh.'
+  DataTreatment: 'Material requirements to construct the solar PV panels and the balance of system are calculated using plant nameplate capacity and local insolation estimates to calculate the required area of solar panels, which are then used to scale inventories provided by literature.
+    The total inventory from construction over the plant life is then divided by the assumed 30 year lifetime to provide emissions per year.
+    When these emissions are divided by the generation for the specified year in the electricitylci, the inventory is placed on the basis of 1 MWh.
+
+    There also inventories for plant operations that are calculated for each plant and are placed on the basis of a MWh before importing to the electricitylci.
+    These emissions are mostly from fossil fuel combustion, hydraulic oil, and external electricity use associated with operations.
+    There may also be publicly-reported emissions assigned to the plant.'
 
   DataSelection: 'Where possible data is sourced from freely available life cycle data, such as NETL unit processes or USLCI.
     If the material was not available there then ecoinvent processes are used.'
 
-  DataCollectionPeriod: '2018'
+  DataCollectionPeriod: '2020'
 
   SamplingProcedure:
   - 'BOUNDARY CONDITIONS

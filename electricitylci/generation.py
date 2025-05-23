@@ -1623,12 +1623,15 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
 
     # TODO: use `process_description_creation` from process_dictionary_writer to fill in this portion; note that the default text below is captured in the return string from that method.
 
-
     # Create the dictionaries for process documentation based on fuel type.
     # NOTE: this creates process-level DQI (5;5)
     process_df["processDocumentation"] = [
         process_doc_creation(x) for x in list(
             process_df["FuelCategory"].str.lower())
+    ]
+
+    process_df["description"] += [
+        "\n" + x["description"] for x in process_df["processDocumentation"]
     ]
 
     process_cols = [
