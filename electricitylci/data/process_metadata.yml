@@ -425,7 +425,7 @@ solar:
     If the material was not available there then ecoinvent processes are used.'
 
   # Entering the year 2024 for DataCollection Period to show
-  # when the most recent data was generated (representing 202).
+  # when the most recent data was generated (representing 2020).
   DataCollectionPeriod: '2024'
 
   SamplingProcedure:
@@ -505,7 +505,7 @@ solarthermal:
     - 'This process represents the cradle-to-gate inventory for electricity production from US solar thermal power plants. '
 
   techno_process: &solarthermal_techno_process
-    - 'Inventories were developed for each solar thermal plant in the 2016 EIA 860 data.
+    - 'Inventories were developed for each solar thermal plant in the 2016 or 2020 EIA 860 data, as specified in the model configuration, using a custom life cycle model.
       Boundaries include plant construction and minor operating emissions from fuel combustion, etc.
       The inventory for the plant is allocated over an assumed 30 year life.
       The aggregation performed in the electricity LCI code will then divide those inventories by the generation in the selected year to provide results on the basis of MWh.'
@@ -523,8 +523,8 @@ solarthermal:
   DataDocumentor: 'NETL'
 
   # BUG
-  DataTreatment: 'Material requirements to construct the wind farm are calculated using turbine manufacturer and size information.
-    The total inventory from construction and operations of the wind farm are then divided by the assumed 30 year lifetime to provide emissions per year.
+  DataTreatment: 'Material requirements to construct the solar thermal power plants are based on the plant configuration (tower vs trough), capacity, and local solar insolation values.
+    The total inventory from construction and operations of the plant are then divided by the assumed 30 year lifetime to provide emissions per year.
     When these emissions are divided by the generation for the specified year in the electricity baseline code, the inventory is placed on the basis of 1 MWh.'
 
   DataSelection: 'Where possible data is sourced from freely available life cycle data, such as NETL unit processes or USLCI.
@@ -551,13 +551,26 @@ solarthermal:
     Source1:
       <<: *ingwersen_etal
 
+    Source2:
+      Name: 'Role of Alternative Energy Sources: Solar Thermal Technology Assessment'
+
+      Year: 2012
+
+      TextReference: 'National Energy Technology Laboratory (2012).
+        Role of Alternative Energy Sources: Solar Thermal Technology Assessment.
+        Retrieved from https://netl.doe.gov/energy-analysis/details?id=62dcb3e0-ad31-4711-8c35-cc1b340054ab'
+
+      Url: 'https://netl.doe.gov/energy-analysis/details?id=62dcb3e0-ad31-4711-8c35-cc1b340054ab'
+
+      Category: 'NETL'
+
 wind:
 
   techno_intro: &wind_techno_intro
     - 'This process represents the cradle-to-gate inventory for electricity production from US wind farms. '
 
   techno_process: &wind_techno_process
-    - 'Inventories were developed for each wind farm in the 2016 EIA 860 data.
+    - 'Inventories were developed for each wind farm in the 2016 or 2020 EIA 860 data, as specified in the model configuration, using a custom life cycle model.
       Boundaries include wind turbine construction and minor operating emissions from fuel combustion, maintenance, etc.
       The inventory for the wind farm is allocated over an assumed 30 year life.
       The aggregation performed in the electricity LCI code will then divide those inventories by the generation in the selected year to provide results on the basis of MWh.'
@@ -601,6 +614,46 @@ wind:
   Sources:
     Source1:
       <<: *ingwersen_etal
+      
+    Source2:
+      Name: 'Life Cycle Assessment of Electricity Production from an onshore V110-2.0 MW Wind Plant'
+
+      Year: 2015
+
+      TextReference: 'Vestas (2015). Life Cycle Assessment of Electricity Production from an onshore V110-2.0 MW Wind Plant
+        18th December 2015, Version 1.0. Vestas Wind Systems A/S, Hedeager 42, Aarhus N, 8200, Denmark.'
+
+      Url: 'https://www.vestas.com/content/dam/vestas-com/global/en/sustainability/reports-and-ratings/lcas/LCAV11020MW181215.pdf.coredownload.inline.pdf'
+
+      Category: 'Vestas'
+
+    Source3:
+      Name: 'Wind Turbine Design Cost and Scaling Model.'
+
+      Year: 2006
+
+      Category: 'NREL'
+
+      TextReference: 'Fingersh et al., 2006. Wind Turbine Design Cost and Scaling Model, 
+        Technical Report NREL/TP-500-40566 (Accessed June 15, 2010)'
+      
+      Url: 'https://docs.nrel.gov/docs/fy07osti/40566.pdf'
+    
+    Source4:
+      Name: 'Life Cycle Assessment of a Wind Turbine'
+
+      Year: 2006
+
+      TextReference: 'Barbara Batumbya Nalukowe,  Jianguo Liu, Wiedmer Damien, Tomasz Lukawski, 2006. Life Cycle Assessment of a Wind Turbine. May 22, 2006'
+
+    Source5:
+      Name: 'Wind Turbines Database'
+
+      Year: 2018
+
+      Url: 'https://en.wind-turbine-models.com/turbines'
+
+      TextReference: '(2018) Wind Turbines Database. Retrieved from https://en.wind-turbine-models.com/turbines'
 
 consumption_mix:
 
@@ -1149,8 +1202,10 @@ solarpv_construction_upstream:
 
   DataSelection: 'Where possible data is sourced from freely available life cycle data, such as NETL unit processes or USLCI.
     If the material was not available there then ecoinvent processes are used.'
-
-  DataCollectionPeriod: '2020'
+  
+  # Entering the year 2024 for DataCollection Period to show
+  # when the most recent data was generated (representing 2020).
+  DataCollectionPeriod: '2024'
 
   SamplingProcedure:
   - 'BOUNDARY CONDITIONS
@@ -1171,12 +1226,64 @@ solarpv_construction_upstream:
     Source1:
       <<: *ingwersen_etal
 
+    Source2:
+      Name: 'Thin-Film Photovoltaic Power Generation Offers Decreasing Greenhouse Gas Emissions and Increasing Environmental Co-benefits in the Long Term'
+
+      Year: 2014
+
+      TextReference: 'Bergesen, J. D., Heath, G. A., Gibon, T., & Suh, S. (2014).
+        Thin-film photovoltaic power generation offers decreasing greenhouse gas emissions and increasing environmental co-benefits in the long term.
+        Environmental Science & Technology, 48(16), 9834–9843.'
+
+      Url: 'https://doi.org/10.1021/es405539z'
+
+      Category: 'NREL'
+
+    Source3:
+      Name: 'Life cycle inventories and life cycle assessment of photovoltaic systems'
+
+      Year: 2015
+
+      TextReference: 'Frischknecht, R., Itten, R., Sinha, P., de Wild-Scholten, M., Zhang, J., Fthenakis, V., Kim, H. C., Raugei, M., & Stucki, M. (2015).
+        Life cycle inventories and life cycle assessment of photovoltaic systems.
+        International Energy Agency (IEA) PVPS Task 12, Report T12, 4, 2015.'
+
+      Url: 'https://iea-pvps.org/wp-content/uploads/2020/01/IEA-PVPS_Task_12_LCI_LCA.pdf'
+
+      Category: 'NREL'
+
+    Source4:
+      Name: 'Energy payback and life-cycle CO2 emissions of the BOS in an optimized 3.5 MW PV installation'
+
+      Year: 2015
+
+      TextReference: 'Mason, J. E., Fthenakis, V. M., Hansen, T., & Kim, H. C. (2006).
+        Energy payback and life-cycle CO2 emissions of the BOS in an optimized 3.5 MW PV installation.
+        Progress in Photovoltaics: Research and Applications, 14(2), 179–190.'
+
+      Url: 'https://doi.org/10.1002/pip.652'
+
+      Category: 'Brookhaven'
+
+    Source5:
+      Name: 'National Solar Radiation Database (NSRDB)'
+
+      Year: 2018
+
+      TextReference: 'National Renewable Energy Laboratory. (2018).
+        National Solar Radiation Database (NSRDB) [data set].
+        Retrieved from https://dx.doi.org/10.25984/1810289.'
+
+      Url: 'https://dx.doi.org/10.25984/1810289'
+
+      Category: 'NREL'
+
 solartherm_construction_upstream:
   techno_intro: &solarthermal_const_techno_intro
     - 'This process represents the cradle-to-gate inventory for electricity production from US solar thermal power plants. '
 
   techno_process: &solarthermal_const_techno_process
-    - 'Inventories were developed for each solar thermal plant in the 2016 EIA 860 data.
+    - 'Inventories were developed for each solar thermal plant in the 2016 or 2020 EIA 860 data, as specified in the model configuration, using a custom life cycle model.
       Boundaries include plant construction and minor operating emissions from fuel combustion, etc.
       The inventory for the plant is allocated over an assumed 30 year life.
       The aggregation performed in the electricity LCI code will then divide those inventories by the generation in the selected year to provide results on the basis of MWh.'
@@ -1193,8 +1300,8 @@ solartherm_construction_upstream:
 
   DataDocumentor: 'NETL'
 
-  DataTreatment: 'Material requirements to construct the wind farm are calculated using turbine manufacturer and size information.
-    The total inventory from construction and operations of the wind farm are then divided by the assumed 30 year lifetime to provide emissions per year.
+  DataTreatment: 'Material requirements to construct the solar thermal power plants are based on the plant configuration (tower vs trough), capacity, and local solar insolation values.
+    The total inventory from construction and operations of the plant are then divided by the assumed 30 year lifetime to provide emissions per year.
     When these emissions are divided by the generation for the specified year in the electricity baseline code, the inventory is placed on the basis of 1 MWh.'
 
   DataSelection: 'Where possible data is sourced from freely available life cycle data, such as NETL unit processes or USLCI.
@@ -1223,13 +1330,27 @@ solartherm_construction_upstream:
   Sources:
     Source1:
       <<: *ingwersen_etal
+    
+    Source2:
+      Name: 'Role of Alternative Energy Sources: Solar Thermal Technology Assessment'
+
+      Year: 2012
+
+      TextReference: 'National Energy Technology Laboratory (2012).
+        Role of Alternative Energy Sources: Solar Thermal Technology Assessment.
+        Retrieved from https://netl.doe.gov/energy-analysis/details?id=62dcb3e0-ad31-4711-8c35-cc1b340054ab'
+
+      Url: 'https://netl.doe.gov/energy-analysis/details?id=62dcb3e0-ad31-4711-8c35-cc1b340054ab'
+
+      Category: 'NETL'
 
 wind_construction_upstream:
   techno_intro: &wind_const_techno_intro
-    - 'This process represents the cradle-to-gate inventory for electricity production from US wind farms. '
+    - 'Wind inventories are provided in two parts - construction and from operations.
+      Together they represent the cradle-to-gate inventories for electricity production from US wind turbine power plants. '
 
   techno_process: &wind_const_techno_process
-    - 'Inventories were developed for each wind farm in the 2016 EIA 860 data.
+    - 'Inventories were developed for each wind farm in the 2016 or 2020 EIA 860 data, as specified in the model configuration, using a custom life cycle model.
       Boundaries include wind turbine construction and minor operating emissions from fuel combustion, maintenance, etc.
       The inventory for the wind farm is allocated over an assumed 30 year life.
       The aggregation performed in the electricity LCI code will then divide those inventories by the generation in the selected year to provide results on the basis of MWh.'
@@ -1273,3 +1394,43 @@ wind_construction_upstream:
   Sources:
     Source1:
       <<: *ingwersen_etal
+
+    Source2:
+      Name: 'Life Cycle Assessment of Electricity Production from an onshore V110-2.0 MW Wind Plant'
+
+      Year: 2015
+
+      TextReference: 'Vestas (2015). Life Cycle Assessment of Electricity Production from an onshore V110-2.0 MW Wind Plant
+        18th December 2015, Version 1.0. Vestas Wind Systems A/S, Hedeager 42, Aarhus N, 8200, Denmark.'
+
+      Url: 'https://www.vestas.com/content/dam/vestas-com/global/en/sustainability/reports-and-ratings/lcas/LCAV11020MW181215.pdf.coredownload.inline.pdf'
+
+      Category: 'Vestas'
+
+    Source3:
+      Name: 'Wind Turbine Design Cost and Scaling Model.'
+
+      Year: 2006
+
+      Category: 'NREL'
+
+      TextReference: 'Fingersh et al., 2006. Wind Turbine Design Cost and Scaling Model, 
+        Technical Report NREL/TP-500-40566 (Accessed June 15, 2010)'
+      
+      Url: 'https://docs.nrel.gov/docs/fy07osti/40566.pdf'
+    
+    Source4:
+      Name: 'Life Cycle Assessment of a Wind Turbine'
+
+      Year: 2006
+
+      TextReference: 'Barbara Batumbya Nalukowe,  Jianguo Liu, Wiedmer Damien, Tomasz Lukawski, 2006. Life Cycle Assessment of a Wind Turbine. May 22, 2006'
+
+    Source5:
+      Name: 'Wind Turbines Database'
+
+      Year: 2018
+
+      Url: 'https://en.wind-turbine-models.com/turbines'
+
+      TextReference: '(2018) Wind Turbines Database. Retrieved from https://en.wind-turbine-models.com/turbines'
