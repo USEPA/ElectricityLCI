@@ -522,7 +522,6 @@ solarthermal:
 
   DataDocumentor: 'NETL'
 
-  # BUG
   DataTreatment: 'Material requirements to construct the solar thermal power plants are based on the plant configuration (tower vs trough), capacity, and local solar insolation values.
     The total inventory from construction and operations of the plant are then divided by the assumed 30 year lifetime to provide emissions per year.
     When these emissions are divided by the generation for the specified year in the electricity baseline code, the inventory is placed on the basis of 1 MWh.'
