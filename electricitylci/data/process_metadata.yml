@@ -530,7 +530,7 @@ solarthermal:
   DataSelection: 'Where possible data is sourced from freely available life cycle data, such as NETL unit processes or USLCI.
     If the material was not available there then ecoinvent processes are used.'
 
-  DataCollectionPeriod: '2018'
+  DataCollectionPeriod: '2024'
 
   SamplingProcedure:
   - 'BOUNDARY CONDITIONS
@@ -594,7 +594,7 @@ wind:
   DataSelection: 'Where possible data is sourced from freely available life cycle data, such as NETL unit processes or USLCI.
     If the material was not available there then ecoinvent processes are used.'
 
-  DataCollectionPeriod: '2018'
+  DataCollectionPeriod: '2024'
 
   SamplingProcedure:
   - 'BOUNDARY CONDITIONS
@@ -1307,7 +1307,7 @@ solartherm_construction_upstream:
   DataSelection: 'Where possible data is sourced from freely available life cycle data, such as NETL unit processes or USLCI.
     If the material was not available there then ecoinvent processes are used.'
 
-  DataCollectionPeriod: '2018'
+  DataCollectionPeriod: '2024'
 
   SamplingProcedure:
   - 'BOUNDARY CONDITIONS
@@ -1374,7 +1374,7 @@ wind_construction_upstream:
   DataSelection: 'Where possible data is sourced from freely available life cycle data, such as NETL unit processes or USLCI.
     If the material was not available there then ecoinvent processes are used.'
 
-  DataCollectionPeriod: '2018'
+  DataCollectionPeriod: '2024'
 
   SamplingProcedure:
   - 'BOUNDARY CONDITIONS
