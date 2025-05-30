@@ -209,7 +209,8 @@ The inventory data associated with StEWI are stored in the application folders, 
 
 Flow mapping is handled using USEPA's Federal Elementary Flow List Python package and is saved in the application folder 'fedelemflowlist'.
 
-The following is an example of the 217 data files downloaded (and summarized) from running the 2020 configuration file (as of November 2024).
+The following is an example of the 181 data files downloaded from running the 2020 configuration file (updated in May 2025).
+EIA Form 860 Excel workbooks have worksheets that are summarized into CSV files for speed.
 Note that once downloaded, these files are referenced (and not downloaded again) unless a different year of data is referenced in a configuration file.
 
     users_data_dir/                <- Folder as defined by appdirs
@@ -218,6 +219,9 @@ Note that once downloaded, these files are referenced (and not downloaded again)
     │   │   ├── eia_bulk_demand_2020.json (0.5 MB)
     │   │   ├── eia_bulk_id_2020.json (2.6 MB)
     │   │   └── eia_bulk_netgen_2020.json (0.6 MB)
+    │   │
+    │   ├── cer_rer/
+    │   │   └── electricity-trade-summary-resume-echanges-commerciaux-electricite.xlsx (100 KB)
     │   │
     │   ├── eia860_2016/
     │   │   ├── 1___Utility_Y2016.xlsx (0.4 MB)
@@ -270,6 +274,9 @@ Note that once downloaded, these files are referenced (and not downloaded again)
     │   │   ├── EIA-860 Form.xlsx (3.1 MB)
     │   │   ├── EIA-860 Instructions.pdf (0.8 MB)
     │   │   └── LayoutY2020.xlsx (0.2 MB)
+    │   │
+    │   ├── eia930/
+    │   │   └── EIA930_Reference_Tables.xlsx (43 KB)
     │   │
     │   ├── energyfutures/
     │   │   └── electricity-generation-2023.csv (1.0 MB)
@@ -328,12 +335,12 @@ Note that once downloaded, these files are referenced (and not downloaded again)
     │   ├── netl/
     │   │   └── Transportation_Inventories_02262025.xlsx (0.5 MB)
     │   │
-    │   ├── output/
-    │   │   ├── BAA_final_trade_2020.csv (65 KB)
+    │   ├── output/                              <- ELCI model results
+    │   │   ├── BAA_final_trade_2020.csv (69 KB)
     │   │   ├── elci.log (0 KB)
-    │   │   ├── elci.log.1 (67 MB)
-    │   │   ├── ELCI_2020_jsonld_20241028_153952.zip (12 MB)
-    │   │   └── ferc_final_trade_2020.csv (12 KB)
+    │   │   ├── elci.log.1 (112 MB)
+    │   │   ├── ELCI_2020_jsonld_20250528_142931.zip (23 MB)
+    │   │   └── ferc_final_trade_2020.csv (18 KB)
     │   │
     │   └── t_and_d_2020/                         <- 50 states (4.3 MB)
     │       ├── ak.xlsx (84 KB)
@@ -344,69 +351,23 @@ Note that once downloaded, these files are referenced (and not downloaded again)
     ├── fedelemflowlist/                 <- Flow mapping data (14 MB)
     │   └── FedElemFlowListMaster_v1.2.0_e57a542.parquet (14 MB)
     │
-    ├── stewi/                           <- Inventory data / metadata (2.6 GB)
-    │   ├── eGrid Data Files/
-    │   │   ├── eGRID_2020_v1.1.2_metadata.json (1 KB)
-    │   │   └── eGRID2020_Data_v2.xlsx (11.6 MB)
-    │   │
+    ├── stewi/                           <- Inventory data / metadata (45 MB)
     │   ├── facility/
-    │   │   ├── eGRID_2020_v1.1.2.parquet (0.7 MB)
-    │   │   ├── NEI_2020_v1.1.2.parquet (6.0 MB)
-    │   │   ├── RCRAInfo_2019_v1.1.2.parquet (1.3 MB)
-    │   │   └── TRI_2020_v1.1.2.parquet (1.8 MB)
-    │   │
-    │   ├── flow/
-    │   │   ├── eGRID_2020_v1.1.2.parquet (4 KB)
-    │   │   ├── NEI_2020_v1.1.2.parquet (21 KB)
-    │   │   ├── RCRAInfo_2019_v1.1.2.parquet (28 KB)
-    │   │   └── TRI_2020_v1.1.2.parquet (20 KB)
+    │   │   ├── eGRID_2020_v1.1.3_6710a0f.parquet (0.7 MB)
+    │   │   ├── NEI_2020_v1.1.0_084a311.parquet (6.0 MB)
+    │   │   ├── RCRAInfo_2019_v1.0.5_f40a6aa.parquet (1.3 MB)
+    │   │   └── TRI_2020_v1.1.0_084a311.parquet (1.8 MB)
     │   │
     │   ├── flowbyfacility/
-    │   │   ├── eGRID_2020_v1.1.2.parquet (0.5 MB)
-    │   │   ├── NEI_2020_v1.1.2.parquet (31 MB)
-    │   │   ├── RCRAInfo_2019_v1.1.2.parquet (2.1 MB)
-    │   │   └── TRI_2020_v1.1.2.parquet (1.2 MB)
+    │   │   ├── eGRID_2020_v1.1.3_6710a0f.parquet (0.5 MB)
+    │   │   ├── NEI_2020_v1.1.0_084a311.parquet (31 MB)
+    │   │   ├── RCRAInfo_2019_v1.0.5_f40a6aa.parquet (2.1 MB)
+    │   │   └── TRI_2020_v1.1.0_084a311.parquet (1.2 MB)
     │   │
-    │   ├── flowbyprocess/
-    │   │   └── NEI_2020_v1.1.2.parquet (54 MB)
-    │   │
-    │   ├── NEI Data Files/
-    │   │   ├── sppd_rtr_24240.parquet (385 MB)
-    │   │   ├── sppd_rtr_24240_v1.0.5_metadata.json (1 KB)
-    │   │   ├── sppd_rtr_24506.parquet (85 MB)
-    │   │   ├── sppd_rtr_24506_v1.0.5_metadata.json (1 KB)
-    │   │   ├── sppd_rtr_24507.parquet (124 MB)
-    │   │   ├── sppd_rtr_24507_v1.0.5_metadata.json (1 KB)
-    │   │   ├── sppd_rtr_24592.parquet (12 MB)
-    │   │   └── sppd_rtr_24592_v1.0.5_metadata.json (1 KB)
-    │   │
-    │   ├── RCRAInfo Data Files/
-    │   │   ├── RCRAInfo_by_year/
-    │   │   │   └── br_reporting_2019.csv (774 MB)
-    │   │   ├── BR_REPORTING_2019_0.csv (446 MB)
-    │   │   ├── BR_REPORTING_2019_1.csv (445 MB)
-    │   │   ├── BR_REPORTING_2019_2.csv (147 MB)
-    │   │   └── RCRAInfo_2019_v1.1.2_metadata.json (1 KB)
-    │   │
-    │   ├── TRI Data Files/
-    │   │   ├── TRI_2020_v1.1.2_metadata.json (1 KB)
-    │   │   ├── US_1a_2020.csv (63 MB)
-    │   │   └── US_3a_2020.csv (64 MB)
-    │   │
-    │   ├── validation/
-    │   │   ├── eGRID_2020.csv (1 KB)
-    │   │   ├── eGRID_2020_validationset_metadata.json (1 KB)
-    │   │   ├── NEI_2020.csv (1 KB)
-    │   │   ├── NEI_2020_validationset_metadata.json (1 KB)
-    │   │   ├── RCRAInfo_2019.csv (5 KB)
-    │   │   ├── RCRAInfo_2019_validationset_metadata.json (1 KB)
-    │   │   ├── TRI_2020.csv (140 KB)
-    │   │   └── TRI_2020_validationset_metadata.json (1 KB)
-    │   │
-    │   ├── eGRID_2020_v1.1.2_metadata.json (1 KB)
-    │   ├── NEI_2020_v1.1.2_metadata.json (3 KB)
-    │   ├── RCRAInfo_2019_v1.1.2_metadata.json (1 KB)
-    │   └── TRI_2020_v1.1.2_metadata.json (1 KB)
+    │   ├── eGRID_2020_v1.1.3_6710a0f_metadata.json (1 KB)
+    │   ├── NEI_2020_v1.1.0_084a311_metadata.json (3 KB)
+    │   ├── RCRAInfo_2019_v1.0.5_f40a6aa_metadata.json (1 KB)
+    │   └── TRI_2020_v1.1.0_084a311_metadata.json (1 KB)
     │
     └── stewicombo/      <- Data / metadata generated by stewicombo
         ├── ELCI_2020_v1.1.2.parquet (2.2 MB)
