@@ -343,7 +343,6 @@ def clean_data_store():
     skip_dirs = [
         'archive',
         'hidden',
-        'netl',
         'output'
     ]
 
@@ -365,6 +364,8 @@ def clean_data_store():
     incl_fm = False
     incl_fedefl = False
     incl_year = True
+
+    # The filter; will only delete files with this year in their filename
     year = 2022
 
     ds = _build_data_store(data_file_types, skip_dirs)
