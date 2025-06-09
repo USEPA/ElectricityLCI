@@ -21,7 +21,7 @@ and replaces them with names in the Federal LCA Commons elementary flows list.
 Types of flows and compartment information are also determined and indexed.
 
 Last updated:
-    2025-02-05
+    2025-06-09
 """
 __all__ = [
     "add_flow_direction",
@@ -74,6 +74,18 @@ compartment_to_flowtype = pd.DataFrame(
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
+def add_flow_direction(df_with_flowtypes):
+    """Add 'FlowDirection' column indicating input/output flow direction."""
+    df_with_flowtypes["FlowDirection"] = "output"
+    df_with_flowtypes.loc[
+        (df_with_flowtypes["Compartment"] == "input")
+        | (df_with_flowtypes["ElementaryFlowPrimeContext"] == "resource"),
+        "FlowDirection",
+    ] = "input"
+
+    return df_with_flowtypes
+
+
 def correct_netl_flow_names(df, amount_col="FlowAmount"):
     """A helper method that replaces NETL air, water, and ground emissions
     with Federal Elementary Flow List equivalents based on a subset of
@@ -176,6 +188,18 @@ def correct_netl_flow_names(df, amount_col="FlowAmount"):
     mapped_df = mapped_df.drop(columns=drop_cols)
 
     return mapped_df
+
+
+def map_compartment_to_flow_type(df_with_compartments):
+    """Add new columns to a data frame that maps flows based on compartment."""
+    df_with_flowtypes = pd.merge(
+        df_with_compartments,
+        compartment_to_flowtype,
+        on=["Compartment"],
+        how="left",
+    )
+
+    return df_with_flowtypes
 
 
 def map_emissions_to_fedelemflows(df, amount_col='FlowAmount'):
@@ -353,27 +377,3 @@ def map_renewable_heat_flows_to_fedelemflows(df_with_flows_compart_direction):
     # TODO: Need to handle steam separately
 
     return df_with_flows_compart_direction
-
-
-def map_compartment_to_flow_type(df_with_compartments):
-    """Add new columns to a data frame that maps flows based on compartment."""
-    df_with_flowtypes = pd.merge(
-        df_with_compartments,
-        compartment_to_flowtype,
-        on=["Compartment"],
-        how="left",
-    )
-
-    return df_with_flowtypes
-
-
-def add_flow_direction(df_with_flowtypes):
-    """Add 'FlowDirection' column indicating input/output flow direction."""
-    df_with_flowtypes["FlowDirection"] = "output"
-    df_with_flowtypes.loc[
-        (df_with_flowtypes["Compartment"] == "input")
-        | (df_with_flowtypes["ElementaryFlowPrimeContext"] == "resource"),
-        "FlowDirection",
-    ] = "input"
-
-    return df_with_flowtypes

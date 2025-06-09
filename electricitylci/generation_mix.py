@@ -32,7 +32,8 @@ __doc__ = """Get a subset of the egrid_facilities dataset.
 The functions in this module calculate the fraction of each generating source
 (either from generation data or straight from eGRID).
 
-Last edited: 2024-10-11
+Last edited:
+    2025-06-09
 """
 
 
@@ -283,6 +284,82 @@ def create_generation_mix_process_df_from_egrid_ref_data(subregion=None):
     return result_database
 
 
+def olcaschema_international(database, gen_dict, subregion=None):
+    """Create the consumption and distribution data processes dictionary.
+
+    Parameters
+    ----------
+    database : pandas.DataFrame
+        Generation process data frame.
+    gen_dict : dict
+        Generation process dictionary.
+    subregion : str, optional
+        Subregion of interest (e.g., 'BA'), by default None
+
+    Returns
+    -------
+    dict
+
+    Notes
+    -----
+    Referenced in `run_epa_trade` (not implemented).
+    """
+    intl_database = pd.read_csv(data_dir+'/International_Electricity_Mix.csv')
+    database = intl_database
+    generation_mix_dict = {}
+    if "Subregion" in database.columns:
+        region = list(pd.unique(database["Subregion"]))
+    else:
+        region = ["US"]
+        database["Subregion"] = "US"
+    for reg in region:
+
+        database_reg = database[database["Subregion"] == reg]
+        exchanges_list = []
+
+        # Creating the reference output
+        exchange(exchange_table_creation_ref(database_reg), exchanges_list)
+        for fuelname in list(database["FuelCategory"].unique()):
+            # Reading complete fuel name and heat content information
+            # fuelname = row['Fuelname']
+            # Cropping the database according to the current fuel being
+            # considered.
+            database_f1 = database_reg[
+                database_reg["FuelCategory"] == fuelname
+            ]
+            if database_f1.empty != True:
+                matching_dict = None
+                for generator in gen_dict:
+                    if (
+                        gen_dict[generator]["name"]
+                        == "Electricity; at grid; USaverage - " + fuelname
+                       ):
+                        matching_dict = gen_dict[generator]
+                        break
+                if matching_dict is None:
+                    logging.warning(
+                        f"Trouble matching dictionary for us average mix {fuelname} - USaverage. Skipping this flow for now"
+                    )
+                else:
+                    ra = exchange_table_creation_input_international_mix(
+                    database_f1, fuelname
+                    )
+                    ra["quantitativeReference"] = False
+                    ra["provider"] = {
+                       "name": matching_dict["name"],
+                       "@id": matching_dict["uuid"],
+                       "category": matching_dict["category"].split("/"),
+                    }
+                    #if matching_dict is None:
+                    exchange(ra, exchanges_list)
+                    # Writing final file
+
+        final = process_table_creation_genmix(reg, exchanges_list)
+        # print(reg +' Process Created')
+        generation_mix_dict[reg] = final
+    return generation_mix_dict
+
+
 def olcaschema_genmix(database, gen_dict, subregion=None):
     """Generate an olca-schema process for each region-fuel pairing.
 
@@ -384,7 +461,29 @@ def olcaschema_usaverage(
         gen_dict,
         subregion=None,
         excluded_regions=['HIMS','HIOA','AKGD','AKMS']):
-    """Add docstring."""
+    """Create the U.S. average fuel-mix dictionary
+
+    Parameters
+    ----------
+    database : pandas.DataFrame
+        Generation process data frame.
+    gen_dict : dict
+        Generation process dictionary.
+    subregion : str, optional
+        Subregion of interest (e.g. 'BA'), by default None
+        Unused.
+    excluded_regions : list, optional
+        Regions to exclude from US average, by default ['HIMS','HIOA','AKGD','AKMS']
+
+    Returns
+    -------
+    dict
+        U.S. average fuel-mix dictionary.
+
+    Notes
+    -----
+    Reference in `run_epa_trade` in \_\_init\_\_.py
+    """
     if subregion is None:
         subregion = model_specs.regional_aggregation
     generation_mix_dict = {}
@@ -458,62 +557,4 @@ def olcaschema_usaverage(
         final = process_table_creation_usaverage(fuel, exchanges_list)
         generation_mix_dict[fuel] = final
 
-    return generation_mix_dict
-
-
-def olcaschema_international(database, gen_dict, subregion=None):
-    """Add docstring."""
-    intl_database = pd.read_csv(data_dir+'/International_Electricity_Mix.csv')
-    database = intl_database
-    generation_mix_dict = {}
-    if "Subregion" in database.columns:
-        region = list(pd.unique(database["Subregion"]))
-    else:
-        region = ["US"]
-        database["Subregion"] = "US"
-    for reg in region:
-
-        database_reg = database[database["Subregion"] == reg]
-        exchanges_list = []
-
-        # Creating the reference output
-        exchange(exchange_table_creation_ref(database_reg), exchanges_list)
-        for fuelname in list(database["FuelCategory"].unique()):
-            # Reading complete fuel name and heat content information
-            # fuelname = row['Fuelname']
-            # Cropping the database according to the current fuel being
-            # considered.
-            database_f1 = database_reg[
-                database_reg["FuelCategory"] == fuelname
-            ]
-            if database_f1.empty != True:
-                matching_dict = None
-                for generator in gen_dict:
-                    if (
-                        gen_dict[generator]["name"]
-                        == "Electricity; at grid; USaverage - " + fuelname
-                       ):
-                        matching_dict = gen_dict[generator]
-                        break
-                if matching_dict is None:
-                    logging.warning(
-                        f"Trouble matching dictionary for us average mix {fuelname} - USaverage. Skipping this flow for now"
-                    )
-                else:
-                    ra = exchange_table_creation_input_international_mix(
-                    database_f1, fuelname
-                    )
-                    ra["quantitativeReference"] = False
-                    ra["provider"] = {
-                       "name": matching_dict["name"],
-                       "@id": matching_dict["uuid"],
-                       "category": matching_dict["category"].split("/"),
-                    }
-                    #if matching_dict is None:
-                    exchange(ra, exchanges_list)
-                    # Writing final file
-
-        final = process_table_creation_genmix(reg, exchanges_list)
-        # print(reg +' Process Created')
-        generation_mix_dict[reg] = final
     return generation_mix_dict

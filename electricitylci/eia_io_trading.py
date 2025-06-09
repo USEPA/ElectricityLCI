@@ -67,7 +67,7 @@ References:
     52(11), 6666-6675. https://doi.org/10.1021/acs.est.7b05191
 
 Last updated:
-    2025-02-13
+    2025-06-09
 """
 __all__ = [
     "ba_io_trading_model",
@@ -89,6 +89,108 @@ REGION_ACRONYMS = [
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
+def _check_api(key, owner, r_txt):
+    """Helper function to check and request for API key.
+
+    Parameters
+    ----------
+    key : str, Nonetype
+        The key to be checked.
+    owner : str
+        The API owner (e.g., 'EIA' or 'EPA').
+    r_txt : str
+        Helper text for acquiring an API key (e.g., registration URL).
+
+    Returns
+    -------
+    str
+        API key as provided by the user.
+    """
+    if key is None or key == "":
+        key = input("Enter %s API key: " % owner)
+        key = key.strip()
+        if key == "":
+            logging.warning(
+                "No API key given!"
+                f"Sign up here: {r_txt}"
+            )
+    return key
+
+
+def _check_json(d):
+    """Check that EBA.zip JSON data has info.
+
+    If a JSON entry is missing data, send a critical logging statement.
+    The consequence of using this data is that consumption mix processes
+    will not be created in the JSON-LD.
+    See https://github.com/USEPA/ElectricityLCI/discussions/254.
+
+    Parameters
+    ----------
+    d : dict
+        JSON line read from EBA.zip
+    """
+    name = d.get('name', 'n/a')
+    series = d.get('series_id', 'n/a')
+    start = d.get('start', None)
+    end = d.get('end', None)
+    data = d.get('data', [])
+    if start is None or end is None or len(data) == 0:
+        logging.critical("No JSON data for %s, '%s'" % (series, name))
+
+
+def _fix_final_trade(final_trade, z_traders, z_trade_w_demand, keep=False):
+    """Set fraction amounts between balancing authorities that show no imports
+    but show a demand to one and remove other zero importers with no demand
+    (if keep is false). If keep is true, zero importers with zero demand are
+    given a fraction near zero (i.e., 1e-9).
+
+    Parameters
+    ----------
+    final_trade : pandas.DataFrame
+        A data frame with export and import balancing authority codes and the
+        fraction of their trade amount.
+    z_traders : list
+        A list of balancing authority codes with zero trade.
+    z_trade_w_demand : list
+        A list of balancing authority codes with zero trade, but positive
+        demand.
+    keep : bool, optional
+        Whether to keep zero traders with no demand, by default False
+
+    Returns
+    -------
+    pandas.DataFrame
+        The same as `final_trade`, but with updated values and (optionally)
+        filtered rows.
+    """
+    # HOTFIX: use 'loc' to set values against boolean lists [2023-11-17; TWD]
+    for baa in z_trade_w_demand:
+        final_trade.loc[
+            (final_trade["import BAA"] == baa)
+            & (final_trade["export BAA"] == baa),
+            "fraction"
+        ] = 1
+
+    for baa in list(set(z_traders)-set(z_trade_w_demand)):
+        if keep:
+            # Set the value to something small to avoid zero errors.
+            final_trade.loc[
+                (final_trade["import BAA"] == baa)
+                & (final_trade["export BAA"]==baa),
+                "fraction"
+            ] = 1E-15
+        else:
+            # It was decided to not create consumption mixes for BAs that
+            # don't have imports. Remove BAA from import list.
+            final_trade.drop(
+                final_trade[final_trade["import BAA"] == baa].index,
+                inplace=True
+            )
+
+    return final_trade
+
+
 def _get_ca_imports(just_read=False):
     """Return net annual Canadian exports and net annual exports to US
     balancing authorities based on www.cer-rec.gc.ca electricity export
@@ -235,659 +337,106 @@ def _get_ca_imports(just_read=False):
         raise OSError("Failed to create output directory, %s" % out_dir)
 
 
-def _read_ba():
-    """Generate the Balancing Authority data frame and acronym and FERC lists.
-
-    Returns
-    -------
-    tuple
-        A tuple of length three.
-
-        - pandas.DataFrame : Balancing authority data
-          Columns include the following.
-
-            * 'BA_Acronym' (str) : short letter abbreviation
-            * 'BA_Name' (str) : long name
-            * 'NCR ID#' (str) : NRC identifier
-            * 'EIA_Region' (str) : region name (includes Canada)
-            * 'FERC_Region' (str) : FERC region (includes Canada)
-            * 'EIA_Region_Abbr' (str) : EIA region abbreviation
-            * 'FERC_Region_Abbr' (str) : FERC region abbreviation
-
-        - list : U.S. Balancing Authority abbreviation codes
-        - list : U.S. FERC region codes
-    """
-    ba_df = read_ba_codes()
-    US_BA_acronyms = sorted(list(
-        ba_df.query("EIA_Region != 'Canada'").index.values
-    ))
-    df_BA_NA = ba_df.reset_index()
-    ferc_list = df_BA_NA['FERC_Region_Abbr'].unique().tolist()
-
-    return df_BA_NA, US_BA_acronyms, ferc_list
-
-
-def _check_api(key, owner, r_txt):
-    """Helper function to check and request for API key.
+def _get_zero_traders(df):
+    """Return a list of balancing authority codes associated with no trading.
 
     Parameters
     ----------
-    key : str, Nonetype
-        The key to be checked.
-    owner : str
-        The API owner (e.g., 'EIA' or 'EPA').
-    r_txt : str
-        Helper text for acquiring an API key (e.g., registration URL).
-
-    Returns
-    -------
-    str
-        API key as provided by the user.
-    """
-    if key is None or key == "":
-        key = input("Enter %s API key: " % owner)
-        key = key.strip()
-        if key == "":
-            logging.warning(
-                "No API key given!"
-                f"Sign up here: {r_txt}"
-            )
-    return key
-
-
-def _check_json(d):
-    """Check that EBA.zip JSON data has info.
-
-    If a JSON entry is missing data, send a critical logging statement.
-    The consequence of using this data is that consumption mix processes
-    will not be created in the JSON-LD.
-    See https://github.com/USEPA/ElectricityLCI/discussions/254.
-
-    Parameters
-    ----------
-    d : dict
-        JSON line read from EBA.zip
-    """
-    name = d.get('name', 'n/a')
-    series = d.get('series_id', 'n/a')
-    start = d.get('start', None)
-    end = d.get('end', None)
-    data = d.get('data', [])
-    if start is None or end is None or len(data) == 0:
-        logging.critical("No JSON data for %s, '%s'" % (series, name))
-
-
-def _read_bulk(ba_cols):
-    """Handle both ZIP and API data sources for bulk U.S. Electric System
-    Operating Data managed by model_config.
-
-    Parameters
-    ----------
-    ba_cols : list
-        A list of balancing authority short codes.
-        These are used for querying API demand and net generation data.
-
-    Returns
-    -------
-    tuple
-        A tuple of length three.
-        Each item is a list.
-        See :func:`_read_bulk_api` and :func:`read_bulk_zip` for details.
-    """
-    if model_specs.use_eia_bulk_zip:
-        logging.info("Reading EIA bulk zip")
-        return _read_bulk_zip()
-    else:
-        logging.info("Reading EIA API bulk data")
-        return _read_bulk_api(ba_cols)
-
-
-def _write_bulk_api(row_data, output_file):
-    """Helper function to write out bulk row data to pseudo JSON file.
-
-    Note that the output format does not comply with JSON strictly; rather,
-    each row is a dictionary created by json.dumps(). This allows each row
-    to be read using json.loads().
-
-    Parameters
-    ----------
-    row_data : list
-        A list of dictionaries to be written to file.
-    output_file : str
-        A file path for writing data. The parent directory's existence is
-        checked using :func:`check_output_dir`.
-    """
-    output_dir = os.path.dirname(output_file)
-    check_output_dir(output_dir)
-    # Get away with using write_csv_to_output in utils.py for writing strings.
-    d_txt = "\n".join([json.dumps(x) for x in row_data])
-    write_csv_to_output(output_file, d_txt)
-
-
-def _read_bulk_json(json_file):
-    """Helper method to read JSON data written by :func:`write_bulk_api`
-
-    Note that the plain text file is not strictly in JSON format; rather,
-    each line is a dictionary produced using ``json.dumps``.
-
-    Parameters
-    ----------
-    json_file : str
-        File path to an existing data file.
+    df : pandas.DataFrame
+        A data frame with export and import balancing authority codes and the
+        fraction of their trade amounts. Must include columns, 'import BAA'
+        and 'fraction'.
 
     Returns
     -------
     list
-        A list of dictionaries representing bulk (demand, net gen, interchange)
-        data.
+        A list of balancing authority codes for importers with no trade.
     """
-    row_data = []
-    if os.path.isfile(json_file):
-        with open(json_file, 'r') as f:
-            for line in f:
-                d = json.loads(line)
-                row_data.append(d)
-
-    return row_data
+    r_list = [
+        x for x in list(df["import BAA"].unique())
+        if df.loc[df["import BAA"] == x, "fraction"].sum() == 0]
+    return r_list
 
 
-def _read_bulk_api(ba_cols):
-    """Read demand, net generation, and interchange data from EIA's API.
+def _get_zero_traders_w_demand(z_traders, demand):
+    """Return a list of balancing authority codes with positive demand.
 
     Parameters
     ----------
-    ba_cols : list
-        A list of balancing authority short codes.
-        Used for querying regions for demand and net generation.
+    z_traders : list
+        A list of balancing authority codes associated with zero traders.
+    demand : list
+        A list of dictionaries. Each dictionary contains the hourly demand
+        for a given region.
 
     Returns
     -------
-    tuple
-        A tuple of length three.
-
-        - list : rows associated with net generation.
-        - list : rows associated with BA-to-BA interchange.
-        - list : rows associated with demand.
-
-    Notes
-    -----
-    For API registration, go to: https://www.eia.gov/opendata/.
-
-    See https://github.com/USEPA/ElectricityLCI/discussions/254 for details.
-
-    If you don't want to pass ba_cols, you can find all the respondents
-    on the API by calling (adding ?api_key=YOUR-KEY at the end):
-    https://api.eia.gov/v2/electricity/rto/daily-region-data/facet/respondent
-    The response dictionary should have a key, 'facets' with 'id' and 'name'
-    fields for each BA/region.
+    list
+        A list of zero trader balancing authority codes that have positive
+        demand.
     """
-    # Define the URLs for the two sub-domains and for hourly and daily data.
-    _baseurl = "https://api.eia.gov/v2/"
-    _sub_domain_h = "electricity/rto/region-data/data/"
-    _sub_domain_d = "electricity/rto/daily-region-data/data/"
-    _sub_domain2_h = "electricity/rto/interchange-data/data/"
-    _sub_domain2_d = "electricity/rto/daily-interchange-data/data/"
-    _freq = "daily" # or 'local-hourly' or 'daily'
-    # NOTE: if using 'local-hourly' these times must be in timezone format!
-    # NOTE: the API time filter is based on day (not hour)!
-    _yr = model_specs.NETL_IO_trading_year
-    _start = "%d-01-01" % _yr
-    _end = "%d-12-31" % _yr
-
-    # Correct URL based on frequency (daily vs hourly)
-    _sub_domain = _sub_domain_h
-    _sub_domain2 = _sub_domain2_h
-    if _freq == 'daily':
-        _sub_domain = _sub_domain_d
-        _sub_domain2 = _sub_domain2_d
-
-    # LOCAL DATA STORE MANAGEMENT
-    data_store = os.path.join(paths.local_path, "bulk_data")
-    d_rows_file = os.path.join(data_store, "eia_bulk_demand_%s.json" % _yr)
-    ng_rows_file = os.path.join(data_store, "eia_bulk_netgen_%s.json" % _yr)
-    id_rows_file = os.path.join(data_store, "eia_bulk_id_%s.json" % _yr)
-    d_rows_exists = os.path.isfile(d_rows_file)
-    ng_rows_exists = os.path.isfile(ng_rows_file)
-    id_rows_exists = os.path.isfile(id_rows_file)
-
-    # Initialize return lists
-    DEMAND_ROWS = []
-    NET_GEN_ROWS = []
-    BA_TO_BA_ROWS = []
-
-    # Initialize API strings
-    new_api = "https://www.eia.gov/opendata/"
-    api_key = model_specs.eia_api_key
-
-    # TODO: consider having a configuration setting to force API; otherwise,
-    # it is up to the end user to delete the JSON files from bulk_data to
-    # prompt the API a second time (assuming success on the first run).
-
-    # Get bulk demand
-    if d_rows_exists:
-        logging.info("Reading local %s" % os.path.basename(d_rows_file))
-        DEMAND_ROWS= _read_bulk_json(d_rows_file)
-    else:
-        logging.info("Querying EIA API for bulk demand data")
-        api_key = _check_api(api_key, 'EIA', new_api)
-        DEMAND_ROWS, _ok = _read_dng_api(
-            _baseurl, _sub_domain, api_key, _freq, _start, _end, ba_cols, 'D')
-        if _ok:
-            _write_bulk_api(DEMAND_ROWS, d_rows_file)
-
-    # Get bulk net generation
-    if ng_rows_exists:
-        logging.info("Reading local %s" % os.path.basename(ng_rows_file))
-        NET_GEN_ROWS = _read_bulk_json(ng_rows_file)
-    else:
-        logging.info("Querying EIA API for bulk net generation data")
-        api_key = _check_api(api_key, 'EIA', new_api)
-        NET_GEN_ROWS, _ok = _read_dng_api(
-            _baseurl, _sub_domain, api_key, _freq, _start, _end, ba_cols, 'NG')
-        if _ok:
-            _write_bulk_api(NET_GEN_ROWS, ng_rows_file)
-
-    # Get bulk interchange
-    if id_rows_exists:
-        logging.info("Reading local %s" % os.path.basename(id_rows_file))
-        BA_TO_BA_ROWS = _read_bulk_json(id_rows_file)
-    else:
-        logging.info("Querying EIA API for bulk interchange data")
-        api_key = _check_api(api_key, 'EIA', new_api)
-        BA_TO_BA_ROWS = _read_id_api(
-            _baseurl, _sub_domain2, api_key, _freq, _start, _end)
-        if True:
-            _write_bulk_api(BA_TO_BA_ROWS, id_rows_file)
-
-    return (NET_GEN_ROWS, BA_TO_BA_ROWS, DEMAND_ROWS)
-
-
-def _read_bulk_zip():
-    """Read and parse EIA's U.S. Electric System Operating Data.
-
-    Creates three lists of JSON-based dictionaries.
-    Each dictionary contains metadata and a time series of data.
-    Time series data appear to go back to around 2015.
-
-    Returns
-    -------
-    tuple
-        A tuple of length three.
-
-        - list : rows associated with net generation.
-        - list : rows associated with BA-to-BA trade.
-        - list : rows associated with demand.
-    """
-    # Initialize return lists
-    NET_GEN_ROWS = []
-    BA_TO_BA_ROWS = []
-    DEMAND_ROWS = []
-
-    # Changing to regex matches to allow compatibility with past and present
-    # bulk data. [2024-08-16; MJ]
-    ngh_matches = "^EBA[\\S\\w\\d]+[^NG]\\.NG\\.H$"
-    idh_matches = "^EBA.+\\.ID\\.H$"
-    dh_matches = "^EBA.+\\.D\\.H$"
-
-    # HOTFIX: Check file vintage [2024-03-12; TWD]
-    path = os.path.join(paths.local_path, 'bulk_data', 'EBA.zip')
-    if model_specs.bypass_bulk_vintage:
-        logging.info("Skipping EBA vintage check")
-    else:
-        check_EBA_vintage()
-
-    try:
-        z = zipfile.ZipFile(path, 'r')
-    except FileNotFoundError:
-        logging.info("Downloading new bulk data")
-        download_EBA()
-        z = zipfile.ZipFile(path, 'r')
-    else:
-        logging.info("Using existing bulk data download")
-
-    logging.info("Loading bulk data to json")
-    with z.open('EBA.txt') as f:
-        for line in f:
-            # To improve compatibility with old/new EBA.zip
-            f_json = json.loads(line)
-
-            # All the entries should have a 'series_id' and an 'f' key.
-            # 'H' for UTC hourly; 'HL' for local hourly; hard-coded to UTC.
-            # See https://github.com/USEPA/ElectricityLCI/discussions/254.
-            if 'series_id' in f_json.keys() and f_json.get('f', '') == 'H':
-                series_id = f_json['series_id']
-
-                # LEGACY NOTES --- The 2016 Baseline
-                # All but one BA is reporting net generation in UTC
-                # and local time. For that one BA (GRMA) only UTC time is
-                # reported - so only pulling that for now.
-
-                if re.search(ngh_matches, series_id) is not None:
-                    # HOTFIX: add single instance of JSON line checker
-                    # will throw about 82 warnings that data are not available.
-                    # (e.g., August 19, 2024 EBA.zip)
-                    _check_json(f_json)
-                    NET_GEN_ROWS.append(f_json)
-
-                # Similarly there are 5 interchanges that report interchange
-                # in UTC but not in local time.
-                elif re.search(idh_matches, series_id) is not None:
-                    # Split on intersection, rstrip "EBA."
-                    s_txt = f_json['series_id'].split('-')[0][4:]
-                    if s_txt not in REGION_ACRONYMS:
-                        BA_TO_BA_ROWS.append(f_json)
-
-                # Keeping these here just in case
-                elif re.search(dh_matches, series_id) is not None:
-                    DEMAND_ROWS.append(f_json)
-
-    logging.debug(f"Net gen rows: {len(NET_GEN_ROWS)}")
-    logging.debug(f"BA to BA rows:{len(BA_TO_BA_ROWS)}")
-    logging.debug(f"Demand rows:{len(DEMAND_ROWS)}")
-
-    return (NET_GEN_ROWS, BA_TO_BA_ROWS, DEMAND_ROWS)
-
-
-def _read_id_api(baseurl, sub_domain, api_key, freq, start, end):
-    """Return list of interchanges at the given frequency and time period."""
     r_list = []
-    d_dict = {}
+    for d_row in demand:
+        ba_code = d_row["series_id"].split('.')[1].split('-')[0]
+        if ba_code in z_traders:
+            r_list.append(ba_code)
 
-    if freq not in ['daily', 'hourly', 'local-hourly']:
-        raise ValueError(
-            "Frequency must be 'daily' 'hourly' or 'local-hourly', "
-            "not '%s'!" % freq)
-    if api_key is None or api_key == '':
-        raise ValueError(
-            "Missing EIA API key! Register online "
-            "https://www.eia.gov/opendata/"
-        )
-
-    # Provide starting values to get into the while loop.
-    recs_captured = 0
-    total_recs = 2
-    offset = 0
-    while recs_captured < (total_recs - 1):
-        _url = (
-            f"{baseurl}{sub_domain}?api_key={api_key}&out=json"
-            f"&frequency={freq}"
-            f"&start={start}"
-            f"&end={end}"
-            "&sort[0][column]=period"
-            "&sort[0][direction]=asc"
-            "&data[]=value"
-            f"&offset={offset}"
-            "&length=4999"
-        )
-
-        # Variable idx for series ID, and add a timezone for daily downloads.
-        _idx = 'H'
-        if freq == 'daily':
-            _idx = 'D'
-            _url += "&facets[timezone][]=Central"
-        elif freq == 'local-hourly':
-            _idx = 'HL'
-
-        # Make request and sleep, so as to not be a hater.
-        d_json, _ = read_eia_api(_url)
-        time.sleep(API_SLEEP)
-
-        # Check response
-        d_resp = d_json.get('response', {})
-        try:
-            # The total number of records available, not necessarily how
-            # many you get this call.
-            total_recs = d_resp.get("total", 0)
-            total_recs = int(total_recs)
-        except:
-            total_recs = 0
-
-        # See how many records are in this response and update your counters
-        # NOTE: this is different from 'total', which is all records.
-        d_rec = len(d_resp.get('data', []))
-        recs_captured += d_rec
-        offset = recs_captured + 1
-        logging.info("Retrieved %d entries out of %d ID records" % (
-            recs_captured, total_recs))
-
-        # Proceed if you have data.
-        if d_rec > 0:
-            for d in d_resp.get('data', []):
-                # Recreate the data format of EBA.zip
-                f_ba = d['fromba']
-                t_ba = d['toba']
-
-                # Employ the same filter used in read_bulk_zip
-                if f_ba not in REGION_ACRONYMS:
-                    series_id = "EBA.%s-%s.ID.%s" % (f_ba, t_ba, _idx)
-
-                    # Use d_dict to store each unique BA-BA pairing and
-                    # build-out the data list. It's done this way because
-                    # we know the trade regions of interest, REGION_ACRONYMS,
-                    # but we don't know who they're trading with.
-                    # HOTFIX: for some reason, I cannot stop duplicate
-                    # entries, so use dictionary for uniqueness!
-                    if series_id in d_dict.keys():
-                        d_dict[series_id]['data'][d['period']] = d['value']
-                    else:
-                        d_dict[series_id] = {
-                            'series_id': series_id,
-                            'data': {}
-                        }
-                        d_dict[series_id]['data'][d['period']] = d['value']
-
-    # Take the data lists and series ids and make them a list of dicts.
-    for k in d_dict.keys():
-        d = d_dict[k]
-        # Convert dictionary to list (will likely lose sorting)
-        d['data'] = [[x, y] for x, y in d['data'].items()]
-        r_list.append(d)
+    r_list = list(set(r_list))
 
     return r_list
 
 
-def _read_dng_api(baseurl, sub_domain, api_key, freq, start, end, ba_cols, m):
-    """Return list of net gen or demand for given frequency and time period."""
-    r_list = []
-    if m not in ['D', 'NG']:
-        raise ValueError("Metric must be either 'D' or 'NG', not '%s'!" % m)
-    if freq not in ['daily', 'hourly', 'local-hourly']:
-        raise ValueError(
-            "Frequency must be 'daily' 'hourly' or 'local-hourly', "
-            "not '%s'!" % freq)
-
-    # For logging
-    _metric = 'demand'
-    if m == 'NG':
-        _metric = 'net gen'
-
-    # For demand and net gen, we only need U.S. BA areas:
-    # Due to API response limits, request each BA individually.
-    _is_okay = True
-    for ba in ba_cols:
-        _url = (
-            f"{baseurl}{sub_domain}?api_key={api_key}&out=json"
-            f"&frequency={freq}"
-            f"&start={start}"
-            f"&end={end}"
-            f"&facets[respondent][]={ba}"
-            f"&facets[type][]={m}"
-            "&data[]=value"
-        )
-
-        # Variable idx for series ID, and add a timezone for daily downloads.
-        _idx = 'H'
-        if freq == 'daily':
-            _idx = 'D'
-            _url += "&facets[timezone][]=Central"
-        elif freq == 'local-hourly':
-            _idx = 'HL'
-
-        # Make request and sleep, so as to not be a hater.
-        d_json, url_tries = read_eia_api(_url, max_tries=5)
-        time.sleep(API_SLEEP)
-
-        # Check for max retries
-        if url_tries == 5:
-            _is_okay = False
-
-        # Check response
-        d_resp = d_json.get('response', {})
-        if 'warnings' in d_resp.keys():
-            _is_okay = False  # something didn't work right
-            logging.warning(d_resp['warnings'])
-        try:
-            d_tot = d_resp.get("total", 0)
-            d_tot = int(d_tot)
-        except:
-            d_tot = 0
-        logging.info("Retrieved %d %s %s entries in %d request(s)" % (
-            d_tot, ba, _metric, url_tries))
-
-        # Proceed if there is data:
-        if d_tot > 0:
-            # Recreate the data format of EBA.zip
-            d_dict = {}
-            d_dict['series_id'] = "EBA.%s-ALL.%s.%s" % (ba, m, _idx)
-            # HOTFIX: Can't get rid of duplicate entries in the daily API,
-            # even with timezone setting! Use dictionary for uniqueness.
-            d_dict['data'] = {}
-            for d in d_resp.get('data', []):
-                d_dict['data'][d['period']] = d['value']
-            # Convert dictionary back to list of lists
-            d_dict['data'] = [[x,y] for x,y in d_dict['data'].items()]
-            r_list.append(d_dict)
-
-    return r_list, _is_okay
-
-
-def _read_ca_imports(year):
-    """Return the Canadian import data frames based on Canadian electricity
-    sales data (either from eLCI data hub or from source).
-
-    For year 2005-2020, data are from provided CSV files:
-
-    -   CA_Imports_Gen.csv
-    -   CA_Imports_Rows.csv
-
-    These CSV files were developed using Canadian electricity export sales.
-    The methods are captured in :func:`get_ca_imports`, which includes years
-    past 2020.
+def _make_ba_trade(trade_df, ba_list):
+    """Calculate the trade fractions between exporting and importing balancing authorities.
 
     Parameters
     ----------
-    year : int
-        The trading year (e.g., 2020).
+    trade_df : pandas.DataFrame
+        The export/import trade data between balancing authorities. Should include columns: 'export BAA', 'import BAA', and 'value' (e.g., the output from :func:`qio_model`).
+    ba_list : list
+        A list of all relevant balancing authority codes (used as a filter).
 
     Returns
     -------
-    tuple
-        Length two.
+    pandas.DataFrame
+        Columns include:
 
-        -   pandas.Series: Net annual Canadian export sales (MWh).
-            Indices are balancing authority codes and the values are the
-            trade amounts for the given trade year.
-        -   pandas.DataFrame: Net annual Canadian exports to US balancing
-            authorities (MWh)
+        -   'export BAA' (str: code)
+        -   'import BAA' (str: code)
+        -   'fraction' (float)
     """
-    # The Canadian annual export data from 2014-2020 is available w/ eLCI.
-    # The content is broken across the following CSV files.
-    data_file = os.path.join(data_dir, "CA_Imports_Gen.csv")
-    rows_file = os.path.join(data_dir, "CA_Imports_Rows.csv")
-
-    # Initialize return data frames
-    df = None
-    rf = None
-
-    # Ensure year is integer and yr is the string version.
-    year = int(year)
-    yr = str(year)
-
-    # Read net annual Canadian exports.
-    if os.path.isfile(data_file):
-        df = pd.read_csv(data_file, index_col=0)
-        if yr in df.columns:
-            # The CSV exists and the trading year is available.
-            logging.info("Read Canadian net exports from %s" % data_file)
-            df = df[yr].copy()
-        else:
-            df = None
-
-    # Read net annual Canadian exports to their US BA destinations.
-    if os.path.isfile(rows_file):
-        rf = pd.read_csv(rows_file, index_col=0)
-        if yr in rf.columns and 'us_ba' in rf.columns:
-            # The CSV exists and the trading year is available.
-            logging.info("Read Canadian-to-US exports from %s" % rows_file)
-            rf = rf[['us_ba', yr]].copy()
-            rf = rf.pivot(columns='us_ba', values=yr)
-        else:
-            rf = None
-
-    # If, for any reason, the net exports or Canadian-US export data are not
-    # available, then use the CER-rec data download.
-    if df is None or rf is None:
-        # Either the CSV is gone or the trading year is not available.
-        #  ca_us (pandas.DataFrame): Canadian-to-US BA exchanges by year
-        #  ca_df (pandas.DataFrame): Canadian BA net exchanges (MWh) by year
-        ca_us, ca_df = _get_ca_imports(True)
-
-        # Create series w/ ca_ba as the index and year as the name.
-        ca_df = ca_df.query("Date == %d" % year).copy()
-        df = ca_df['Volume'].copy()
-        df.name = str(year)
-        df.index = ca_df['ca_ba']
-
-        # Create data frame of CA-US exports
-        # NOTE: this data frame is not square.
-        rf = ca_us.query("Date == %d" % year).copy()
-        rf.index = rf['ca_ba'].copy()
-        rf = rf.pivot(columns='us_ba', values='Volume')
-        rf = rf.fillna(0)
-
-    # NOTE: this could return an empty series if the year is not found!
-    if len(df) == 0:
-        logging.warning("Failed to find %d in Canadian export data!" % year)
-
-    return (df, rf)
-
-
-def _read_eia_gen(year):
-    """Create data frame of EIA generation data for balancing authorities.
-
-    Data are from EIA Forms 923 and 860.
-
-    Parameters
-    ----------
-    year : int
-        Data year (e.g., 2016)
-
-    Returns
-    -------
-    tuple
-        A tuple of length two.
-
-        - pandas.DataFrame : EIA generation data with two columns:
-          "Balancing Authority Code" and "Electricity".
-        - list : EIA 860 balancing authority abbreviation codes
-    """
-    eia923_gen = eia923.build_generation_data(generation_years=[year])
-    eia860_df = eia860.eia860_balancing_authority(year)
-    eia860_df["Plant Id"] = eia860_df["Plant Id"].astype(int)
-    eia860_ba_list = list(
-        eia860_df["Balancing Authority Code"].dropna().unique())
-    eia_combined_df = eia923_gen.merge(
-        eia860_df,
-        left_on=["FacilityID"],
-        right_on=["Plant Id"],
-        how="left"
+    BAA_import_grouped_tot = trade_df.groupby(
+        ['import BAA'])['value'].sum().reset_index()
+    BAA_final_trade = trade_df.copy()
+    BAA_final_trade = BAA_final_trade.drop(
+        columns=[
+            'import ferc region',
+            'export ferc region',
+            'import ferc region abbr',
+            'export ferc region abbr']
     )
-    eia_gen_ba = eia_combined_df.groupby(
-        by=["Balancing Authority Code"],
-        as_index=False
-    )["Electricity"].sum()
+    BAA_final_trade = BAA_final_trade.merge(
+        BAA_import_grouped_tot,
+        left_on='import BAA',
+        right_on='import BAA'
+    )
+    BAA_final_trade = BAA_final_trade.rename(
+        columns={
+            'value_x': 'value',
+            'value_y': 'total'}
+    )
+    BAA_final_trade['fraction'] = (
+        BAA_final_trade['value'] / BAA_final_trade['total'])
+    BAA_final_trade = BAA_final_trade.fillna(value=0)
+    BAA_final_trade = BAA_final_trade.drop(columns=['value', 'total'])
 
-    return (eia_gen_ba, eia860_ba_list)
+    # Remove Canadian BAs in import list
+    # BUG: This doesn't do what the comment above suggests.
+    #      ``ba_list`` includes Canadian balancing authority codes.
+    BAA_filt = BAA_final_trade['import BAA'].isin(ba_list)
+    BAA_final_trade = BAA_final_trade[BAA_filt].copy()
+
+    return BAA_final_trade
 
 
 def _make_ferc_trade(df, import_list):
@@ -1379,6 +928,31 @@ def _make_trade_pivot(year, ba_cols, trade_df):
     return trade_pivot
 
 
+def _make_us_trade(df):
+    """Calculate the U.S. fractions of trade by exporting balancing authority.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        A data frame with exporting and importing balancing authority regions
+        and their trade values along with the associated FERC region name and
+        abbreviation.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Fractions of US trade by exporting balancing authority.
+    """
+    us_import_grouped_tot = df['value'].sum()
+    us_trade = df.copy()
+    us_trade = us_trade.groupby(['export BAA'])['value'].sum().reset_index()
+    us_trade["fraction"] = us_trade["value"]/us_import_grouped_tot
+    us_trade = us_trade.fillna(value=0)
+    us_trade=us_trade.drop(columns=["value"])
+
+    return us_trade
+
+
 def _match_df_cols(base_df, return_df):
     """Helper method to return a data frame with column names matching a
     reference data frame (used for pandas.concat).
@@ -1414,183 +988,609 @@ def _match_df_cols(base_df, return_df):
     return (return_df)
 
 
-def _make_ba_trade(trade_df, ba_list):
-    """Calculate the trade fractions between exporting and importing balancing authorities.
-
-    Parameters
-    ----------
-    trade_df : pandas.DataFrame
-        The export/import trade data between balancing authorities. Should include columns: 'export BAA', 'import BAA', and 'value' (e.g., the output from :func:`qio_model`).
-    ba_list : list
-        A list of all relevant balancing authority codes (used as a filter).
+def _read_ba():
+    """Generate the Balancing Authority data frame and acronym and FERC lists.
 
     Returns
     -------
-    pandas.DataFrame
-        Columns include:
+    tuple
+        A tuple of length three.
 
-        -   'export BAA' (str: code)
-        -   'import BAA' (str: code)
-        -   'fraction' (float)
+        - pandas.DataFrame : Balancing authority data
+          Columns include the following.
+
+            * 'BA_Acronym' (str) : short letter abbreviation
+            * 'BA_Name' (str) : long name
+            * 'NCR ID#' (str) : NRC identifier
+            * 'EIA_Region' (str) : region name (includes Canada)
+            * 'FERC_Region' (str) : FERC region (includes Canada)
+            * 'EIA_Region_Abbr' (str) : EIA region abbreviation
+            * 'FERC_Region_Abbr' (str) : FERC region abbreviation
+
+        - list : U.S. Balancing Authority abbreviation codes
+        - list : U.S. FERC region codes
     """
-    BAA_import_grouped_tot = trade_df.groupby(
-        ['import BAA'])['value'].sum().reset_index()
-    BAA_final_trade = trade_df.copy()
-    BAA_final_trade = BAA_final_trade.drop(
-        columns=[
-            'import ferc region',
-            'export ferc region',
-            'import ferc region abbr',
-            'export ferc region abbr']
-    )
-    BAA_final_trade = BAA_final_trade.merge(
-        BAA_import_grouped_tot,
-        left_on='import BAA',
-        right_on='import BAA'
-    )
-    BAA_final_trade = BAA_final_trade.rename(
-        columns={
-            'value_x': 'value',
-            'value_y': 'total'}
-    )
-    BAA_final_trade['fraction'] = (
-        BAA_final_trade['value'] / BAA_final_trade['total'])
-    BAA_final_trade = BAA_final_trade.fillna(value=0)
-    BAA_final_trade = BAA_final_trade.drop(columns=['value', 'total'])
+    ba_df = read_ba_codes()
+    US_BA_acronyms = sorted(list(
+        ba_df.query("EIA_Region != 'Canada'").index.values
+    ))
+    df_BA_NA = ba_df.reset_index()
+    ferc_list = df_BA_NA['FERC_Region_Abbr'].unique().tolist()
 
-    # Remove Canadian BAs in import list
-    # BUG: This doesn't do what the comment above suggests.
-    #      ``ba_list`` includes Canadian balancing authority codes.
-    BAA_filt = BAA_final_trade['import BAA'].isin(ba_list)
-    BAA_final_trade = BAA_final_trade[BAA_filt].copy()
-
-    return BAA_final_trade
+    return df_BA_NA, US_BA_acronyms, ferc_list
 
 
-def _make_us_trade(df):
-    """Calculate the U.S. fractions of trade by exporting balancing authority.
+def _read_bulk(ba_cols):
+    """Handle both ZIP and API data sources for bulk U.S. Electric System
+    Operating Data managed by model_config.
 
     Parameters
     ----------
-    df : pandas.DataFrame
-        A data frame with exporting and importing balancing authority regions
-        and their trade values along with the associated FERC region name and
-        abbreviation.
+    ba_cols : list
+        A list of balancing authority short codes.
+        These are used for querying API demand and net generation data.
 
     Returns
     -------
-    pandas.DataFrame
-        Fractions of US trade by exporting balancing authority.
+    tuple
+        A tuple of length three.
+        Each item is a list.
+        See :func:`_read_bulk_api` and :func:`read_bulk_zip` for details.
     """
-    us_import_grouped_tot = df['value'].sum()
-    us_trade = df.copy()
-    us_trade = us_trade.groupby(['export BAA'])['value'].sum().reset_index()
-    us_trade["fraction"] = us_trade["value"]/us_import_grouped_tot
-    us_trade = us_trade.fillna(value=0)
-    us_trade=us_trade.drop(columns=["value"])
-
-    return us_trade
+    if model_specs.use_eia_bulk_zip:
+        logging.info("Reading EIA bulk zip")
+        return _read_bulk_zip()
+    else:
+        logging.info("Reading EIA API bulk data")
+        return _read_bulk_api(ba_cols)
 
 
-def _fix_final_trade(final_trade, z_traders, z_trade_w_demand, keep=False):
-    """Set fraction amounts between balancing authorities that show no imports
-    but show a demand to one and remove other zero importers with no demand
-    (if keep is false). If keep is true, zero importers with zero demand are
-    given a fraction near zero (i.e., 1e-9).
+def _read_bulk_api(ba_cols):
+    """Read demand, net generation, and interchange data from EIA's API.
 
     Parameters
     ----------
-    final_trade : pandas.DataFrame
-        A data frame with export and import balancing authority codes and the
-        fraction of their trade amount.
-    z_traders : list
-        A list of balancing authority codes with zero trade.
-    z_trade_w_demand : list
-        A list of balancing authority codes with zero trade, but positive
-        demand.
-    keep : bool, optional
-        Whether to keep zero traders with no demand, by default False
+    ba_cols : list
+        A list of balancing authority short codes.
+        Used for querying regions for demand and net generation.
 
     Returns
     -------
-    pandas.DataFrame
-        The same as `final_trade`, but with updated values and (optionally)
-        filtered rows.
-    """
-    # HOTFIX: use 'loc' to set values against boolean lists [2023-11-17; TWD]
-    for baa in z_trade_w_demand:
-        final_trade.loc[
-            (final_trade["import BAA"] == baa)
-            & (final_trade["export BAA"] == baa),
-            "fraction"
-        ] = 1
+    tuple
+        A tuple of length three.
 
-    for baa in list(set(z_traders)-set(z_trade_w_demand)):
-        if keep:
-            # Set the value to something small to avoid zero errors.
-            final_trade.loc[
-                (final_trade["import BAA"] == baa)
-                & (final_trade["export BAA"]==baa),
-                "fraction"
-            ] = 1E-15
+        - list : rows associated with net generation.
+        - list : rows associated with BA-to-BA interchange.
+        - list : rows associated with demand.
+
+    Notes
+    -----
+    For API registration, go to: https://www.eia.gov/opendata/.
+
+    See https://github.com/USEPA/ElectricityLCI/discussions/254 for details.
+
+    If you don't want to pass ba_cols, you can find all the respondents
+    on the API by calling (adding ?api_key=YOUR-KEY at the end):
+    https://api.eia.gov/v2/electricity/rto/daily-region-data/facet/respondent
+    The response dictionary should have a key, 'facets' with 'id' and 'name'
+    fields for each BA/region.
+    """
+    # Define the URLs for the two sub-domains and for hourly and daily data.
+    _baseurl = "https://api.eia.gov/v2/"
+    _sub_domain_h = "electricity/rto/region-data/data/"
+    _sub_domain_d = "electricity/rto/daily-region-data/data/"
+    _sub_domain2_h = "electricity/rto/interchange-data/data/"
+    _sub_domain2_d = "electricity/rto/daily-interchange-data/data/"
+    _freq = "daily" # or 'local-hourly' or 'daily'
+    # NOTE: if using 'local-hourly' these times must be in timezone format!
+    # NOTE: the API time filter is based on day (not hour)!
+    _yr = model_specs.NETL_IO_trading_year
+    _start = "%d-01-01" % _yr
+    _end = "%d-12-31" % _yr
+
+    # Correct URL based on frequency (daily vs hourly)
+    _sub_domain = _sub_domain_h
+    _sub_domain2 = _sub_domain2_h
+    if _freq == 'daily':
+        _sub_domain = _sub_domain_d
+        _sub_domain2 = _sub_domain2_d
+
+    # LOCAL DATA STORE MANAGEMENT
+    data_store = os.path.join(paths.local_path, "bulk_data")
+    d_rows_file = os.path.join(data_store, "eia_bulk_demand_%s.json" % _yr)
+    ng_rows_file = os.path.join(data_store, "eia_bulk_netgen_%s.json" % _yr)
+    id_rows_file = os.path.join(data_store, "eia_bulk_id_%s.json" % _yr)
+    d_rows_exists = os.path.isfile(d_rows_file)
+    ng_rows_exists = os.path.isfile(ng_rows_file)
+    id_rows_exists = os.path.isfile(id_rows_file)
+
+    # Initialize return lists
+    DEMAND_ROWS = []
+    NET_GEN_ROWS = []
+    BA_TO_BA_ROWS = []
+
+    # Initialize API strings
+    new_api = "https://www.eia.gov/opendata/"
+    api_key = model_specs.eia_api_key
+
+    # TODO: consider having a configuration setting to force API; otherwise,
+    # it is up to the end user to delete the JSON files from bulk_data to
+    # prompt the API a second time (assuming success on the first run).
+
+    # Get bulk demand
+    if d_rows_exists:
+        logging.info("Reading local %s" % os.path.basename(d_rows_file))
+        DEMAND_ROWS= _read_bulk_json(d_rows_file)
+    else:
+        logging.info("Querying EIA API for bulk demand data")
+        api_key = _check_api(api_key, 'EIA', new_api)
+        DEMAND_ROWS, _ok = _read_dng_api(
+            _baseurl, _sub_domain, api_key, _freq, _start, _end, ba_cols, 'D')
+        if _ok:
+            _write_bulk_api(DEMAND_ROWS, d_rows_file)
+
+    # Get bulk net generation
+    if ng_rows_exists:
+        logging.info("Reading local %s" % os.path.basename(ng_rows_file))
+        NET_GEN_ROWS = _read_bulk_json(ng_rows_file)
+    else:
+        logging.info("Querying EIA API for bulk net generation data")
+        api_key = _check_api(api_key, 'EIA', new_api)
+        NET_GEN_ROWS, _ok = _read_dng_api(
+            _baseurl, _sub_domain, api_key, _freq, _start, _end, ba_cols, 'NG')
+        if _ok:
+            _write_bulk_api(NET_GEN_ROWS, ng_rows_file)
+
+    # Get bulk interchange
+    if id_rows_exists:
+        logging.info("Reading local %s" % os.path.basename(id_rows_file))
+        BA_TO_BA_ROWS = _read_bulk_json(id_rows_file)
+    else:
+        logging.info("Querying EIA API for bulk interchange data")
+        api_key = _check_api(api_key, 'EIA', new_api)
+        BA_TO_BA_ROWS = _read_id_api(
+            _baseurl, _sub_domain2, api_key, _freq, _start, _end)
+        if True:
+            _write_bulk_api(BA_TO_BA_ROWS, id_rows_file)
+
+    return (NET_GEN_ROWS, BA_TO_BA_ROWS, DEMAND_ROWS)
+
+
+def _read_bulk_json(json_file):
+    """Helper method to read JSON data written by :func:`write_bulk_api`
+
+    Note that the plain text file is not strictly in JSON format; rather,
+    each line is a dictionary produced using ``json.dumps``.
+
+    Parameters
+    ----------
+    json_file : str
+        File path to an existing data file.
+
+    Returns
+    -------
+    list
+        A list of dictionaries representing bulk (demand, net gen, interchange)
+        data.
+    """
+    row_data = []
+    if os.path.isfile(json_file):
+        with open(json_file, 'r') as f:
+            for line in f:
+                d = json.loads(line)
+                row_data.append(d)
+
+    return row_data
+
+
+def _read_bulk_zip():
+    """Read and parse EIA's U.S. Electric System Operating Data.
+
+    Creates three lists of JSON-based dictionaries.
+    Each dictionary contains metadata and a time series of data.
+    Time series data appear to go back to around 2015.
+
+    Returns
+    -------
+    tuple
+        A tuple of length three.
+
+        - list : rows associated with net generation.
+        - list : rows associated with BA-to-BA trade.
+        - list : rows associated with demand.
+    """
+    # Initialize return lists
+    NET_GEN_ROWS = []
+    BA_TO_BA_ROWS = []
+    DEMAND_ROWS = []
+
+    # Changing to regex matches to allow compatibility with past and present
+    # bulk data. [2024-08-16; MJ]
+    ngh_matches = "^EBA[\\S\\w\\d]+[^NG]\\.NG\\.H$"
+    idh_matches = "^EBA.+\\.ID\\.H$"
+    dh_matches = "^EBA.+\\.D\\.H$"
+
+    # HOTFIX: Check file vintage [2024-03-12; TWD]
+    path = os.path.join(paths.local_path, 'bulk_data', 'EBA.zip')
+    if model_specs.bypass_bulk_vintage:
+        logging.info("Skipping EBA vintage check")
+    else:
+        check_EBA_vintage()
+
+    try:
+        z = zipfile.ZipFile(path, 'r')
+    except FileNotFoundError:
+        logging.info("Downloading new bulk data")
+        download_EBA()
+        z = zipfile.ZipFile(path, 'r')
+    else:
+        logging.info("Using existing bulk data download")
+
+    logging.info("Loading bulk data to json")
+    with z.open('EBA.txt') as f:
+        for line in f:
+            # To improve compatibility with old/new EBA.zip
+            f_json = json.loads(line)
+
+            # All the entries should have a 'series_id' and an 'f' key.
+            # 'H' for UTC hourly; 'HL' for local hourly; hard-coded to UTC.
+            # See https://github.com/USEPA/ElectricityLCI/discussions/254.
+            if 'series_id' in f_json.keys() and f_json.get('f', '') == 'H':
+                series_id = f_json['series_id']
+
+                # LEGACY NOTES --- The 2016 Baseline
+                # All but one BA is reporting net generation in UTC
+                # and local time. For that one BA (GRMA) only UTC time is
+                # reported - so only pulling that for now.
+
+                if re.search(ngh_matches, series_id) is not None:
+                    # HOTFIX: add single instance of JSON line checker
+                    # will throw about 82 warnings that data are not available.
+                    # (e.g., August 19, 2024 EBA.zip)
+                    _check_json(f_json)
+                    NET_GEN_ROWS.append(f_json)
+
+                # Similarly there are 5 interchanges that report interchange
+                # in UTC but not in local time.
+                elif re.search(idh_matches, series_id) is not None:
+                    # Split on intersection, rstrip "EBA."
+                    s_txt = f_json['series_id'].split('-')[0][4:]
+                    if s_txt not in REGION_ACRONYMS:
+                        BA_TO_BA_ROWS.append(f_json)
+
+                # Keeping these here just in case
+                elif re.search(dh_matches, series_id) is not None:
+                    DEMAND_ROWS.append(f_json)
+
+    logging.debug(f"Net gen rows: {len(NET_GEN_ROWS)}")
+    logging.debug(f"BA to BA rows:{len(BA_TO_BA_ROWS)}")
+    logging.debug(f"Demand rows:{len(DEMAND_ROWS)}")
+
+    return (NET_GEN_ROWS, BA_TO_BA_ROWS, DEMAND_ROWS)
+
+
+def _read_ca_imports(year):
+    """Return the Canadian import data frames based on Canadian electricity
+    sales data (either from eLCI data hub or from source).
+
+    For year 2005-2020, data are from provided CSV files:
+
+    -   CA_Imports_Gen.csv
+    -   CA_Imports_Rows.csv
+
+    These CSV files were developed using Canadian electricity export sales.
+    The methods are captured in :func:`get_ca_imports`, which includes years
+    past 2020.
+
+    Parameters
+    ----------
+    year : int
+        The trading year (e.g., 2020).
+
+    Returns
+    -------
+    tuple
+        Length two.
+
+        -   pandas.Series: Net annual Canadian export sales (MWh).
+            Indices are balancing authority codes and the values are the
+            trade amounts for the given trade year.
+        -   pandas.DataFrame: Net annual Canadian exports to US balancing
+            authorities (MWh)
+    """
+    # The Canadian annual export data from 2014-2020 is available w/ eLCI.
+    # The content is broken across the following CSV files.
+    data_file = os.path.join(data_dir, "CA_Imports_Gen.csv")
+    rows_file = os.path.join(data_dir, "CA_Imports_Rows.csv")
+
+    # Initialize return data frames
+    df = None
+    rf = None
+
+    # Ensure year is integer and yr is the string version.
+    year = int(year)
+    yr = str(year)
+
+    # Read net annual Canadian exports.
+    if os.path.isfile(data_file):
+        df = pd.read_csv(data_file, index_col=0)
+        if yr in df.columns:
+            # The CSV exists and the trading year is available.
+            logging.info("Read Canadian net exports from %s" % data_file)
+            df = df[yr].copy()
         else:
-            # It was decided to not create consumption mixes for BAs that
-            # don't have imports. Remove BAA from import list.
-            final_trade.drop(
-                final_trade[final_trade["import BAA"] == baa].index,
-                inplace=True
-            )
+            df = None
 
-    return final_trade
+    # Read net annual Canadian exports to their US BA destinations.
+    if os.path.isfile(rows_file):
+        rf = pd.read_csv(rows_file, index_col=0)
+        if yr in rf.columns and 'us_ba' in rf.columns:
+            # The CSV exists and the trading year is available.
+            logging.info("Read Canadian-to-US exports from %s" % rows_file)
+            rf = rf[['us_ba', yr]].copy()
+            rf = rf.pivot(columns='us_ba', values=yr)
+        else:
+            rf = None
+
+    # If, for any reason, the net exports or Canadian-US export data are not
+    # available, then use the CER-rec data download.
+    if df is None or rf is None:
+        # Either the CSV is gone or the trading year is not available.
+        #  ca_us (pandas.DataFrame): Canadian-to-US BA exchanges by year
+        #  ca_df (pandas.DataFrame): Canadian BA net exchanges (MWh) by year
+        ca_us, ca_df = _get_ca_imports(True)
+
+        # Create series w/ ca_ba as the index and year as the name.
+        ca_df = ca_df.query("Date == %d" % year).copy()
+        df = ca_df['Volume'].copy()
+        df.name = str(year)
+        df.index = ca_df['ca_ba']
+
+        # Create data frame of CA-US exports
+        # NOTE: this data frame is not square.
+        rf = ca_us.query("Date == %d" % year).copy()
+        rf.index = rf['ca_ba'].copy()
+        rf = rf.pivot(columns='us_ba', values='Volume')
+        rf = rf.fillna(0)
+
+    # NOTE: this could return an empty series if the year is not found!
+    if len(df) == 0:
+        logging.warning("Failed to find %d in Canadian export data!" % year)
+
+    return (df, rf)
 
 
-def _get_zero_traders(df):
-    """Return a list of balancing authority codes associated with no trading.
-
-    Parameters
-    ----------
-    df : pandas.DataFrame
-        A data frame with export and import balancing authority codes and the
-        fraction of their trade amounts. Must include columns, 'import BAA'
-        and 'fraction'.
-
-    Returns
-    -------
-    list
-        A list of balancing authority codes for importers with no trade.
-    """
-    r_list = [
-        x for x in list(df["import BAA"].unique())
-        if df.loc[df["import BAA"] == x, "fraction"].sum() == 0]
-    return r_list
-
-
-def _get_zero_traders_w_demand(z_traders, demand):
-    """Return a list of balancing authority codes with positive demand.
-
-    Parameters
-    ----------
-    z_traders : list
-        A list of balancing authority codes associated with zero traders.
-    demand : list
-        A list of dictionaries. Each dictionary contains the hourly demand
-        for a given region.
-
-    Returns
-    -------
-    list
-        A list of zero trader balancing authority codes that have positive
-        demand.
-    """
+def _read_dng_api(baseurl, sub_domain, api_key, freq, start, end, ba_cols, m):
+    """Return list of net gen or demand for given frequency and time period."""
     r_list = []
-    for d_row in demand:
-        ba_code = d_row["series_id"].split('.')[1].split('-')[0]
-        if ba_code in z_traders:
-            r_list.append(ba_code)
+    if m not in ['D', 'NG']:
+        raise ValueError("Metric must be either 'D' or 'NG', not '%s'!" % m)
+    if freq not in ['daily', 'hourly', 'local-hourly']:
+        raise ValueError(
+            "Frequency must be 'daily' 'hourly' or 'local-hourly', "
+            "not '%s'!" % freq)
 
-    r_list = list(set(r_list))
+    # For logging
+    _metric = 'demand'
+    if m == 'NG':
+        _metric = 'net gen'
+
+    # For demand and net gen, we only need U.S. BA areas:
+    # Due to API response limits, request each BA individually.
+    _is_okay = True
+    for ba in ba_cols:
+        _url = (
+            f"{baseurl}{sub_domain}?api_key={api_key}&out=json"
+            f"&frequency={freq}"
+            f"&start={start}"
+            f"&end={end}"
+            f"&facets[respondent][]={ba}"
+            f"&facets[type][]={m}"
+            "&data[]=value"
+        )
+
+        # Variable idx for series ID, and add a timezone for daily downloads.
+        _idx = 'H'
+        if freq == 'daily':
+            _idx = 'D'
+            _url += "&facets[timezone][]=Central"
+        elif freq == 'local-hourly':
+            _idx = 'HL'
+
+        # Make request and sleep, so as to not be a hater.
+        d_json, url_tries = read_eia_api(_url, max_tries=5)
+        time.sleep(API_SLEEP)
+
+        # Check for max retries
+        if url_tries == 5:
+            _is_okay = False
+
+        # Check response
+        d_resp = d_json.get('response', {})
+        if 'warnings' in d_resp.keys():
+            _is_okay = False  # something didn't work right
+            logging.warning(d_resp['warnings'])
+        try:
+            d_tot = d_resp.get("total", 0)
+            d_tot = int(d_tot)
+        except:
+            d_tot = 0
+        logging.info("Retrieved %d %s %s entries in %d request(s)" % (
+            d_tot, ba, _metric, url_tries))
+
+        # Proceed if there is data:
+        if d_tot > 0:
+            # Recreate the data format of EBA.zip
+            d_dict = {}
+            d_dict['series_id'] = "EBA.%s-ALL.%s.%s" % (ba, m, _idx)
+            # HOTFIX: Can't get rid of duplicate entries in the daily API,
+            # even with timezone setting! Use dictionary for uniqueness.
+            d_dict['data'] = {}
+            for d in d_resp.get('data', []):
+                d_dict['data'][d['period']] = d['value']
+            # Convert dictionary back to list of lists
+            d_dict['data'] = [[x,y] for x,y in d_dict['data'].items()]
+            r_list.append(d_dict)
+
+    return r_list, _is_okay
+
+
+def _read_eia_gen(year):
+    """Create data frame of EIA generation data for balancing authorities.
+
+    Data are from EIA Forms 923 and 860.
+
+    Parameters
+    ----------
+    year : int
+        Data year (e.g., 2016)
+
+    Returns
+    -------
+    tuple
+        A tuple of length two.
+
+        - pandas.DataFrame : EIA generation data with two columns:
+          "Balancing Authority Code" and "Electricity".
+        - list : EIA 860 balancing authority abbreviation codes
+    """
+    eia923_gen = eia923.build_generation_data(generation_years=[year])
+    eia860_df = eia860.eia860_balancing_authority(year)
+    eia860_df["Plant Id"] = eia860_df["Plant Id"].astype(int)
+    eia860_ba_list = list(
+        eia860_df["Balancing Authority Code"].dropna().unique())
+    eia_combined_df = eia923_gen.merge(
+        eia860_df,
+        left_on=["FacilityID"],
+        right_on=["Plant Id"],
+        how="left"
+    )
+    eia_gen_ba = eia_combined_df.groupby(
+        by=["Balancing Authority Code"],
+        as_index=False
+    )["Electricity"].sum()
+
+    return (eia_gen_ba, eia860_ba_list)
+
+
+def _read_id_api(baseurl, sub_domain, api_key, freq, start, end):
+    """Return list of interchanges at the given frequency and time period."""
+    r_list = []
+    d_dict = {}
+
+    if freq not in ['daily', 'hourly', 'local-hourly']:
+        raise ValueError(
+            "Frequency must be 'daily' 'hourly' or 'local-hourly', "
+            "not '%s'!" % freq)
+    if api_key is None or api_key == '':
+        raise ValueError(
+            "Missing EIA API key! Register online "
+            "https://www.eia.gov/opendata/"
+        )
+
+    # Provide starting values to get into the while loop.
+    recs_captured = 0
+    total_recs = 2
+    offset = 0
+    while recs_captured < (total_recs - 1):
+        _url = (
+            f"{baseurl}{sub_domain}?api_key={api_key}&out=json"
+            f"&frequency={freq}"
+            f"&start={start}"
+            f"&end={end}"
+            "&sort[0][column]=period"
+            "&sort[0][direction]=asc"
+            "&data[]=value"
+            f"&offset={offset}"
+            "&length=4999"
+        )
+
+        # Variable idx for series ID, and add a timezone for daily downloads.
+        _idx = 'H'
+        if freq == 'daily':
+            _idx = 'D'
+            _url += "&facets[timezone][]=Central"
+        elif freq == 'local-hourly':
+            _idx = 'HL'
+
+        # Make request and sleep, so as to not be a hater.
+        d_json, _ = read_eia_api(_url)
+        time.sleep(API_SLEEP)
+
+        # Check response
+        d_resp = d_json.get('response', {})
+        try:
+            # The total number of records available, not necessarily how
+            # many you get this call.
+            total_recs = d_resp.get("total", 0)
+            total_recs = int(total_recs)
+        except:
+            total_recs = 0
+
+        # See how many records are in this response and update your counters
+        # NOTE: this is different from 'total', which is all records.
+        d_rec = len(d_resp.get('data', []))
+        recs_captured += d_rec
+        offset = recs_captured + 1
+        logging.info("Retrieved %d entries out of %d ID records" % (
+            recs_captured, total_recs))
+
+        # Proceed if you have data.
+        if d_rec > 0:
+            for d in d_resp.get('data', []):
+                # Recreate the data format of EBA.zip
+                f_ba = d['fromba']
+                t_ba = d['toba']
+
+                # Employ the same filter used in read_bulk_zip
+                if f_ba not in REGION_ACRONYMS:
+                    series_id = "EBA.%s-%s.ID.%s" % (f_ba, t_ba, _idx)
+
+                    # Use d_dict to store each unique BA-BA pairing and
+                    # build-out the data list. It's done this way because
+                    # we know the trade regions of interest, REGION_ACRONYMS,
+                    # but we don't know who they're trading with.
+                    # HOTFIX: for some reason, I cannot stop duplicate
+                    # entries, so use dictionary for uniqueness!
+                    if series_id in d_dict.keys():
+                        d_dict[series_id]['data'][d['period']] = d['value']
+                    else:
+                        d_dict[series_id] = {
+                            'series_id': series_id,
+                            'data': {}
+                        }
+                        d_dict[series_id]['data'][d['period']] = d['value']
+
+    # Take the data lists and series ids and make them a list of dicts.
+    for k in d_dict.keys():
+        d = d_dict[k]
+        # Convert dictionary to list (will likely lose sorting)
+        d['data'] = [[x, y] for x, y in d['data'].items()]
+        r_list.append(d)
 
     return r_list
+
+
+def _write_bulk_api(row_data, output_file):
+    """Helper function to write out bulk row data to pseudo JSON file.
+
+    Note that the output format does not comply with JSON strictly; rather,
+    each row is a dictionary created by json.dumps(). This allows each row
+    to be read using json.loads().
+
+    Parameters
+    ----------
+    row_data : list
+        A list of dictionaries to be written to file.
+    output_file : str
+        A file path for writing data. The parent directory's existence is
+        checked using :func:`check_output_dir`.
+    """
+    output_dir = os.path.dirname(output_file)
+    check_output_dir(output_dir)
+    # Get away with using write_csv_to_output in utils.py for writing strings.
+    d_txt = "\n".join([json.dumps(x) for x in row_data])
+    write_csv_to_output(output_file, d_txt)
 
 
 def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
@@ -1773,6 +1773,93 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
         'BA': BAA_final_trade,
         'FERC': ferc_final_trade,
         'US': us_final_trade}
+
+
+def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
+    """Convert the consumption mix dataframe into a openLCA-schema compatible
+    dictionary.
+
+    Parameters
+    ----------
+    database : pandas.DataFrame
+        A trade data frame generated by :func:`ba_io_trading_model`
+    gen_dict : dictionary
+        A dictionary of generation mix data already processed for JSON-LD.
+    subregion : str, optional
+        The aggregation level for trade data. Also the dictionary key
+        associated with the given database.
+
+    Returns
+    -------
+    dict
+        A process dictionary with exchanges ready for openLCA.
+    """
+    consumption_mix_dict = {}
+    if subregion == "FERC":
+        aggregation_column = "import ferc region"
+        region = list(pd.unique(database[aggregation_column]))
+        export_column = 'export_name'
+    elif subregion == "BA":
+        aggregation_column = "import_name"  # "import BAA"
+        region = list(pd.unique(database[aggregation_column]))
+        export_column = "export_name"  # 'export BAA'
+    elif subregion == "US":
+        export_column = "export_name"
+        region=["US"]
+
+    for reg in region:
+        if subregion =="US":
+            database_reg = database
+        else:
+            database_reg = database.loc[database[aggregation_column] == reg, :]
+
+        exchanges_list = []
+
+        # Filter regions for positive trade.
+        database_filt = database_reg['fraction'] > 0
+        database_reg = database_reg[database_filt].copy()
+        exchange(exchange_table_creation_ref(database_reg), exchanges_list)
+
+        for export_region in list(database_reg[export_column].unique()):
+            database_f1 = database_reg[
+                database_reg[export_column] == export_region
+            ]
+            if database_f1.empty != True:
+                ra = exchange_table_creation_input_con_mix(
+                    database_f1, export_region
+                )
+                ra["quantitativeReference"] = False
+                ra['amount'] = database_reg.loc[
+                    database_reg[export_column] == export_region,
+                    'fraction'].values[0]
+                matching_dict = None
+                for gen in gen_dict:
+                    if (
+                        gen_dict[gen]["name"]
+                        == 'Electricity; at grid; generation mix - ' + export_region
+                    ):
+                        matching_dict = gen_dict[export_region]
+                        break
+
+                if matching_dict is None:
+                    logging.warning(
+                        f"Trouble matching dictionary for {export_region} "
+                        f"- {reg}"
+                    )
+                else:
+                    ra["provider"] = {
+                        "name": matching_dict["name"],
+                        "@id": matching_dict["uuid"],
+                        "category": matching_dict["category"].split("/"),
+                    }
+                exchange(ra, exchanges_list)
+        final = process_table_creation_con_mix(reg, exchanges_list)
+        final["name"] = (
+            f"Electricity; at grid; consumption mix - {reg} - {subregion}"
+        )
+        consumption_mix_dict[f"{reg} - {subregion}"] = final
+
+    return consumption_mix_dict
 
 
 def qio_model(net_gen_df, trade_pivot, ba_map, ba_list, roi=None, thresh=1e-5):
@@ -1972,90 +2059,3 @@ def qio_model(net_gen_df, trade_pivot, ba_map, ba_list, roi=None, thresh=1e-5):
     )
 
     return df_final_trade_out_filt_melted_merge
-
-
-def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
-    """Convert the consumption mix dataframe into a openLCA-schema compatible
-    dictionary.
-
-    Parameters
-    ----------
-    database : pandas.DataFrame
-        A trade data frame generated by :func:`ba_io_trading_model`
-    gen_dict : dictionary
-        A dictionary of generation mix data already processed for JSON-LD.
-    subregion : str, optional
-        The aggregation level for trade data. Also the dictionary key
-        associated with the given database.
-
-    Returns
-    -------
-    dict
-        A process dictionary with exchanges ready for openLCA.
-    """
-    consumption_mix_dict = {}
-    if subregion == "FERC":
-        aggregation_column = "import ferc region"
-        region = list(pd.unique(database[aggregation_column]))
-        export_column = 'export_name'
-    elif subregion == "BA":
-        aggregation_column = "import_name"  # "import BAA"
-        region = list(pd.unique(database[aggregation_column]))
-        export_column = "export_name"  # 'export BAA'
-    elif subregion == "US":
-        export_column = "export_name"
-        region=["US"]
-
-    for reg in region:
-        if subregion =="US":
-            database_reg = database
-        else:
-            database_reg = database.loc[database[aggregation_column] == reg, :]
-
-        exchanges_list = []
-
-        # Filter regions for positive trade.
-        database_filt = database_reg['fraction'] > 0
-        database_reg = database_reg[database_filt].copy()
-        exchange(exchange_table_creation_ref(database_reg), exchanges_list)
-
-        for export_region in list(database_reg[export_column].unique()):
-            database_f1 = database_reg[
-                database_reg[export_column] == export_region
-            ]
-            if database_f1.empty != True:
-                ra = exchange_table_creation_input_con_mix(
-                    database_f1, export_region
-                )
-                ra["quantitativeReference"] = False
-                ra['amount'] = database_reg.loc[
-                    database_reg[export_column] == export_region,
-                    'fraction'].values[0]
-                matching_dict = None
-                for gen in gen_dict:
-                    if (
-                        gen_dict[gen]["name"]
-                        == 'Electricity; at grid; generation mix - ' + export_region
-                    ):
-                        matching_dict = gen_dict[export_region]
-                        break
-
-                if matching_dict is None:
-                    logging.warning(
-                        f"Trouble matching dictionary for {export_region} "
-                        f"- {reg}"
-                    )
-                else:
-                    ra["provider"] = {
-                        "name": matching_dict["name"],
-                        "@id": matching_dict["uuid"],
-                        "category": matching_dict["category"].split("/"),
-                    }
-                exchange(ra, exchanges_list)
-        final = process_table_creation_con_mix(reg, exchanges_list)
-        final["name"] = (
-            f"Electricity; at grid; consumption mix - {reg} - {subregion}"
-        )
-        consumption_mix_dict[f"{reg} - {subregion}"] = final
-
-    return consumption_mix_dict

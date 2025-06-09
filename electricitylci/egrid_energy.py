@@ -27,7 +27,7 @@ Calculations and data input will execute immediately upon import, which
 only happens if the `replace_egrid` configuration setting is set to false.
 
 Last updated:
-    2023-11-20
+    2025-06-09
 """
 __all__ = [
     "egrid_net_generation",
@@ -77,9 +77,8 @@ egrid_efficiency = egrid_efficiency.replace([np.inf, -np.inf], np.nan)
 egrid_efficiency.dropna(inplace=True)
 
 # NOTE: this data frame is referenced in generation_mix.py
-# TODO: if file doesn't exist, generate it!
-#   See https://github.com/USEPA/ElectricityLCI/issues/211
 # HOTFIX: add check for missing reference data [2023-11-20; TWD]
+#   See https://github.com/USEPA/ElectricityLCI/issues/211
 make_egrid_subregion_ref(model_specs.egrid_year)
 path = os.path.join(
     data_dir,
@@ -97,19 +96,6 @@ ref_egrid_subregion_generation_by_fuelcategory = ref_egrid_subregion_generation_
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def list_egrid_facilities_with_positive_generation():
-    """Return list of facility IDs with a positive electricity product.
-
-    Returns
-    -------
-    list
-        List of facility IDs.
-    """
-    egrid_net_generation_above_min = egrid_net_generation[
-        egrid_net_generation['Electricity'] > 0]
-    return list(egrid_net_generation_above_min['FacilityID'])
-
-
 def list_egrid_facilities_in_efficiency_range(min_efficiency, max_efficiency):
     """Return a list of facility IDs with efficiency within given range.
 
@@ -129,3 +115,16 @@ def list_egrid_facilities_in_efficiency_range(min_efficiency, max_efficiency):
         (egrid_efficiency['Efficiency'] >= min_efficiency) & (
             egrid_efficiency['Efficiency'] <= max_efficiency)]
     return list(egrid_efficiency_pass['FacilityID'])
+
+
+def list_egrid_facilities_with_positive_generation():
+    """Return list of facility IDs with a positive electricity product.
+
+    Returns
+    -------
+    list
+        List of facility IDs.
+    """
+    egrid_net_generation_above_min = egrid_net_generation[
+        egrid_net_generation['Electricity'] > 0]
+    return list(egrid_net_generation_above_min['FacilityID'])

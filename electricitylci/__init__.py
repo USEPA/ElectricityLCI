@@ -24,7 +24,7 @@ __doc__ = """This module contains the main API functions to be used by the
 end user.
 
 Last updated:
-    2025-05-01
+    2025-06-09
 """
 __version__ = elci_version
 
@@ -818,6 +818,8 @@ def run_post_processes():
 
 
 def write_consumption_mix_to_dict(cons_mix_df, dist_mix_dict, subregion=None):
+    """Abstraction to :func:`olca_schema_consumption_mix` in
+    eia_io_trading.py."""
     from electricitylci.eia_io_trading import olca_schema_consumption_mix
 
     if subregion is None:
@@ -847,6 +849,8 @@ def write_distribution_dict():
 
 
 def write_distribution_mix_to_dict(dm_dict, gm_dict, subregion=None):
+    """Abstraction to :func:`olca_schema_distribution_mix` in
+    eia_trans_dist_grid_loss.py."""
     from electricitylci.eia_trans_dist_grid_loss import olca_schema_distribution_mix
 
     if subregion is None:

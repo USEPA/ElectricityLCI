@@ -163,7 +163,7 @@ def eia_trans_dist_download_extract(year):
 
 
 def generate_regional_grid_loss(year, subregion="all"):
-    """Generates transmission and distribution losses for the
+    """Generate transmission and distribution losses for the
     given year, aggregated by subregion.
 
     Parameters
@@ -264,7 +264,7 @@ def generate_regional_grid_loss(year, subregion="all"):
 
 
 def olca_schema_distribution_mix(td_by_region, cons_mix_dict, subregion="BA"):
-    """Create dictionaries for openLCA
+    """Create dictionaries for openLCA.
 
     Parameters
     ----------

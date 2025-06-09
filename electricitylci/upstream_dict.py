@@ -35,7 +35,7 @@ petroleum extraction and processing, coal transport, nuclear fuel extraction,
 processing, and transport, and power plant construction.
 
 Last updated:
-    2025-02-06
+    2025-06-09
 """
 __all__ = [
     "olcaschema_genupstream_processes",
@@ -45,106 +45,51 @@ __all__ = [
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def _unit(unt):
-    """Create a unit dictionary in olca-schema format.
-
-    See `online <https://greendelta.github.io/olca-schema/classes/Unit.html>`_
+def _exchange_table_creation_output(data):
+    """Create an olca-schema formatted exchange dictionary.
 
     Parameters
     ----------
-    unt : str
-        Unit name
+    data : pandas.Series
+        A data series for an exchange flow.
 
     Returns
     -------
     dict
-        openLCA-schema formatted dictionary for Unit.
+        An olca-schema formatted exchange dictionary.
     """
     ar = dict()
     ar["internalId"] = ""
-    ar["@type"] = "Unit"
-    ar["name"] = unt
-    return ar
-
-
-def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
-    """Generate an openlca-schema formatted dictionary for a Process.
-
-    See
-    `online <https://greendelta.github.io/olca-schema/classes/Process.html>`_.
-
-    Parameters
-    ----------
-    process_name : str
-        Process name.
-    exchanges_list : list
-        List of exchange dictionaries.
-    fuel_type : str
-        Fuel type
-
-    Returns
-    -------
-    dict
-        A dictionary for an openLCA schema Process.
-    """
-    # Standard categories for openLCA processes by technology (by NAICS code).
-    fuel_category_dict = {
-        "COAL": (
-            "21: Mining, Quarrying, and Oil and Gas Extraction/"
-            "2121: Coal Mining"),
-        "GAS": (
-            "22: Utilities/"
-            "2212: Natural Gas Distribution"),
-        "OIL": (
-            "31-33: Manufacturing/"
-            "3241: Petroleum and Coal Products Manufacturing"),
-        "NUCLEAR": (
-            "31-33: Manufacturing/"
-            "3251: Basic Chemical Manufacturing"),
-        "CONSTRUCTION": (
-            "23: Construction/"
-            "2371: Utility System Construction"),
-            #New Issue #150
-        "WIND_CONSTRUCTION": (
-            "23: Construction/"
-            "2371: Utility System Construction"),
-        "SOLARPV_CONSTRUCTION": (
-            "23: Construction/"
-            "2371: Utility System Construction"),
-        "SOLARTHERM_CONSTRUCTION": (
-            "23: Construction/"
-            "2371: Utility System Construction"),
-    }
-
-    ar = dict()
-    ar["@type"] = "Process"
-    ar["allocationFactors"] = ""
-    ar["defaultAllocationMethod"] = ""
-    ar["exchanges"] = exchanges_list
-    ar["location"] = ""  # location(region)
-    ar["parameters"] = ""
-
-    logging.debug(
-        f"passing {fuel_type.lower()}_upstream to process_doc_creation")
-    ar['processDocumentation'] = process_doc_creation(
-        process_type=f"{fuel_type.lower()}_upstream")
-    ar["processType"] = "LCI_RESULT"
-    ar["name"] = process_name
-    if fuel_type == "coal_transport":
-        ar["category"] = fuel_category_dict["COAL"]
-    else:
-        ar["category"] = fuel_category_dict[fuel_type]
-
-    # TODO: here is where renewable construction process documentation
-    # is handled; however, the fixes for it are found in generation.py;
-    # here construction_upstream is used to make the default fossil/ngcc
-    # construction documentation as found in process_dictionary_writer.py;
-    # potentially add alternative route in process_description_creation
-    # (e.g., pull construction type from process name).
-    ar["description"] = process_description_creation(
-        f"{fuel_type.lower()}_upstream")
-    ar["version"] = make_valid_version_num(elci_version)
-
+    ar["@type"] = "Exchange"
+    ar["avoidedProduct"] = False
+    ar["flow"] = _flow_table_creation(data)
+    ar["flowProperty"] = ""
+    ar["input"] = data["input"]
+    ar["quantitativeReference"] = False
+    ar["baseUncertainty"] = ""
+    ar["provider"] = ""
+    ar["amount"] = data["emission_factor"]
+    ar["amountFormula"] = ""
+    ar["unit"] = _unit(data["Unit"])
+    # Issue 296 - changes to get data quality scores into final
+    # dictionaries. Just to make sure _something_ makes it in and to guard
+    # against possible missing entries, we'll try adding the entry using
+    # the expected keys and if that fails, give the worst dqi score of (5;5;5;5;5)
+    try:
+        dqi_keys = [
+            'DataReliability',
+            'TemporalCorrelation',
+            'GeographicalCorrelation',
+            'TechnologicalCorrelation',
+            'DataCollection'
+        ]
+        dqi_str = '(' + ";".join([str(data[x]) for x in dqi_keys]) + ')'
+        ar["dqEntry"] = dqi_str
+    except KeyError:
+        ar["dqEntry"]="(5;5;5;5;5)"
+    ar["pedigreeUncertainty"] = ""
+    if type(ar) == "DataFrame":
+        print(data)
     return ar
 
 
@@ -236,6 +181,7 @@ def _exchange_table_creation_ref(fuel_type):
         ar["flow"] = nuclear_flow
         ar["unit"] = _unit("MWh")
         ar["amount"] = 1
+    # NOTE: presently, there are no upstream processes for these
     elif fuel_type == "GEOTHERMAL":
         logging.warning("Undefined geothermal flow")
         ar["flow"] = geothermal_flow
@@ -251,6 +197,7 @@ def _exchange_table_creation_ref(fuel_type):
         ar["flow"] = wind_flow
         ar["unit"] = _unit("Item(s)")
         ar["amount"] = 1
+    # END NOTE
     # issue #150, catching multiple construction types
     elif "CONSTRUCTION" in fuel_type:
         ar["flow"] = construction_flow
@@ -267,6 +214,17 @@ def _exchange_table_creation_ref(fuel_type):
 
 
 def _flow_table_creation(data):
+    """Create olca-schema for a flow in an exchange.
+
+    Parameters
+    ----------
+    data : pandas.Series
+
+    Returns
+    -------
+    dict
+        An olca-schema formatted dictionary for an exchange flow.
+    """
     # HOTFIX iss267. v2: Add elementary flow prime context check.
     # HOTFIX iss267. v1: Construction flows do not have a FlowType assigned;
     # however, other flows do. Let's check them first.
@@ -313,39 +271,106 @@ def _flow_table_creation(data):
     return ar
 
 
-def _exchange_table_creation_output(data):
+def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
+    """Generate an openlca-schema formatted dictionary for a Process.
+
+    See
+    `online <https://greendelta.github.io/olca-schema/classes/Process.html>`_.
+
+    Parameters
+    ----------
+    process_name : str
+        Process name.
+    exchanges_list : list
+        List of exchange dictionaries.
+    fuel_type : str
+        Fuel type
+
+    Returns
+    -------
+    dict
+        A dictionary for an openLCA schema Process.
+    """
+    # Standard categories for openLCA processes by technology (by NAICS code).
+    fuel_category_dict = {
+        "COAL": (
+            "21: Mining, Quarrying, and Oil and Gas Extraction/"
+            "2121: Coal Mining"),
+        "GAS": (
+            "22: Utilities/"
+            "2212: Natural Gas Distribution"),
+        "OIL": (
+            "31-33: Manufacturing/"
+            "3241: Petroleum and Coal Products Manufacturing"),
+        "NUCLEAR": (
+            "31-33: Manufacturing/"
+            "3251: Basic Chemical Manufacturing"),
+        "CONSTRUCTION": (
+            "23: Construction/"
+            "2371: Utility System Construction"),
+            #New Issue #150
+        "WIND_CONSTRUCTION": (
+            "23: Construction/"
+            "2371: Utility System Construction"),
+        "SOLARPV_CONSTRUCTION": (
+            "23: Construction/"
+            "2371: Utility System Construction"),
+        "SOLARTHERM_CONSTRUCTION": (
+            "23: Construction/"
+            "2371: Utility System Construction"),
+    }
+
+    ar = dict()
+    ar["@type"] = "Process"
+    ar["allocationFactors"] = ""
+    ar["defaultAllocationMethod"] = ""
+    ar["exchanges"] = exchanges_list
+    ar["location"] = ""  # location(region)
+    ar["parameters"] = ""
+
+    logging.debug(
+        f"passing {fuel_type.lower()}_upstream to process_doc_creation")
+    ar['processDocumentation'] = process_doc_creation(
+        process_type=f"{fuel_type.lower()}_upstream")
+    ar["processType"] = "LCI_RESULT"
+    ar["name"] = process_name
+    if fuel_type == "coal_transport":
+        ar["category"] = fuel_category_dict["COAL"]
+    else:
+        ar["category"] = fuel_category_dict[fuel_type]
+
+    # TODO: here is where renewable construction process documentation
+    # is handled; however, the fixes for it are found in generation.py;
+    # here construction_upstream is used to make the default fossil/ngcc
+    # construction documentation as found in process_dictionary_writer.py;
+    # potentially add alternative route in process_description_creation
+    # (e.g., pull construction type from process name).
+    ar["description"] = process_description_creation(
+        f"{fuel_type.lower()}_upstream")
+    ar["version"] = make_valid_version_num(elci_version)
+
+    return ar
+
+
+def _unit(unt):
+    """Create a unit dictionary in olca-schema format.
+
+    See `online <https://greendelta.github.io/olca-schema/classes/Unit.html>`_
+
+    Parameters
+    ----------
+    unt : str
+        Unit name
+
+    Returns
+    -------
+    dict
+        openLCA-schema formatted dictionary for Unit.
+    """
     ar = dict()
     ar["internalId"] = ""
-    ar["@type"] = "Exchange"
-    ar["avoidedProduct"] = False
-    ar["flow"] = _flow_table_creation(data)
-    ar["flowProperty"] = ""
-    ar["input"] = data["input"]
-    ar["quantitativeReference"] = False
-    ar["baseUncertainty"] = ""
-    ar["provider"] = ""
-    ar["amount"] = data["emission_factor"]
-    ar["amountFormula"] = ""
-    ar["unit"] = _unit(data["Unit"])
-    # Issue 296 - changes to get data quality scores into final
-    # dictionaries. Just to make sure _something_ makes it in and to guard
-    # against possible missing entries, we'll try adding the entry using
-    # the expected keys and if that fails, give the worst dqi score of (5;5;5;5;5)
-    try:
-        dqi_keys = [
-            'DataReliability',
-            'TemporalCorrelation',
-            'GeographicalCorrelation',
-            'TechnologicalCorrelation',
-            'DataCollection'
-        ]
-        dqi_str = '(' + ";".join([str(data[x]) for x in dqi_keys]) + ')'
-        ar["dqEntry"] = dqi_str
-    except KeyError:
-        ar["dqEntry"]="(5;5;5;5;5)"
-    ar["pedigreeUncertainty"] = ""
-    if type(ar) == "DataFrame":
-        print(data)
+    ar["@type"] = "Unit"
+    ar["name"] = unt
     return ar
 
 

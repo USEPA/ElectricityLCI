@@ -29,6 +29,9 @@ __doc__ = """This module uses an analysis of FERC Form 714 and international
 electricity trading data to generate consumption mixes for each of the eGRID
 subregions and converts that data to surplus pools and consumption mixes for
 the year 2014 (Hottle et al.).
+
+Last updated:
+    2025-06-09
 """
 __all__ = [
     "consumption_dict",
@@ -39,32 +42,46 @@ __all__ = [
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def surplus_pool_dictionary(nerc_region,
-                            surplus_pool_trade_in,
-                            trade_matrix,
-                            gen_quantity,
-                            eGRID_region,
-                            nerc_region2):
-    """Add docstring."""
-    surplus_dict = dict()
-    for i in range(0, len(nerc_region2)):
-        region = nerc_region2[i][0].value
-        exchanges_list = []
-        exchange(ref_exchange_creator(), exchanges_list)
-        for j in range(0, 34):
-            input_region_surplus_amount = trade_matrix[i + 1][j].value
-            if input_region_surplus_amount != None and (
-                    input_region_surplus_amount != 0):
-                input_region_acronym = trade_matrix[0][j].value
-                exchange(
-                    exchange_table_creation_input_con_mix(
-                        input_region_surplus_amount,
-                        input_region_acronym),
-                    exchanges_list)
-        final = process_table_creation_surplus(region, exchanges_list)
-        surplus_dict['SurplusPool'+region] = final;
+def check_trading_normalized(trading_matrix):
+    """Helper function to normalize column values to sum to one."""
+    if trading_matrix.iloc[:, 0].sum() > 1:
+        for col in trading_matrix.columns:
+            trading_matrix[col] /= trading_matrix[col].sum()
 
-    return surplus_dict
+
+def consumption_flows(fuels_mix, flows):
+    """
+    Calculate the flows (e.g. emissions) attributable to each fuel/region
+    combination that is attributable to consumption within each region. For
+    example, the emissions of CO2 from electricity generation from every fuel
+    type in regions 'A', 'B', 'C', and 'D' that can be attributed to consumption
+    of electricity in region 'A', where 'A' exchanges electricity with 'B', 'C',
+    and 'D'.
+
+    Parameters
+    ----------
+    fuels_mix : pandas.DataFrame
+        The mix of fuels attributable to consumption within each region.
+        Includes both the columns 'Subregion' for the consumption region
+        and 'from_region' for the production region. Fuel names are listed
+        under 'FuelCategory', and 'trading_gen_ratio' is the fraction of
+        generation from each fuel/region pair.
+    flows : pandas.DataFrame
+        Flows attributable to generation from each fuel type in each region.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Joined fuel mix and flows data.
+    """
+    results = pd.merge(
+        fuels_mix,
+        flows,
+        left_on=['FuelCategory', 'from_region'],
+        right_on=['FuelCategory', 'Subregion']
+    )
+
+    return results
 
 
 def consumption_mix_dictionary(nerc_region,
@@ -73,7 +90,8 @@ def consumption_mix_dictionary(nerc_region,
                                generation_quantity,
                                egrid_regions,
                                nerc_region2):
-    """Add docstring."""
+    """Create the consumption mix dictionary.
+    Called when model does not replace eGRID."""
     # global region
     consumption_dict = dict()
     for reg in range(0, len(egrid_regions)):
@@ -111,10 +129,33 @@ def consumption_mix_dictionary(nerc_region,
     return consumption_dict
 
 
-def check_trading_normalized(trading_matrix):
-    if trading_matrix.iloc[:, 0].sum() > 1:
-        for col in trading_matrix.columns:
-            trading_matrix[col] /= trading_matrix[col].sum()
+def surplus_pool_dictionary(nerc_region,
+                            surplus_pool_trade_in,
+                            trade_matrix,
+                            gen_quantity,
+                            eGRID_region,
+                            nerc_region2):
+    """Create the surplus pool dictionary.
+    Called when model does not replace eGRID."""
+    surplus_dict = dict()
+    for i in range(0, len(nerc_region2)):
+        region = nerc_region2[i][0].value
+        exchanges_list = []
+        exchange(ref_exchange_creator(), exchanges_list)
+        for j in range(0, 34):
+            input_region_surplus_amount = trade_matrix[i + 1][j].value
+            if input_region_surplus_amount != None and (
+                    input_region_surplus_amount != 0):
+                input_region_acronym = trade_matrix[0][j].value
+                exchange(
+                    exchange_table_creation_input_con_mix(
+                        input_region_surplus_amount,
+                        input_region_acronym),
+                    exchanges_list)
+        final = process_table_creation_surplus(region, exchanges_list)
+        surplus_dict['SurplusPool'+region] = final;
+
+    return surplus_dict
 
 
 def trading_mix_fuels(gen_mix, trading_matrix):
@@ -177,41 +218,6 @@ def trading_mix_fuels(gen_mix, trading_matrix):
     ].reset_index(drop=True)
 
     return full_gen_df
-
-
-def consumption_flows(fuels_mix, flows):
-    """
-    Calculate the flows (e.g. emissions) attributable to each fuel/region
-    combination that is attributable to consumption within each region. For
-    example, the emissions of CO2 from electricity generation from every fuel
-    type in regions 'A', 'B', 'C', and 'D' that can be attributed to consumption
-    of electricity in region 'A', where 'A' exchanges electricity with 'B', 'C',
-    and 'D'.
-
-    Parameters
-    ----------
-    fuels_mix : pandas.DataFrame
-        The mix of fuels attributable to consumption within each region.
-        Includes both the columns 'Subregion' for the consumption region
-        and 'from_region' for the production region. Fuel names are listed
-        under 'FuelCategory', and 'trading_gen_ratio' is the fraction of
-        generation from each fuel/region pair.
-    flows : pandas.DataFrame
-        Flows attributable to generation from each fuel type in each region.
-
-    Returns
-    -------
-    pandas.DataFrame
-        Joined fuel mix and flows data.
-    """
-    results = pd.merge(
-        fuels_mix,
-        flows,
-        left_on=['FuelCategory', 'from_region'],
-        right_on=['FuelCategory', 'Subregion']
-    )
-
-    return results
 
 
 ##############################################################################

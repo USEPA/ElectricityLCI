@@ -53,6 +53,7 @@ logger = logging.getLogger("ampd_plant_emissions")
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
+# TODO: deal with the nested functions
 def generate_plant_emissions(year):
     """Read EPA air markets program data and fuel use from EIA 923 Page 1
     or Page 5 (generator vs boiler-level data).

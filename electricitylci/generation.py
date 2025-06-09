@@ -83,7 +83,7 @@ CHANGELOG
 Created:
     2019-06-04
 Last edited:
-    2025-03-14
+    2025-06-09
 """
 __all__ = [
     "add_data_collection_score",
@@ -345,14 +345,6 @@ def add_technological_correlation_score(db):
 def add_temporal_correlation_score(years, electricity_lci_target_year):
     """Generates columns in a data frame for data age and its quality score.
 
-    3/17/25 MBJ - changing this to take a dataseries containing years
-    and return a dataseries that should have the same
-    index as the input data series. There's no need to maintain an "Age" column in the
-    dataframe, and I think this is also makes the changes to the dataframe
-    a bit more transparent. There may also be times where we would prefer
-    this temporal correlation to be determined by somthing other than the
-    "Year" column in a complete dataframe.
-
     Parameters
     ----------
     years : pandas.DataSeries
@@ -365,6 +357,18 @@ def add_temporal_correlation_score(years, electricity_lci_target_year):
     -------
     pandas.DataSeries
         - 'TemporalCorrelation' : int, DQI score based on age.
+
+    Notes
+    -----
+    Changelog:
+
+    -   3/17/25 MBJ, changing this to take a data series containing years
+        and return a data series that should have the same index as the input
+        data series. There's no need to maintain an "Age" column in the
+        dataframe, and I think this is also makes the changes to the data frame
+        a bit more transparent. There may also be times where we would prefer
+        this temporal correlation to be determined by something other than the
+        "Year" column in a complete dataframe.
     """
     # Could be more precise here with year
     age_dataseries =  electricity_lci_target_year - pd.to_numeric(years)

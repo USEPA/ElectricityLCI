@@ -38,7 +38,7 @@ JSON-LD format as prescribed by OpenLCA software.
 Portions of this code were cleaned using ChatGPTv3.5.
 
 Last updated:
-    2025-05-16
+    2025-06-09
 """
 __all__ = [
     'con_process_ref',
@@ -190,267 +190,6 @@ VALID_FUEL_CATS=[
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def process_metadata(entry):
-    """
-    Process and format metadata entries for reuse in other subsections.
-
-    This function processes metadata entries to format them for reuse in other
-    subsections. It can handle strings, integers, lists, and dictionaries.
-
-    Parameters
-    ----------
-    entry : str, int, list, or dict
-        The metadata entry to be processed.
-
-    Returns
-    -------
-    str or dict
-        The processed and formatted metadata entry.
-
-    Notes
-    -----
-    - If the entry is a string or an integer, it is returned as is.
-    - If the entry is a list, it joins its elements into a string with newline
-      characters.
-    - If the entry is a list of lists, it extracts the first element of each
-      sub-list and joins them with newline characters.
-    - If the entry is a dictionary, it recursively processes its values.
-
-    Examples
-    --------
-    >>> entry = "This is a single string."
-    >>> process_metadata(entry)
-    'This is a single string.'
-    >>> entry = ["Item 1", "Item 2", "Item 3"]
-    >>> process_metadata(entry)
-    'Item 1\nItem 2\nItem 3\n'
-    >>> entry = [["A", "B"], ["C"]]
-    >>> process_metadata(entry)
-    'A\nBC'
-    >>> entry = {"key1": "Value 1", "key2": ["Subvalue 1", "Subvalue 2"]}
-    >>> process_metadata(entry)
-    {'key1': 'Value 1', 'key2': 'Subvalue 1\nSubvalue 2\n'}
-    """
-    if isinstance(entry, (str, int)):
-        return entry
-    elif isinstance(entry, list):
-        try:
-            total_string = ""
-            for x in entry:
-                if isinstance(x, str):
-                    total_string += x + "\n"
-                elif isinstance(x, list):
-                    if len(x) == 1:
-                        total_string += x[0]
-                    else:
-                        total_string += "\n".join([y[0] for y in x])
-            return total_string
-        except ValueError:
-            pass
-    elif isinstance(entry, dict):
-        for key in entry.keys():
-            entry[key] = process_metadata(entry[key])
-        return entry
-
-
-def lookup_location_uuid(location):
-    """
-    Lookup the UUID (Unique Identifier) for a given location.
-
-    This function takes a location name and attempts to find its corresponding
-    UUID in a DataFrame called `location_UUID`. If a match is found, it returns
-    the UUID. If no match is found, it returns an empty string.
-
-    Parameters
-    ----------
-    location : str
-        The name of the location for which you want to find the UUID.
-        Example locations include, "United States", "Mexico", and "TRE".
-
-    Returns
-    -------
-    str
-        The UUID of the specified location, or an empty string if not found.
-
-    Examples
-    --------
-    >>> location = "United States"
-    >>> uuid = lookup_location_uuid(location)
-    """
-    try:
-        uuid = location_UUID.loc[location_UUID["NAME"] == location]["REF_ID"].iloc[0]
-    except IndexError:
-        uuid = ""
-    return uuid
-
-
-def exchange(flw, exchanges_list):
-    """
-    Add a flow to a list of exchanges.
-
-    This function takes a flow (`flw`) and appends it to a list of exchanges
-    (`exchanges_list`), which is commonly used to represent exchanges in a
-    process or system.
-
-    Parameters
-    ----------
-    flw : str or dict
-        The flow to be added to the list of exchanges.
-
-    exchanges_list : list
-        The list of exchanges to which the flow will be added.
-
-    Returns
-    -------
-    list
-        The updated list of exchanges after adding the specified flow.
-
-    Notes
-    -----
-    Referenced in eia_io_trading.py and generation_mix.py.
-
-    Examples
-    --------
-    >>> exchanges = []
-    >>> flow1 = {"name": "Flow 1", "amount": 100, "unit": "kg"}
-    >>> updated_exchanges = exchange(flow1, exchanges)
-    """
-    exchanges_list.append(flw)
-    return exchanges_list
-
-
-def exchange_table_creation_ref(data):
-    """
-    Create a reference exchange table entry for electricity at grid.
-
-    This function generates a dictionary representing a reference exchange
-    table entry based on the provided input data. The reference entry typically
-    describes a specific flow, such as electricity at the grid, within a given
-    region.
-
-    Parameters
-    ----------
-    data : pd.DataFrame
-        Unused.
-
-    Returns
-    -------
-    dict
-        A dictionary representing the reference exchange table entry.
-
-    Examples
-    --------
-    >>> import pandas as pd
-    >>> data = pd.DataFrame({"Subregion": ["Region1"]})
-    >>> reference_entry = exchange_table_creation_ref(data)
-    """
-    ar = {
-        "internalId": "",
-        "@type": "Exchange",
-        "avoidedProduct": False,
-        "flow": electricity_at_grid_flow,
-        "flowProperty": "",
-        "input": False,
-        "quantitativeReference": True,
-        "baseUncertainty": "",
-        "provider": "",
-        "amount": 1.0,
-        "amountFormula": "",
-        "unit": unit("MWh")
-    }
-    return ar
-
-
-def exchange_table_creation_ref_cons(data):
-    """
-    Create a reference exchange table entry for electricity at user.
-
-    This function generates a dictionary representing a reference exchange
-    table entry based on the provided input data. The reference entry typically
-    describes a specific flow, such as electricity at the grid, within a given
-    region.
-
-    Referenced in eia_io_trading.py
-
-    Parameters
-    ----------
-    data : pd.DataFrame
-        Unused.
-
-    Returns
-    -------
-    dict
-        A dictionary representing the reference exchange table entry.
-    """
-    ar = {
-        "internalId": "",
-        "@type": "Exchange",
-        "avoidedProduct": False,
-        "flow": electricity_at_user_flow,
-        "flowProperty": "",
-        "input": False,
-        "quantitativeReference": True,
-        "baseUncertainty": "",
-        "provider": "",
-        "amount": 1.0,
-        "amountFormula": "",
-        "unit": unit("MWh")
-    }
-    return ar
-
-
-def gen_process_ref(fuel, reg):
-    """
-    Generate a reference process entry for electricity generation.
-
-    This function creates a dictionary representing a reference process entry
-    for electricity generation. It uses the provided fuel and region
-    information to generate the process name, location, and category path.
-
-    Parameters
-    ----------
-    fuel : str
-        The fuel source used for electricity generation.
-
-    reg : str
-        The region where electricity generation takes place.
-
-    Returns
-    -------
-    dict
-        A dictionary representing the reference process entry.
-
-    Notes
-    -----
-    Depends on global parameter, generation_name_parts.
-
-    Examples
-    --------
-    >>> fuel_type = "Coal"
-    >>> region = "Region1"
-    >>> reference_process = gen_process_ref(fuel_type, region)
-    """
-    processref = {
-        "name": (
-            generation_name_parts["Base name"]
-            + "; from "
-            + str(fuel)
-            + "; "
-            + generation_name_parts["Location type"]
-            + " - "
-            + reg
-        ),
-        "location": reg,
-        "processType": "UNIT_PROCESS",
-        "categoryPath": [
-            "22: Utilities",
-            "2211: Electric Power Generation, Transmission and Distribution",
-            fuel,
-        ]
-    }
-    return processref
-
-
 def con_process_ref(reg, ref_type="generation"):
     """
     Generate a reference process entry for electricity consumption or
@@ -507,6 +246,84 @@ def con_process_ref(reg, ref_type="generation"):
         ]
     }
     return processref
+
+
+def exchange(flw, exchanges_list):
+    """
+    Add a flow to a list of exchanges.
+
+    This function takes a flow (`flw`) and appends it to a list of exchanges
+    (`exchanges_list`), which is commonly used to represent exchanges in a
+    process or system.
+
+    Parameters
+    ----------
+    flw : str or dict
+        The flow to be added to the list of exchanges.
+
+    exchanges_list : list
+        The list of exchanges to which the flow will be added.
+
+    Returns
+    -------
+    list
+        The updated list of exchanges after adding the specified flow.
+
+    Notes
+    -----
+    Referenced in eia_io_trading.py and generation_mix.py.
+
+    Examples
+    --------
+    >>> exchanges = []
+    >>> flow1 = {"name": "Flow 1", "amount": 100, "unit": "kg"}
+    >>> updated_exchanges = exchange(flow1, exchanges)
+    """
+    exchanges_list.append(flw)
+    return exchanges_list
+
+
+def exchange_table_creation_input(data):
+    """
+    Create an input exchange table entry based on provided data.
+
+    This function generates a dictionary representing an input exchange table
+    entry based on the provided data, such as emission factor and unit.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Input data, such as a DataFrame containing emission factor, unit, and
+        uncertainty.
+
+    Returns
+    -------
+    dict
+        A dictionary representing the input exchange table entry.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> data = pd.DataFrame({"Emission_factor": [0.5], "Unit": ["kg/MWh"]})
+    >>> input_exchange = exchange_table_creation_input(data)
+    """
+    ar = dict()
+    ar["internalId"] = ""
+    ar["@type"] = "Exchange"
+    ar["avoidedProduct"] = False
+    ar["flow"] = flow_table_creation(data)
+    ar["flowProperty"] = ""
+    ar["input"] = True
+    ar["baseUncertainty"] = ""
+    ar["provider"] = ""
+    ar["amount"] = data["Emission_factor"].iloc[0]
+    ar["amountFormula"] = "  "
+    ar["unit"] = unit(data["Unit"].iloc[0])
+    ar["dqEntry"] = ""
+    ar["pedigreeUncertainty"] = ""
+    ar["uncertainty"] = uncertainty_table_creation(data)
+
+    return ar
 
 
 def exchange_table_creation_input_genmix(database, fuelname):
@@ -730,75 +547,293 @@ def exchange_table_creation_input_con_mix(
     return ar
 
 
-def process_table_creation_gen(fuelname, exchanges_list, region):
+def exchange_table_creation_output(data):
     """
-    Create a process table entry for electricity generation.
+    Create an output exchange table entry based on provided data.
 
-    This function generates a dictionary representing a process table entry for
-    electricity generation based on the provided fuel name, list of exchanges,
-    and region.
+    This function generates a dictionary representing an output exchange table
+    entry based on the provided data, such as emission factor, unit, and uncertainty.
 
     Parameters
     ----------
-    fuelname : str
-        The name of the fuel source used for electricity generation.
+    data : pd.DataFrame
+        Output data, such as a DataFrame containing emission factor, unit, and
+        uncertainty.
 
-    exchanges_list : list
-        The list of exchanges associated with the electricity generation
-        process.
+    Returns
+    -------
+    dict
+        A dictionary representing the output exchange table entry.
 
-    region : str
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> data = pd.DataFrame({
+    ...     "Year": [2023],
+    ...     "Source": ["Example Source"],
+    ...     "Emission_factor": [0.5],
+    ...     "Unit": ["kg/MWh"],
+    ...     "DataReliability": [0.9],
+    ...     "TemporalCorrelation": [0.8],
+    ...     "GeographicalCorrelation": [0.7],
+    ...     "TechnologicalCorrelation": [0.6],
+    ...     "DataCollection": [0.95]
+    ... })
+    >>> output_exchange = exchange_table_creation_output(data)
+    """
+    year = data["Year"].iloc[0]
+    source = data["Source"].iloc[0]
+    ar = dict()
+    ar["internalId"] = ""
+    ar["@type"] = "Exchange"
+    ar["avoidedProduct"] = False
+    ar["flow"] = flow_table_creation(data)
+    ar["flowProperty"] = ""
+    ar["input"] = False
+    ar["quantitativeReference"] = False
+    ar["baseUncertainty"] = ""
+    ar["provider"] = ""
+    ar["amount"] = data["Emission_factor"].iloc[0]
+    ar["amountFormula"] = ""
+    ar["unit"] = unit(data["Unit"].iloc[0])
+    ar["pedigreeUncertainty"] = ""
+    ar["dqEntry"] = (
+        "("
+        + str(round(data["DataReliability"].iloc[0], 1))
+        + ";"
+        + str(round(data["TemporalCorrelation"].iloc[0], 1))
+        + ";"
+        + str(round(data["GeographicalCorrelation"].iloc[0], 1))
+        + ";"
+        + str(round(data["TechnologicalCorrelation"].iloc[0], 1))
+        + ";"
+        + str(round(data["DataCollection"].iloc[0], 1))
+        + ")"
+    )
+    ar["uncertainty"] = uncertainty_table_creation(data)
+    ar["comment"] = str(source) + " " + str(year)
+
+    return ar
+
+
+def exchange_table_creation_ref(data):
+    """
+    Create a reference exchange table entry for electricity at grid.
+
+    This function generates a dictionary representing a reference exchange
+    table entry based on the provided input data. The reference entry typically
+    describes a specific flow, such as electricity at the grid, within a given
+    region.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Unused.
+
+    Returns
+    -------
+    dict
+        A dictionary representing the reference exchange table entry.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> data = pd.DataFrame({"Subregion": ["Region1"]})
+    >>> reference_entry = exchange_table_creation_ref(data)
+    """
+    ar = {
+        "internalId": "",
+        "@type": "Exchange",
+        "avoidedProduct": False,
+        "flow": electricity_at_grid_flow,
+        "flowProperty": "",
+        "input": False,
+        "quantitativeReference": True,
+        "baseUncertainty": "",
+        "provider": "",
+        "amount": 1.0,
+        "amountFormula": "",
+        "unit": unit("MWh")
+    }
+    return ar
+
+
+def exchange_table_creation_ref_cons(data):
+    """
+    Create a reference exchange table entry for electricity at user.
+
+    This function generates a dictionary representing a reference exchange
+    table entry based on the provided input data. The reference entry typically
+    describes a specific flow, such as electricity at the grid, within a given
+    region.
+
+    Referenced in eia_io_trading.py
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Unused.
+
+    Returns
+    -------
+    dict
+        A dictionary representing the reference exchange table entry.
+    """
+    ar = {
+        "internalId": "",
+        "@type": "Exchange",
+        "avoidedProduct": False,
+        "flow": electricity_at_user_flow,
+        "flowProperty": "",
+        "input": False,
+        "quantitativeReference": True,
+        "baseUncertainty": "",
+        "provider": "",
+        "amount": 1.0,
+        "amountFormula": "",
+        "unit": unit("MWh")
+    }
+    return ar
+
+
+def exchangeDqsystem():
+    """
+    Create an exchange data quality system entry.
+
+    This function generates a dictionary representing an exchange data quality
+    system entry for US EPA - Flow Pedigree Matrix. It includes the type, ID,
+    and name of the data quality system.
+
+    Notes
+    -----
+    The hardcoded DQI system is for the US EPA Flow Pedigree Matrix. The
+    universally unique identifier (d13b2bc4-5e84-4cc8-a6be-9101ebb252ff) is
+    formatted as version 4.0.
+
+    Returns
+    -------
+    dict
+        A dictionary representing the exchange data quality system entry.
+
+    Examples
+    --------
+    >>> dq_system = exchangeDqsystem()
+    """
+    ar = dict()
+    ar["@type"] = "DQSystem"
+    ar["@id"] = "d13b2bc4-5e84-4cc8-a6be-9101ebb252ff"
+    ar["name"] = "US EPA - Flow Pedigree Matrix"
+    return ar
+
+
+def flow_table_creation(data):
+    """
+    Create a flow table entry based on provided data.
+
+    This function generates a dictionary representing a flow table entry
+    based on the provided data, including flow type, flow name, UUID, and
+    category.
+
+    Parameters
+    ----------
+    data : pd.DataFrame
+        Data containing flow information, including flow type, name, UUID, and
+        category.
+
+    Returns
+    -------
+    dict
+        A dictionary representing the flow table entry.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> data = pd.DataFrame({
+    ...     "FlowType": ["ELEMENTARY_FLOW"],
+    ...     "FlowName": ["Example Flow"],
+    ...     "FlowUUID": ["123456"],
+    ...     "Compartment": ["Air/Emission/CO2"]
+    ... })
+    >>> flow_entry = flow_table_creation(data)
+    """
+    ar = dict()
+    flowtype = data["FlowType"].iloc[0]
+    ar["flowType"] = flowtype
+    ar["flowProperties"] = ""
+    ar["name"] = data["FlowName"].iloc[0][:255]  # Corrected string slicing
+    ar["id"] = data["FlowUUID"].iloc[0]
+    comp = str(data["Compartment"].iloc[0])
+
+    if (flowtype == "ELEMENTARY_FLOW") and (comp != ""):
+        if "emission" in comp or "resource" in comp:
+            ar["category"] = "Elementary Flows/" + comp
+        elif "input" in comp:
+            ar["category"] = "Elementary Flows/resource"
+        else:
+            ar["category"] = "Elementary Flows/emission/" + comp.lstrip("/")
+    elif (flowtype == "PRODUCT_FLOW") and (comp != ""):
+        ar["category"] = comp
+    elif flowtype == "WASTE_FLOW":
+        ar["category"] = comp
+    else:
+        # Assume this is electricity or a byproduct
+        ar["category"] = (
+            "Technosphere Flows/22: Utilities/"
+            "2211: Electric Power Generation, Transmission and Distribution")
+
+    return ar
+
+
+def gen_process_ref(fuel, reg):
+    """
+    Generate a reference process entry for electricity generation.
+
+    This function creates a dictionary representing a reference process entry
+    for electricity generation. It uses the provided fuel and region
+    information to generate the process name, location, and category path.
+
+    Parameters
+    ----------
+    fuel : str
+        The fuel source used for electricity generation.
+
+    reg : str
         The region where electricity generation takes place.
 
     Returns
     -------
     dict
-        A dictionary representing the process table entry for electricity
-        generation.
+        A dictionary representing the reference process entry.
+
+    Notes
+    -----
+    Depends on global parameter, generation_name_parts.
 
     Examples
     --------
     >>> fuel_type = "Coal"
-    >>> exchanges = [{"flow": "Electricity", "amount": 100, "unit": "MWh"}]
     >>> region = "Region1"
-    >>> generation_process = process_table_creation_gen(
-    ...    fuel_type, exchanges, region)
+    >>> reference_process = gen_process_ref(fuel_type, region)
     """
-    ar = {
-        "@type": "Process",
-        "allocationFactors": "",
-        "defaultAllocationMethod": "",
-        "exchanges": exchanges_list,
-        "location": location(region),
-        "parameters": "",
-        "processDocumentation": process_doc_creation(),
-        "processType": "UNIT_PROCESS",
+    processref = {
         "name": (
             generation_name_parts["Base name"]
             + "; from "
-            + str(fuelname)
+            + str(fuel)
             + "; "
             + generation_name_parts["Location type"]
+            + " - "
+            + reg
         ),
-        "category": (
-            "22: Utilities/2211: Electric Power Generation, Transmission and Distribution/"
-            + fuelname
-        ),
-        "description": (
-            "Electricity from "
-            + str(fuelname)
-            + " produced at generating facilities in the "
-            + str(region)
-            + " region"
-        )
+        "location": reg,
+        "processType": "UNIT_PROCESS",
+        "categoryPath": [
+            "22: Utilities",
+            "2211: Electric Power Generation, Transmission and Distribution",
+            fuel,
+        ]
     }
-    try:
-        # Use the software version number as the process version
-        ar["version"] = make_valid_version_num(elci_version)
-    except:
-        # Set to 1 by default
-        ar["version"] = 1
-    return ar
+    return processref
 
 
 def location(region):
@@ -818,6 +853,11 @@ def location(region):
     dict
         A dictionary representing the location entry for the specified region.
 
+    Notes
+    -----
+    Depends on pre-defined UUIDs found in ElectricityLCI's 'location_UUIDs.csv'
+    data file.
+
     Examples
     --------
     >>> region_name = "United States"
@@ -829,6 +869,102 @@ def location(region):
         "name": region
     }
     return ar
+
+
+def lookup_location_uuid(location):
+    """
+    Lookup the UUID (Unique Identifier) for a given location.
+
+    This function takes a location name and attempts to find its corresponding
+    UUID in a DataFrame called `location_UUID`. If a match is found, it returns
+    the UUID. If no match is found, it returns an empty string.
+
+    Parameters
+    ----------
+    location : str
+        The name of the location for which you want to find the UUID.
+        Example locations include, "United States", "Mexico", and "TRE".
+
+    Returns
+    -------
+    str
+        The UUID of the specified location, or an empty string if not found.
+
+    Examples
+    --------
+    >>> location = "United States"
+    >>> uuid = lookup_location_uuid(location)
+    """
+    try:
+        uuid = location_UUID.loc[location_UUID["NAME"] == location]["REF_ID"].iloc[0]
+    except IndexError:
+        uuid = ""
+    return uuid
+
+
+def process_description_creation(process_type="fossil"):
+    """
+    Create a process description based on a given process type.
+
+    This function generates a process description based on the provided process
+    type. It retrieves the description string from metadata based on the
+    process type and appends additional information about the process creation.
+
+    Parameters
+    ----------
+    process_type : str, optional
+        One of the process types described in VALID_FUEL_CATS.
+        Default is "fossil".
+
+    Returns
+    -------
+    str
+        A string representing the process description.
+
+    Examples
+    --------
+    >>> process_type = "Coal"
+    >>> description = process_description_creation(process_type)
+    """
+    try:
+        assert process_type in VALID_FUEL_CATS, f"Invalid process_type ({process_type}), using default"
+    except AssertionError:
+        process_type = "default"
+
+    if model_specs.replace_egrid is True:
+        subkey = "replace_egrid"
+    else:
+        subkey = "use_egrid"
+
+    global year
+    key = "Description"
+
+    try:
+        desc_string = metadata[process_type][key]
+    except KeyError:
+        logging.debug(
+            f"Failed first key ({key}), trying subkey: {subkey}")
+        try:
+            desc_string = metadata[process_type][subkey][key]
+            logging.debug(
+                "Failed subkey, likely no entry in metadata for "
+                f"{process_type}:{key}")
+        except KeyError:
+            desc_string = metadata["default"][key]
+    except TypeError:
+        logging.debug(
+            f"Failed first key, likely no metadata defined for {process_type}")
+        process_type = "default"
+        desc_string = metadata[process_type][key]
+
+    desc_string = (
+        desc_string
+        + " This process was created with ElectricityLCI "
+        + "(https://github.com/USEPA/ElectricityLCI) version "
+        + elci_version
+        + " using the " + model_specs.model_name + " configuration.")
+
+    return desc_string
 
 
 def process_doc_creation(process_type="default"):
@@ -919,420 +1055,67 @@ def process_doc_creation(process_type="default"):
     return ar
 
 
-def process_description_creation(process_type="fossil"):
+def process_metadata(entry):
     """
-    Create a process description based on a given process type.
+    Process and format metadata entries for reuse in other subsections.
 
-    This function generates a process description based on the provided process
-    type. It retrieves the description string from metadata based on the
-    process type and appends additional information about the process creation.
+    This function processes metadata entries to format them for reuse in other
+    subsections. It can handle strings, integers, lists, and dictionaries.
 
     Parameters
     ----------
-    process_type : str, optional
-        One of the process types described in VALID_FUEL_CATS.
-        Default is "fossil".
+    entry : str, int, list, or dict
+        The metadata entry to be processed.
 
     Returns
     -------
-    str
-        A string representing the process description.
+    str or dict
+        The processed and formatted metadata entry.
+
+    Notes
+    -----
+    - If the entry is a string or an integer, it is returned as is.
+    - If the entry is a list, it joins its elements into a string with newline
+      characters.
+    - If the entry is a list of lists, it extracts the first element of each
+      sub-list and joins them with newline characters.
+    - If the entry is a dictionary, it recursively processes its values.
 
     Examples
     --------
-    >>> process_type = "Coal"
-    >>> description = process_description_creation(process_type)
+    >>> entry = "This is a single string."
+    >>> process_metadata(entry)
+    'This is a single string.'
+    >>> entry = ["Item 1", "Item 2", "Item 3"]
+    >>> process_metadata(entry)
+    'Item 1\nItem 2\nItem 3\n'
+    >>> entry = [["A", "B"], ["C"]]
+    >>> process_metadata(entry)
+    'A\nBC'
+    >>> entry = {"key1": "Value 1", "key2": ["Subvalue 1", "Subvalue 2"]}
+    >>> process_metadata(entry)
+    {'key1': 'Value 1', 'key2': 'Subvalue 1\nSubvalue 2\n'}
     """
-    try:
-        assert process_type in VALID_FUEL_CATS, f"Invalid process_type ({process_type}), using default"
-    except AssertionError:
-        process_type = "default"
-
-    if model_specs.replace_egrid is True:
-        subkey = "replace_egrid"
-    else:
-        subkey = "use_egrid"
-
-    global year
-    key = "Description"
-
-    try:
-        desc_string = metadata[process_type][key]
-    except KeyError:
-        logging.debug(
-            f"Failed first key ({key}), trying subkey: {subkey}")
+    if isinstance(entry, (str, int)):
+        return entry
+    elif isinstance(entry, list):
         try:
-            desc_string = metadata[process_type][subkey][key]
-            logging.debug(
-                "Failed subkey, likely no entry in metadata for "
-                f"{process_type}:{key}")
-        except KeyError:
-            desc_string = metadata["default"][key]
-    except TypeError:
-        logging.debug(
-            f"Failed first key, likely no metadata defined for {process_type}")
-        process_type = "default"
-        desc_string = metadata[process_type][key]
-
-    desc_string = (
-        desc_string
-        + " This process was created with ElectricityLCI "
-        + "(https://github.com/USEPA/ElectricityLCI) version "
-        + elci_version
-        + " using the " + model_specs.model_name + " configuration.")
-
-    return desc_string
-
-
-def exchangeDqsystem():
-    """
-    Create an exchange data quality system entry.
-
-    This function generates a dictionary representing an exchange data quality
-    system entry for US EPA - Flow Pedigree Matrix. It includes the type, ID,
-    and name of the data quality system.
-
-    Notes
-    -----
-    The universally unique identifier included with this dictionary is
-    formatted as version 4.0.
-
-    Returns
-    -------
-    dict
-        A dictionary representing the exchange data quality system entry.
-
-    Examples
-    --------
-    >>> dq_system = exchangeDqsystem()
-    """
-    ar = dict()
-    ar["@type"] = "DQSystem"
-    ar["@id"] = "d13b2bc4-5e84-4cc8-a6be-9101ebb252ff"
-    ar["name"] = "US EPA - Flow Pedigree Matrix"
-    return ar
-
-
-def processDqsystem():
-    """
-    Create a process data quality system entry.
-
-    This function generates a dictionary representing a process data quality
-    system entry for the US EPA - Process Pedigree Matrix. It includes the
-    type, ID, and name of the data quality system for processes.
-
-    Notes
-    -----
-    The universally unique identifier included with this dictionary is
-    formatted as version 4.0.
-
-    Returns
-    -------
-    dict
-        A dictionary representing the process data quality system entry.
-
-    Examples
-    --------
-    >>> dq_system = processDqsystem()
-    """
-    ar = dict()
-    ar["@type"] = "DQSystem"
-    ar["@id"] = "70bf370f-9912-4ec1-baa3-fbd4eaf85a10"
-    ar["name"] = "US EPA - Process Pedigree Matrix"
-    return ar
-
-
-def exchange_table_creation_input(data):
-    """
-    Create an input exchange table entry based on provided data.
-
-    This function generates a dictionary representing an input exchange table
-    entry based on the provided data, such as emission factor and unit.
-
-    Parameters
-    ----------
-    data : pd.DataFrame
-        Input data, such as a DataFrame containing emission factor, unit, and
-        uncertainty.
-
-    Returns
-    -------
-    dict
-        A dictionary representing the input exchange table entry.
-
-    Examples
-    --------
-    >>> import pandas as pd
-    >>> data = pd.DataFrame({"Emission_factor": [0.5], "Unit": ["kg/MWh"]})
-    >>> input_exchange = exchange_table_creation_input(data)
-    """
-    ar = dict()
-    ar["internalId"] = ""
-    ar["@type"] = "Exchange"
-    ar["avoidedProduct"] = False
-    ar["flow"] = flow_table_creation(data)
-    ar["flowProperty"] = ""
-    ar["input"] = True
-    ar["baseUncertainty"] = ""
-    ar["provider"] = ""
-    ar["amount"] = data["Emission_factor"].iloc[0]
-    ar["amountFormula"] = "  "
-    ar["unit"] = unit(data["Unit"].iloc[0])
-    ar["dqEntry"] = ""
-    ar["pedigreeUncertainty"] = ""
-    ar["uncertainty"] = uncertainty_table_creation(data)
-
-    return ar
-
-
-def unit(unt):
-    """
-    Create a unit entry based on the provided unit name.
-
-    This function generates a dictionary representing a unit entry based on the
-    provided unit name.
-
-    Parameters
-    ----------
-    unt : str
-        The unit name for which the unit entry is created.
-
-    Returns
-    -------
-    dict
-        A dictionary representing the unit entry for the specified unit name.
-
-    Notes
-    -----
-    For more information on the attributes for Unit object, see
-    https://greendelta.github.io/olca-schema/classes/Unit.html
-
-    Examples
-    --------
-    >>> unit_name = "kg/MWh"
-    >>> unit_entry = unit(unit_name)
-    """
-    ar = dict()
-    ar["internalId"] = ""
-    ar["@type"] = "Unit"
-    ar["name"] = unt
-    return ar
-
-
-def exchange_table_creation_output(data):
-    """
-    Create an output exchange table entry based on provided data.
-
-    This function generates a dictionary representing an output exchange table
-    entry based on the provided data, such as emission factor, unit, and uncertainty.
-
-    Parameters
-    ----------
-    data : pd.DataFrame
-        Output data, such as a DataFrame containing emission factor, unit, and
-        uncertainty.
-
-    Returns
-    -------
-    dict
-        A dictionary representing the output exchange table entry.
-
-    Examples
-    --------
-    >>> import pandas as pd
-    >>> data = pd.DataFrame({
-    ...     "Year": [2023],
-    ...     "Source": ["Example Source"],
-    ...     "Emission_factor": [0.5],
-    ...     "Unit": ["kg/MWh"],
-    ...     "DataReliability": [0.9],
-    ...     "TemporalCorrelation": [0.8],
-    ...     "GeographicalCorrelation": [0.7],
-    ...     "TechnologicalCorrelation": [0.6],
-    ...     "DataCollection": [0.95]
-    ... })
-    >>> output_exchange = exchange_table_creation_output(data)
-    """
-    year = data["Year"].iloc[0]
-    source = data["Source"].iloc[0]
-    ar = dict()
-    ar["internalId"] = ""
-    ar["@type"] = "Exchange"
-    ar["avoidedProduct"] = False
-    ar["flow"] = flow_table_creation(data)
-    ar["flowProperty"] = ""
-    ar["input"] = False
-    ar["quantitativeReference"] = False
-    ar["baseUncertainty"] = ""
-    ar["provider"] = ""
-    ar["amount"] = data["Emission_factor"].iloc[0]
-    ar["amountFormula"] = ""
-    ar["unit"] = unit(data["Unit"].iloc[0])
-    ar["pedigreeUncertainty"] = ""
-    ar["dqEntry"] = (
-        "("
-        + str(round(data["DataReliability"].iloc[0], 1))
-        + ";"
-        + str(round(data["TemporalCorrelation"].iloc[0], 1))
-        + ";"
-        + str(round(data["GeographicalCorrelation"].iloc[0], 1))
-        + ";"
-        + str(round(data["TechnologicalCorrelation"].iloc[0], 1))
-        + ";"
-        + str(round(data["DataCollection"].iloc[0], 1))
-        + ")"
-    )
-    ar["uncertainty"] = uncertainty_table_creation(data)
-    ar["comment"] = str(source) + " " + str(year)
-
-    return ar
-
-
-def uncertainty_table_creation(data):
-    """
-    Create an uncertainty table entry based on provided data.
-
-    This function generates a dictionary representing an uncertainty table
-    entry based on the provided data, such as geometric mean, geometric
-    standard deviation, maximum, and minimum values.
-
-    Assumes a log-normal distribution.
-
-    Parameters
-    ----------
-    data : pd.DataFrame
-        Data containing uncertainty information, including geometric mean,
-        geometric standard deviation, maximum, and minimum values.
-
-    Returns
-    -------
-    dict
-        A dictionary representing the uncertainty table entry.
-
-    Examples
-    --------
-    >>> import pandas as pd
-    >>> data = pd.DataFrame({
-    ...     "GeomMean": [1.0],
-    ...     "GeomSD": [0.2],
-    ...     "Maximum": [1.5],
-    ...     "Minimum": [0.8]
-    ... })
-    >>> uncertainty_entry = uncertainty_table_creation(data)
-    """
-    ar = dict()
-
-    gm = data["GeomMean"].iloc[0]
-    gs = data["GeomSD"].iloc[0]
-
-    # NaN checking at its best.
-    if gm == gm and gs == gs:
-        ar["geomMean"] = gm
-        ar["geomSd"] = gs
-        ar["distributionType"] = "Logarithmic Normal Distribution"
-
-    # NOTE: here is good place to check other values to implement
-    #       alternative uncertainty (e.g., uniform, triangle)
-
-    return ar
-
-
-def flow_table_creation(data):
-    """
-    Create a flow table entry based on provided data.
-
-    This function generates a dictionary representing a flow table entry
-    based on the provided data, including flow type, flow name, UUID, and
-    category.
-
-    Parameters
-    ----------
-    data : pd.DataFrame
-        Data containing flow information, including flow type, name, UUID, and
-        category.
-
-    Returns
-    -------
-    dict
-        A dictionary representing the flow table entry.
-
-    Examples
-    --------
-    >>> import pandas as pd
-    >>> data = pd.DataFrame({
-    ...     "FlowType": ["ELEMENTARY_FLOW"],
-    ...     "FlowName": ["Example Flow"],
-    ...     "FlowUUID": ["123456"],
-    ...     "Compartment": ["Air/Emission/CO2"]
-    ... })
-    >>> flow_entry = flow_table_creation(data)
-    """
-    ar = dict()
-    flowtype = data["FlowType"].iloc[0]
-    ar["flowType"] = flowtype
-    ar["flowProperties"] = ""
-    ar["name"] = data["FlowName"].iloc[0][:255]  # Corrected string slicing
-    ar["id"] = data["FlowUUID"].iloc[0]
-    comp = str(data["Compartment"].iloc[0])
-
-    if (flowtype == "ELEMENTARY_FLOW") and (comp != ""):
-        if "emission" in comp or "resource" in comp:
-            ar["category"] = "Elementary Flows/" + comp
-        elif "input" in comp:
-            ar["category"] = "Elementary Flows/resource"
-        else:
-            ar["category"] = "Elementary Flows/emission/" + comp.lstrip("/")
-    elif (flowtype == "PRODUCT_FLOW") and (comp != ""):
-        ar["category"] = comp
-    elif flowtype == "WASTE_FLOW":
-        ar["category"] = comp
-    else:
-        # Assume this is electricity or a byproduct
-        ar["category"] = (
-            "Technosphere Flows/22: Utilities/"
-            "2211: Electric Power Generation, Transmission and Distribution")
-
-    return ar
-
-
-def ref_exchange_creator(electricity_flow=electricity_at_grid_flow):
-    """
-    Create a reference exchange based on the provided electricity flow.
-
-    This function generates a dictionary representing a reference exchange with
-    the provided electricity flow and default values for other properties.
-
-    Parameters
-    ----------
-    electricity_flow : str, optional
-        The electricity flow to use in the reference exchange. Default is
-        'electricity_at_grid_flow'.
-
-    Returns
-    -------
-    dict
-        A dictionary representing the reference exchange.
-
-    Examples
-    --------
-    >>> ref_exchange = ref_exchange_creator()
-    """
-    ar = dict()
-    ar["internalId"] = ""
-    ar["@type"] = "Exchange"
-    ar["avoidedProduct"] = False
-    ar["flow"] = electricity_flow
-    ar["flowProperty"] = ""
-    ar["input"] = False
-    ar["quantitativeReference"] = True
-    ar["baseUncertainty"] = ""
-    ar["provider"] = ""
-    ar["amount"] = 1.0
-    ar["amountFormula"] = ""
-    ar["unit"] = unit("MWh")
-    ar["location"] = ""
-
-    return ar
+            total_string = ""
+            for x in entry:
+                if isinstance(x, str):
+                    total_string += x + "\n"
+                elif isinstance(x, list):
+                    if len(x) == 1:
+                        total_string += x[0]
+                    else:
+                        total_string += "\n".join([y[0] for y in x])
+            return total_string
+        except ValueError:
+            pass
+    elif isinstance(entry, dict):
+        for key in entry.keys():
+            entry[key] = process_metadata(entry[key])
+        return entry
 
 
 def process_table_creation_con_mix(region, exchanges_list):
@@ -1384,6 +1167,121 @@ def process_table_creation_con_mix(region, exchanges_list):
     )
     ar["version"] = make_valid_version_num(elci_version)
 
+    return ar
+
+
+def process_table_creation_distribution(region, exchanges_list):
+    """
+    Create a process table entry for an electricity distribution process.
+
+    Parameters
+    ----------
+    region : str
+        The region for which the generation mix is created.
+    exchanges_list : list
+        A list of exchanges associated with the surplus fuel mix process.
+
+    Returns
+    -------
+    dict
+        A dictionary representing the distribution fuel mix process.
+    """
+    ar = dict()
+    ar["@type"] = "Process"
+    ar["allocationFactors"] = ""
+    ar["defaultAllocationMethod"] = ""
+    ar["exchanges"] = exchanges_list
+    ar["location"] = location(region)
+    ar["parameters"] = ""
+    ar["processDocumentation"] = process_doc_creation()
+    ar["processType"] = "UNIT_PROCESS"
+    ar["name"] = distribution_to_end_user_name + " - " + region
+    ar["category"] = (
+        "22: Utilities/"
+        "2211: Electric Power Generation, Transmission and Distribution")
+    ar["description"] = (
+        "Electricity distribution to end user in the "
+        + str(region)
+        + " region."
+    )
+    ar["description"]=(ar["description"]
+        + " This process was created with ElectricityLCI "
+        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
+        + " using the " + model_specs.model_name + " configuration."
+    )
+    ar["version"] = make_valid_version_num(elci_version)
+
+    return ar
+
+
+def process_table_creation_gen(fuelname, exchanges_list, region):
+    """
+    Create a process table entry for electricity generation.
+
+    This function generates a dictionary representing a process table entry for
+    electricity generation based on the provided fuel name, list of exchanges,
+    and region.
+
+    Parameters
+    ----------
+    fuelname : str
+        The name of the fuel source used for electricity generation.
+
+    exchanges_list : list
+        The list of exchanges associated with the electricity generation
+        process.
+
+    region : str
+        The region where electricity generation takes place.
+
+    Returns
+    -------
+    dict
+        A dictionary representing the process table entry for electricity
+        generation.
+
+    Examples
+    --------
+    >>> fuel_type = "Coal"
+    >>> exchanges = [{"flow": "Electricity", "amount": 100, "unit": "MWh"}]
+    >>> region = "Region1"
+    >>> generation_process = process_table_creation_gen(
+    ...    fuel_type, exchanges, region)
+    """
+    ar = {
+        "@type": "Process",
+        "allocationFactors": "",
+        "defaultAllocationMethod": "",
+        "exchanges": exchanges_list,
+        "location": location(region),
+        "parameters": "",
+        "processDocumentation": process_doc_creation(),
+        "processType": "UNIT_PROCESS",
+        "name": (
+            generation_name_parts["Base name"]
+            + "; from "
+            + str(fuelname)
+            + "; "
+            + generation_name_parts["Location type"]
+        ),
+        "category": (
+            "22: Utilities/2211: Electric Power Generation, Transmission and Distribution/"
+            + fuelname
+        ),
+        "description": (
+            "Electricity from "
+            + str(fuelname)
+            + " produced at generating facilities in the "
+            + str(region)
+            + " region"
+        )
+    }
+    try:
+        # Use the software version number as the process version
+        ar["version"] = make_valid_version_num(elci_version)
+    except:
+        # Set to 1 by default
+        ar["version"] = 1
     return ar
 
 
@@ -1441,6 +1339,55 @@ def process_table_creation_genmix(region, exchanges_list):
     return process_dict
 
 
+def process_table_creation_surplus(region, exchanges_list):
+    """
+    Create a process table entry for a surplus pool process.
+
+    This function generates a dictionary representing a process table entry for
+    a surplus pool process with the provided region and list of exchanges.
+
+    Parameters
+    ----------
+    region : str
+        The region for which the surplus pool process is created.
+    exchanges_list : list
+        A list of exchanges associated with the surplus pool process.
+
+    Returns
+    -------
+    dict
+        A dictionary representing the surplus pool process.
+
+    Examples
+    --------
+    >>> region = "Example Region"
+    >>> exchanges = [exchange_1, exchange_2]
+    >>> surplus_pool_process = process_table_creation_surplus(region, exchanges)
+    """
+    ar = dict()
+    ar["@type"] = "Process"
+    ar["allocationFactors"] = ""
+    ar["defaultAllocationMethod"] = ""
+    ar["exchanges"] = exchanges_list
+    ar["location"] = location(region)
+    ar["parameters"] = ""
+    ar["processDocumentation"] = process_doc_creation()
+    ar["processType"] = "UNIT_PROCESS"
+    ar["name"] = surplus_pool_name + " - " + region
+    ar["category"] = (
+        "22: Utilities/"
+        "2211: Electric Power Generation, Transmission and Distribution")
+    ar["description"] = "Electricity surplus in the " + str(region) + " region."
+    ar["description"]=(ar["description"]
+        + " This process was created with ElectricityLCI "
+        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
+        + " using the " + model_specs.model_name + " configuration."
+    )
+    ar["version"] = make_valid_version_num(elci_version)
+
+    return ar
+
+
 def process_table_creation_usaverage(fuel, exchanges_list):
     """
     Create a process table entry for a US Average fuel mix process.
@@ -1491,96 +1438,156 @@ def process_table_creation_usaverage(fuel, exchanges_list):
     return ar
 
 
-def process_table_creation_surplus(region, exchanges_list):
+def processDqsystem():
     """
-    Create a process table entry for a surplus pool process.
+    Create a process data quality system entry.
 
-    This function generates a dictionary representing a process table entry for
-    a surplus pool process with the provided region and list of exchanges.
+    This function generates a dictionary representing a process data quality
+    system entry for the US EPA - Process Pedigree Matrix. It includes the
+    type, ID, and name of the data quality system for processes.
 
-    Parameters
-    ----------
-    region : str
-        The region for which the surplus pool process is created.
-    exchanges_list : list
-        A list of exchanges associated with the surplus pool process.
+    Notes
+    -----
+    The hardcoded value is for the US EPA Process Pedigree Matrix.
+    The universally unique identifier (70bf370f-9912-4ec1-baa3-fbd4eaf85a10) is
+    formatted as version 4.0.
 
     Returns
     -------
     dict
-        A dictionary representing the surplus pool process.
+        A dictionary representing the process data quality system entry.
 
     Examples
     --------
-    >>> region = "Example Region"
-    >>> exchanges = [exchange_1, exchange_2]
-    >>> surplus_pool_process = process_table_creation_surplus(region, exchanges)
+    >>> dq_system = processDqsystem()
     """
     ar = dict()
-    ar["@type"] = "Process"
-    ar["allocationFactors"] = ""
-    ar["defaultAllocationMethod"] = ""
-    ar["exchanges"] = exchanges_list
-    ar["location"] = location(region)
-    ar["parameters"] = ""
-    ar["processDocumentation"] = process_doc_creation()
-    ar["processType"] = "UNIT_PROCESS"
-    ar["name"] = surplus_pool_name + " - " + region
-    ar["category"] = (
-        "22: Utilities/"
-        "2211: Electric Power Generation, Transmission and Distribution")
-    ar["description"] = "Electricity surplus in the " + str(region) + " region."
-    ar["description"]=(ar["description"]
-        + " This process was created with ElectricityLCI "
-        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
-        + " using the " + model_specs.model_name + " configuration."
-    )
-    ar["version"] = make_valid_version_num(elci_version)
+    ar["@type"] = "DQSystem"
+    ar["@id"] = "70bf370f-9912-4ec1-baa3-fbd4eaf85a10"
+    ar["name"] = "US EPA - Process Pedigree Matrix"
+    return ar
+
+
+def ref_exchange_creator(electricity_flow=electricity_at_grid_flow):
+    """
+    Create a reference exchange based on the provided electricity flow.
+
+    This function generates a dictionary representing a reference exchange with
+    the provided electricity flow and default values for other properties.
+
+    Parameters
+    ----------
+    electricity_flow : str, optional
+        The electricity flow to use in the reference exchange. Default is
+        'electricity_at_grid_flow'.
+
+    Returns
+    -------
+    dict
+        A dictionary representing the reference exchange.
+
+    Examples
+    --------
+    >>> ref_exchange = ref_exchange_creator()
+    """
+    ar = dict()
+    ar["internalId"] = ""
+    ar["@type"] = "Exchange"
+    ar["avoidedProduct"] = False
+    ar["flow"] = electricity_flow
+    ar["flowProperty"] = ""
+    ar["input"] = False
+    ar["quantitativeReference"] = True
+    ar["baseUncertainty"] = ""
+    ar["provider"] = ""
+    ar["amount"] = 1.0
+    ar["amountFormula"] = ""
+    ar["unit"] = unit("MWh")
+    ar["location"] = ""
 
     return ar
 
 
-def process_table_creation_distribution(region, exchanges_list):
+def uncertainty_table_creation(data):
     """
-    Create a process table entry for an electricity distribution process.
+    Create an uncertainty table entry based on provided data.
+
+    This function generates a dictionary representing an uncertainty table
+    entry based on the provided data, such as geometric mean, geometric
+    standard deviation, maximum, and minimum values.
+
+    Assumes a log-normal distribution.
 
     Parameters
     ----------
-    region : str
-        The region for which the generation mix is created.
-    exchanges_list : list
-        A list of exchanges associated with the surplus fuel mix process.
+    data : pd.DataFrame
+        Data containing uncertainty information, including geometric mean,
+        geometric standard deviation, maximum, and minimum values.
 
     Returns
     -------
     dict
-        A dictionary representing the distribution fuel mix process.
+        A dictionary representing the uncertainty table entry.
+
+    Examples
+    --------
+    >>> import pandas as pd
+    >>> data = pd.DataFrame({
+    ...     "GeomMean": [1.0],
+    ...     "GeomSD": [0.2],
+    ...     "Maximum": [1.5],
+    ...     "Minimum": [0.8]
+    ... })
+    >>> uncertainty_entry = uncertainty_table_creation(data)
     """
     ar = dict()
-    ar["@type"] = "Process"
-    ar["allocationFactors"] = ""
-    ar["defaultAllocationMethod"] = ""
-    ar["exchanges"] = exchanges_list
-    ar["location"] = location(region)
-    ar["parameters"] = ""
-    ar["processDocumentation"] = process_doc_creation()
-    ar["processType"] = "UNIT_PROCESS"
-    ar["name"] = distribution_to_end_user_name + " - " + region
-    ar["category"] = (
-        "22: Utilities/"
-        "2211: Electric Power Generation, Transmission and Distribution")
-    ar["description"] = (
-        "Electricity distribution to end user in the "
-        + str(region)
-        + " region."
-    )
-    ar["description"]=(ar["description"]
-        + " This process was created with ElectricityLCI "
-        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
-        + " using the " + model_specs.model_name + " configuration."
-    )
-    ar["version"] = make_valid_version_num(elci_version)
 
+    gm = data["GeomMean"].iloc[0]
+    gs = data["GeomSD"].iloc[0]
+
+    # NaN checking at its best.
+    if gm == gm and gs == gs:
+        ar["geomMean"] = gm
+        ar["geomSd"] = gs
+        ar["distributionType"] = "Logarithmic Normal Distribution"
+
+    # NOTE: here is good place to check other values to implement
+    #       alternative uncertainty (e.g., uniform, triangle)
+
+    return ar
+
+
+def unit(unt):
+    """
+    Create a unit entry based on the provided unit name.
+
+    This function generates a dictionary representing a unit entry based on the
+    provided unit name.
+
+    Parameters
+    ----------
+    unt : str
+        The unit name for which the unit entry is created.
+
+    Returns
+    -------
+    dict
+        A dictionary representing the unit entry for the specified unit name.
+
+    Notes
+    -----
+    For more information on the attributes for Unit object, see
+    https://greendelta.github.io/olca-schema/classes/Unit.html
+
+    Examples
+    --------
+    >>> unit_name = "kg/MWh"
+    >>> unit_entry = unit(unit_name)
+    """
+    ar = dict()
+    ar["internalId"] = ""
+    ar["@type"] = "Unit"
+    ar["name"] = unt
     return ar
 
 

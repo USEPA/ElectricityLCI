@@ -37,7 +37,7 @@ workbook.
 
 
 Last edited:
-    2025-04-18
+    2025-06-09
 """
 EIA923_PAGES = {
     "1": "Page 1 Generation and Fuel Data",
@@ -52,6 +52,7 @@ EIA923_PAGES = {
     "7": "Page 7 File Layout",
     "8c": "8C Air Emissions Control Info",
 }
+'''dict : Shortcut keys to EIA923_Schedules_2_3_4_5 Excel workbook sheets.'''
 
 EIA923_HEADER_ROWS = {
     "1": 5,
@@ -65,6 +66,7 @@ EIA923_HEADER_ROWS = {
     "6": 5,
     "8c": 4,
 }
+'''dict : Row indices for given EIA923 worksheet shortcut keys.'''
 
 
 ##############################################################################
@@ -93,6 +95,276 @@ def _clean_columns(df):
     return df
 
 
+def build_generation_data(
+        egrid_facilities_to_include=None, generation_years=None):
+    """Build a dataset of facility-level generation using EIA923.
+
+    This function applies filters for positive generation, generation
+    efficiency within a given range, and a minimum percent of generation
+    from the primary fuel, and NAICS code (for traditional regulated electric
+    utilities and independent power producers who are not cogenerators), if set
+    in the config file.
+
+    Parameters
+    ----------
+    egrid_facilities_to_include : list, optional
+        List of plant codes to include (default is None, which builds a list
+        based on the model configured generation year and inventories of
+        interest).
+    generation_years : list, optional
+        Years of generation data to include in the output (default is None,
+        which builds a list from the inventories of interest and eia_gen_year
+        parameters).
+
+    Returns
+    -------
+    pandas.DataFrame
+        Data frame columns include: ['FacilityID', 'Electricity', 'Year'].
+    """
+    # Requires model specs to be defined.
+    from electricitylci.generation import get_generation_years
+
+    if generation_years is None:
+        # Use the years from generation and inventories of interest.
+        # HOTFIX: include 2016 for NETL hydropower plants [240806;TWD]
+        generation_years = get_generation_years()
+
+    df_list = []
+    for year in generation_years:
+        gen_fuel_data = eia923_download_extract(year)
+        primary_fuel = eia923_primary_fuel(gen_fuel_data)
+        gen_efficiency = calculate_plant_efficiency(gen_fuel_data)
+
+        # Combine plant info w/ efficiency and primary fuel info.
+        #   NOTE: use plant and state for potential plant '99999'
+        final_gen_df = gen_efficiency.merge(
+            gen_fuel_data[['Plant Id', 'State', 'Plant Name', 'YEAR']],
+            on=['Plant Id', 'State'],
+            how='left'
+        ).drop_duplicates()
+        final_gen_df = final_gen_df.merge(
+            primary_fuel,
+            on='Plant Id',
+            how='left'
+        )
+
+        if not egrid_facilities_to_include:
+            if model_specs.include_only_egrid_facilities_with_positive_generation:
+                f_crit = final_gen_df["Net Generation (Megawatthours)"] >= 0
+                logging.info(
+                    "Filtering %d facilities with negative generation" % (
+                        f_crit.sum())
+                )
+                final_gen_df = final_gen_df.loc[f_crit, :]
+            if model_specs.filter_on_efficiency:
+                logging.info("Filtering facilities based on their efficiency")
+                final_gen_df = efficiency_filter(
+                    final_gen_df,
+                    model_specs.egrid_facility_efficiency_filters
+                )
+            if (
+                model_specs.filter_on_min_plant_percent_generation_from_primary_fuel
+                and not model_specs.keep_mixed_plant_category
+            ):
+                f_val = model_specs.min_plant_percent_generation_from_primary_fuel_category
+                f_crit = final_gen_df["primary fuel percent gen"] >= f_val
+                logging.info(
+                    "Filtering %d facilities based on primary fuel "
+                    "generation" % (f_crit.sum()))
+                final_gen_df = final_gen_df.loc[f_crit, :]
+        else:
+            final_gen_df = final_gen_df.loc[
+                final_gen_df["Plant Id"].isin(egrid_facilities_to_include), :
+            ]
+
+        # HOTFIX: rm wasted effort of BA matching, never returned [240806; TWD]
+        final_gen_df["Plant Id"] = final_gen_df["Plant Id"].astype(int)
+        final_gen_df["Year"] = int(year)
+        df_list.append(final_gen_df)
+
+    all_years_gen = pd.concat(df_list)
+
+    all_years_gen = all_years_gen.rename(
+        columns={
+            "Plant Id": "FacilityID",
+            "Net Generation (Megawatthours)": "Electricity",
+        }
+    )
+
+    all_years_gen = all_years_gen.loc[:, ["FacilityID", "Electricity", "Year"]]
+    all_years_gen.reset_index(drop=True, inplace=True)
+    all_years_gen["Year"] = all_years_gen["Year"].astype("int32")
+    return all_years_gen
+
+
+def calculate_plant_efficiency(gen_fuel_data):
+    """Calculate plant efficiency (percentage).
+
+    Plant efficiency is the ratio of net generation to total fuel
+    consumption (unitless). The British thermal unit to watt-hour
+    conversion factor, 3.412 is used (i.e., 1 MWh = 3.412 MMBtu).
+
+    Parameters
+    ----------
+    gen_fuel_data : pandas.DataFrame
+        EIA 923 generation data
+        (e.g., as returned by :func:`eia923_download_extract`).
+
+    Returns
+    -------
+    pandas.DataFrame
+        A data frame with 'Plant Id', 'State', 'Total Fuel Consumption MMBtu',
+        'Net Generation (Megawatthours)', and 'efficiency'.
+        Note that fuel consumption, net generation, and efficiency columns
+        are computed sums for each plant.
+
+    Notes
+    -----
+    Efficiency is limited to being greater than or equal to zero.
+    There is no upper limit for efficiency (i.e., can be >100%).
+    """
+    # NOTE: Plant Id is a state-fuel level increment, so needs grouped by state
+    # but it all gets filtered out by NAICS code.
+    tfc_col = 'Total Fuel Consumption MMBtu'
+    ngm_col = 'Net Generation (Megawatthours)'
+    tot_cols = [
+        'Plant Id',
+        'State',
+        tfc_col,
+        ngm_col
+    ]
+
+    # Sum all consumption and generation for each facility.
+    # HOTFIX: The sum of string columns was to repeat them (e.g., 'ALALAL' for
+    # three rows of 'AL') [240806;TWD].
+    # HOTFIX: The NAICS Code filtering must be done here. [240806; TWD]
+    # See https://github.com/USEPA/ElectricityLCI/issues/232
+    if model_specs.filter_non_egrid_emission_on_NAICS:
+        logging.info("Filtering facilities by NAICS code")
+        row_criteria = (gen_fuel_data['NAICS Code'] == '22') & (
+            gen_fuel_data['EIA Sector Number'].isin(['1','2']))
+        plant_total = gen_fuel_data.loc[row_criteria, tot_cols].groupby(
+            ["Plant Id", "State"], as_index=False).agg("sum")
+    else:
+        plant_total = gen_fuel_data[tot_cols].groupby(
+            "Plant Id", as_index=False).agg("sum")
+
+    # Calculate the efficiency via unit conversion
+    # HOTFIX: remove the 10x scaling factor and include the physical quantity
+    # conversion; note that Mega == Million, so the millions cancel in the
+    # conversion (MMBtu == Million Btu and MWh = Million Wh) [240806; TWD]
+    btu = PQ("1 Btu")
+    btu.convertToUnit("W*h")
+
+    # NOTE: the efficiency units supposedly are to be in Btu/kWh; however,
+    # in the expression below makes them unitless (MWh/MWh).
+    plant_total["efficiency"] = (
+        plant_total["Net Generation (Megawatthours)"]
+        / (plant_total["Total Fuel Consumption MMBtu"] * btu.getValue())
+        * 100
+    )
+
+    # Set efficiency to zero for facilities with zero generation.
+    #   Gets rid of NaNs and Infs.
+    plant_total.loc[plant_total[tfc_col] == 0, 'efficiency'] = 0
+
+    # Make efficiency a positive number.
+    #   Facilities with net negative generation (i.e., net importer)
+    #   have a zero efficiency---consumer of fuel and energy.
+    plant_total.loc[plant_total[ngm_col] < 0, 'efficiency'] = 0
+
+    return plant_total
+
+
+def efficiency_filter(df, egrid_facility_efficiency_filters):
+    """Return a slice of a data frame based on the values and
+    upper/lower limits for plant efficiency."""
+    upper = egrid_facility_efficiency_filters["upper_efficiency"]
+    lower = egrid_facility_efficiency_filters["lower_efficiency"]
+    # HOTFIX Issue #247, #278 - errors in calculating plant efficiencies.
+    # Excluding a bunch of plant types from this efficiency filter. It really
+    # was only ever meant to apply to thermal (fossil) power plants anyways.
+    fuel_categories_to_exclude=[
+        "NUCLEAR", "WIND", "SOLAR", "SOLARTHERMAL", "HYDRO", "GEOTHERMAL",
+    ]
+    df = df.loc[((df["efficiency"] >= lower) & (df["efficiency"] <= upper)) |
+                (df["FuelCategory"].isin(fuel_categories_to_exclude)), :
+                ]
+
+    return df
+
+
+def eia923_boiler_fuel(year):
+    """Read EIA923 boiler fuel data for a given year.
+
+    Parameters
+    ----------
+    year : int
+        The year to draw boiler fuel data from EIA923 schedule workbook
+
+    Returns
+    -------
+    pandas.DataFrame
+
+    Notes
+    -----
+    This method generates a persistent CSV summary file of page 3 Boiler Fuel
+    Data for faster reading on future runs.
+
+    Referenced in ampd_plant_emissions.py.
+    """
+    expected_923_folder = join(paths.local_path, "f923_{}".format(year))
+
+    if not os.path.exists(expected_923_folder):
+        logging.info("Downloading EIA-923 files")
+        eia923_download(year=year, save_path=expected_923_folder)
+
+        eia923_path, eia923_name = find_file_in_folder(
+            folder_path=expected_923_folder,
+            file_pattern_match=["2_3_4_5", "xlsx"],
+            return_name=True,
+        )
+        # Save as csv for easier access in future
+        csv_fn = eia923_name.split(".")[0] + "page_3.csv"
+        csv_path = join(expected_923_folder, csv_fn)
+        eia = load_eia923_excel(expected_923_folder, page="3")
+        eia.to_csv(csv_path, index=False)
+    else:
+        all_files = os.listdir(expected_923_folder)
+        # Check for both csv and year<_Final> in case multiple years
+        # or other csv files exist
+        csv_file = [
+            f
+            for f in all_files
+            if ".csv" in f and "{}_Final".format(year) in f and "page_3" in f
+        ]
+
+        # Read and return the existing csv file if it exists
+        if csv_file:
+            logging.info("Loading {} EIA-923 data from csv file".format(year))
+            fn = csv_file[0]
+            csv_path = join(expected_923_folder, fn)
+            eia = pd.read_csv(
+                csv_path,
+                dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
+                low_memory=False,
+            )
+        else:
+
+            eia923_path, eia923_name = find_file_in_folder(
+                folder_path=expected_923_folder,
+                file_pattern_match=["2_3_4_5", "xlsx"],
+                return_name=True,
+            )
+            eia = load_eia923_excel(eia923_path, page="3")
+            csv_fn = eia923_name.split(".")[0] + "_page_3.csv"
+            csv_path = join(expected_923_folder, csv_fn)
+            eia.to_csv(csv_path, index=False)
+    eia = _clean_columns(eia)
+
+    return eia
+
+
 def eia923_download(year, save_path):
     """Download and unzip one year of EIA 923 annual data to a subfolder
     of the data directory.
@@ -113,26 +385,6 @@ def eia923_download(year, save_path):
         download_unzip(current_url, save_path)
     except ValueError:
         download_unzip(archive_url, save_path)
-
-
-def load_eia923_excel(eia923_path, page="1"):
-    """Add docstring."""
-    page_to_load = EIA923_PAGES[page]
-    header_row = EIA923_HEADER_ROWS[page]
-    eia = pd.read_excel(
-        eia923_path,
-        sheet_name=page_to_load,
-        header=header_row,
-        na_values=["."],
-        dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str, "EIA Sector Number": str},
-    )
-    # Get ride of line breaks. And apparently 2015 had 'Plant State'
-    # instead of 'State'
-    eia.columns = eia.columns.str.replace("\n", " ", regex=False).str.replace(
-        "Plant State", "State", regex=False
-    )
-
-    return eia
 
 
 # This function is called multiple times by the various upstream modules.
@@ -244,11 +496,71 @@ def eia923_download_extract(year, group_cols=None):
     return EIA_923_generation_data
 
 
-def group_fuel_categories(df):
-    """Map EIA Form 923 reported fuel types to their fuel category code."""
-    new_fuel_categories = df["Reported Fuel Type Code"].map(FUEL_CAT_CODES)
+def eia923_generation_and_fuel(year):
+    """Return data frame of EIA 923 Generation and Fuel Data for given year.
 
-    return new_fuel_categories
+    Parameters
+    ----------
+    year : int
+        The EIA generation year.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A data frame with >90 columns associated with Page 1, "Generation and
+        Fuel Data" from EIA923 Schedules 2,3,4,5,M,12. Quantities are in
+        physical consumed units (e.g., short tons of coal, barrels of oil,
+        mcf of gas). Generation is in MWh.
+    """
+    expected_923_folder = join(paths.local_path, "f923_{}".format(year))
+
+    if not os.path.exists(expected_923_folder):
+        logging.info("Downloading EIA-923 files")
+        eia923_download(year=year, save_path=expected_923_folder)
+
+        eia923_path, eia923_name = find_file_in_folder(
+            folder_path=expected_923_folder,
+            file_pattern_match=["2_3_4_5", "xlsx"],
+            return_name=True,
+        )
+        # Save as csv for easier access in future
+        csv_fn = eia923_name.split(".")[0] + "page_1.csv"
+        csv_path = join(expected_923_folder, csv_fn)
+        eia = load_eia923_excel(expected_923_folder, page="1")
+        eia.to_csv(csv_path, index=False)
+    else:
+        all_files = os.listdir(expected_923_folder)
+        # Check for both csv and year<_Final> in case multiple years
+        # or other csv files exist
+        csv_file = [
+            f
+            for f in all_files
+            if ".csv" in f and "{}_Final".format(year) in f and "page_1" in f
+        ]
+
+        # Read and return the existing csv file if it exists
+        if csv_file:
+            logging.info("Loading {} EIA-923 data from csv file".format(year))
+            fn = csv_file[0]
+            csv_path = join(expected_923_folder, fn)
+            eia = pd.read_csv(
+                csv_path,
+                dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
+                low_memory=False,
+            )
+        else:
+            eia923_path, eia923_name = find_file_in_folder(
+                folder_path=expected_923_folder,
+                file_pattern_match=["2_3_4_5", "xlsx"],
+                return_name=True,
+            )
+            eia = load_eia923_excel(eia923_path, page="1")
+            csv_fn = eia923_name.split(".")[0] + "_page_1.csv"
+            csv_path = join(expected_923_folder, csv_fn)
+            eia.to_csv(csv_path, index=False)
+    eia = _clean_columns(eia)
+
+    return eia
 
 
 def eia923_primary_fuel(eia923_gen_fuel=None,
@@ -371,328 +683,25 @@ def eia923_primary_fuel(eia923_gen_fuel=None,
     return primary_fuel.loc[:, keep_cols]
 
 
-def calculate_plant_efficiency(gen_fuel_data):
-    """Calculate plant efficiency (percentage).
-
-    Plant efficiency is the ratio of net generation to total fuel
-    consumption (unitless). The British thermal unit to watt-hour
-    conversion factor, 3.412 is used (i.e., 1 MWh = 3.412 MMBtu).
-
-    Parameters
-    ----------
-    gen_fuel_data : pandas.DataFrame
-        EIA 923 generation data
-        (e.g., as returned by :func:`eia923_download_extract`).
-
-    Returns
-    -------
-    pandas.DataFrame
-        A data frame with 'Plant Id', 'State', 'Total Fuel Consumption MMBtu',
-        'Net Generation (Megawatthours)', and 'efficiency'.
-        Note that fuel consumption, net generation, and efficiency columns
-        are computed sums for each plant.
-
-    Notes
-    -----
-    Efficiency is limited to being greater than or equal to zero.
-    There is no upper limit for efficiency (i.e., can be >100%).
-    """
-    # NOTE: Plant Id is a state-fuel level increment, so needs grouped by state
-    # but it all gets filtered out by NAICS code.
-    tfc_col = 'Total Fuel Consumption MMBtu'
-    ngm_col = 'Net Generation (Megawatthours)'
-    tot_cols = [
-        'Plant Id',
-        'State',
-        tfc_col,
-        ngm_col
-    ]
-
-    # Sum all consumption and generation for each facility.
-    # HOTFIX: The sum of string columns was to repeat them (e.g., 'ALALAL' for
-    # three rows of 'AL') [240806;TWD].
-    # HOTFIX: The NAICS Code filtering must be done here. [240806; TWD]
-    # See https://github.com/USEPA/ElectricityLCI/issues/232
-    if model_specs.filter_non_egrid_emission_on_NAICS:
-        logging.info("Filtering facilities by NAICS code")
-        row_criteria = (gen_fuel_data['NAICS Code'] == '22') & (
-            gen_fuel_data['EIA Sector Number'].isin(['1','2']))
-        plant_total = gen_fuel_data.loc[row_criteria, tot_cols].groupby(
-            ["Plant Id", "State"], as_index=False).agg("sum")
-    else:
-        plant_total = gen_fuel_data[tot_cols].groupby(
-            "Plant Id", as_index=False).agg("sum")
-
-    # Calculate the efficiency via unit conversion
-    # HOTFIX: remove the 10x scaling factor and include the physical quantity
-    # conversion; note that Mega == Million, so the millions cancel in the
-    # conversion (MMBtu == Million Btu and MWh = Million Wh) [240806; TWD]
-    btu = PQ("1 Btu")
-    btu.convertToUnit("W*h")
-
-    # NOTE: the efficiency units supposedly are to be in Btu/kWh; however,
-    # in the expression below makes them unitless (MWh/MWh).
-    plant_total["efficiency"] = (
-        plant_total["Net Generation (Megawatthours)"]
-        / (plant_total["Total Fuel Consumption MMBtu"] * btu.getValue())
-        * 100
-    )
-
-    # Set efficiency to zero for facilities with zero generation.
-    #   Gets rid of NaNs and Infs.
-    plant_total.loc[plant_total[tfc_col] == 0, 'efficiency'] = 0
-
-    # Make efficiency a positive number.
-    #   Facilities with net negative generation (i.e., net importer)
-    #   have a zero efficiency---consumer of fuel and energy.
-    plant_total.loc[plant_total[ngm_col] < 0, 'efficiency'] = 0
-
-    return plant_total
-
-
-def efficiency_filter(df, egrid_facility_efficiency_filters):
-    """Return a slice of a data frame based on the values and
-    upper/lower limits for plant efficiency."""
-    upper = egrid_facility_efficiency_filters["upper_efficiency"]
-    lower = egrid_facility_efficiency_filters["lower_efficiency"]
-    # HOTFIX Issue #247, #278 - errors in calculating plant efficiencies.
-    # Excluding a bunch of plant types from this efficiency filter. It really
-    # was only ever meant to apply to thermal (fossil) power plants anyways.
-    fuel_categories_to_exclude=[
-        "NUCLEAR", "WIND", "SOLAR", "SOLARTHERMAL", "HYDRO", "GEOTHERMAL",
-    ]
-    df = df.loc[((df["efficiency"] >= lower) & (df["efficiency"] <= upper)) |
-                (df["FuelCategory"].isin(fuel_categories_to_exclude)), :
-                ]
-
-    return df
-
-
-def build_generation_data(
-        egrid_facilities_to_include=None, generation_years=None):
-    """Build a dataset of facility-level generation using EIA923.
-
-    This function applies filters for positive generation, generation
-    efficiency within a given range, and a minimum percent of generation
-    from the primary fuel, and NAICS code (for traditional regulated electric
-    utilities and independent power producers who are not cogenerators), if set
-    in the config file.
-
-    Parameters
-    ----------
-    egrid_facilities_to_include : list, optional
-        List of plant codes to include (default is None, which builds a list
-        based on the model configured generation year and inventories of
-        interest).
-    generation_years : list, optional
-        Years of generation data to include in the output (default is None,
-        which builds a list from the inventories of interest and eia_gen_year
-        parameters).
-
-    Returns
-    -------
-    pandas.DataFrame
-        Data frame columns include: ['FacilityID', 'Electricity', 'Year'].
-    """
-    # Requires model specs to be defined.
-    from electricitylci.generation import get_generation_years
-
-    if generation_years is None:
-        # Use the years from generation and inventories of interest.
-        # HOTFIX: include 2016 for NETL hydropower plants [240806;TWD]
-        generation_years = get_generation_years()
-
-    df_list = []
-    for year in generation_years:
-        gen_fuel_data = eia923_download_extract(year)
-        primary_fuel = eia923_primary_fuel(gen_fuel_data)
-        gen_efficiency = calculate_plant_efficiency(gen_fuel_data)
-
-        # Combine plant info w/ efficiency and primary fuel info.
-        #   NOTE: use plant and state for potential plant '99999'
-        final_gen_df = gen_efficiency.merge(
-            gen_fuel_data[['Plant Id', 'State', 'Plant Name', 'YEAR']],
-            on=['Plant Id', 'State'],
-            how='left'
-        ).drop_duplicates()
-        final_gen_df = final_gen_df.merge(
-            primary_fuel,
-            on='Plant Id',
-            how='left'
-        )
-
-        if not egrid_facilities_to_include:
-            if model_specs.include_only_egrid_facilities_with_positive_generation:
-                f_crit = final_gen_df["Net Generation (Megawatthours)"] >= 0
-                logging.info(
-                    "Filtering %d facilities with negative generation" % (
-                        f_crit.sum())
-                )
-                final_gen_df = final_gen_df.loc[f_crit, :]
-            if model_specs.filter_on_efficiency:
-                logging.info("Filtering facilities based on their efficiency")
-                final_gen_df = efficiency_filter(
-                    final_gen_df,
-                    model_specs.egrid_facility_efficiency_filters
-                )
-            if (
-                model_specs.filter_on_min_plant_percent_generation_from_primary_fuel
-                and not model_specs.keep_mixed_plant_category
-            ):
-                f_val = model_specs.min_plant_percent_generation_from_primary_fuel_category
-                f_crit = final_gen_df["primary fuel percent gen"] >= f_val
-                logging.info(
-                    "Filtering %d facilities based on primary fuel "
-                    "generation" % (f_crit.sum()))
-                final_gen_df = final_gen_df.loc[f_crit, :]
-        else:
-            final_gen_df = final_gen_df.loc[
-                final_gen_df["Plant Id"].isin(egrid_facilities_to_include), :
-            ]
-
-        # HOTFIX: rm wasted effort of BA matching, never returned [240806; TWD]
-        final_gen_df["Plant Id"] = final_gen_df["Plant Id"].astype(int)
-        final_gen_df["Year"] = int(year)
-        df_list.append(final_gen_df)
-
-    all_years_gen = pd.concat(df_list)
-
-    all_years_gen = all_years_gen.rename(
-        columns={
-            "Plant Id": "FacilityID",
-            "Net Generation (Megawatthours)": "Electricity",
-        }
-    )
-
-    all_years_gen = all_years_gen.loc[:, ["FacilityID", "Electricity", "Year"]]
-    all_years_gen.reset_index(drop=True, inplace=True)
-    all_years_gen["Year"] = all_years_gen["Year"].astype("int32")
-    return all_years_gen
-
-
-def eia923_generation_and_fuel(year):
-    """Return data frame of EIA 923 Generation and Fuel Data for given year.
+def eia923_sched8_aec(year):
+    """Read air emissions control info from EIA924 Schedule 8 workbook.
 
     Parameters
     ----------
     year : int
-        The EIA generation year.
+        The year to draw boiler fuel data from EIA923 schedule workbook
 
     Returns
     -------
     pandas.DataFrame
-        A data frame with >90 columns associated with Page 1, "Generation and
-        Fuel Data" from EIA923 Schedules 2,3,4,5,M,12. Quantities are in
-        physical consumed units (e.g., short tons of coal, barrels of oil,
-        mcf of gas). Generation is in MWh.
+
+    Notes
+    -----
+    This method generates a persistent CSV summary file of page 8c Air
+    Emissions Control Info for faster reading on future runs.
+
+    Referenced in ampd_plant_emissions.py for NOx and SO2 calculations.
     """
-    expected_923_folder = join(paths.local_path, "f923_{}".format(year))
-
-    if not os.path.exists(expected_923_folder):
-        logging.info("Downloading EIA-923 files")
-        eia923_download(year=year, save_path=expected_923_folder)
-
-        eia923_path, eia923_name = find_file_in_folder(
-            folder_path=expected_923_folder,
-            file_pattern_match=["2_3_4_5", "xlsx"],
-            return_name=True,
-        )
-        # Save as csv for easier access in future
-        csv_fn = eia923_name.split(".")[0] + "page_1.csv"
-        csv_path = join(expected_923_folder, csv_fn)
-        eia = load_eia923_excel(expected_923_folder, page="1")
-        eia.to_csv(csv_path, index=False)
-    else:
-        all_files = os.listdir(expected_923_folder)
-        # Check for both csv and year<_Final> in case multiple years
-        # or other csv files exist
-        csv_file = [
-            f
-            for f in all_files
-            if ".csv" in f and "{}_Final".format(year) in f and "page_1" in f
-        ]
-
-        # Read and return the existing csv file if it exists
-        if csv_file:
-            logging.info("Loading {} EIA-923 data from csv file".format(year))
-            fn = csv_file[0]
-            csv_path = join(expected_923_folder, fn)
-            eia = pd.read_csv(
-                csv_path,
-                dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
-                low_memory=False,
-            )
-        else:
-            eia923_path, eia923_name = find_file_in_folder(
-                folder_path=expected_923_folder,
-                file_pattern_match=["2_3_4_5", "xlsx"],
-                return_name=True,
-            )
-            eia = load_eia923_excel(eia923_path, page="1")
-            csv_fn = eia923_name.split(".")[0] + "_page_1.csv"
-            csv_path = join(expected_923_folder, csv_fn)
-            eia.to_csv(csv_path, index=False)
-    eia = _clean_columns(eia)
-
-    return eia
-
-
-def eia923_boiler_fuel(year):
-    """Add docstring."""
-    expected_923_folder = join(paths.local_path, "f923_{}".format(year))
-
-    if not os.path.exists(expected_923_folder):
-        logging.info("Downloading EIA-923 files")
-        eia923_download(year=year, save_path=expected_923_folder)
-
-        eia923_path, eia923_name = find_file_in_folder(
-            folder_path=expected_923_folder,
-            file_pattern_match=["2_3_4_5", "xlsx"],
-            return_name=True,
-        )
-        # Save as csv for easier access in future
-        csv_fn = eia923_name.split(".")[0] + "page_3.csv"
-        csv_path = join(expected_923_folder, csv_fn)
-        eia = load_eia923_excel(expected_923_folder, page="3")
-        eia.to_csv(csv_path, index=False)
-    else:
-        all_files = os.listdir(expected_923_folder)
-        # Check for both csv and year<_Final> in case multiple years
-        # or other csv files exist
-        csv_file = [
-            f
-            for f in all_files
-            if ".csv" in f and "{}_Final".format(year) in f and "page_3" in f
-        ]
-
-        # Read and return the existing csv file if it exists
-        if csv_file:
-            logging.info("Loading {} EIA-923 data from csv file".format(year))
-            fn = csv_file[0]
-            csv_path = join(expected_923_folder, fn)
-            eia = pd.read_csv(
-                csv_path,
-                dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str},
-                low_memory=False,
-            )
-        else:
-
-            eia923_path, eia923_name = find_file_in_folder(
-                folder_path=expected_923_folder,
-                file_pattern_match=["2_3_4_5", "xlsx"],
-                return_name=True,
-            )
-            eia = load_eia923_excel(eia923_path, page="3")
-            csv_fn = eia923_name.split(".")[0] + "_page_3.csv"
-            csv_path = join(expected_923_folder, csv_fn)
-            eia.to_csv(csv_path, index=False)
-    eia = _clean_columns(eia)
-
-    return eia
-
-
-def eia923_sched8_aec(year):
-    """Add docstring."""
     expected_923_folder = join(paths.local_path, "f923_{}".format(year))
 
     if not os.path.exists(expected_923_folder):
@@ -740,6 +749,33 @@ def eia923_sched8_aec(year):
             csv_path = join(expected_923_folder, csv_fn)
             eia.to_csv(csv_path, index=False)
     eia = _clean_columns(eia)
+
+    return eia
+
+
+def group_fuel_categories(df):
+    """Map EIA Form 923 reported fuel types to their fuel category code."""
+    new_fuel_categories = df["Reported Fuel Type Code"].map(FUEL_CAT_CODES)
+
+    return new_fuel_categories
+
+
+def load_eia923_excel(eia923_path, page="1"):
+    """Add docstring."""
+    page_to_load = EIA923_PAGES[page]
+    header_row = EIA923_HEADER_ROWS[page]
+    eia = pd.read_excel(
+        eia923_path,
+        sheet_name=page_to_load,
+        header=header_row,
+        na_values=["."],
+        dtype={"Plant Id": str, "YEAR": str, "NAICS Code": str, "EIA Sector Number": str},
+    )
+    # Get ride of line breaks. And apparently 2015 had 'Plant State'
+    # instead of 'State'
+    eia.columns = eia.columns.str.replace("\n", " ", regex=False).str.replace(
+        "Plant State", "State", regex=False
+    )
 
     return eia
 

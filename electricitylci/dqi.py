@@ -18,7 +18,8 @@ for Life Cycle Inventory Data (2016).
 This module provides the ranges to apply for different DQI scores (1-5) and a
 function to apply those ranges on any given raw score.
 
-Last updated: 2025-03-14
+Last updated:
+    2025-06-09
 """
 __all__ = [
     'temporal_correlation_lower_bound_to_dqi',
@@ -31,24 +32,6 @@ __all__ = [
 ##############################################################################
 # GLOBALS
 ##############################################################################
-flow_data_quality_fields = [
-    'Reliability_Score',
-    'TemporalCorrelation',
-    'GeographicalCorrelation',
-    'TechnologicalCorrelation',
-    'DataCollection'
-]
-
-# These bounds are based on US EPA - Flow Pedigree Matrix temporal correlation
-# values (http://dx.doi.org/10.1007/s11367-017-1348-1)
-temporal_correlation_lower_bound_to_dqi = {
-    3: 1,
-    6: 2,
-    10: 3,
-    15: 4,
-    None: 5
-}
-
 data_collection_lower_bound_to_dqi = {
     .4: 4,
     .6: 3,
@@ -56,6 +39,7 @@ data_collection_lower_bound_to_dqi = {
     1: 1,
     None: 5
 }
+'''dict : Key-value pairs for lower-bound data collection DQI scores.'''
 
 # This is a variation from USEPA 2016 flow indicators.
 # Instead this is intended to represent fraction of generation
@@ -67,6 +51,18 @@ technological_correlation_lower_bound_to_dqi = {
     1: 1,
     None: 5
 }
+'''dict : Convert percent generation from primary fuel to DQI.'''
+
+# These bounds are based on US EPA - Flow Pedigree Matrix temporal correlation
+# values (http://dx.doi.org/10.1007/s11367-017-1348-1)
+temporal_correlation_lower_bound_to_dqi = {
+    3: 1,
+    6: 2,
+    10: 3,
+    15: 4,
+    None: 5
+}
+'''dict : Convert difference between target year and data year to DQI.'''
 
 
 ##############################################################################

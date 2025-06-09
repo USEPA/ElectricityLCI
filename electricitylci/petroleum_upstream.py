@@ -40,7 +40,7 @@ Data used for this purpose include:
     Diesel types of petroleum for all five PADD regions in the US.
 
 Last updated:
-    2023-12-27
+    2025-06-09
 """
 __all__ = [
     "generate_petroleum_upstream",
@@ -51,11 +51,8 @@ __all__ = [
 # FUNCTIONS
 ##############################################################################
 def generate_petroleum_upstream(year):
-    """
-    Generate annual.
-
-    Petroleum extraction, transport, and refining emissions (in kg) for each
-    plant in EIA923.
+    """Generate annual petroleum extraction, transport, and refining emissions
+    (in kg) for each plant in EIA923.
 
     Parameters
     ----------
