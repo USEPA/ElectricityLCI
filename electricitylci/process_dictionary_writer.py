@@ -765,6 +765,9 @@ def flow_table_creation(data):
     comp = str(data["Compartment"].iloc[0])
 
     if (flowtype == "ELEMENTARY_FLOW") and (comp != ""):
+        # HOTFIX duplicate compartment [25.06.09; TWD]
+        if comp.startswith("Elementary Flows/"):
+            comp = comp.replace("Elementary Flows/", "")
         if "emission" in comp or "resource" in comp:
             ar["category"] = "Elementary Flows/" + comp
         elif "input" in comp:
