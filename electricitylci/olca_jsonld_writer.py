@@ -278,7 +278,7 @@ def clean_json(file_path):
                 # Map third-party technosphere flows to NAICS
                 # https://github.com/USEPA/ElectricityLCI/issues/149
                 # NOTE: this overwrite breaks the reproducibility of the
-                # UUIDs for these two flows that's produced by
+                # UUIDs for these two flows
                 tech_cat = "Technosphere Flows"
                 pri_cat = "31-33: Manufacturing"
                 lfo_cat = "3241: Petroleum and Coal Products Manufacturing"
