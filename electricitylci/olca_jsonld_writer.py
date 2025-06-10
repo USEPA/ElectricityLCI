@@ -77,9 +77,11 @@ Changelog:
     -   Speed up fedelemflowlist writing
     -   Move Federal LCA Commons' JSON assets to local data store
     -   Add EPA's DQI pedigree matrices to JSON-LD
+    -   Fix removal of untracked flows (new :func:`rm_untracked_flows`)
+    -   Add two more corrections to :func:`clean_json`
 
 Last edited:
-    2025-02-13
+    2025-06-10
 """
 __all__ = [
     "build_product_systems",
@@ -184,10 +186,13 @@ def clean_json(file_path):
     """Perform the following clean-up steps on JSON-LD.
 
     1.  Remove zero-valued product flows from processes.
-    2.  Remove untracked flows (i.e., not found in a process exchange).
-    3.  Consecutively number exchange internal IDs.
-    4.  Update flows with FEDEFL metadata.
-    5.  Re-label heat inputs as elementary flow.
+    2.  Consecutively number exchange internal IDs.
+    3.  Update flows with FEDEFL metadata.
+    4.  Re-label heat inputs as elementary flow.
+    5.  Fix compartment path 'Elementary Flows/Elementary Flows'
+        associated with the resources 'Heat' and 'Water, reclaimed'
+    6.  Fix compartment for two product flows: 'Light fuel oil' and
+        'Ammonium nitrate' from the coal model.
 
     Parameters
     ----------
@@ -201,18 +206,16 @@ def clean_json(file_path):
     else:
         logging.info("Cleaning JSON-LD")
 
-        # Pull full flow list
-        f_list = sorted(data["Flow"]['ids'])
-
         # Pull flows from each process's exchange list; remove zero product
         # flows along the way.
         # https://github.com/USEPA/ElectricityLCI/issues/217
         e_list = []
         for p in data["Process"]['objs']:
             for e in p.exchanges:
-                # Get the flow type
+                # Get the flow object
                 fid = data["Flow"]['ids'].index(e.flow.id)
                 f_obj = data["Flow"]['objs'][fid]
+
                 # Remove if flow is a product flow with zero exchange value
                 # NOTE: don't add as an exchange flow!
                 if e.amount == 0 and (
@@ -225,8 +228,7 @@ def clean_json(file_path):
                     # Add to list of tracked exchanges
                     e_list.append(e.flow.id)
 
-                # Check to see if output exchange is labeled as a
-                # resource flow
+                # Check if output exchange is labeled as a resource flow
                 # https://github.com/USEPA/ElectricityLCI/issues/233
                 if not e.is_input and 'resource' in f_obj.category.lower():
                     logging.warning(
@@ -238,7 +240,7 @@ def clean_json(file_path):
                     e.description = "mislabeled resources"
                     p.exchanges.append(e)
 
-                # Check to see if exchange is heat resource;
+                # Correct heat resource flows;
                 # https://github.com/USEPA/ElectricityLCI/issues/293
                 if e.is_input and e.flow.name == 'Heat':
                     # The new FEDEFL heat resource flow
@@ -263,6 +265,42 @@ def clean_json(file_path):
                         e.description = "mapped to FEDEFL"
                     p.exchanges.append(e)
 
+                # Correct double Elementary Flows category
+                # https://github.com/USEPA/ElectricityLCI/issues/149
+                if f_obj.category.startswith(
+                        "Elementary flows/Elementary Flows"):
+                    logging.warning(
+                        "Fixing duplicate Elementary flows category "
+                        "for '%s'" % f_obj.name)
+                    f_obj.category = f_obj.category.replace(
+                        "/Elementary Flows/", "/")
+
+                # Map third-party technosphere flows to NAICS
+                # https://github.com/USEPA/ElectricityLCI/issues/149
+                # NOTE: this overwrite breaks the reproducibility of the
+                # UUIDs for these two flows that's produced by
+                tech_cat = "Technosphere Flows"
+                pri_cat = "31-33: Manufacturing"
+                lfo_cat = "3241: Petroleum and Coal Products Manufacturing"
+                an_cat = (
+                    "3253: Pesticide, Fertilizer, and Other Agricultural "
+                    "Chemical Manufacturing"
+                )
+                if (f_obj.name == "Light fuel oil") and (
+                    f_obj.flow_type == o.FlowType.PRODUCT_FLOW) and not (
+                        pri_cat in f_obj.category):
+                    logging.warning(
+                        "Mapping 'Light fuel oil' technosphere flow to "
+                        "NAICS 3241")
+                    f_obj.category = "/".join([tech_cat, pri_cat, lfo_cat])
+                elif (f_obj.name == "Ammonium nitrate") and (
+                    f_obj.flow_type == o.FlowType.PRODUCT_FLOW) and not (
+                        pri_cat in f_obj.category):
+                    logging.warning(
+                        "Mapping 'Ammonium nitrate' technosphere flow to "
+                        "NAICS 3253")
+                    f_obj.category = "/".join([tech_cat, pri_cat, an_cat])
+
             # Loop through exchanges a second time and re-number their
             # internal IDs to a consecutive order.
             p.last_internal_id = 0
@@ -272,15 +310,6 @@ def clean_json(file_path):
 
         # Sort unique values to speed up search
         e_list = sorted(list(set(e_list)))
-
-        # Remove untracked flows (i.e., any flows that aren't in an exchange)
-        # This is purely to reduce the size of the database.
-        u_list = [x for x in f_list if x not in e_list]
-        logging.debug("Removing %d untracked flows" % len(u_list))
-        for u_id in u_list:
-            idx = data["Flow"]['ids'].index(u_id)
-            data['Flow']['ids'].pop(idx)
-            data['Flow']['objs'].pop(idx)
 
         # Overwrite
         _save_to_json(file_path, data)
@@ -1830,6 +1859,57 @@ def _read_jsonld(json_file, root_dict, id_only=False):
         return root_dict
 
 
+def _rm_untracked_flows(data):
+    """Post-processing method that identifies and removes untracked flows
+    (i.e., flow objects that are not referenced in any exchanges).
+
+    This is purely to reduce the size of the database.
+
+    Parameters
+    ----------
+    data : dict
+        A dictionary containing the olca-schema root element lists.
+
+    Returns
+    -------
+    dict
+        The same dictionary received, but with untracked flows removed
+        from the Flow root element lists.
+
+    Notes
+    -----
+    This finds 'Heat' technosphere input flow and elementary resource flow,
+    which (somewhere in v2) are replaced with 'Energy, heat' elementary resource flow (from air).
+    """
+    # Pull full flow list (for removing untracked flows)
+    f_list = sorted(data["Flow"]['ids'])
+
+    # Initialize exchange flows
+    e_list = []
+
+    # Add flows to list of tracked exchanges
+    for p in data["Process"]['objs']:
+        for e in p.exchanges:
+            e_list.append(e.flow.id)
+
+    # Sort unique values to speed up search
+    e_list = sorted(list(set(e_list)))
+
+    # Remove untracked flows (i.e., any flows that aren't in an exchange)
+    u_list = [x for x in f_list if x not in e_list]
+    logging.info("Removing %d untracked flows" % len(u_list))
+    for u_id in u_list:
+        idx = data["Flow"]['ids'].index(u_id)
+        logging.info("Untracked flow: '%s' in '%s'" % (
+            data['Flow']['objs'][idx].name,
+            data['Flow']['objs'][idx].category,
+        ))
+        data['Flow']['ids'].pop(idx)
+        data['Flow']['objs'].pop(idx)
+
+    return data
+
+
 def _root_entity_dict():
     """Generate empty dictionary for each openLCA schema root entity.
 
@@ -1943,6 +2023,8 @@ def _save_to_json(json_file, e_dict):
         # If JSON-LD exists, then current data are those UUIDs and class
         # objects from the file; otherwise, the current data is empty.
         e_dict = _update_data(c_data, e_dict)
+        # Remove untracked flows; primarily to reduce database size.
+        e_dict = _rm_untracked_flows(e_dict)
 
     logging.info("Writing to %s" % os.path.basename(json_file))
     with zipio.ZipWriter(json_file) as writer:
