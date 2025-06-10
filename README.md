@@ -1,9 +1,11 @@
 # Electricity Life Cycle Inventory
 
-A python package that uses standardized facility releases and generation data to create regionalized life cycle inventory (LCI) models for the generation, mix of generation, mix of consumption, and distribution of electricity to end users for the US, with embedded system processes of upstream fuel production and infrastructure.
-Pre-configured model specifications are included (in electricitylci/modelconfig) or users can specify their own models by creating new config.yml files in the modelconfig directory. The created LCI models can be exported for use in standard life cycle assessment software (e.g., in JSON-LD format using the openLCA v2.0 schema).
+A Python package that uses standardized facility releases and generation data to create regionalized life cycle inventory (LCI) models for the generation, mix of generation, mix of consumption, and distribution of electricity to end users for the US, with embedded system processes of upstream fuel production and infrastructure.
+Pre-configured model specifications are included (in the modelconfig directory of the package install: electricitylci/modelconfig) or users can specify their own models by creating new configuration YAML files in the modelconfig directory.
+The created LCI models are exported for use in standard life cycle assessment software (i.e., in JSON-LD format using the openLCA v2.0 schema).
 
-This code was created as part of a collaboration between US EPA Office of Research and Development (USEPA) and the National Energy Technology Laboratory (NETL) with contributions from the National Renewable Energy Laboratory (NREL) and support from Eastern Research Group (ERG). More information on this effort can be found in the [Framework for an Open-Source Life Cycle Baseline for Electricity Consumption in the United States](https://netl.doe.gov/energy-analysis/details?id=4004).
+This code was created as part of a collaboration between US EPA Office of Research and Development (USEPA) and the National Energy Technology Laboratory (NETL) with contributions from the National Renewable Energy Laboratory (NREL) and support from Eastern Research Group (ERG).
+More information on this effort can be found in the [Framework for an Open-Source Life Cycle Baseline for Electricity Consumption in the United States](https://netl.doe.gov/energy-analysis/details?id=4004).
 
 ## Disclaimer
 
@@ -17,7 +19,7 @@ This code was created as part of a collaboration between US EPA Office of Resear
     imply their endorsement, recommendation or favoring by EPA or NETL.
 
 # Setup
-A Python virtual environment (v 3.11 or higher) is required with the following packages installed, which were recorded in February 2025.
+A Python virtual environment (recommended v3.12) is required with the following packages installed, which were recorded in February 2025.
 _Note that Python 3.14 is not supported (yet)._
 
 + `pip install git+https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List#egg=fedelemflowlist`
@@ -115,7 +117,7 @@ The `main()` method has four steps:
         * ELCI_1
         * ELCI_2
         * ELCI_3
-    - The latest baselines are built from 'ELCI_1' and include:
+    - Version 2 baselines include:
         * ELCI_2020
         * ELCI_2021
         * ELCI_2022
@@ -133,35 +135,11 @@ The `main()` method has four steps:
     - Creates the at-grid consumption mix processes (following one of two trade models)
     - Creates the at-user consumption mix processes (based on calculated transmission and distribution losses)
 4. `run_post_processes()`
-    - Cleans the JSON-LD files (e.g., removing zero-value product flows, removing untracked flows, and creating consecutive internal exchange IDs)
+    - Cleans the JSON-LD files (e.g., removing zero-value product flows, removing untracked flows, correcting flow categories, and creating consecutive internal exchange IDs)
     - Builds the product systems for balancing authority areas, FERC regions, and US.
 
 # Known Issues
-* `Enter EDX API key: ` prompt encountered during 2020-2022 baseline runs.
-    - The NETL coal model transportation inventories were corrected in late 2024.
-    - The new Excel model is available on NETL's EDX [here](https://edx.netl.doe.gov/dataset/fc1e9337-d762-4688-8415-9abf4528c428/resource/d4ecb3b0-cc71-422c-9421-fd78988d2738)
-    - If you do not have an API key, download the linked resource, Transportation_Inventories_02262025.xlsx, and add it to the netl data store on your computer (indicated in the data store section below); the prompt will be skipped on subsequent model runs.
-* `Enter EIA API key: ` prompt used for EBA.zip data (issues with ZIP file found in August 2024; see [Discussion](https://github.com/USEPA/ElectricityLCI/discussions/254) on GitHub)
-    - In globals.py, there is a parameter `EIA_API` that can be toggled to true
-    - You will need an EIA API key (https://www.eia.gov/opendata/)
-* `Enter EPA API key: ` prompt encountered during 2020–2022 baseline runs.
-    - The CEMS data are no longer available via the old FTP.
-    - See https://github.com/USEPA/ElectricityLCI/issues/207
-    - In the short-term, a free-to-register EPA Data API key is required (https://www.epa.gov/power-sector/cam-api-portal#/api-key-signup)
-    - Copy and paste the API key (a long string of numbers and letters) to the prompt and hit Enter to download the missing data.
-    - The missing data are archived in state-based zip files the epacems2020, epacems2021, and epacems2022 folders found in the `paths.local_path` location (as defined in electricitylci.globals.py).
-* `ParseError` when importing generation.py for RCRAInfo 2017 data.
-    - This is likely caused by RCRAInfo download through stewicombo: https://github.com/USEPA/standardizedinventories/issues/151.
-    - In egrid_emissions_and_waste_by_facility.py, uncomment the line with 'download_if_missing=True', restart Python kernel, build model specs, and import generation.py. This should download the cached version of the RCRAInfo data. Re-comment the line when you're done.
-* `ValueError` encountered during 2021 and 2022 baseline runs.
-    - The 'coalpublic2021.xls' and 'coalpublic2022.xls' files downloaded to your f7a_2021 and f7a_2022 folders (in the `paths.local_path` location found in electricitylci.globals.py) are actually XML spreadsheets.
-    - The simple fix is to open these files in Microsoft Excel and "Save as" Microsoft Excel 95 Workbook, replacing the previous file with the new (do not leave both copies in the folder!)
-* The data quality indicators used for flows and processes (dqi.py) may deviate from the standards:
-    - [Flow Pedigree](https://www.lcacommons.gov/lca-collaboration/National_Renewable_Energy_Laboratory/USLCI_Database_Public/dataset/DQ_SYSTEM/d13b2bc4-5e84-4cc8-a6be-9101ebb252ff)
-    - [Process Pedigree](https://www.lcacommons.gov/lca-collaboration/National_Renewable_Energy_Laboratory/USLCI_Database_Public/dataset/DQ_SYSTEM/70bf370f-9912-4ec1-baa3-fbd4eaf85a10)
-* The mapping of Balancing Authorities to FERC regions may need updating as BAs are introduced to the grid.
-    - See GitHub [Issue #215](https://github.com/USEPA/ElectricityLCI/issues/215)
-
+See Appendix A in [this discussion](https://github.com/USEPA/ElectricityLCI/discussions/288) for an overview of unresolved issues in version 2.
 
 # Troubleshooting
 If you receive a TypeError in `write_jsonld`, got unexpected keyword argument 'zw', then it's likely you have an outdated version of [fedelemflowlist](https://github.com/USEPA/fedelemflowlist).
