@@ -411,6 +411,16 @@ def create_ba_region_map(match_fn="BA code match.csv",
         A series with indices associated with balancing authority codes and
         values from the requested region column (e.g., ferc_region).
 
+    Notes
+    -----
+    Note that this method is only called by :func:`eia860_balancing_authority`
+    found in eia860_facilities.py, which itself is only called when the method
+    receives a 'regional_aggregation' parameter. Note that
+    :func:`eia860_balancing_authority` is called in combinator.py,
+    eia_io_trading.py, generation.py, and hydro_upstream.py; and none of these
+    send the regional aggregation parameter; therefore this method is
+    likely unused.
+
     Examples
     --------
     >>> m = create_ba_region_map()
