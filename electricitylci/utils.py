@@ -29,14 +29,16 @@ from electricitylci.globals import output_dir
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2025-05-16
+    2025-06-11
 
 Changelog:
+    -   [25.06.11]: Create background data archive method
+    -   [25.06.11]: Hotfix facilitymatcher global paths
     -   [25.05.08]: Make EIA930 reference table an offline file
     -   [25.01.23]: Add logger utility methods
-    -   [25.01.14]: Add StEWI inventories of interest method.
-    -   [24.10.09]: Update find file in folder to not crash.
-    -   [24.08.05]: Create new BA code getter w/ FERC mapping.
+    -   [25.01.14]: Add StEWI inventories of interest method
+    -   [24.10.09]: Update find file in folder to not crash
+    -   [24.08.05]: Create new BA code getter w/ FERC mapping
     -   TODO: update create_ba_region_map to link with new BA code getter
     -   TODO: create a "wipe clean" method to remove all downloaded data
         within the electricitylci folder.
@@ -68,7 +70,7 @@ __all__ = [
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def _build_data_store(data_file_types=None, skip_dirs=[]):
+def _build_data_store(data_file_types=None, skip_dirs=None):
     """Create a dictionary of files and folders for the data providers
     of ElectricityLCI, including stewi, stewicombo, facilitymatcher, and
     fedelemflowlist.
@@ -78,7 +80,7 @@ def _build_data_store(data_file_types=None, skip_dirs=[]):
     data_file_types : list, optional
         A list of data file type extensions (e.g., '.txt'), by default None
     skip_dirs : list, optional
-        A list of directory names to skip (not paths), by default []
+        A list of directory names to skip (not paths), by default None
 
     Returns
     -------
@@ -100,27 +102,13 @@ def _build_data_store(data_file_types=None, skip_dirs=[]):
 
     for cur_elem in ds.keys():
         cur_path = ds[cur_elem]['path']
-        for root, _, files in os.walk(cur_path):
-            # This is the directory being searched for files and folders.
-            r_dir = os.path.basename(root)
-
-            # Don't look in any folders that are to be skipped.
-            if r_dir in skip_dirs:
-                continue
-            else:
-                # Only add sub-folders
-                if root != cur_path:
-                    ds[cur_elem]['dirs'].append(root)
-                for f in files:
-                    f_path = os.path.join(root, f)
-                    if data_file_types is None:
-                        # Add all files
-                        ds[cur_elem]['files'].append(f_path)
-                    else:
-                        # Add only requested file types
-                        f_ext = os.path.splitext(f)[1]
-                        if f_ext in data_file_types:
-                            ds[cur_elem]['files'].append(f_path)
+        cur_files, cur_folders = _get_non_hidden(
+            cur_path, skip_dirs, data_file_types
+        )
+        for my_folder in cur_folders:
+            ds[cur_elem]['dirs'].append(my_folder)
+        for my_file in cur_files:
+            ds[cur_elem]['files'].append(my_file)
 
     return ds
 
@@ -145,6 +133,68 @@ def _find_empty_dirs(filepath):
             empty_dirs.append(root)
 
     return empty_dirs
+
+
+def _get_non_hidden(root_dir,
+                    skip_folders=None,
+                    file_exts=None,
+                    root_only=False):
+    """Walk through a directory and its subdirectories, yielding only
+    non-hidden files.
+
+    Parameters
+    ----------
+    root_dir : str
+        An existing folder path to walk through.
+    skip_folders : list, optional
+        List of folder names to skip. Defaults to none.
+    file_exts : list, optional
+        List of file extensions to include. Defaults to none.
+    root_only : bool, optional
+        Whether to stop at the root-directory level.
+        If false, will search subfolders.
+        Defaults to false.
+
+    Returns
+    -------
+    tuple
+        A tuple of length two:
+
+        - list, list of file paths
+        - list, list of subfolder paths
+    """
+    files = []
+    folders = []
+
+    if skip_folders is None:
+        skip_folders = []
+    if file_exts is None:
+        file_exts = []
+
+    for dirpath, dirnames, filenames in os.walk(root_dir):
+        # Filter hidden folders and skip folders
+        dirnames[:] = [
+            d for d in dirnames if not d.startswith('.') and
+                d not in skip_folders
+        ]
+
+        for filename in filenames:
+            # Filter hidden files
+            if not filename.startswith('.'):
+                # Return only preferred file types (if requested)
+                if file_exts:
+                    if any(filename.endswith(ext) for ext in file_exts):
+                        files.append(os.path.join(dirpath, filename))
+                else:
+                    files.append(os.path.join(dirpath, filename))
+
+        if root_only:
+            break
+
+        for dirname in dirnames:
+            folders.append(os.path.join(dirpath, dirname))
+
+    return files, folders
 
 
 def _init_data_store():
@@ -219,7 +269,7 @@ def _init_data_store():
         data_store['stewicombo']['path'] = combo_path
 
     try:
-        fm_path = str(fm.globals.path.local_path)
+        fm_path = str(fm.globals.paths.local_path)
     except:
         logging.warning("Failed to find facilitymatcher data store!")
         del data_store['facilitymatcher']
@@ -285,6 +335,78 @@ def _process_files(filelist, to_filter=False, filter_txt="n/a"):
             elif not to_filter:
                 if not os.remove(f):
                     logging.info(msg)
+
+
+def archive_background_data(save_folder="background"):
+    """Create archives of eLCI data stores.
+
+    Archives are stored in the outputs directory in the subfolder provided
+    as ZIP files. Sub-folders in data stores are archived separately.
+    For example, stewi.zip contains the JSON files, while stewi.facility.zip
+    is the 'facility' sub-folder of stewi data store that stores the parquet
+    files. Extract each zip file and drag-and-drop subfolder to their
+    appropriate root folders to recreate the data stores.
+
+    Parameters
+    ----------
+    save_folder : str, optional
+        The output folder to store the archives, by default "background"
+    """
+    ds = _init_data_store()
+    to_skip = ['archive', 'hidden', 'output']
+    output_path = os.path.join(output_dir, save_folder)
+    check_output_dir(output_path)
+
+    # For each datastore (i.e., `cur_elem`), archive files at the root level
+    # and separate archives for each subfolder.
+    for cur_elem in ds.keys():
+        cur_path = ds[cur_elem]['path']
+
+        # Archive root-directly level files into a ZIP (e.g., stewi.zip)
+        root_files, _ = _get_non_hidden(
+            root_dir=cur_path,
+            skip_folders=to_skip,
+            root_only=True
+        )
+        if root_files:
+            root_zip_name = os.path.basename(cur_path)
+            root_zip_name += ".zip"
+            root_zip_path = os.path.join(output_path, root_zip_name)
+
+            with zipfile.ZipFile(root_zip_path, 'w', zipfile.ZIP_DEFLATED) as z:
+                for filepath in root_files:
+                    # Manually add the root_dir folder to archive name;
+                    # overrides default behavior for single-file archives.
+                    arcname = os.path.join(
+                        os.path.basename(cur_path),
+                        os.path.basename(filepath)
+                    )
+                    z.write(filepath, arcname)
+
+            logging.info("Wrote archive to %s" % root_zip_path)
+
+        # Archive subfolder files into own ZIP (e.g., stewi.flowbyfacility.zip)
+        _, sub_folders = _get_non_hidden(cur_path, to_skip)
+        for sub_folder in sub_folders:
+            sub_name = os.path.basename(sub_folder)
+            sub_zip_name = os.path.basename(cur_path)
+            sub_zip_name += "."
+            sub_zip_name += sub_name
+            sub_zip_name += ".zip"
+            sub_zip_path = os.path.join(output_path, sub_zip_name)
+
+            sub_files, _ = _get_non_hidden(sub_folder, to_skip)
+            with zipfile.ZipFile(sub_zip_path, 'w', zipfile.ZIP_DEFLATED) as z:
+                for filepath in sub_files:
+                    # NOTE: does not include root-dir, so it's easy to drag
+                    # and drop into the folder to rebuild the data stores.
+                    arcname = os.path.join(
+                        sub_name,
+                        os.path.basename(filepath)
+                    )
+                    z.write(filepath, arcname)
+
+            logging.info("Wrote archive to %s" % sub_zip_path)
 
 
 def check_output_dir(out_dir):
