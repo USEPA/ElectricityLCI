@@ -12,21 +12,20 @@ generation.py:
           incoming_value: "SOLAR"
           outgoing_value: "GAS"
           filters:
-              FacilityID: 
+              eGRID_ID:
                 - 56938
               Source:
                 - "NEI"
               Year:
                 - 2016
         entry_2:
-          year: 2016
           edit_type: "reassign"
           data_source: "yaml"
           column_to_reassign: "FuelCategory"
           incoming_value: "SOLAR"
           outgoing_value: "GAS"
           filters:
-              FacilityID: 
+              eGRID_ID:
                   - 58697
               Source:
                 - "NEI"
@@ -36,19 +35,17 @@ generation.py:
               Year:
                   - 2016
         entry_3:
-          year: 2016
           edit_type: "reassign"
           data_source: "yaml"
           column_to_reassign: "eGRID_ID"
           incoming_value: 56938
           outgoing_value: 58697
           filters:
-              Source: 
+              Source:
                 - "NEI"
               Year:
                 - 2016
         entry_4:
-          year: 2016
           edit_type: "reassign"
           data_source: "yaml"
           column_to_reassign: "eGRID_ID"
@@ -64,22 +61,20 @@ generation.py:
                 - 2016
                 - 2015
         entry_5:
-          year: 2016
           edit_type: "reassign"
           data_source: "yaml"
-          column_to_reassign: "FacilityID"
+          column_to_reassign: "eGRID_ID"
           incoming_value: 56938
           outgoing_value: 58697
           filters:
-              Source: 
+              Source:
                 - "NEI"
               Year:
                 - 2016
         entry_6:
-          year: 2016
           edit_type: "reassign"
           data_source: "yaml"
-          column_to_reassign: "FacilityID"
+          column_to_reassign: "eGRID_ID"
           incoming_value: 56944
           outgoing_value: 55077
           filters:
@@ -91,18 +86,54 @@ generation.py:
               Year:
                 - 2016
                 - 2015
-#This is in response to issue #77. This plant had 0 generation 
-#in 2016 which is causing issues. See 
+#This is in response to issue #77. This plant had 0 generation
+#in 2016 which is causing issues. See
 #https://github.com/USEPA/ElectricityLCI/issues/77 for more info.
         entry_7:
           edit_type: "remove"
           data_source: "yaml"
           filters:
-            FacilityID:
+            eGRID_ID:
               - 60880
             Year:
               - 2016
-
-
-
-
+# One of these has been an issue since 2016 - Issue #190.
+# 60822 is an industrial facility, specifically electronics manufacturing
+# that has signficant SF6 emissions. Since these emissions aren't expected to
+# come from solar power generation in any signficant quantities, we'll just
+# remove for now.
+        entry_8:
+          edit_type: "remove"
+          data_source: "yaml"
+          filters:
+            eGRID_ID:
+              - 60822
+            FlowName:
+              - "Sulfur hexafluoride"
+            Source:
+              - "NEI"
+            Year:
+              - 2020
+        entry_9:
+          edit_type: "remove"
+          data_source: "yaml"
+          filters:
+            eGRID_ID:
+              - 62208
+            FlowName:
+              - "Sulfur hexafluoride"
+            Source:
+              - "NEI"
+            Year:
+               - 2020
+        entry_10:
+          edit_type: "remove"
+          data_source: "yaml"
+          filters:
+            FuelCategory:
+              - "WIND"
+              - "SOLAR"
+              - "SOLARTHERMAL"
+            Source:
+              - "TRI"
+              - "NEI"

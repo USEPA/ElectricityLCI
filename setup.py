@@ -1,28 +1,30 @@
-from distutils.core import setup
+from setuptools import setup
 
 setup(
-    name='ElectricityLCI',
-    version='1.0.1',
+    name='electricitylci',
+    version='2.0.0',
     packages=['electricitylci'],
-    package_data={'electricitylci': ["data/*.*", "output/.gitignore", "data/EFs/*.*", "data/petroleum_inventory/*.*","modelconfig/*.yml"]},
+    package_data={
+        'electricitylci': ["data/*.*",
+                           "data/EFs/*.*",
+                           "data/coal/2020/*.*",
+                           "data/coal/2023/*.*",
+                           "data/petroleum_inventory/*.*",
+                           "data/renewables/2016/*.*",
+                           "data/renewables/2020/*.*",
+                           "modelconfig/*.yml",
+                           "output/.gitignore",
+                           ]
+    },
     url='https://github.com/USEPA/ElectricityLCI',
     license='CC0',
     author='Matt Jamieson, Wesley Ingwersen, Greg Schively, TJ Ghosh, Ben Young, Troy Hottle',
     author_email='ingwersen.wesley@epa.gov',
     description='Create life cycle inventory data for regionalized electricity generation, mix of generation, mix of consumption, and distribution to the end-user in the United States.',
     install_requires=[
-        'fedelemflowlist @ git+https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List@v1.0.2#egg=fedelemflowlist',
-        'StEWI @ git+https://github.com/USEPA/standardizedinventories@v0.9.3#egg=StEWI',
-        'numpy>=1.14',
-        'pandas>=0.24',
-        'olca-ipc>=0.0.6',
-        'openpyxl>=2.5',
-        'matplotlib>=2.2',
-        'seaborn>=0.9',
-        'sympy>=1.2',
-        'xlrd>=1.1',
-        'pyyaml>=5.1',
-        'requests>=2.2'
+        'fedelemflowlist @ git+https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List#egg=fedelemflowlist',
+        'StEWI @ git+https://github.com/USEPA/standardizedinventories#egg=StEWI',
+        'scipy>=1.10',
         ],
     long_description=open('README.md').read(),
     classifiers=[
@@ -33,5 +35,4 @@ setup(
         "Programming Language :: Python :: 3.x",
         "Topic :: Utilities",
     ]
-
 )

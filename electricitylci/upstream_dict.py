@@ -1,139 +1,162 @@
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# upstream_dict.py
+#
+##############################################################################
+# REQUIRED MODULES
+##############################################################################
+import logging
 
-"""Add docstring."""
-
-import pandas as pd
-from electricitylci.globals import output_dir, data_dir
 from electricitylci.coal_upstream import (
     coal_type_codes,
     mine_type_codes,
     basin_codes,
 )
 from electricitylci import write_process_dicts_to_jsonld
-import logging
-import yaml
-import time
 from electricitylci.process_dictionary_writer import (
-        exchangeDqsystem,
-        processDqsystem,
         process_doc_creation,
         process_description_creation
 )
 from electricitylci.utils import make_valid_version_num
 from electricitylci.globals import elci_version
+# Issue #150, need Balancing Authority names for regional construction
+from electricitylci.eia860_facilities import eia860_balancing_authority
+import electricitylci.model_config as config
 
-module_logger=logging.getLogger("upstream_dict.py")
-# with open(f"{data_dir}/upstream_metadata.yaml", 'r') as f:
-#    metadata = yaml.safe_load(f)
+
+##############################################################################
+# MODULE DOCUMENTATION
+##############################################################################
+__doc__ = """
+This module contains the relevant methods for generating openLCA-compliant
+dictionaries for upstream process inventories, such as coal/natural gas/
+petroleum extraction and processing, coal transport, nuclear fuel extraction,
+processing, and transport, and power plant construction.
+
+Last updated:
+    2025-06-09
+"""
+__all__ = [
+    "olcaschema_genupstream_processes",
+]
 
 
-def _unit(unt):
+##############################################################################
+# FUNCTIONS
+##############################################################################
+def _exchange_table_creation_output(data):
+    """Create an olca-schema formatted exchange dictionary.
+
+    Parameters
+    ----------
+    data : pandas.Series
+        A data series for an exchange flow.
+
+    Returns
+    -------
+    dict
+        An olca-schema formatted exchange dictionary.
+    """
     ar = dict()
     ar["internalId"] = ""
-    ar["@type"] = "Unit"
-    ar["name"] = unt
-    return ar
-
-
-def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
-    fuel_category_dict = {
-        "COAL": "21: Mining, Quarrying, and Oil and Gas Extraction/2121: Coal Mining",
-        "GAS": "22: Utilities/2212: Natural Gas Distribution",
-        "OIL": "31-33: Manufacturing/3241: Petroleum and Coal Products Manufacturing",
-        "NUCLEAR": "31-33: Manufacturing/3251: Basic Chemical Manufacturing",
-#        "GEOTHERMAL": "22: Utilities/2211: Electric Power Generation Transmission and Distribuion",
-#        "WIND": "22: Utilities/2211: Electric Power Generation Transmission and Distribuion",
-#        "SOLAR": "22: Utilities/2211: Electric Power Generation Transmission and Distribuion",
-        "CONSTRUCTION":"23: Construction/2371: Utility System Construction",
-    }
-    ar = dict()
-    ar["@type"] = "Process"
-    ar["allocationFactors"] = ""
-    ar["defaultAllocationMethod"] = ""
-    ar["exchanges"] = exchanges_list
-    ar["location"] = ""  # location(region)
-    ar["parameters"] = ""
-    module_logger.info(f"passing {fuel_type.lower()}_upstream to process_doc_creation")
-    ar['processDocumentation']=process_doc_creation(process_type=f"{fuel_type.lower()}_upstream")
-    ar["processType"] = "LCI_RESULT"
-    ar["name"] = process_name
-    if fuel_type is "coal_transport":
-        ar["category"] = fuel_category_dict["COAL"]
-    else:
-        ar["category"] = fuel_category_dict[fuel_type]
-    ar["description"] = process_description_creation(f"{fuel_type.lower()}_upstream")
-    ar["version"]=make_valid_version_num(elci_version)
+    ar["@type"] = "Exchange"
+    ar["avoidedProduct"] = False
+    ar["flow"] = _flow_table_creation(data)
+    ar["flowProperty"] = ""
+    ar["input"] = data["input"]
+    ar["quantitativeReference"] = False
+    ar["baseUncertainty"] = ""
+    ar["provider"] = ""
+    ar["amount"] = data["emission_factor"]
+    ar["amountFormula"] = ""
+    ar["unit"] = _unit(data["Unit"])
+    # Issue 296 - changes to get data quality scores into final
+    # dictionaries. Just to make sure _something_ makes it in and to guard
+    # against possible missing entries, we'll try adding the entry using
+    # the expected keys and if that fails, give the worst dqi score of (5;5;5;5;5)
+    try:
+        dqi_keys = [
+            'DataReliability',
+            'TemporalCorrelation',
+            'GeographicalCorrelation',
+            'TechnologicalCorrelation',
+            'DataCollection'
+        ]
+        dqi_str = '(' + ";".join([str(data[x]) for x in dqi_keys]) + ')'
+        ar["dqEntry"] = dqi_str
+    except KeyError:
+        ar["dqEntry"]="(5;5;5;5;5)"
+    ar["pedigreeUncertainty"] = ""
+    if type(ar) == "DataFrame":
+        print(data)
     return ar
 
 
 def _exchange_table_creation_ref(fuel_type):
-    # region = data['Subregion'].iloc[0]
     natural_gas_flow = {
         "flowType": "PRODUCT_FLOW",
         "flowProperties": "",
         "name": "natural gas, through transmission",
         "id": "",
-        "category": "Technosphere Flows/22: Utilities/2212: Natural Gas Distribution",
+        "category": (
+            "Technosphere Flows/"
+            "22: Utilities/"
+            "2212: Natural Gas Distribution"),
     }
-
     coal_flow = {
         "flowType": "PRODUCT_FLOW",
         "flowProperties": "",
         "name": "coal, processed, at mine",
         "id": "",
-        "category": "Technosphere Flows/21: Mining, Quarrying, and Oil and Gas Extraction/2121: Coal Mining",
+        "category": (
+            "Technosphere Flows/"
+            "21: Mining, Quarrying, and Oil and Gas Extraction/"
+            "2121: Coal Mining"),
     }
-
     petroleum_flow = {
         "flowType": "PRODUCT_FLOW",
         "flowProperties": "",
         "name": "petroleum fuel, through transportation",
         "id": "",
-        "category": "Technosphere Flows/31-33: Manufacturing/3241: Petroleum and Coal Products Manufacturing",
+        "category": (
+            "Technosphere Flows/"
+            "31-33: Manufacturing/"
+            "3241: Petroleum and Coal Products Manufacturing"),
     }
-
     transport_flow = {
         "flowType": "PRODUCT_FLOW",
         "flowProperties": "",
         "name": "coal, transported",
         "id": "",
-        "category": "Technosphere Flows/21: Mining, Quarrying, and Oil and Gas Extraction/2121: Coal Mining",
+        "category": (
+            "Technosphere Flows/"
+            "21: Mining, Quarrying, and Oil and Gas Extraction/"
+            "2121: Coal Mining"),
     }
     nuclear_flow = {
         "flowType": "PRODUCT_FLOW",
         "flowProperties": "",
         "name": "nuclear fuel, through transportation",
         "id": "",
-        "category": "Technosphere Flows/31-33: Manufacturing/3251: Basic Chemical Manufacturing",
+        "category": (
+            "Technosphere Flows/"
+            "31-33: Manufacturing/"
+            "3251: Basic Chemical Manufacturing"),
     }
-    construction_flow ={
-            "flowType":"PRODUCT_FLOW",
-            "flowProperties":"",
-            "name":"power plant construction",
-            "id":"",
-            "category":"Technosphere Flows/23: Construction/2371: Utility System Construction"
-            }
-#    geothermal_flow = {
-#        "flowType": "PRODUCT_FLOW",
-#        "flowProperties": "",
-#        "name": "geothermal, upstream and plant",
-#        "id": "",
-#        "category": "22: Utilities",
-#    }
-#    solar_flow = {
-#        "flowType": "PRODUCT_FLOW",
-#        "flowProperties": "",
-#        "name": "solar facility construction and operations",
-#        "id": "",
-#        "category": "22: Utilities",
-#    }
-#    wind_flow = {
-#        "flowType": "PRODUCT_FLOW",
-#        "flowProperties": "",
-#        "name": "wind farm construction and operations",
-#        "id": "",
-#        "category": "22: Utilities",
-#    }
+    construction_flow = {
+        "flowType":"PRODUCT_FLOW",
+        "flowProperties":"",
+        "name":"power plant construction",
+        "id":"",
+        "category": (
+            "Technosphere Flows/"
+            "23: Construction/"
+            "2371: Utility System Construction")
+    }
+
+    # The following link provides the undefined variables:
+    # https://github.com/KeyLogicLCA/ElectricityLCI/commit/f61d28a3d0cf5b0ef61ca147f870e15a863f8ec3
     ar = dict()
     ar["internalId"] = ""
     ar["@type"] = "Exchange"
@@ -158,19 +181,25 @@ def _exchange_table_creation_ref(fuel_type):
         ar["flow"] = nuclear_flow
         ar["unit"] = _unit("MWh")
         ar["amount"] = 1
+    # NOTE: presently, there are no upstream processes for these
     elif fuel_type == "GEOTHERMAL":
+        logging.warning("Undefined geothermal flow")
         ar["flow"] = geothermal_flow
         ar["unit"] = _unit("MWh")
         ar["amount"] = 1
     elif fuel_type == "SOLAR":
+        logging.warning("Undefined solar flow")
         ar["flow"] = solar_flow
         ar["unit"] = _unit("Item(s)")
         ar["amount"] = 1
     elif fuel_type == "WIND":
+        logging.warning("Undefined wind flow")
         ar["flow"] = wind_flow
         ar["unit"] = _unit("Item(s)")
         ar["amount"] = 1
-    elif fuel_type == "CONSTRUCTION":
+    # END NOTE
+    # issue #150, catching multiple construction types
+    elif "CONSTRUCTION" in fuel_type:
         ar["flow"] = construction_flow
         ar["unit"] = _unit("Item(s)")
         ar["amount"] = 1
@@ -180,192 +209,334 @@ def _exchange_table_creation_ref(fuel_type):
     ar["baseUncertainty"] = ""
     ar["provider"] = ""
     ar["amountFormula"] = ""
+
     return ar
 
 
 def _flow_table_creation(data):
+    """Create olca-schema for a flow in an exchange.
+
+    Parameters
+    ----------
+    data : pandas.Series
+
+    Returns
+    -------
+    dict
+        An olca-schema formatted dictionary for an exchange flow.
+    """
+    # HOTFIX iss267. v2: Add elementary flow prime context check.
+    # HOTFIX iss267. v1: Construction flows do not have a FlowType assigned;
+    # however, other flows do. Let's check them first.
     ar = dict()
-    if "emission" in data["Compartment"] or "resource" in data["Compartment"]:
-        ar["flowType"] = "ELEMENTARY_FLOW"
-    elif "technosphere" in data["Compartment"].lower() or "valuable" in data["Compartment"].lower():
-        ar["flowType"] = "PRODUCT_FLOW"
-    elif "waste" in data["Compartment"].lower():
-        ar["flowType"] = "WASTE_FLOW"
-    else:
-        ar["flowType"] = "ELEMENTARY_FLOW"
+    try:
+        ar['flowType'] = data['FlowType']
+    except KeyError:
+        # No flow type index
+        if "emission" in data["Compartment"] or "resource" in data["Compartment"]:
+            ar["flowType"] = "ELEMENTARY_FLOW"
+        elif "technosphere" in data["Compartment"].lower() or (
+                "valuable" in data["Compartment"].lower()):
+            ar["flowType"] = "PRODUCT_FLOW"
+        elif data['ElementaryFlowPrimeContext'] == 'technosphere':
+            # Iss267; cross-check prime context for product flows [241125; TWD]
+            ar["flowType"] = "PRODUCT_FLOW"
+        elif "waste" in data["Compartment"].lower():
+            ar["flowType"] = "WASTE_FLOW"
+        else:
+            ar["flowType"] = "ELEMENTARY_FLOW"
+
     ar["flowProperties"] = ""
-    ar["name"] = data["FlowName"][
-        0:255
-    ]  # cutoff name at length 255 if greater than that
+    ar["name"] = data["FlowName"][0:255] # Cutoff flow name at length 255
     ar["id"] = data["FlowUUID"]
+
     comp = str(data["Compartment"])
     if (ar["flowType"] == "ELEMENTARY_FLOW") & (comp != ""):
+        # HOTFIX duplicate compartment [25.06.09; TWD]
+        if comp.startswith("Elementary Flows/"):
+            comp = comp.replace("Elementary Flows/", "")
         if "emission" in comp or "resource" in comp:
             ar["category"]="Elementary flows/"+comp
         else:
             ar["category"] = "Elementary flows/" + "emission" + "/" + comp
     elif (ar["flowType"] == "PRODUCT_FLOW") & (comp != ""):
+        # HOTFIX: put technosphere flows in their own sub-category [250206;TWD]
+        if not comp.startswith("Technosphere Flows/"):
+            comp = "Technosphere Flows/" + comp
         ar["category"] = comp
     elif ar["flowType"] == "WASTE_FLOW":
         ar["category"] = "Waste flows/"
     else:
-        ar[
-            "category"
-        ] = "22: Utilities/2211: Electric Power Generation, Transmission and Distribution"
+        ar["category"] = (
+            "22: Utilities/"
+            "2211: Electric Power Generation, Transmission and Distribution")
+
     return ar
 
 
-def _exchange_table_creation_output(data):
-    # year = data['Year'].iloc[0]
-    # source = data['Source'].iloc[0]
+def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
+    """Generate an openlca-schema formatted dictionary for a Process.
+
+    See
+    `online <https://greendelta.github.io/olca-schema/classes/Process.html>`_.
+
+    Parameters
+    ----------
+    process_name : str
+        Process name.
+    exchanges_list : list
+        List of exchange dictionaries.
+    fuel_type : str
+        Fuel type
+
+    Returns
+    -------
+    dict
+        A dictionary for an openLCA schema Process.
+    """
+    # Standard categories for openLCA processes by technology (by NAICS code).
+    fuel_category_dict = {
+        "COAL": (
+            "21: Mining, Quarrying, and Oil and Gas Extraction/"
+            "2121: Coal Mining"),
+        "GAS": (
+            "22: Utilities/"
+            "2212: Natural Gas Distribution"),
+        "OIL": (
+            "31-33: Manufacturing/"
+            "3241: Petroleum and Coal Products Manufacturing"),
+        "NUCLEAR": (
+            "31-33: Manufacturing/"
+            "3251: Basic Chemical Manufacturing"),
+        "CONSTRUCTION": (
+            "23: Construction/"
+            "2371: Utility System Construction"),
+            #New Issue #150
+        "WIND_CONSTRUCTION": (
+            "23: Construction/"
+            "2371: Utility System Construction"),
+        "SOLARPV_CONSTRUCTION": (
+            "23: Construction/"
+            "2371: Utility System Construction"),
+        "SOLARTHERM_CONSTRUCTION": (
+            "23: Construction/"
+            "2371: Utility System Construction"),
+    }
+
+    ar = dict()
+    ar["@type"] = "Process"
+    ar["allocationFactors"] = ""
+    ar["defaultAllocationMethod"] = ""
+    ar["exchanges"] = exchanges_list
+    ar["location"] = ""  # location(region)
+    ar["parameters"] = ""
+
+    logging.debug(
+        f"passing {fuel_type.lower()}_upstream to process_doc_creation")
+    ar['processDocumentation'] = process_doc_creation(
+        process_type=f"{fuel_type.lower()}_upstream")
+    ar["processType"] = "LCI_RESULT"
+    ar["name"] = process_name
+    if fuel_type == "coal_transport":
+        ar["category"] = fuel_category_dict["COAL"]
+    else:
+        ar["category"] = fuel_category_dict[fuel_type]
+
+    # TODO: here is where renewable construction process documentation
+    # is handled; however, the fixes for it are found in generation.py;
+    # here construction_upstream is used to make the default fossil/ngcc
+    # construction documentation as found in process_dictionary_writer.py;
+    # potentially add alternative route in process_description_creation
+    # (e.g., pull construction type from process name).
+    ar["description"] = process_description_creation(
+        f"{fuel_type.lower()}_upstream")
+    ar["version"] = make_valid_version_num(elci_version)
+
+    return ar
+
+
+def _unit(unt):
+    """Create a unit dictionary in olca-schema format.
+
+    See `online <https://greendelta.github.io/olca-schema/classes/Unit.html>`_
+
+    Parameters
+    ----------
+    unt : str
+        Unit name
+
+    Returns
+    -------
+    dict
+        openLCA-schema formatted dictionary for Unit.
+    """
     ar = dict()
     ar["internalId"] = ""
-    ar["@type"] = "Exchange"
-    ar["avoidedProduct"] = False
-    ar["flow"] = _flow_table_creation(data)
-    ar["flowProperty"] = ""
-    ar["input"] = data["input"]
-    ar["quantitativeReference"] = False
-    ar["baseUncertainty"] = ""
-    ar["provider"] = ""
-    ar["amount"] = data["emission_factor"]
-    ar["amountFormula"] = ""
-    ar["unit"] = _unit(data["Unit"])
-    ar["pedigreeUncertainty"] = ""
-    #    ar['dqEntry'] = '('+str(round(data['Reliability_Score'].iloc[0],1))+\
-    #                    ';'+str(round(data['TemporalCorrelation'].iloc[0],1))+\
-    #                    ';' + str(round(data['GeographicalCorrelation'].iloc[0],1))+\
-    #                    ';' + str(round(data['TechnologicalCorrelation'].iloc[0],1))+ \
-    #                    ';' + str(round(data['DataCollection'].iloc[0],1))+')'
-    #    ar['uncertainty']=uncertainty_table_creation(data)
-    # ar['comment'] = str(source)+' '+str(year)
-    # if data['FlowType'].iloc[0] == 'ELEMENTARY_FLOW':
-    #  ar['category'] = 'Elementary flows/'+str(data['ElementaryFlowPrimeContext'].iloc[0])+'/'+str(data['Compartment'].iloc[0])
-    # elif data['FlowType'].iloc[0] == 'WASTE_FLOW':
-    #  ar['category'] = 'Waste flows/'
-    # else:
-    #  ar['category'] = '22: Utilities/2211: Electric Power Generation, Transmission and Distribution'+data['FlowName'].iloc[0]
-    if type(ar) == "DataFrame":
-        print(data)
+    ar["@type"] = "Unit"
+    ar["name"] = unt
     return ar
 
 
 def olcaschema_genupstream_processes(merged):
-    """
-    Generate olca-schema dictionaries.
-    
-    For upstream processes for the inventory provided in the given dataframe.
+    """Generate olca-schema dictionaries.
+
+    For upstream processes for the inventory provided in the given data frame.
 
     Parameters
     ----------
-    merged: dataframe
-        Dataframe containing the inventory for upstream processes used by
-        eletricity generation.
+    merged: pandas.DataFrame
+        Data frame containing the inventory for upstream processes used by
+        electricity generation.
 
     Returns
     ----------
-    dictionary
+    dict
         Dictionary containing all of the unit processes to be written to
-        JSON-LD for import to openLCA
+        JSON-LD for import to openLCA.
     """
-    #    mapped_column_dict={
-    #        'UUID (EPA)':'FlowUUID',
-    #        'FlowName':'model_flow_name',
-    #        'Flow name (EPA)':'FlowName'
-    #    }
-    #
-    #    #This is a mapping of various NETL flows to federal lca commons flows
-    #    netl_epa_flows = pd.read_csv(
-    #            data_dir+'/Elementary_Flows_NETL.csv',
-    #            skiprows=2,
-    #            usecols=[0,1,2,6,7,8]
-    #    )
-    #    netl_epa_flows['Category']=netl_epa_flows['Category'].str.replace(
-    #            'Emissions to ','',).str.lower()
-    #    netl_epa_flows['Category']=netl_epa_flows['Category'].str.replace(
-    #            'emission to ','',).str.lower()
-
     coal_type_codes_inv = dict(map(reversed, coal_type_codes.items()))
     mine_type_codes_inv = dict(map(reversed, mine_type_codes.items()))
     basin_codes_inv = dict(map(reversed, basin_codes.items()))
+    # Hotfix: add 'Belt' to coal transport list [12/16/2024;MBJ]
+    # NOTE: I don't think the belt inventory is actually used anywhere
     coal_transport = [
         "Barge",
         "Lake Vessel",
         "Ocean Vessel",
         "Railroad",
         "Truck",
+        "Belt",
     ]
-    #    merged_summary = merged.groupby([
-    #            'fuel_type','stage_code','FlowName','Compartment'],as_index=False
-    #            )['quantity','FlowAmount'].sum()
     # First going to keep plant IDs to account for possible emission repeats
     # for the same compartment, leading to erroneously low emission factors
     merged_summary = merged.groupby(
-        [
+        by=[
             "FuelCategory",
             "stage_code",
             "FlowName",
             "FlowUUID",
             "Compartment",
+            "ElementaryFlowPrimeContext",
             "plant_id",
             "Unit",
             "input"
         ],
         as_index=False,
     ).agg({"FlowAmount": "sum", "quantity": "mean"})
+    # NEW Issue #150, adding regional ability for construction of all types
+    plant_region = eia860_balancing_authority(config.model_specs.eia_gen_year)
+    plant_region["Plant Id"] = plant_region["Plant Id"].astype("int32")
+    merged_summary_regional = (
+        merged_summary.loc[
+            merged_summary["FuelCategory"].str.contains("CONSTRUCTION"), :
+        ]
+        .merge(
+            plant_region, how="left", left_on="plant_id", right_on="Plant Id"
+        )
+        .copy().reset_index()
+    )
+    plant_region_dict = {
+        x[0]: x[1]
+        for x in zip(
+            plant_region["Plant Id"],
+            plant_region["Balancing Authority Name"],
+        )
+    }
     merged_summary = merged_summary.groupby(
-        ["FuelCategory", "stage_code", "FlowName", "FlowUUID", "Compartment","Unit","input"],
+        by=[
+            "FuelCategory",
+            "stage_code",
+            "FlowName",
+            "FlowUUID",
+            "Compartment",
+            "ElementaryFlowPrimeContext",
+            "Unit",
+            "input",
+        ],
         as_index=False,
-    )["quantity", "FlowAmount"].sum()
-    # ng_rows = merged_summary['fuel_type']=='Natural gas'
+    )[["quantity", "FlowAmount"]].sum()
 
+    # Issue #150, adding regional ability for construction of all types
+    # NOTE: Added "Balancing Authority Name" below to enable regionalized
+    # construction processes. Only for balancing authorities now but should
+    # be expanded to eGRID, etc.
+    merged_summary_regional = merged_summary_regional.groupby(
+        by=[
+            "FuelCategory",
+            "stage_code",
+            "FlowName",
+            "FlowUUID",
+            "Compartment",
+            "ElementaryFlowPrimeContext",
+            "Unit",
+            "input",
+            "Balancing Authority Name",
+        ],
+        as_index=False,
+    )[["quantity", "FlowAmount"]].sum()
     # For natural gas extraction there are extraction and transportation stages
     # that will get lumped together in the groupby which will double
     # the quantity and erroneously lower emission rates.
-    # merged_summary.loc[ng_rows,'quantity']=merged_summary.loc[ng_rows,'quantity']/2
+
+    # Calculate emission factor (e.g., total emission per total MWh)
+    merged_summary["FlowAmount"]=merged_summary["FlowAmount"].astype(float)
+    merged_summary["quantity"]=merged_summary["quantity"].astype(float)
+
     merged_summary["emission_factor"] = (
         merged_summary["FlowAmount"] / merged_summary["quantity"]
     )
-    merged_summary.dropna(subset=["emission_factor"],inplace=True)
-    upstream_list = list(
-        x
-        for x in merged_summary["stage_code"].unique()
-        # if x not in coal_transport
-    )
+    merged_summary.dropna(subset=["emission_factor"], inplace=True)
+    # NEW Issue #150, adding regional ability for construction of all types
+    merged_summary_regional["FlowAmount"]=merged_summary_regional["FlowAmount"].astype(float)
+    merged_summary_regional["quantity"]=merged_summary_regional["quantity"].astype(float)
 
-    #merged_summary["FlowDirection"] = "output"
+    merged_summary_regional["emission_factor"] = (
+        merged_summary_regional["FlowAmount"] / merged_summary_regional["quantity"]
+    )
+    merged_summary_regional.dropna(subset=["emission_factor"], inplace=True)
+    # Make upstream processes for each stage code and save to a dictionary.
     upstream_process_dict = dict()
-    # upstream_list=['Appalachian']
+    upstream_list = [x for x in merged_summary["stage_code"].unique()]
     for upstream in upstream_list:
-        module_logger.info(f"Building dictionary for {upstream}")
+        logging.info(f"Building dictionary for {upstream}")
         exchanges_list = list()
-        # upstream = upstream_list[0]
+
         upstream_filter = merged_summary["stage_code"] == upstream
         merged_summary_filter = merged_summary.loc[upstream_filter, :].copy()
-        # merged_summary_filter_mapped = pd.merge(
-        #         left=merged_summary_filter,
-        #         right=netl_epa_flows,
-        #         left_on=['FlowName','Compartment'],
-        #         right_on=['NETL Flows','Category'],
-        #         how='left'
-        # )
-        # merged_summary_filter = merged_summary_filter.rename(
-        #         columns=mapped_column_dict,copy=False)
         merged_summary_filter.drop_duplicates(
-            subset=["FlowName", "Compartment", "FlowAmount"], inplace=True
+            subset=["FlowName", "Compartment", "FlowAmount"],
+            inplace=True
         )
         merged_summary_filter.dropna(subset=["FlowName"], inplace=True)
+
+        # TODO: where does "[no match]" get set? FEDEFL mapper?
         garbage = merged_summary_filter.loc[
-            merged_summary_filter["FlowName"] == "[no match]", :
-        ].index
+            merged_summary_filter["FlowName"] == "[no match]", :].index
         merged_summary_filter.drop(garbage, inplace=True)
+        # Issue 296 - changes to get data quality scores into final
+        # dictionaries
+        merged_summary_filter = merged_summary_filter.merge(
+            merged.loc[merged["stage_code"]==upstream,
+                [
+                    "FlowUUID",
+                    "DataCollection",
+                    "TemporalCorrelation",
+                    "GeographicalCorrelation",
+                    "TechnologicalCorrelation",
+                    "DataReliability",
+                ]
+            ].drop_duplicates(subset=["FlowUUID"]),
+            on=["FlowUUID"],
+            how="left",
+        )
         ra = merged_summary_filter.apply(
-            _exchange_table_creation_output, axis=1
-        ).tolist()
+            _exchange_table_creation_output, axis=1).tolist()
         exchanges_list.extend(ra)
+
         first_row = min(merged_summary_filter.index)
         fuel_type = merged_summary_filter.loc[first_row, "FuelCategory"]
         stage_code = merged_summary_filter.loc[first_row, "stage_code"]
+
         if (fuel_type == "COAL") & (stage_code not in coal_transport):
             split_name = merged_summary_filter.loc[
                 first_row, "stage_code"
@@ -401,7 +572,7 @@ def olcaschema_genupstream_processes(merged):
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
         elif fuel_type == "NUCLEAR":
             combined_name = (
-                "nuclear fuel extraction, prococessing, and transport"
+                "nuclear fuel extraction, processing, and transport"
             )
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
         elif fuel_type == "GEOTHERMAL":
@@ -413,66 +584,109 @@ def olcaschema_genupstream_processes(merged):
         elif fuel_type == "WIND":
             combined_name = f"wind upstream and operation - {stage_code}"
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
-        elif fuel_type == "CONSTRUCTION":
-            combined_name= f"power plant construction - {stage_code}"
+        # Issue #150, catching multiple types of CONSTRUCTION. Worth noting that
+        # US average is appended to these in case they're needed (unlikely)
+        elif "CONSTRUCTION" in fuel_type:
+            combined_name= f"power plant construction - {stage_code} - US Average"
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
+
         process_name = f"{combined_name}"
         if (fuel_type == "COAL") & (stage_code in coal_transport):
-            final=_process_table_creation_gen(
-                    process_name, exchanges_list, "coal_transport"
+            final = _process_table_creation_gen(
+                process_name, exchanges_list, "coal_transport"
             )
         else:
             final = _process_table_creation_gen(
-                    process_name, exchanges_list, fuel_type
+                process_name, exchanges_list, fuel_type
             )
         upstream_process_dict[
             merged_summary_filter.loc[first_row, "stage_code"]
         ] = final
-#        print("complete")
+    # New, Issue #150 - adding regional construction profiles.
+    merged_summary_regional["scen_name"] = (
+        merged_summary_regional["stage_code"]
+        + " - "
+        + merged_summary_regional["Balancing Authority Name"]
+    )
+    # Issue 296 - changes to get data quality scores into final
+    # dictionaries
+    small_merged=merged[[
+            "FlowUUID",
+            "DataCollection",
+            "TemporalCorrelation",
+            "GeographicalCorrelation",
+            "TechnologicalCorrelation",
+            "DataReliability",
+            "plant_id",
+            "stage_code"
+        ]
+    ].copy()
+    small_merged["plant_id"]=small_merged["plant_id"].astype("int32")
+    small_merged["Balancing Authority Name"] = small_merged["plant_id"].map(
+        plant_region_dict
+    )
+    small_merged["scen_name"]=(
+        small_merged["stage_code"]
+        + " - "
+        + small_merged["Balancing Authority Name"]
+    )
+    small_merged=small_merged.drop_duplicates(subset=["scen_name","FlowUUID"])
+    upstream_regional_list = [x for x in merged_summary_regional["scen_name"].unique()]
+    for upstream in upstream_regional_list:
+        logging.info(f"Building dictionary for {upstream}")
+        exchanges_list = list()
+
+        upstream_filter = merged_summary_regional["scen_name"] == upstream
+        merged_summary_filter = merged_summary_regional.loc[upstream_filter, :].copy()
+        merged_summary_filter.drop_duplicates(
+            subset=["FlowName", "Compartment", "FlowAmount"],
+            inplace=True
+        )
+        merged_summary_filter.dropna(subset=["FlowName"], inplace=True)
+
+        # TODO: where does "[no match]" get set? FEDEFL mapper?
+        garbage = merged_summary_filter.loc[
+            merged_summary_filter["FlowName"] == "[no match]", :].index
+        merged_summary_filter.drop(garbage, inplace=True)
+        # Issue 296 - changes to get data quality scores into final
+        # dictionaries
+        merged_summary_filter = merged_summary_filter.merge(
+            small_merged.loc[small_merged["scen_name"]==upstream,:],
+            on=["FlowUUID"],
+            how="left",
+            suffixes=["","_right"]
+        )
+        ra = merged_summary_filter.apply(
+            _exchange_table_creation_output, axis=1).tolist()
+        exchanges_list.extend(ra)
+
+        first_row = min(merged_summary_filter.index)
+        fuel_type = merged_summary_filter.loc[first_row, "FuelCategory"]
+
+        if "CONSTRUCTION" in fuel_type:
+            combined_name = f"power plant construction - {upstream}"
+            exchanges_list.append(_exchange_table_creation_ref(fuel_type))
+
+        process_name = f"{combined_name}"
+        final = _process_table_creation_gen(
+                process_name, exchanges_list, fuel_type
+            )
+        upstream_process_dict[
+            merged_summary_filter.loc[first_row, "scen_name"]
+        ] = final
     return upstream_process_dict
 
-#def process_doc_creation(fueltype=""):
-#
-#    global year
-#    ar = dict()
-#    ar["timeDescription"] = ""
-#    ar["validUntil"] = "12/31/2018"
-#    ar["validFrom"] = "1/1/2018"
-#    ar[
-#        "technologyDescription"
-#    ] = "This is an aggregation of technology types for this fuel type within this eGRID subregion"
-#    ar["dataCollectionDescription"] = metadata["DataCollectionPeriod"]
-#    ar["completenessDescription"] = metadata["DataCompleteness"]
-#    ar["dataSelectionDescription"] = metadata["DataSelection"]
-#    ar["reviewDetails"] = metadata["DatasetOtherEvaluation"]
-#    ar["dataTreatmentDescription"] = metadata["DataTreatment"]
-#    ar["inventoryMethodDescription"] = metadata["LCIMethod"]
-#    ar["modelingConstantsDescription"] = metadata["ModellingConstants"]
-#    ar["reviewer"] = metadata["Reviewer"]
-#    ar["samplingDescription"] = metadata["SamplingProcedure"]
-#    ar["sources"] = ""
-#    ar["restrictionsDescription"] = metadata["AccessUseRestrictions"]
-#    ar["copyright"] = False
-#    ar["creationDate"] = time.time()
-#    ar["dataDocumentor"] = metadata["DataDocumentor"]
-#    ar["dataGenerator"] = metadata["DataGenerator"]
-#    ar["dataSetOwner"] = metadata["DatasetOwner"]
-#    ar["intendedApplication"] = metadata["IntendedApplication"]
-#    ar["projectDescription"] = metadata["ProjectDescription"]
-#    ar["publication"] = ""
-#    ar["geographyDescription"] = ""
-#    ar["exchangeDqSystem"] = exchangeDqsystem()
-#    ar["dqSystem"] = processDqsystem()
-#    # Temp place holder for process DQ scores
-#    ar["dqEntry"] = "(5;5)"
-#    return ar
 
+##############################################################################
+# MAIN
+##############################################################################
 if __name__ == "__main__":
     import electricitylci.coal_upstream as coal
     import electricitylci.natural_gas_upstream as ng
     import electricitylci.petroleum_upstream as petro
     import electricitylci.nuclear_upstream as nuke
     from combinator import concat_map_upstream_databases
+    from electricitylci.globals import output_dir
 
     year = 2016
     coal_df = coal.generate_upstream_coal(year)
