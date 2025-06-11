@@ -48,42 +48,15 @@ References:
         -   https://greendelta.github.io/olca-schema/
         -   https://github.com/GreenDelta/olca-schema
 
-Changelog:
+Changelog (since v2.0):
 
-    -   Remove annotations in method type hints & replace with proper doc
-        strings.
-    -   Fix and simplify the _val method; properly returns first key value
-    -   Simplify the _unit method (see olca_schema.units)
-    -   Remove the _compartment method (not necessary in new schema)
-    -   Overhaul the data quality methods.
-    -   Utilize datetime package in _format_date
-    -   New methods for getting current date and year
-    -   New methods for checking valid year and UUID
-    -   New flow property generator based on olca-schema.units module
-    -   Fix locations that are just strings (not a data dictionary)
-    -   Fix UUID validation for nan
-    -   Add openLCA's unit group and flow property lists based on the
-        Federal LCA Commons's Federal Elementary Flow List
-    -   New method for reading JSON-LD that fixes repeated .json entries
-    -   New save method that checks for existing JSON-LD, extracts its data,
-        updates with new data, then re-zips (proper handling of zip archive).
-    -   New build product systems method
-    -   Fix memory leak in ``_make_product_system`` call to
-        ``_build_supply_chain``
-    -   Add missing 'Electricity; at user; consumption mix - US - US' process
-        to product system generation
-    -   Correct emissions labeled as resource
-    -   Add flow metadata from USEPA's fedelemflowlist
-    -   Speed up fedelemflowlist writing
-    -   Move Federal LCA Commons' JSON assets to local data store
-    -   Add EPA's DQI pedigree matrices to JSON-LD
-    -   Fix removal of untracked flows (new :func:`rm_untracked_flows`)
-    -   Add two more corrections to :func:`clean_json`
+    -   [25.06.11] New method for updating product system description text.
 
 Last edited:
-    2025-06-10
+    2025-06-11
 """
 __all__ = [
+    "add_to_product_system_description",
     "build_product_systems",
     "check_exchanges",
     "clean_json",
@@ -94,6 +67,50 @@ __all__ = [
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
+def add_to_product_system_description(file_path, description_txt):
+    """Add a string to each product system description in a JSON-LD.
+
+    Parameters
+    ----------
+    file_path : str
+        File path to an existing JSON-LD created by ElectricityLCI.
+    description_txt : str
+        The string of text to be appended to the product system description
+        text.
+
+    Examples
+    --------
+    >>> txt_to_add = (
+    ...     "The background data used to generate this inventory "
+    ...     "model may be accessed at https://doi.org/10.18141/2569193."
+    ... )
+    >>> json_file = "ELCI_2022_jsonld_20250528_200843.zip"
+    >>> add_to_product_system_description(json_file, txt_to_add)
+    """
+    try:
+        data = _read_jsonld(file_path, _root_entity_dict())
+    except OSError:
+        logging.warning("Failed to read JSON-LD file, %s" % file_path)
+    else:
+        num_ps = len (data['ProductSystem']['ids'])
+        logging.info("Updating %d product system entity descriptions" % num_ps)
+
+        for p in data["ProductSystem"]['objs']:
+            if p.description:
+                # Description has text; append to it
+                p.description += " "
+                p.description += description_txt
+            else:
+                # No description; set as new text
+                p.description = description_txt
+
+            # Update change date/time
+            p.last_change = _current_time()
+
+        # Overwrite
+        _save_to_json(file_path, data)
+
+
 def build_product_systems(file_path, elci_config):
     """Generates product systems for electricity at user consumption mixes.
 
@@ -307,9 +324,6 @@ def clean_json(file_path):
             for e in p.exchanges:
                 p.last_internal_id += 1
                 e.internal_id = p.last_internal_id
-
-        # Sort unique values to speed up search
-        e_list = sorted(list(set(e_list)))
 
         # Overwrite
         _save_to_json(file_path, data)
