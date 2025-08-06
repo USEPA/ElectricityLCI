@@ -1344,7 +1344,7 @@ def read_ba_codes():
     return df
 
 
-def read_eia_api(url, url_try=0, max_tries=5):
+def read_eia_api(url, params=None, url_try=0, max_tries=5):
     """Return a JSON data response from EIA's API.
 
     Parameters
@@ -1356,39 +1356,23 @@ def read_eia_api(url, url_try=0, max_tries=5):
     max_tries : int
         When to stop retrying; default is 5
 
-    Returns:
-    (dict, int)
-        The JSON response and URL try count.
-        The JSON dictionary includes keys:
+    Returns
+    -------
+    tuple
+        A tuple of length two.
 
-        -   'response' (dict): with keys:
+        - dict, the JSON response
+        - int, the URL try count.
 
-            -   'total' (int): count of records in 'data'
-            -   'dateFormat' (str): For example, 'YYYY-MM-DD"T"HH24'
-            -   'frequency' (str): For example, 'hourly'
-            -   'description' (str): Data description
-            -   'data' (list): Dictionaries with keys:
-
-                -   'period'
-                -   'fromba': for ID only
-                -   'fromba-name': for ID only
-                -   'toba': for ID only
-                -   'toba-name': for ID only
-                -   'respondent': for D and NG only
-                -   'respondent-name': for D and NG only
-                -   'type': for D and NG only
-                -   'type-name': for D and NG only
-                -   'value'
-                -   'value-units'
-
-        -   'request' (dict): Parameters sent to the API
-        -   'apiVersion' (str): API version string (e.g., '2.1.7')
-        -   'ExcelAddInVersion' (str): AddIn version string (e.g., '2.1.0')
     """
     r_dict = {}
     url_try += 1
-    #adding 20s timeout to avoid long delays due to server issues.
-    r = requests.get(url, timeout=20)
+    # Add 20s timeout to avoid long delays due to server issues.
+    if params is not None:
+        r = requests.get(url, params=params, timeout=20)
+    else:
+        r = requests.get(url, timeout=20)
+
     r_status = r.status_code
     if r_status == 200:
         try:
@@ -1399,7 +1383,7 @@ def read_eia_api(url, url_try=0, max_tries=5):
             r_dict = json.loads(r_content)
     else:
         if url_try < max_tries:
-            r_dict, url_try = read_eia_api(url, url_try, max_tries)
+            r_dict, url_try = read_eia_api(url, params, url_try, max_tries)
         else:
             logging.error("Requests failed!")
 

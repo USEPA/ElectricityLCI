@@ -11,12 +11,11 @@ import logging
 import time
 
 import pandas as pd
-import requests
 
 from electricitylci.globals import API_SLEEP
 from electricitylci.globals import paths
-from electricitylci.globals import output_dir
 from electricitylci.globals import US_STATES
+from electricitylci.utils import read_eia_api
 
 
 ##############################################################################
@@ -444,6 +443,7 @@ def read_cems_api(api_key, year, state=None, force=False):
         For unexpected API errors.
     """
     # Use the annual apportioned emissions API URL:
+    # HOTFIX: update 'emissions-mgmt' with 'streaming-services'
     s_url = (
         "https://api.epa.gov/easey"
         "/emissions-mgmt/emissions/apportioned/annual/by-facility"
@@ -483,25 +483,15 @@ def read_cems_api(api_key, year, state=None, force=False):
             'stateCode': state,
             'page': 1,
             'perPage': 500}  # max allowable by API is 500
-        try:
-            #Adding a timeout of 20s in case there are issues with server
-            #causing non-responses or long waits.
-            r = requests.get(s_url, params=params, timeout=20)
-        except:
-            raise OSError("Unexpected error during EPA data API call!")
+
+        d_json, url_tries = read_eia_api(s_url, params=params, max_tries=5)
+        tmp_df = pd.DataFrame.from_dict(d_json).rename(columns=c_map)
+        if len(tmp_df) == 0 or url_tries == 5:
+            logging.warning(
+                "Failed to retrieve data for %s %s!" % (state, year)
+            )
         else:
-            if r.ok:
-                tmp_df = pd.DataFrame.from_dict(r.json()).rename(columns=c_map)
-                _write_cems_api(tmp_df, c_file)
-            else:
-                # This catches incorrect API keys or bad parameters
-                e_msg = r.json().get("message", ["",])
-                if isinstance(e_msg, list):
-                    e_msg = "".join(e_msg)
-                logging.warning(
-                    "Failed to retrieve data for %s %s! %s" % (
-                        state, year, e_msg)
-                )
+            _write_cems_api(tmp_df, c_file)
 
     return tmp_df
 
