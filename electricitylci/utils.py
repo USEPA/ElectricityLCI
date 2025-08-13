@@ -697,7 +697,7 @@ def download_edx(resource_id, api_key, output_dir):
     content_length = response_head.headers.get('Content-Length')
     resource_size = int(content_length) if content_length is not None else None
 
-    logging.debug("Resource Name:", filename)
+    logging.debug("Resource Name: %s" % filename)
     logging.debug(f"Resource Size: {resource_size} bytes")
 
     # HOTFIX: assign the output directory
