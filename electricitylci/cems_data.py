@@ -15,6 +15,7 @@ import pandas as pd
 from electricitylci.globals import API_SLEEP
 from electricitylci.globals import paths
 from electricitylci.globals import US_STATES
+from electricitylci.utils import check_api
 from electricitylci.utils import read_eia_api
 
 
@@ -59,7 +60,7 @@ In the current release, the PUDL methods are replaced with EPA's API:
 https://github.com/USEPA/ElectricityLCI/issues/207#issuecomment-1751075194
 
 Last edited:
-    2025-08-01
+    2025-08-13
 """
 __all__ = [
     "CEMS_COL_NAMES",
@@ -267,14 +268,7 @@ def extract(epacems_years, states, use_api=True, api_key=""):
                         "Found CEMS data file for %s %s" % (state, year))
                     tmp_df = pd.read_csv(c_file)
                 else:
-                    if api_key is None or api_key == "":
-                        api_key = input("Enter EPA API key: ")
-                        api_key = api_key.strip()
-                        if api_key == "":
-                            logging.warning(
-                                "No API key given!"
-                                f"Sign up here: {new_api}"
-                            )
+                    api_key = check_api(api_key, 'EPA', new_api)
                     tmp_df = read_cems_api(api_key, year, state)
 
                 # HOTFIX: don't add empty data frames
