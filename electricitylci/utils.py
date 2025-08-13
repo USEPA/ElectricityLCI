@@ -29,9 +29,10 @@ from electricitylci.globals import output_dir
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2025-08-01
+    2025-08-013
 
 Changelog:
+    -   [25.08.13]: Move check API utility function here
     -   [25.08.01]: Read line from file helper method
     -   [25.06.11]: Create background data archive method
     -   [25.06.11]: Hotfix facilitymatcher global paths
@@ -45,6 +46,7 @@ Changelog:
         within the electricitylci folder.
 """
 __all__ = [
+    "check_api",
     "check_output_dir",
     "clean_data_store",
     "create_ba_region_map",
@@ -409,6 +411,34 @@ def archive_background_data(save_folder="background"):
                     z.write(filepath, arcname)
 
             logging.info("Wrote archive to %s" % sub_zip_path)
+
+
+def check_api(key, owner, r_txt):
+    """Helper function to check and request for API key.
+
+    Parameters
+    ----------
+    key : str, Nonetype
+        The key to be checked.
+    owner : str
+        The API owner (e.g., 'EDX', 'EIA', or 'EPA').
+    r_txt : str
+        Helper text for acquiring an API key (e.g., registration URL).
+
+    Returns
+    -------
+    str
+        API key as provided by the user.
+    """
+    if key is None or key == "":
+        key = input("Enter %s API key: " % owner)
+        key = key.strip()
+        if key == "":
+            logging.warning(
+                "No API key given!"
+                f"Sign up here: {r_txt}"
+            )
+    return key
 
 
 def check_output_dir(out_dir):

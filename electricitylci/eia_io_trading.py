@@ -26,6 +26,7 @@ from electricitylci.bulk_eia_data import check_EBA_vintage
 from electricitylci.model_config import model_specs
 import electricitylci.eia923_generation as eia923
 import electricitylci.eia860_facilities as eia860
+from electricitylci.utils import check_api
 from electricitylci.utils import read_ba_codes
 from electricitylci.utils import check_output_dir
 from electricitylci.utils import download
@@ -89,34 +90,6 @@ REGION_ACRONYMS = [
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def _check_api(key, owner, r_txt):
-    """Helper function to check and request for API key.
-
-    Parameters
-    ----------
-    key : str, Nonetype
-        The key to be checked.
-    owner : str
-        The API owner (e.g., 'EIA' or 'EPA').
-    r_txt : str
-        Helper text for acquiring an API key (e.g., registration URL).
-
-    Returns
-    -------
-    str
-        API key as provided by the user.
-    """
-    if key is None or key == "":
-        key = input("Enter %s API key: " % owner)
-        key = key.strip()
-        if key == "":
-            logging.warning(
-                "No API key given!"
-                f"Sign up here: {r_txt}"
-            )
-    return key
-
-
 def _check_json(d):
     """Check that EBA.zip JSON data has info.
 
@@ -1123,7 +1096,7 @@ def _read_bulk_api(ba_cols):
         DEMAND_ROWS= _read_bulk_json(d_rows_file)
     else:
         logging.info("Querying EIA API for bulk demand data")
-        api_key = _check_api(api_key, 'EIA', new_api)
+        api_key = check_api(api_key, 'EIA', new_api)
         DEMAND_ROWS, _ok = _read_dng_api(
             _baseurl, _sub_domain, api_key, _freq, _start, _end, ba_cols, 'D')
         if _ok:
@@ -1135,7 +1108,7 @@ def _read_bulk_api(ba_cols):
         NET_GEN_ROWS = _read_bulk_json(ng_rows_file)
     else:
         logging.info("Querying EIA API for bulk net generation data")
-        api_key = _check_api(api_key, 'EIA', new_api)
+        api_key = check_api(api_key, 'EIA', new_api)
         NET_GEN_ROWS, _ok = _read_dng_api(
             _baseurl, _sub_domain, api_key, _freq, _start, _end, ba_cols, 'NG')
         if _ok:
@@ -1147,7 +1120,7 @@ def _read_bulk_api(ba_cols):
         BA_TO_BA_ROWS = _read_bulk_json(id_rows_file)
     else:
         logging.info("Querying EIA API for bulk interchange data")
-        api_key = _check_api(api_key, 'EIA', new_api)
+        api_key = check_api(api_key, 'EIA', new_api)
         BA_TO_BA_ROWS = _read_id_api(
             _baseurl, _sub_domain2, api_key, _freq, _start, _end)
         if True:
