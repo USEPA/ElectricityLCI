@@ -20,7 +20,7 @@ __doc__ = """Define paths, variables, and functions used across several
 modules.
 
 Last updated:
-    2025-02-04
+    2025-08-14
 """
 
 
@@ -55,6 +55,14 @@ electricity_flow_name_consumption = 'Electricity, AC, 120 V'
 # extension and file name
 EIA923_BASE_URL = 'https://www.eia.gov/electricity/data/eia923/'
 EIA860_BASE_URL = 'https://www.eia.gov/electricity/data/eia860/'
+
+# EPA Clean Air Markets API URL
+# https://www.epa.gov/power-sector/cam-api-portal
+CAM_API_URL = (
+    "https://api.epa.gov/easey"
+    "/emissions-mgmt/emissions/apportioned/annual/by-facility"
+)
+'''str : EPA CEMS annual apportioned emissions by facility API URL'''
 
 # Grouping of Reported fuel codes to EPA categories
 FUEL_CAT_CODES = {
@@ -216,7 +224,7 @@ STATE_ABBREV = {
     "wyoming": "wy",
 }
 
-API_SLEEP = 0.2
+API_SLEEP = 0.4
 '''float : A courtesy sleep time between API calls.'''
 
 COAL_MODEL_YEARS = [2020, 2023]

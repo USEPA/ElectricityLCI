@@ -30,7 +30,7 @@ from electricitylci.utils import check_api
 from electricitylci.utils import read_ba_codes
 from electricitylci.utils import check_output_dir
 from electricitylci.utils import download
-from electricitylci.utils import read_eia_api
+from electricitylci.utils import read_from_api
 from electricitylci.utils import write_csv_to_output
 from electricitylci.process_dictionary_writer import (
     exchange,
@@ -1371,7 +1371,7 @@ def _read_dng_api(baseurl, sub_domain, api_key, freq, start, end, ba_cols, m):
             _idx = 'HL'
 
         # Make request and sleep, so as to not be a hater.
-        d_json, url_tries = read_eia_api(_url, max_tries=5)
+        d_json, url_tries, _ = read_from_api(_url)
         time.sleep(API_SLEEP)
 
         # Check for max retries
@@ -1487,7 +1487,7 @@ def _read_id_api(baseurl, sub_domain, api_key, freq, start, end):
             _idx = 'HL'
 
         # Make request and sleep, so as to not be a hater.
-        d_json, _ = read_eia_api(_url)
+        d_json, _, _ = read_from_api(_url)
         time.sleep(API_SLEEP)
 
         # Check response

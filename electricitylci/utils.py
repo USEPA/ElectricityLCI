@@ -13,6 +13,7 @@ from logging.handlers import RotatingFileHandler
 import os
 import re
 import sys
+import time
 import zipfile
 
 import requests
@@ -21,6 +22,7 @@ import pandas as pd
 from electricitylci.globals import paths
 from electricitylci.globals import data_dir
 from electricitylci.globals import output_dir
+from electricitylci.globals import API_SLEEP
 
 
 ##############################################################################
@@ -29,7 +31,7 @@ from electricitylci.globals import output_dir
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2025-08-013
+    2025-08-21
 
 Changelog:
     -   [25.08.13]: Move check API utility function here
@@ -46,6 +48,7 @@ Changelog:
         within the electricitylci folder.
 """
 __all__ = [
+    "archive_epa_cams",
     "check_api",
     "check_output_dir",
     "clean_data_store",
@@ -62,7 +65,7 @@ __all__ = [
     "make_valid_version_num",
     "read_line_from_file",
     "read_ba_codes",
-    "read_eia_api",
+    "read_from_api",
     "read_json",
     "read_log_file",
     "rollover_logger",
@@ -411,6 +414,133 @@ def archive_background_data(save_folder="background"):
                     z.write(filepath, arcname)
 
             logging.info("Wrote archive to %s" % sub_zip_path)
+
+
+def archive_epa_cams(year, api_key="", period="daily"):
+    import datetime
+    from electricitylci.globals import CAM_API_URL
+    from electricitylci.cems_data import CEMS_STATES
+
+    # Check that the user provided a valid API
+    cam_api = "https://www.epa.gov/power-sector/cam-api-portal#/api-key-signup"
+    api_key = check_api(api_key, "EPA", cam_api)
+
+    # Check that the user selects a valid period
+    valid_cams_periods = ['hourly', 'daily', 'annual']
+    if period not in valid_cams_periods:
+        warn_msg = (
+            "Expected, '%s', received '%s'" % (
+                ", ".join(valid_cams_periods), period
+            )
+        )
+        raise ValueError(warn_msg)
+
+    # Column naming scheme to be consistent across datasets.
+    c_map = {
+        'stateCode': 'state',
+        'facilityName': 'facility_name',
+        'facilityId': 'plant_id_eia',
+        'year': 'year',
+        'grossLoad': 'gross_load_mwh',
+        'steamLoad': 'steam_load_1000_lbs',
+        'so2Mass': 'so2_mass_tons',
+        'co2Mass': 'co2_mass_tons',
+        'noxMass': 'nox_mass_tons',
+        'heatInput': 'heat_content_mmbtu'
+    }
+    data_cols = [
+        'gross_load_mwh',
+        'steam_load_1000_lbs',
+        'so2_mass_tons',
+        'co2_mass_tons',
+        'nox_mass_tons',
+        'heat_content_mmbtu',
+    ]
+
+    # Create the new API URL
+    cam_url = CAM_API_URL.replace("/annual/", f"/{period}/")
+
+    # For daily queries, define required fields 'beginDate' and 'endDate'.
+    start_date = datetime.date(year, 1, 1).isoformat()
+    end_date = datetime.date(year, 12, 31).isoformat()
+
+    for state in CEMS_STATES:
+        # Define the state-level daily CEMS data file
+        archive_file = "epacems_daily_%d%s.csv" % (year, state.lower())
+
+        # Add a check to avoid re-running the API for files already archived
+        _found = find_file_in_folder(output_dir, [archive_file,], True)
+        if _found is not None:
+            logging.info("Found archive, '%s'" % archive_file)
+            continue
+
+        # Prepare the empty data frame
+        df = pd.DataFrame(columns=list(c_map.values()))
+
+        # Initialize variables to start the API loop for all records.
+        recs_received = 0
+        recs_total = 2 # needs to >1 to initiate the loop
+        page_no = 1
+        _success = True
+        while recs_received < (recs_total - 1):
+            # Build the params; the page number will increment
+            params = {
+                'api_key': api_key,
+                'beginDate': start_date,
+                'endDate': end_date,
+                'stateCode': state,
+                'page': page_no,
+                'perPage': 500,  # max allowable by API is 500
+            }
+            # Query the API; url_tries will max with no data upon failing
+            js_list, url_tries, h_dict = read_from_api(
+                cam_url,
+                params=params
+            )
+            # EPA's rate limit is 1000 requests per hour.
+            # This limits you to 3.6 seconds per request to avoid exceeding.
+            # The API may recommend a different wait time.
+            # Daily data has roughly 12k records per state; with 49 states,
+            # that's ~600k records; that's 1200 requests, which is more than
+            # the 1000 per hour rate limit, so let's impose the 3.6s wait
+            sleep_time = h_dict.get("Retry-After", 3.6)
+            sleep_time = float(sleep_time)
+            time.sleep(sleep_time)
+
+            # update the total records and received records
+            recs_total = h_dict.get('X-Total-Count', 0)
+            recs_total = int(recs_total)
+            recs_received += len(js_list)
+
+            tmp_df = pd.DataFrame.from_dict(js_list).rename(columns=c_map)
+            if len(tmp_df) == 0 or url_tries == 5:
+                _success = False
+                logging.warning(
+                    "Failed to retrieve data for %s %s!" % (state, year)
+                )
+            elif len(df) == 0 and len(tmp_df) > 0:
+                # First time, set df
+                df = tmp_df.copy()
+            else:
+                # We've been here before. We're going in circles, Sam!
+                # NOTE: columns with all NaNs will raise a FutureWarning
+                df = pd.concat([df, tmp_df], ignore_index=True)
+
+            # Increment page to continue
+            page_no += 1
+
+        # NOTE: decision here is to save only the rows that have data.
+        # Rows with NaN values in all data columns are dropped.
+        # If you favor a more complete time series (with data gaps), then
+        # comment this line out.
+        df = df.dropna(subset=data_cols, how='all')
+
+        # Only save state's data if successful
+        if len(df) > 0 and _success:
+            # Writes to electricitylci's output folder.
+            write_csv_to_output(archive_file, df)
+        else:
+            logging.warning("Failed to write, %s" % archive_file)
 
 
 def check_api(key, owner, r_txt):
@@ -1374,7 +1504,7 @@ def read_ba_codes():
     return df
 
 
-def read_eia_api(url, params=None, url_try=0, max_tries=5):
+def read_from_api(url, params=None, url_try=0, max_tries=5):
     """Return a JSON data response from EIA's API.
 
     Parameters
@@ -1391,11 +1521,24 @@ def read_eia_api(url, params=None, url_try=0, max_tries=5):
     tuple
         A tuple of length two.
 
-        - dict, the JSON response
-        - int, the URL try count.
+        - a dict of the JSON response (EIA) or a list of JSON data (EPA)
+        - int, the URL try count
+        - dict, the response headers (includes the X-total-count for EPA)
+
+    Notes
+    ----
+    The EPA CAMPD API has a rate limit of 1000 requests per hour:
+    https://www.epa.gov/power-sector/cam-api-portal#/frequent-questions.
+    (3.6 s per request)
+
+    EIA does not impose throttling, but recommend that you stay under
+    9000 requests per hour with no more than 5 requests per second (see FAQ):
+    https://www.eia.gov/opendata/documentation.php.
+    (0.4 s per request)
 
     """
     r_dict = {}
+    h_dict = {}
     url_try += 1
     # Add 20s timeout to avoid long delays due to server issues.
     if params is not None:
@@ -1404,7 +1547,9 @@ def read_eia_api(url, params=None, url_try=0, max_tries=5):
         r = requests.get(url, timeout=20)
 
     r_status = r.status_code
+    h_dict = dict(r.headers)
     if r_status == 200:
+        # Cast the case-insensitive dictionary to regular Python dict
         try:
             r_dict = r.json()
         except:
@@ -1413,11 +1558,16 @@ def read_eia_api(url, params=None, url_try=0, max_tries=5):
             r_dict = json.loads(r_content)
     else:
         if url_try < max_tries:
-            r_dict, url_try = read_eia_api(url, params, url_try, max_tries)
+            time.sleep(API_SLEEP)
+            r_dict, url_try, h_dict = read_from_api(
+                url, params, url_try, max_tries
+            )
         else:
-            logging.error("Requests failed!")
+            logging.error(
+                "Requests failed! Status code '%s'." % r_status
+            )
 
-    return (r_dict, url_try)
+    return (r_dict, url_try, h_dict)
 
 
 def read_json(json_path):
@@ -1587,14 +1737,16 @@ def write_csv_to_output(f_name, data):
     """
     f_path = os.path.join(output_dir, f_name)
     if os.path.isfile(f_path):
-        logging.warn("File exists! Overwriting %s" % f_path)
+        logging.warning("File exists! Overwriting %s" % f_path)
     if isinstance(data, pd.DataFrame):
         try:
             data.to_csv(f_path, index=False)
         except:
             logging.error("Failed to write '%s' to file" % f_path)
         else:
-            logging.info("Wrote data to file, %s" % f_path)
+            logging.info(
+                "Wrote %d lines to file, %s" % (len(data), f_path)
+            )
     elif isinstance(data, str):
         try:
             with open(f_path, 'w') as f:

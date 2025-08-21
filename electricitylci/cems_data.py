@@ -15,8 +15,9 @@ import pandas as pd
 from electricitylci.globals import API_SLEEP
 from electricitylci.globals import paths
 from electricitylci.globals import US_STATES
+from electricitylci.globals import CAM_API_URL
 from electricitylci.utils import check_api
-from electricitylci.utils import read_eia_api
+from electricitylci.utils import read_from_api
 
 
 ##############################################################################
@@ -230,7 +231,7 @@ def build_cems_df(year, use_api=True, api_key=""):
 
 
 def extract(epacems_years, states, use_api=True, api_key=""):
-    """Extract the EPA CEMS hourly data.
+    """Extract the EPA CEMS facility data.
 
     This function is the main function of this file. It returns a generator
     for extracted DataFrames.
@@ -436,13 +437,6 @@ def read_cems_api(api_key, year, state=None, force=False):
     OSError
         For unexpected API errors.
     """
-    # Use the annual apportioned emissions API URL:
-    # HOTFIX: update 'emissions-mgmt' with 'streaming-services'
-    s_url = (
-        "https://api.epa.gov/easey"
-        "/emissions-mgmt/emissions/apportioned/annual/by-facility"
-    )
-
     # Keep column naming consistent with legacy code:
     c_map = {
         'stateCode': 'state',
@@ -471,15 +465,21 @@ def read_cems_api(api_key, year, state=None, force=False):
 
         # Prepare the API parameters
         # The most record from 2016, 2020-2022 is about 150 for TX.
+        # For daily/hourly queries, add required fields 'beginDate' and
+        # 'endDate'.
         params = {
             'api_key': api_key,
             'year': year,
             'stateCode': state,
             'page': 1,
-            'perPage': 500}  # max allowable by API is 500
+            'perPage': 500,  # max allowable by API is 500
+        }
 
-        d_json, url_tries = read_eia_api(s_url, params=params, max_tries=5)
-        tmp_df = pd.DataFrame.from_dict(d_json).rename(columns=c_map)
+        # NOTE:
+        # For hourly or daily data, the 'X-Total-Count' in h_dict will be
+        # useful for incrementing the page count in the params.
+        js_list, url_tries, h_dict = read_from_api(CAM_API_URL, params=params)
+        tmp_df = pd.DataFrame.from_dict(js_list).rename(columns=c_map)
         if len(tmp_df) == 0 or url_tries == 5:
             logging.warning(
                 "Failed to retrieve data for %s %s!" % (state, year)
