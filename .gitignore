@@ -40,3 +40,6 @@ electricitylci/output/*
 !electricitylci/data/renewables/**/*.csv
 !electricitylci/data/coal/**/*.csv
 !electricitylci/data/*.yml
+
+# Whitelist everything except this!
+electricitylci/data/EFs/.DS_Store
