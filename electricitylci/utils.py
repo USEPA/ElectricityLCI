@@ -417,6 +417,30 @@ def archive_background_data(save_folder="background"):
 
 
 def archive_epa_cams(year, api_key="", period="daily"):
+    """Helper function to archive EPA's annual, daily and hourly CEMS data.
+
+    Parameters
+    ----------
+    year : int
+        The year to process (e.g., 2022). It does one year at a time.
+    api_key : str, optional
+        Your personal EPA CAMPD API key (prompt for input if not provided), by default ""
+    period : str, optional
+        One of three time periods to archive (options include: 'annual', 'daily' and 'hourly'), by default "daily"
+
+    Raises
+    ------
+    ValueError
+        If the time period provided is not one of the valid options
+
+    Examples
+    --------
+    >>> from electricitylci.utils import *
+    >>> log = get_logger(True, False)
+    >>> api_file = "C:\\path\\to\\epa\\api.txt"
+    >>> api_key = read_line_from_file(api_file)
+    >>> archive_epa_cams(2022, api_key, 'daily')
+    """
     import datetime
     from electricitylci.globals import CAM_API_URL
     from electricitylci.cems_data import CEMS_STATES
@@ -469,7 +493,7 @@ def archive_epa_cams(year, api_key="", period="daily"):
         archive_file = "epacems_daily_%d%s.csv" % (year, state.lower())
 
         # Add a check to avoid re-running the API for files already archived
-        _found = find_file_in_folder(output_dir, [archive_file,], True)
+        _found = find_file_in_folder(output_dir, [archive_file,], False)
         if _found is not None:
             logging.info("Found archive, '%s'" % archive_file)
             continue
