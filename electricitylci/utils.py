@@ -490,7 +490,7 @@ def archive_epa_cams(year, api_key="", period="daily"):
 
     for state in CEMS_STATES:
         # Define the state-level daily CEMS data file
-        archive_file = "epacems_daily_%d%s.csv" % (year, state.lower())
+        archive_file = "epacems_%s_%d%s.csv" % (period, year, state.lower())
 
         # Add a check to avoid re-running the API for files already archived
         _found = find_file_in_folder(output_dir, [archive_file,], False)
