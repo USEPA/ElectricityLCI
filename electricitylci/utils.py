@@ -416,7 +416,7 @@ def archive_background_data(save_folder="background"):
             logging.info("Wrote archive to %s" % sub_zip_path)
 
 
-def archive_epa_cams(year, api_key="", period="daily"):
+def archive_epa_cams(year, api_key="", period="daily", time_out=60):
     """Helper function to archive EPA's annual, daily and hourly CEMS data.
 
     Parameters
@@ -427,6 +427,9 @@ def archive_epa_cams(year, api_key="", period="daily"):
         Your personal EPA CAMPD API key (prompt for input if not provided), by default ""
     period : str, optional
         One of three time periods to archive (options include: 'annual', 'daily' and 'hourly'), by default "daily"
+    time_out : int, optional
+        The timeout (in seconds) to wait for an API response.
+        API may take longer to respond for 'hourly' than for 'annual' requests.
 
     Raises
     ------
@@ -517,9 +520,11 @@ def archive_epa_cams(year, api_key="", period="daily"):
                 'perPage': 500,  # max allowable by API is 500
             }
             # Query the API; url_tries will max with no data upon failing
+            # HOTFIX: incorporate time out parameter [250825; TWD]
             js_list, url_tries, h_dict = read_from_api(
                 cam_url,
-                params=params
+                params=params,
+                time_out=time_out
             )
             # EPA's rate limit is 1000 requests per hour.
             # This limits you to 3.6 seconds per request to avoid exceeding.
@@ -1528,7 +1533,7 @@ def read_ba_codes():
     return df
 
 
-def read_from_api(url, params=None, url_try=0, max_tries=5):
+def read_from_api(url, params=None, url_try=0, max_tries=5, time_out=20):
     """Return a JSON data response from EIA's API.
 
     Parameters
@@ -1539,6 +1544,8 @@ def read_from_api(url, params=None, url_try=0, max_tries=5):
         Internal counter for URL retries; default is 0
     max_tries : int
         When to stop retrying; default is 5
+    time_out : int
+        The timeout (in seconds) to wait for an API request return
 
     Returns
     -------
@@ -1566,9 +1573,9 @@ def read_from_api(url, params=None, url_try=0, max_tries=5):
     url_try += 1
     # Add 20s timeout to avoid long delays due to server issues.
     if params is not None:
-        r = requests.get(url, params=params, timeout=20)
+        r = requests.get(url, params=params, timeout=time_out)
     else:
-        r = requests.get(url, timeout=20)
+        r = requests.get(url, timeout=time_out)
 
     r_status = r.status_code
     h_dict = dict(r.headers)
@@ -1584,7 +1591,7 @@ def read_from_api(url, params=None, url_try=0, max_tries=5):
         if url_try < max_tries:
             time.sleep(API_SLEEP)
             r_dict, url_try, h_dict = read_from_api(
-                url, params, url_try, max_tries
+                url, params, url_try, max_tries, time_out
             )
         else:
             logging.error(
