@@ -6,6 +6,7 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+import datetime
 import io
 import json
 import logging
@@ -23,6 +24,7 @@ from electricitylci.globals import paths
 from electricitylci.globals import data_dir
 from electricitylci.globals import output_dir
 from electricitylci.globals import API_SLEEP
+from electricitylci.globals import CAM_API_URL
 
 
 ##############################################################################
@@ -31,7 +33,7 @@ from electricitylci.globals import API_SLEEP
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2025-08-21
+    2025-08-26
 
 Changelog:
     -   [25.08.13]: Move check API utility function here
@@ -63,6 +65,7 @@ __all__ = [
     "join_with_underscore",
     "linear_search",
     "make_valid_version_num",
+    "next_month",
     "read_line_from_file",
     "read_ba_codes",
     "read_from_api",
@@ -436,16 +439,19 @@ def archive_epa_cams(year, api_key="", period="daily", time_out=60):
     ValueError
         If the time period provided is not one of the valid options
 
+    Notes
+    -----
+    Test the API out `here <https://campd.epa.gov/data/custom-data-download>`_
+
     Examples
     --------
     >>> from electricitylci.utils import *
     >>> log = get_logger(True, False)
     >>> api_file = "C:\\path\\to\\epa\\api.txt"
     >>> api_key = read_line_from_file(api_file)
-    >>> archive_epa_cams(2022, api_key, 'daily')
+    >>> archive_epa_cams(2022, api_key, 'daily', 60)
     """
-    import datetime
-    from electricitylci.globals import CAM_API_URL
+    # Import here to avoid circular referencing
     from electricitylci.cems_data import CEMS_STATES
 
     # Check that the user provided a valid API
@@ -475,6 +481,7 @@ def archive_epa_cams(year, api_key="", period="daily", time_out=60):
         'noxMass': 'nox_mass_tons',
         'heatInput': 'heat_content_mmbtu'
     }
+    # Columns to check for data (row dropped if all entries are NaN)
     data_cols = [
         'gross_load_mwh',
         'steam_load_1000_lbs',
@@ -487,9 +494,8 @@ def archive_epa_cams(year, api_key="", period="daily", time_out=60):
     # Create the new API URL
     cam_url = CAM_API_URL.replace("/annual/", f"/{period}/")
 
-    # For daily queries, define required fields 'beginDate' and 'endDate'.
-    start_date = datetime.date(year, 1, 1).isoformat()
-    end_date = datetime.date(year, 12, 31).isoformat()
+    start_date = datetime.date(year, 1, 1)
+    end_date = datetime.date(year, 12, 31)
 
     for state in CEMS_STATES:
         # Define the state-level daily CEMS data file
@@ -504,59 +510,77 @@ def archive_epa_cams(year, api_key="", period="daily", time_out=60):
         # Prepare the empty data frame
         df = pd.DataFrame(columns=list(c_map.values()))
 
-        # Initialize variables to start the API loop for all records.
-        recs_received = 0
-        recs_total = 2 # needs to >1 to initiate the loop
-        page_no = 1
         _success = True
-        while recs_received < (recs_total - 1):
-            # Build the params; the page number will increment
-            params = {
-                'api_key': api_key,
-                'beginDate': start_date,
-                'endDate': end_date,
-                'stateCode': state,
-                'page': page_no,
-                'perPage': 500,  # max allowable by API is 500
-            }
-            # Query the API; url_tries will max with no data upon failing
-            # HOTFIX: incorporate time out parameter [250825; TWD]
-            js_list, url_tries, h_dict = read_from_api(
-                cam_url,
-                params=params,
-                time_out=time_out
-            )
-            # EPA's rate limit is 1000 requests per hour.
-            # This limits you to 3.6 seconds per request to avoid exceeding.
-            # The API may recommend a different wait time.
-            # Daily data has roughly 12k records per state; with 49 states,
-            # that's ~600k records; that's 1200 requests, which is more than
-            # the 1000 per hour rate limit, so let's impose the 3.6s wait
-            sleep_time = h_dict.get("Retry-After", 3.6)
-            sleep_time = float(sleep_time)
-            time.sleep(sleep_time)
+        cur_date = start_date
+        while cur_date < end_date and _success:
+            # HOTFIX: use monthly periods for hourly and daily queries
+            nxt_date = next_month(cur_date) - datetime.timedelta(days=1)
+            if period == 'annual':
+                # For annual query, set to end date
+                nxt_date = end_date
 
-            # update the total records and received records
-            recs_total = h_dict.get('X-Total-Count', 0)
-            recs_total = int(recs_total)
-            recs_received += len(js_list)
+            # Courtesy update to user; these API calls can take hours to run
+            logging.info("Querying %d data for %s (%s to %s)" % (
+                period, state, cur_date.isoformat(), nxt_date.isoformat()
+            ))
 
-            tmp_df = pd.DataFrame.from_dict(js_list).rename(columns=c_map)
-            if len(tmp_df) == 0 or url_tries == 5:
-                _success = False
-                logging.warning(
-                    "Failed to retrieve data for %s %s!" % (state, year)
+            # Initialize variables to start the API query for all records.
+            recs_received = 0
+            recs_total = 2 # needs to >1 to initiate the loop
+            page_no = 1
+            while recs_received < (recs_total - 1):
+                # Build the params; the page number will increment
+                params = {
+                    'api_key': api_key,
+                    'beginDate': cur_date.isoformat(),
+                    'endDate': nxt_date.isoformat(),
+                    'stateCode': state,
+                    'page': page_no,
+                    'perPage': 500,  # max allowable by API is 500
+                }
+                # Query the API; url_tries will max with no data upon failing
+                # HOTFIX: incorporate time out parameter [250825; TWD]
+                js_list, url_tries, h_dict = read_from_api(
+                    cam_url,
+                    params=params,
+                    time_out=time_out
                 )
-            elif len(df) == 0 and len(tmp_df) > 0:
-                # First time, set df
-                df = tmp_df.copy()
-            else:
-                # We've been here before. We're going in circles, Sam!
-                # NOTE: columns with all NaNs will raise a FutureWarning
-                df = pd.concat([df, tmp_df], ignore_index=True)
+                # EPA's rate limit is 1000 requests per hour.
+                # This limits you to 3.6 seconds per request to avoid exceeding.
+                # The API may recommend a different wait time.
+                # Daily data has roughly 12k records per state; with 49 states,
+                # that's ~600k records; that's 1200 requests, which is more than
+                # the 1000 per hour rate limit, so let's impose the 3.6s wait
+                sleep_time = h_dict.get("Retry-After", 3.6)
+                sleep_time = float(sleep_time)
+                time.sleep(sleep_time)
 
-            # Increment page to continue
-            page_no += 1
+                # update the total records and received records
+                recs_total = h_dict.get('X-Total-Count', 0)
+                recs_total = int(recs_total)
+                recs_received += len(js_list)
+
+                tmp_df = pd.DataFrame.from_dict(js_list).rename(columns=c_map)
+
+                # If no data or API failed, stop the query (incomplete data)
+                if len(tmp_df) == 0 or url_tries == 5:
+                    _success = False
+                    logging.warning(
+                        "Failed to retrieve data for %s %s!" % (state, year)
+                    )
+                elif len(df) == 0 and len(tmp_df) > 0:
+                    # First time, set df
+                    df = tmp_df.copy()
+                else:
+                    # We've been here before. We're going in circles, Sam!
+                    # NOTE: columns with all NaNs will raise a FutureWarning
+                    df = pd.concat([df, tmp_df], ignore_index=True)
+
+                # Increment page to continue
+                page_no += 1
+
+            # Increment the current day by one month
+            cur_date = next_month(cur_date)
 
         # NOTE: decision here is to save only the rows that have data.
         # Rows with NaN values in all data columns are dropped.
@@ -1314,6 +1338,28 @@ def make_valid_version_num(foo):
     """
     result = re.sub('[^0-9,.]', '', foo)
     return result
+
+
+def next_month(dt0):
+    """Move a datetime object to the first day of the next month.
+
+    Parameters
+    ----------
+    dt0 : datetime.date
+
+    Returns
+    -------
+    datetime.date
+
+    Notes
+    -----
+    A. Balogh (2010), ActiveState Code
+    http://code.activestate.com/recipes/577274-subtract-or-add-a-month-to-a-datetimedate-or-datet/
+    """
+    dt1 = dt0.replace(day=1)
+    dt2 = dt1 + datetime.timedelta(days=32)
+    dt3 = dt2.replace(day=1)
+    return dt3
 
 
 def read_line_from_file(filename):
