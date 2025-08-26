@@ -520,7 +520,7 @@ def archive_epa_cams(year, api_key="", period="daily", time_out=60):
                 nxt_date = end_date
 
             # Courtesy update to user; these API calls can take hours to run
-            logging.info("Querying %d data for %s (%s to %s)" % (
+            logging.info("Querying %s data for %s (%s to %s)" % (
                 period, state, cur_date.isoformat(), nxt_date.isoformat()
             ))
 
