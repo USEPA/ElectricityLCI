@@ -33,9 +33,10 @@ from electricitylci.globals import CAM_API_URL
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2025-08-26
+    2025-08-27
 
 Changelog:
+    -   [25.08.27]: Update archive EPA CAMS method
     -   [25.08.13]: Move check API utility function here
     -   [25.08.01]: Read line from file helper method
     -   [25.06.11]: Create background data archive method
@@ -540,11 +541,22 @@ def archive_epa_cams(year, api_key="", period="daily", time_out=60):
                 }
                 # Query the API; url_tries will max with no data upon failing
                 # HOTFIX: incorporate time out parameter [250825; TWD]
-                js_list, url_tries, h_dict = read_from_api(
-                    cam_url,
-                    params=params,
-                    time_out=time_out
-                )
+                max_tries = 4
+
+                try:
+                    js_list, url_tries, h_dict = read_from_api(
+                        cam_url,
+                        params=params,
+                        max_tries=max_tries,
+                        time_out=time_out
+                    )
+                except Exception as e:
+                    # Hitting urllib3 and requests errors; just kill this state
+                    logging.warning("API failed with error, '%s'" % str(e))
+                    js_list = []  # add zero to recs received
+                    h_dict = {}   # set total recs to zero
+                    url_tries = max_tries # set success to false
+
                 # EPA's rate limit is 1000 requests per hour.
                 # This limits you to 3.6 seconds per request to avoid exceeding.
                 # The API may recommend a different wait time.
@@ -562,8 +574,12 @@ def archive_epa_cams(year, api_key="", period="daily", time_out=60):
 
                 tmp_df = pd.DataFrame.from_dict(js_list).rename(columns=c_map)
 
+                # HOTFIX: it may be valid for a month to have no data.
+                # only skip if API fails
                 # If no data or API failed, stop the query (incomplete data)
-                if len(tmp_df) == 0 or url_tries == 5:
+                if len(tmp_df) == 0 and url_tries < max_tries:
+                    logging.warning("No data for this query!")
+                elif len(tmp_df) == 0 and url_tries >= max_tries:
                     _success = False
                     logging.warning(
                         "Failed to retrieve data for %s %s!" % (state, year)
