@@ -6,6 +6,7 @@
 ##############################################################################
 # REQUIRED MODULES
 ##############################################################################
+import datetime
 import io
 import json
 import logging
@@ -13,6 +14,7 @@ from logging.handlers import RotatingFileHandler
 import os
 import re
 import sys
+import time
 import zipfile
 
 import requests
@@ -21,6 +23,8 @@ import pandas as pd
 from electricitylci.globals import paths
 from electricitylci.globals import data_dir
 from electricitylci.globals import output_dir
+from electricitylci.globals import API_SLEEP
+from electricitylci.globals import CAM_API_URL
 
 
 ##############################################################################
@@ -29,9 +33,11 @@ from electricitylci.globals import output_dir
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2025-08-01
+    2025-08-27
 
 Changelog:
+    -   [25.08.27]: Update archive EPA CAMS method
+    -   [25.08.13]: Move check API utility function here
     -   [25.08.01]: Read line from file helper method
     -   [25.06.11]: Create background data archive method
     -   [25.06.11]: Hotfix facilitymatcher global paths
@@ -45,6 +51,8 @@ Changelog:
         within the electricitylci folder.
 """
 __all__ = [
+    "archive_epa_cams",
+    "check_api",
     "check_output_dir",
     "clean_data_store",
     "create_ba_region_map",
@@ -58,9 +66,10 @@ __all__ = [
     "join_with_underscore",
     "linear_search",
     "make_valid_version_num",
+    "next_month",
     "read_line_from_file",
     "read_ba_codes",
-    "read_eia_api",
+    "read_from_api",
     "read_json",
     "read_log_file",
     "rollover_logger",
@@ -411,6 +420,226 @@ def archive_background_data(save_folder="background"):
             logging.info("Wrote archive to %s" % sub_zip_path)
 
 
+def archive_epa_cams(year, api_key="", period="daily", time_out=60):
+    """Helper function to archive EPA's annual, daily and hourly CEMS data.
+
+    Parameters
+    ----------
+    year : int
+        The year to process (e.g., 2022). It does one year at a time.
+    api_key : str, optional
+        Your personal EPA CAMPD API key (prompt for input if not provided), by default ""
+    period : str, optional
+        One of three time periods to archive (options include: 'annual', 'daily' and 'hourly'), by default "daily"
+    time_out : int, optional
+        The timeout (in seconds) to wait for an API response.
+        API may take longer to respond for 'hourly' than for 'annual' requests.
+
+    Raises
+    ------
+    ValueError
+        If the time period provided is not one of the valid options
+
+    Notes
+    -----
+    Test the API out `here <https://campd.epa.gov/data/custom-data-download>`_
+
+    Examples
+    --------
+    >>> from electricitylci.utils import *
+    >>> log = get_logger(True, False)
+    >>> api_file = "C:\\path\\to\\epa\\api.txt"
+    >>> api_key = read_line_from_file(api_file)
+    >>> archive_epa_cams(2022, api_key, 'daily', 60)
+    """
+    # Import here to avoid circular referencing
+    from electricitylci.cems_data import CEMS_STATES
+
+    # Check that the user provided a valid API
+    cam_api = "https://www.epa.gov/power-sector/cam-api-portal#/api-key-signup"
+    api_key = check_api(api_key, "EPA", cam_api)
+
+    # Check that the user selects a valid period
+    valid_cams_periods = ['hourly', 'daily', 'annual']
+    if period not in valid_cams_periods:
+        warn_msg = (
+            "Expected, '%s', received '%s'" % (
+                ", ".join(valid_cams_periods), period
+            )
+        )
+        raise ValueError(warn_msg)
+
+    # Column naming scheme to be consistent across datasets.
+    c_map = {
+        'stateCode': 'state',
+        'facilityName': 'facility_name',
+        'facilityId': 'plant_id_eia',
+        'year': 'year',
+        'grossLoad': 'gross_load_mwh',
+        'steamLoad': 'steam_load_1000_lbs',
+        'so2Mass': 'so2_mass_tons',
+        'co2Mass': 'co2_mass_tons',
+        'noxMass': 'nox_mass_tons',
+        'heatInput': 'heat_content_mmbtu'
+    }
+    # Columns to check for data (row dropped if all entries are NaN)
+    data_cols = [
+        'gross_load_mwh',
+        'steam_load_1000_lbs',
+        'so2_mass_tons',
+        'co2_mass_tons',
+        'nox_mass_tons',
+        'heat_content_mmbtu',
+    ]
+
+    # Create the new API URL
+    cam_url = CAM_API_URL.replace("/annual/", f"/{period}/")
+
+    start_date = datetime.date(year, 1, 1)
+    end_date = datetime.date(year, 12, 31)
+
+    for state in CEMS_STATES:
+        # Define the state-level daily CEMS data file
+        archive_file = "epacems_%s_%d%s.csv" % (period, year, state.lower())
+
+        # Add a check to avoid re-running the API for files already archived
+        _found = find_file_in_folder(output_dir, [archive_file,], False)
+        if _found is not None:
+            logging.info("Found archive, '%s'" % archive_file)
+            continue
+
+        # Prepare the empty data frame
+        df = pd.DataFrame(columns=list(c_map.values()))
+
+        _success = True
+        cur_date = start_date
+        while cur_date < end_date and _success:
+            # HOTFIX: use monthly periods for hourly and daily queries
+            nxt_date = next_month(cur_date) - datetime.timedelta(days=1)
+            if period == 'annual':
+                # For annual query, set to end date
+                nxt_date = end_date
+
+            # Courtesy update to user; these API calls can take hours to run
+            logging.info("Querying %s data for %s (%s to %s)" % (
+                period, state, cur_date.isoformat(), nxt_date.isoformat()
+            ))
+
+            # Initialize variables to start the API query for all records.
+            recs_received = 0
+            recs_total = 2 # needs to >1 to initiate the loop
+            page_no = 1
+            while recs_received < (recs_total - 1):
+                # Build the params; the page number will increment
+                params = {
+                    'api_key': api_key,
+                    'beginDate': cur_date.isoformat(),
+                    'endDate': nxt_date.isoformat(),
+                    'stateCode': state,
+                    'page': page_no,
+                    'perPage': 500,  # max allowable by API is 500
+                }
+                # Query the API; url_tries will max with no data upon failing
+                # HOTFIX: incorporate time out parameter [250825; TWD]
+                max_tries = 4
+
+                try:
+                    js_list, url_tries, h_dict = read_from_api(
+                        cam_url,
+                        params=params,
+                        max_tries=max_tries,
+                        time_out=time_out
+                    )
+                except Exception as e:
+                    # Hitting urllib3 and requests errors; just kill this state
+                    logging.warning("API failed with error, '%s'" % str(e))
+                    js_list = []  # add zero to recs received
+                    h_dict = {}   # set total recs to zero
+                    url_tries = max_tries # set success to false
+
+                # EPA's rate limit is 1000 requests per hour.
+                # This limits you to 3.6 seconds per request to avoid exceeding.
+                # The API may recommend a different wait time.
+                # Daily data has roughly 12k records per state; with 49 states,
+                # that's ~600k records; that's 1200 requests, which is more than
+                # the 1000 per hour rate limit, so let's impose the 3.6s wait
+                sleep_time = h_dict.get("Retry-After", 3.6)
+                sleep_time = float(sleep_time)
+                time.sleep(sleep_time)
+
+                # update the total records and received records
+                recs_total = h_dict.get('X-Total-Count', 0)
+                recs_total = int(recs_total)
+                recs_received += len(js_list)
+
+                tmp_df = pd.DataFrame.from_dict(js_list).rename(columns=c_map)
+
+                # HOTFIX: it may be valid for a month to have no data.
+                # only skip if API fails
+                # If no data or API failed, stop the query (incomplete data)
+                if len(tmp_df) == 0 and url_tries < max_tries:
+                    logging.warning("No data for this query!")
+                elif len(tmp_df) == 0 and url_tries >= max_tries:
+                    _success = False
+                    logging.warning(
+                        "Failed to retrieve data for %s %s!" % (state, year)
+                    )
+                elif len(df) == 0 and len(tmp_df) > 0:
+                    # First time, set df
+                    df = tmp_df.copy()
+                else:
+                    # We've been here before. We're going in circles, Sam!
+                    # NOTE: columns with all NaNs will raise a FutureWarning
+                    df = pd.concat([df, tmp_df], ignore_index=True)
+
+                # Increment page to continue
+                page_no += 1
+
+            # Increment the current day by one month
+            cur_date = next_month(cur_date)
+
+        # NOTE: decision here is to save only the rows that have data.
+        # Rows with NaN values in all data columns are dropped.
+        # If you favor a more complete time series (with data gaps), then
+        # comment this line out.
+        df = df.dropna(subset=data_cols, how='all')
+
+        # Only save state's data if successful
+        if len(df) > 0 and _success:
+            # Writes to electricitylci's output folder.
+            write_csv_to_output(archive_file, df)
+        else:
+            logging.warning("Failed to write, %s" % archive_file)
+
+
+def check_api(key, owner, r_txt):
+    """Helper function to check and request for API key.
+
+    Parameters
+    ----------
+    key : str, Nonetype
+        The key to be checked.
+    owner : str
+        The API owner (e.g., 'EDX', 'EIA', or 'EPA').
+    r_txt : str
+        Helper text for acquiring an API key (e.g., registration URL).
+
+    Returns
+    -------
+    str
+        API key as provided by the user.
+    """
+    if key is None or key == "":
+        key = input("Enter %s API key: " % owner)
+        key = key.strip()
+        if key == "":
+            logging.warning(
+                "No API key given!"
+                f"Sign up here: {r_txt}"
+            )
+    return key
+
+
 def check_output_dir(out_dir):
     """Helper method to ensure a directory exists.
 
@@ -697,7 +926,7 @@ def download_edx(resource_id, api_key, output_dir):
     content_length = response_head.headers.get('Content-Length')
     resource_size = int(content_length) if content_length is not None else None
 
-    logging.debug("Resource Name:", filename)
+    logging.debug("Resource Name: %s" % filename)
     logging.debug(f"Resource Size: {resource_size} bytes")
 
     # HOTFIX: assign the output directory
@@ -1127,6 +1356,28 @@ def make_valid_version_num(foo):
     return result
 
 
+def next_month(dt0):
+    """Move a datetime object to the first day of the next month.
+
+    Parameters
+    ----------
+    dt0 : datetime.date
+
+    Returns
+    -------
+    datetime.date
+
+    Notes
+    -----
+    A. Balogh (2010), ActiveState Code
+    http://code.activestate.com/recipes/577274-subtract-or-add-a-month-to-a-datetimedate-or-datet/
+    """
+    dt1 = dt0.replace(day=1)
+    dt2 = dt1 + datetime.timedelta(days=32)
+    dt3 = dt2.replace(day=1)
+    return dt3
+
+
 def read_line_from_file(filename):
     """Helper function to read a single-line from a text file.
 
@@ -1344,7 +1595,7 @@ def read_ba_codes():
     return df
 
 
-def read_eia_api(url, url_try=0, max_tries=5):
+def read_from_api(url, params=None, url_try=0, max_tries=5, time_out=20):
     """Return a JSON data response from EIA's API.
 
     Parameters
@@ -1355,42 +1606,43 @@ def read_eia_api(url, url_try=0, max_tries=5):
         Internal counter for URL retries; default is 0
     max_tries : int
         When to stop retrying; default is 5
+    time_out : int
+        The timeout (in seconds) to wait for an API request return
 
-    Returns:
-    (dict, int)
-        The JSON response and URL try count.
-        The JSON dictionary includes keys:
+    Returns
+    -------
+    tuple
+        A tuple of length two.
 
-        -   'response' (dict): with keys:
+        - a dict of the JSON response (EIA) or a list of JSON data (EPA)
+        - int, the URL try count
+        - dict, the response headers (includes the X-total-count for EPA)
 
-            -   'total' (int): count of records in 'data'
-            -   'dateFormat' (str): For example, 'YYYY-MM-DD"T"HH24'
-            -   'frequency' (str): For example, 'hourly'
-            -   'description' (str): Data description
-            -   'data' (list): Dictionaries with keys:
+    Notes
+    ----
+    The EPA CAMPD API has a rate limit of 1000 requests per hour:
+    https://www.epa.gov/power-sector/cam-api-portal#/frequent-questions.
+    (3.6 s per request)
 
-                -   'period'
-                -   'fromba': for ID only
-                -   'fromba-name': for ID only
-                -   'toba': for ID only
-                -   'toba-name': for ID only
-                -   'respondent': for D and NG only
-                -   'respondent-name': for D and NG only
-                -   'type': for D and NG only
-                -   'type-name': for D and NG only
-                -   'value'
-                -   'value-units'
+    EIA does not impose throttling, but recommend that you stay under
+    9000 requests per hour with no more than 5 requests per second (see FAQ):
+    https://www.eia.gov/opendata/documentation.php.
+    (0.4 s per request)
 
-        -   'request' (dict): Parameters sent to the API
-        -   'apiVersion' (str): API version string (e.g., '2.1.7')
-        -   'ExcelAddInVersion' (str): AddIn version string (e.g., '2.1.0')
     """
     r_dict = {}
+    h_dict = {}
     url_try += 1
-    #adding 20s timeout to avoid long delays due to server issues.
-    r = requests.get(url, timeout=20)
+    # Add 20s timeout to avoid long delays due to server issues.
+    if params is not None:
+        r = requests.get(url, params=params, timeout=time_out)
+    else:
+        r = requests.get(url, timeout=time_out)
+
     r_status = r.status_code
+    h_dict = dict(r.headers)
     if r_status == 200:
+        # Cast the case-insensitive dictionary to regular Python dict
         try:
             r_dict = r.json()
         except:
@@ -1399,11 +1651,16 @@ def read_eia_api(url, url_try=0, max_tries=5):
             r_dict = json.loads(r_content)
     else:
         if url_try < max_tries:
-            r_dict, url_try = read_eia_api(url, url_try, max_tries)
+            time.sleep(API_SLEEP)
+            r_dict, url_try, h_dict = read_from_api(
+                url, params, url_try, max_tries, time_out
+            )
         else:
-            logging.error("Requests failed!")
+            logging.error(
+                "Requests failed! Status code '%s'." % r_status
+            )
 
-    return (r_dict, url_try)
+    return (r_dict, url_try, h_dict)
 
 
 def read_json(json_path):
@@ -1573,14 +1830,16 @@ def write_csv_to_output(f_name, data):
     """
     f_path = os.path.join(output_dir, f_name)
     if os.path.isfile(f_path):
-        logging.warn("File exists! Overwriting %s" % f_path)
+        logging.warning("File exists! Overwriting %s" % f_path)
     if isinstance(data, pd.DataFrame):
         try:
             data.to_csv(f_path, index=False)
         except:
             logging.error("Failed to write '%s' to file" % f_path)
         else:
-            logging.info("Wrote data to file, %s" % f_path)
+            logging.info(
+                "Wrote %d lines to file, %s" % (len(data), f_path)
+            )
     elif isinstance(data, str):
         try:
             with open(f_path, 'w') as f:
