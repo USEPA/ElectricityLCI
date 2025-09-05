@@ -1,3 +1,5 @@
+[![DOI - 10.18141/2570075](https://img.shields.io/badge/DOI-10.18141%2F2570075-blue)](https://doi.org/10.18141/2570075)
+
 # Electricity Life Cycle Inventory
 
 A Python package that uses standardized facility releases and generation data to create regionalized life cycle inventory (LCI) models for the generation, mix of generation, mix of consumption, and distribution of electricity to end users for the US, with embedded system processes of upstream fuel production and infrastructure.
