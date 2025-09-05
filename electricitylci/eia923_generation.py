@@ -35,9 +35,8 @@ electricity generated and fuel used by facility. This module will download the
 data as needed and provides functions to access different pages of the Excel
 workbook.
 
-
 Last edited:
-    2025-06-09
+    2025-09-05
 """
 EIA923_PAGES = {
     "1": "Page 1 Generation and Fuel Data",
@@ -152,7 +151,7 @@ def build_generation_data(
             if model_specs.include_only_egrid_facilities_with_positive_generation:
                 f_crit = final_gen_df["Net Generation (Megawatthours)"] >= 0
                 logging.info(
-                    "Filtering %d facilities with negative generation" % (
+                    "Filtering %d facilities without positive generation" % (
                         f_crit.sum())
                 )
                 final_gen_df = final_gen_df.loc[f_crit, :]
@@ -312,6 +311,11 @@ def eia923_boiler_fuel(year):
     Data for faster reading on future runs.
 
     Referenced in ampd_plant_emissions.py.
+
+    Troubleshooting:
+
+    -   2011 boiler fuel data has a typo under heat content for fuels (i.e.,
+        April spelled Apirl).
     """
     expected_923_folder = join(paths.local_path, "f923_{}".format(year))
 
@@ -761,7 +765,43 @@ def group_fuel_categories(df):
 
 
 def load_eia923_excel(eia923_path, page="1"):
-    """Add docstring."""
+    """Read an EIA Form 923 worksheet.
+
+    Parameters
+    ----------
+    eia923_path : str
+        The file path to the EIA 923 workbook.
+    page : str
+        The page number, simplified.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A data frame with the following columns:
+
+        -   'plant_id',
+        -   'combined_heat_power_plant',
+        -   'plant_name',
+        -   'operator_name',
+        -   'operator_id',
+        -   'state',
+        -   'census_region',
+        -   'nerc_region',
+        -   'naics_code',
+        -   'eia_sector_number',
+        -   'sector_name',
+        -   'boiler_id',
+        -   'prime_mover_type',
+        -   'reported_fuel_type_code',
+        -   'physical_unit_label',
+        -   'quantity_of_fuel_consumed_january' through
+            'quantity_of_fuel_consumed_december'
+        -   'mmbtu_per_unit_january' through 'mmbtu_per_unit_december',
+        -   'sulfur_content_january' through 'sulfur_content_december',
+        -   'ash_content_january' through 'ash_content_december',
+        -   'total_fuel_consumption_quantity',
+        -   'year'
+    """
     page_to_load = EIA923_PAGES[page]
     header_row = EIA923_HEADER_ROWS[page]
     eia = pd.read_excel(
