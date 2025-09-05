@@ -57,7 +57,7 @@ inventories_of_interest:
   TRI: 2023
   NEI: 2020
   RCRAInfo: 2023
-stewicombo_file: 'ELCI_2020_v1.1.4'
+stewicombo_file: 'ELCI_2023_v1.2.0_d3bb4db'
 
 # Provide uncertainty estimates for emissions.
 calculate_uncertainty: true
