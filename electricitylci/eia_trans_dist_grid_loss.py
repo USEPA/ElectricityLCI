@@ -99,7 +99,7 @@ def eia_trans_dist_download_extract(year):
             # HOTFIX: URLs for two-word states have space omitted.
             url_a = (
                 "https://www.eia.gov/electricity/state/archive/"
-                + year
+                + f"{year}"
                 + "/"
                 + key.replace(" ", "")
                 + "/xls/"
@@ -111,22 +111,39 @@ def eia_trans_dist_download_extract(year):
                 + "/xls/"
                 + filename
             )
+            # bugfix: url for year 2023 [FH]
+            # this has to be updated later when 2023 data gets archived 
+            # and links should be rechecked for compatibility with 2024 data (when released)
+            url_c = (
+                "https://www.eia.gov/electricity/state/"
+                + key.replace(" ", "")
+                + "/xls/"
+                + "SEP Tables for "
+                + STATE_ABBREV[key].upper()
+                + ".xlsx"
+            )           
             # HOTFIX: https://github.com/USEPA/ElectricityLCI/issues/235
             #adding 20s timeout to avoid long delays due to server issues.
-            r = requests.get(url_a, timeout=20)
-            r_head = r.headers.get("Content-Type", "")
-            if not r.ok or r_head.startswith("text"):
-                logging.info(f"Trying alternative site {STATE_ABBREV[key]}")
-                #adding 20s timeout to avoid long delays due to server issues.
-                r = requests.get(url_b, timeout=20)
-                r_head = r.headers.get("Content-Type", "")
-
-            if r.ok and not r_head.startswith("text"):
-                with open(filename, 'wb') as f:
+            # bugfix: added condition to account for the 2023 data link format [FH]
+            if year == "2023":
+                r = requests.get(url_c, timeout=20)
+                with open (filename, "wb") as f:
                     f.write(r.content)
             else:
-                logging.error(
-                    f"No TD loss data for {STATE_ABBREV[key]} {year}")
+                r = requests.get(url_a, timeout=20)
+                r_head = r.headers.get("Content-Type", "")
+                if not r.ok or r_head.startswith("text"):
+                    logging.info(f"Trying alternative site {STATE_ABBREV[key]}")
+                    #adding 20s timeout to avoid long delays due to server issues.
+                    r = requests.get(url_b, timeout=20)
+                    r_head = r.headers.get("Content-Type", "")
+
+                if r.ok and not r_head.startswith("text"):
+                    with open(filename, 'wb') as f:
+                        f.write(r.content)
+                else:
+                    logging.error(
+                        f"No TD loss data for {STATE_ABBREV[key]} {year}")
 
         try:
             df = pd.read_excel(
@@ -155,7 +172,8 @@ def eia_trans_dist_download_extract(year):
 
     eia_trans_dist_loss.columns = eia_trans_dist_loss.columns.str.upper()
     eia_trans_dist_loss = eia_trans_dist_loss.transpose()
-    eia_trans_dist_loss = eia_trans_dist_loss[[year]]
+    eia_trans_dist_loss = eia_trans_dist_loss[f"{year}"]
+    eia_trans_dist_loss = eia_trans_dist_loss.to_frame()
     eia_trans_dist_loss.columns = ["t_d_losses"]
     os.chdir(old_path)
 
