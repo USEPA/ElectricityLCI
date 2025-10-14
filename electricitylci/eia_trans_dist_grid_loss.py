@@ -74,13 +74,16 @@ def eia_trans_dist_download_extract(year):
 
     Parameters
     ----------
-    year : str
+    year : str, int
         Analysis year
 
     Returns
     -------
     pandas.DataFrame
     """
+    # check in case year is passed as an int
+    if isinstance(year,str)
+        year = str(year)
     eia_trans_dist_loss = pd.DataFrame()
     old_path = os.getcwd()
     if os.path.exists(f"{paths.local_path}/t_and_d_{year}"):
@@ -99,7 +102,7 @@ def eia_trans_dist_download_extract(year):
             # HOTFIX: URLs for two-word states have space omitted.
             url_a = (
                 "https://www.eia.gov/electricity/state/archive/"
-                + f"{year}"
+                + year
                 + "/"
                 + key.replace(" ", "")
                 + "/xls/"
@@ -172,8 +175,7 @@ def eia_trans_dist_download_extract(year):
 
     eia_trans_dist_loss.columns = eia_trans_dist_loss.columns.str.upper()
     eia_trans_dist_loss = eia_trans_dist_loss.transpose()
-    eia_trans_dist_loss = eia_trans_dist_loss[f"{year}"]
-    eia_trans_dist_loss = eia_trans_dist_loss.to_frame()
+    eia_trans_dist_loss = eia_trans_dist_loss[[year]]
     eia_trans_dist_loss.columns = ["t_d_losses"]
     os.chdir(old_path)
 
