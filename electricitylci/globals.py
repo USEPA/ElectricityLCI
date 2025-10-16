@@ -233,6 +233,8 @@ COAL_MODEL_YEARS = [2020, 2023]
 RENEWABLE_VINTAGES = [2016, 2020]
 '''list : The valid years for renewable inventories (i.e., 2016 and 2020).'''
 
+NG_MODEL_YEARS = [2016, 2020]
+'''list : The valid years for natural gas model (i.e., 2016 and 2020).'''
 
 ##############################################################################
 # FUNCTIONS

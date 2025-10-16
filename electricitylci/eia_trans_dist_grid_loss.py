@@ -82,7 +82,7 @@ def eia_trans_dist_download_extract(year):
     pandas.DataFrame
     """
     # check in case year is passed as an int
-    if isinstance(year,str)
+    if isinstance(year,int):
         year = str(year)
     eia_trans_dist_loss = pd.DataFrame()
     old_path = os.getcwd()
