@@ -35,63 +35,34 @@ __all__ = [
     "generate_upstream_ng",
 ]
 
+# Supporting Dicts
+# #######################################################################################################
+region_sheets_dict = {
+    'Pacific': 'FI - Pacific Delivery',
+    'Rocky Mountain': 'FI - Rocky Mountain Delivery',
+    'Southwest': 'FI - Southwest Delivery',
+    'Midwest': 'FI - Midwest Delivery',
+    'Southeast': 'FI - Southeast Delivery',
+    'Northeast': 'FI - Northeast Delivery'
+ }
 
-#############################################################################
-# GLOBALS
-##############################################################################
-technobasins_basins = {
-    'Appalachian': ['FI - App Shale'],
-    'Alaska Offshore': ['FI - Alaska Offshore'],
-    'Anadarko': ['FI - Anadarko Conv','FI - Anadarko Shale', 'FI - Anadarko Tight'],
-    'Arkla': ['FI - Arkla Conv','FI - Arkla Shale','FI - Arkla Tight'],
-    'Arkoma': ['FI - Arkoma Conv','FI - Arkoma Shale'],
-    'East Texas': ['FI - East Texas Conv', 'FI - East Texas Shale', 'FI - East Texas Tight'],
-    'Fort Worth': ['FI - Fort Worth Shale'],
-    'Green River': ['FI - Green River Conv', 'FI - Green River Tight'],
-    'Gulf': ['FI - Gulf Conv', 'FI - Gulf Shale', 'FI - Gulf TIght'], ## This not a typo - the title of the sheet in the excel file is 'FI - Gulf TIght'
-    'Permian': ['FI - Permian Conv', 'FI - Permian Shale'],
-    'Piceance': ['FI - Piceance Tight'],
-    'San Juan': ['FI - San Juan CBM', 'FI - San Juan Shale'],
-    'South Oklahoma': ['FI - South OK Shale'],
-    'Strawn': ['FI - Strawn Shale'],
-    'Uinta': ['FI - Uinta Conv', 'FI - Uinta Tight'],
-    'GoM': ['FI - GoM Offshore']
-}   
-
-# Aliases to account for different naming conventions of technobasins used in the excel file
-# the below dictionary is hardcoded
-
-aliases = {
-    'Appalachian Shale': 'FI - App Shale',
-    'Alaska Offshore': 'FI - Alaska Offshore',
-    'GoM Offshore': 'FI - GoM Offshore',
-    'Arkla Shale': 'FI - Arkla Shale',
-    'Arkla Tight': 'FI - Arkla Tight',
-    'Green River Conv': 'FI - Green River Conv',
-    'Green River Tight': 'FI - Green River Tight',
-    'Permian Conv': 'FI - Permian Conv',
-    'Gulf Tight': 'FI - Gulf TIght', ## This not a typo - the title of the sheet in the excel file is 'FI - Gulf TIght'
-    'Uinta Conv': 'FI - Uinta Conv',
-    'Gulf Conv': 'FI - Gulf Conv',
-    'Gulf Shale': 'FI - Gulf Shale',
-    'Permian Shale': 'FI - Permian Shale',
-    'Anadarko Shale': 'FI - Anadarko Shale',
-    'South Oklahoma Shale': 'FI - South OK Shale',
-    'Uinta Tight': 'FI - Uinta Tight',
-    'East Texas Tight': 'FI - East Texas Tight',
-    'East Texas Shale': 'FI - East Texas Shale',
-    'Strawn Shale': 'FI - Strawn Shale',
-    'Piceance Tight': 'FI - Piceance Tight',
-    'Fort Worth Shale': 'FI - Fort Worth Shale',
-    'Arkla Conv': 'FI - Arkla Conv',
-    'East Texas Conv': 'FI - East Texas Conv',
-    'Arkoma Shale': 'FI - Arkoma Shale',
-    'Anadarko Conv': 'FI - Anadarko Conv',
-    'San Juan CBM': 'FI - San Juan CBM',
-    'Anadarko Tight': 'FI - Anadarko Tight',
-    'Arkoma Conv': 'FI - Arkoma Conv',
-    'San Juan Shale': 'FI - San Juan Shale'
+r_ids_2020 = {
+    'Appendix_F_2020_Full_Inventory_Results_Midwest_ProdThruTrans.xlsx':'5665de40-fc2b-4643-b647-ceec226af2bb', 
+    'Appendix_F_2020_Full_Inventory_Results_Northeast_ProdThruTrans.xlsx' :'b396eb50-72ac-45f0-8231-9b613457c6d8', 
+    'Appendix_F_2020_Full_Inventory_Results_Pacific_ProdThruTrans.xlsx' :'347a0cd8-5ff2-4cb3-be0a-f31a56bac9c6', 
+    'Appendix_F_2020_Full_Inventory_Results_Rocky_Mountain_ProdThruTrans.xlsx' :'d08f4da2-543a-40b2-9ffd-c7138ed4f8c6', 
+    'Appendix_F_2020_Full_Inventory_Results_Southeast_ProdThruTrans.xlsx' :'4590712b-db21-4428-b488-6ded3b65d18b', 
+    'Appendix_F_2020_Full_Inventory_Results_Southwest_ProdThruTrans.xlsx':'9dd7a6e5-df1a-461e-87e7-0b9d8d600f26'
 }
+
+region_state_mapping = {
+    'WA':'Pacific','CA':'Pacific','OR':'Pacific','MT':'Rocky Mountain','ID':'Rocky Mountain','CO':'Rocky Mountain','NV':'Rocky Mountain','UT':'Rocky Mountain','WY':'Rocky Mountain',
+    'AZ':'Southwest','NM':'Southwest','OK':'Southwest','TX':'Southwest','MN':'Midwest','ND':'Midwest','IA':'Midwest','KS':'Midwest',
+    'MO':'Midwest','NE':'Midwest','SD':'Midwest','IL':'Midwest','IN':'Midwest','OH':'Midwest','WI':'Midwest','MI':'Midwest',
+    'AR':'Southeast','LA':'Southeast','AL':'Southeast','FL':'Southeast','GA':'Southeast','MS':'Southeast','SC':'Southeast','KY':'Southeast',
+    'NC':'Southeast','TN':'Southeast','VA':'Southeast','WV':'Southeast','DE':'Southeast','MD':'Southeast','CT':'Northeast','MA':'Northeast',
+    'NH':'Northeast','RI':'Northeast','VT':'Northeast','NJ':'Northeast','NY':'Northeast','PA':'Northeast','ME':'Northeast',
+} #TOTAL 48 -- EXCLUDING AL, HI, AND DC
 
 ##############################################################################
 # MAN FUNCTION
@@ -124,12 +95,212 @@ def generate_upstream_ng(year):
     """
     logging.info("Generating natural gas inventory")
 
+    # get plant data and map each plant to its ng source: basin or region
+    # the 2016 ng emissions inventory is only available by basin
+    #   as such, plants can only be connected to upstream emissions via basin assignment
+    # newer data (2020) is available by region 
+    #   plants are connected to upstream ng emissions via region assignment
+
+    if model_specs.ng_model_year == 2016:
+        ng_generation_data_mapped = map_ng_by_basin(year) # 'year' refers to eia_generation_year
+    else:
+        ng_generation_data_mapped = map_ng_by_region(year) # 'year' refers to eia_generation_year
+
+    # Read the NG LCI file
+    # if year = 2016 - this step will directly ready NG_LCI.csv from the data_dir - returns lci (by basin)
+    # if year = 2020 - this step will require edx api, download ng model and mapping - returns lci (by region)
+    # document from edx, and generate lci
+    ng_lci = get_ng_lci(model_specs.ng_model_year)
+
+    # merge ng lci and plants based on the common parameter: region or basin
+    if model_specs.ng_model_year == 2016:
+        ng_lci_mapped = map_ng_lci_to_plants_by_basin(ng_lci, ng_generation_data_mapped)
+    else:
+        ng_lci_mapped = map_ng_lci_to_plants_by_region(ng_lci, ng_generation_data_mapped)
+
+    # Multiplying with the EIA 923 fuel consumption; conversion factor is
+    # for MMBtu to MJ
+    btu_to_MJ = pq.convert(10**6,'Btu','MJ')
+    ng_lci_mapped["FlowAmount"]=(
+        ng_lci_mapped["FlowAmount"]
+        * ng_lci_mapped['Total Fuel Consumption MMBtu']
+        * btu_to_MJ
+    )
+
+    ng_lci_mapped = ng_lci_mapped.rename(
+        columns={'Total Fuel Consumption MMBtu':'quantity'})
+    ng_lci_mapped["quantity"]=ng_lci_mapped["quantity"]*btu_to_MJ
+
+    # Output is kg emission for the specified year by facility Id,
+    # not normalized to electricity output
+
+    ng_lci_mapped['FuelCategory'] = 'GAS'
+    ng_lci_mapped.rename(
+        columns={
+            'Plant Id':'plant_id',
+            'NG_LCI_Region': 'stage_code',
+            'NG_LCI_Name':'stage_code',
+            'Stage':'stage'},
+        inplace=True
+    )
+    ng_lci_mapped["Year"] = year
+    ng_lci_mapped["Source"] = "netlgaseiafuel"
+    ng_lci_mapped["ElementaryFlowPrimeContext"] = "emission"
+    ng_lci_mapped.loc[
+        ng_lci_mapped["Compartment"].str.contains("resource/"),
+        "ElementaryFlowPrimeContext"] = "resource"
+    ng_lci_mapped.loc[
+        ng_lci_mapped["Compartment"].str.contains("Technosphere/"),
+        "ElementaryFlowPrimeContext"] = "technosphere"
+    # Issue #296 - adding DQI information for upstream processes
+    ng_lci_mapped["Year"] = 2016
+    ng_lci_mapped["DataReliability"] = 3
+    ng_lci_mapped["TemporalCorrelation"] = add_temporal_correlation_score(
+        ng_lci_mapped["Year"], model_specs.electricity_lci_target_year
+    )
+    ng_lci_mapped["GeographicalCorrelation"] = 1
+    ng_lci_mapped["TechnologicalCorrelation"] = 1
+    ng_lci_mapped["DataCollection"] = 1
+    #3/20/2025 MBJ - replacing renewable vintage here so that temporal correlation
+    #is based on the year the inventory is based on, but when electricity
+    #generation is combined, it needs to be based on the target year for the
+    #inventory.
+    ng_lci_mapped["Year"]=year
+    
+    return ng_lci_mapped
+
+##############################################################################
+# HELPER FUNCTIONS
+##############################################################################
+
+def map_ng_lci_to_plants_by_basin (ng_lci, ng_generation_data_mapped):
+    """
+    Map the natural gas generation data by basin.
+    """
+    ng_lci_columns=[
+        "Compartment",
+        "FlowName",
+        "FlowUUID",
+        "Unit",
+        "FlowType",
+        "input",
+        "Basin",
+        "FlowAmount"
+    ]
+    ng_lci_stack = pd.DataFrame(ng_lci.stack()).reset_index()
+    ng_lci_stack.columns=ng_lci_columns
+
+    # Merge basin data with LCI dataset
+    ng_lci_mapped = pd.merge(
+        ng_lci_stack,
+        ng_generation_data_mapped,
+        left_on = 'Basin',
+        right_on = 'NG_LCI_Name',
+        how='left'
+    )   
+    return ng_lci_mapped
+
+def map_ng_lci_to_plants_by_region (ng_lci, ng_generation_data_mapped):
+    """
+    Map the natural gas generation data by basin.
+    """
+    ng_lci_columns=[
+        "Compartment",
+        "FlowName",
+        "FlowUUID",
+        "Unit",
+        "FlowType",
+        "input",
+        "Region",
+        "FlowAmount"
+    ]
+    ng_lci_stack = pd.DataFrame(ng_lci.stack()).reset_index()
+    ng_lci_stack.columns=ng_lci_columns
+
+    # Merge basin data with LCI dataset
+    ng_lci_mapped = pd.merge(
+        ng_lci_stack,
+        ng_generation_data_mapped,
+        left_on = 'Region',
+        right_on = 'NG_LCI_Region',
+        how='left'
+    )   
+    return ng_lci_mapped
+
+
+def map_ng_by_region (year):
+    """
+    Map the natural gas generation data by region.
+    This includes 6 regions: Pacific, Rocky Mountain, Southwest, Midwest, Southeast, and Northeast.
+
+    Notes
+    -----
+    * Downloads eia plant data for the specified year
+    * Filters the data to only include NG facilities and on positive fuel consumption
+    * Groups the data by Plant Id and aggregates the fuel consumption by summing the total fuel consumption
+    * Maps each plant to a region using the region_state_mapping dictionary
+
+    Parameters
+    ----------
+    year: int, str
+        The year of the eia923 plant data to use.
+
+    Returns
+    ----------
+    pandas.DataFrame
+        A dataframe with the natural gas generation data by region.
+    """
+    if isinstance(year, str):
+        year = int(year)
+    
+    eia_generation_data = eia923_download_extract(year)
+
+    column_filt = ((eia_generation_data['Reported Fuel Type Code'] == 'NG') &
+                   (eia_generation_data['Total Fuel Consumption MMBtu'] > 0))
+
+    ng_generation_data = eia_generation_data[column_filt]
+
+    ng_generation_data = ng_generation_data.groupby('Plant Id').agg(
+        {'Total Fuel Consumption MMBtu':'sum','State':'first'}).reset_index()
+    ng_generation_data['Plant Id'] = ng_generation_data['Plant Id'].astype(int)
+
+    ng_generation_data_region = ng_generation_data.copy()
+
+    ng_generation_data_region['NG_LCI_Region'] = ng_generation_data['State'].map(region_state_mapping)
+    
+    return ng_generation_data_region
+
+
+def map_ng_by_basin (year):
+    """
+    Map the natural gas generation data by basin.
+
+    Notes
+    -----
+    * Downloads eia plant data for the specified year
+    * Filters the data to only include NG facilities and on positive fuel consumption
+    * maps each plant to a basin using the gas_supply_basin_mapping.csv file
+    
+    Parameters
+    ----------
+    year: int, str
+        The year of the eia923 plant data to use.
+
+    Returns
+    ----------
+    pandas.DataFrame
+        A dataframe with the natural gas generation data by region.
+    """
+    if isinstance(year, str):
+        year = int(year)
+    
     # Get the EIA generation data for the specified year, this dataset includes
     # the fuel consumption for generating electricity for each facility
     # and fuel type. Filter the data to only include NG facilities and on
     # positive fuel consumption. Group that data by Plant Id as it is possible
     # to have multiple rows for the same facility and fuel based on different
     # prime movers (e.g., gas turbine and combined cycle).
+
     eia_generation_data = eia923_download_extract(year)
 
     column_filt = ((eia_generation_data['Reported Fuel Type Code'] == 'NG') &
@@ -159,98 +330,7 @@ def generate_upstream_ng(year):
     ng_generation_data_basin = ng_generation_data_basin.drop(
         columns=['Plant Code']
     )
-
-    # Read the NG LCI file
-    # if year = 2016 - this step will directly ready NG_LCI.csv from the data_dir
-    # if year = 2020 - this step will require edx api, download ng model and mapping 
-    # document from edx, and generate lci
-    ng_lci = get_ng_lci(model_specs.ng_model_year)
-
-    ng_lci_columns=[
-        "Compartment",
-        "FlowName",
-        "FlowUUID",
-        "Unit",
-        "FlowType",
-        "input",
-        "Basin",
-        "FlowAmount"
-    ]
-    ng_lci_stack = pd.DataFrame(ng_lci.stack()).reset_index()
-    ng_lci_stack.columns=ng_lci_columns
-
-    # Merge basin data with LCI dataset
-    ng_lci_basin = pd.merge(
-        ng_lci_stack,
-        ng_generation_data_basin,
-        left_on = 'Basin',
-        right_on = 'NG_LCI_Name',
-        how='left'
-    )
-
-    # Multiplying with the EIA 923 fuel consumption; conversion factor is
-    # for MMBtu to MJ
-    btu_to_MJ = pq.convert(10**6,'Btu','MJ')
-    ng_lci_basin["FlowAmount"]=(
-        ng_lci_basin["FlowAmount"]
-        * ng_lci_basin['Total Fuel Consumption MMBtu']
-        * btu_to_MJ
-    )
-
-    ng_lci_basin = ng_lci_basin.rename(
-        columns={'Total Fuel Consumption MMBtu':'quantity'})
-    ng_lci_basin["quantity"]=ng_lci_basin["quantity"]*btu_to_MJ
-
-    # Output is kg emission for the specified year by facility Id,
-    # not normalized to electricity output
-
-    ng_lci_basin['FuelCategory'] = 'GAS'
-    ng_lci_basin.rename(
-        columns={
-            'Plant Id':'plant_id',
-            'NG_LCI_Name':'stage_code',
-            'Stage':'stage'},
-        inplace=True
-    )
-    ng_lci_basin["Year"] = year
-    ng_lci_basin["Source"] = "netlgaseiafuel"
-    ng_lci_basin["ElementaryFlowPrimeContext"] = "emission"
-    ng_lci_basin.loc[
-        ng_lci_basin["Compartment"].str.contains("resource/"),
-        "ElementaryFlowPrimeContext"] = "resource"
-    ng_lci_basin.loc[
-        ng_lci_basin["Compartment"].str.contains("Technosphere/"),
-        "ElementaryFlowPrimeContext"] = "technosphere"
-    # Issue #296 - adding DQI information for upstream processes
-    ng_lci_basin["Year"] = 2016
-    ng_lci_basin["DataReliability"] = 3
-    ng_lci_basin["TemporalCorrelation"] = add_temporal_correlation_score(
-        ng_lci_basin["Year"], model_specs.electricity_lci_target_year
-    )
-    ng_lci_basin["GeographicalCorrelation"] = 1
-    ng_lci_basin["TechnologicalCorrelation"] = 1
-    ng_lci_basin["DataCollection"] = 1
-    #3/20/2025 MBJ - replacing renewable vintage here so that temporal correlation
-    #is based on the year the inventory is based on, but when electricity
-    #generation is combined, it needs to be based on the target year for the
-    #inventory.
-    ng_lci_basin["Year"]=year
-
-    # Issue: the current basin-to-plant mapping document does not include the Alaska Offshore and GoM Offshore basins
-    #        on the other hand, the ng_lci generated above includes emissions for both of there basins
-    #        this causes NaN values in the 'ng_lci_basin' dataframe and then returns errors when converting to int32
-    #        a quick fix involves omitting NaN values from the 'ng_lci_basin' dataframe - but this assumes that Offshore 
-    #        gas production is not used in electricity production
-    #        A fix for the future involves updating the mapping document: 'gas_supply_basin_mapping.csv' to account for 
-    #        offshore gas used in electricity production
-    
-    ng_lci_basin = ng_lci_basin.dropna(subset=['FlowAmount'])
-    
-    return ng_lci_basin
-
-##############################################################################
-# HELPER FUNCTIONS
-##############################################################################
+    return ng_generation_data_basin
 
 def get_ng_lci(year):
     """
@@ -288,7 +368,11 @@ def get_ng_lci(year):
         )
     else:
         data_folder = os.path.join(paths.local_path, 'netl')
-        #check if the ng_lci_2020rev1.csv already exists - if it does then we can skip all the below
+        # create new directory for ng if non existing
+        if not os.path.exists(os.path.join(data_folder,"2020_ng")):
+            os.makedirs(os.path.join(data_folder,"2020_ng"))
+        data_folder = os.path.join(data_folder,"2020_ng")
+        # check if the ng_lci_2020rev1.csv already exists - if it does then we can skip all the below
         if os.path.exists(os.path.join(data_folder, "ng_lci_2020rev1.csv")):
             logging.info(f"NG LCI already exists in your data directory.")
             ng_lci = pd.read_csv(
@@ -297,25 +381,25 @@ def get_ng_lci(year):
             )
         else:
             # if it does not exist, then we need to generate it
-            logging.info(f"Retrieving the {year} natural gas life cycle inventory by basin.")
+            logging.info(f"Retrieving the {year} natural gas life cycle inventory by region.")
             # this step will require downloading files from edx      
             # retrieve ng model
             # check if model is data_dir
-            if os.path.exists(os.path.join(data_folder, "ng_model_2020Rev1.xlsx")):
-                logging.info(f"NG model already exists in your data directory.")
-                excel_file_path = os.path.join(data_folder, "ng_model_2020Rev1.xlsx")
+            if not os.path.exists(os.path.join(data_folder,"2020_ng_model")):
+                os.makedirs(os.path.join(data_folder,"2020_ng_model"))
+                model_folder = os.path.join(data_folder,"2020_ng_model")
             else:
-                # download model from edx
-                logging.info(f"Downloading natural gas model from EDx.")
-                edx_api = model_specs.edx_api_key
-                r_id_ng_2020rev1 = 'cb8c8cf2-47ce-4ff0-b285-be73ba9294b9' 
-                # resource id of 2020 Rev1 ng model on EDx
-                try:
-                    download_edx(resource_id = r_id_ng_2020rev1, api_key = edx_api, output_dir = data_folder)
-                    excel_file_path = os.path.join(data_folder, "Appendix_F_2020_Full_Inventory_Results_US_Avg_ProdThruTrans.xlsx")
-                except Exception as e:
-                    logging.error(f"Error downloading natural gas model from EDx. Error: {e}")
-                    sys.exit(1)
+                model_folder = os.path.join(data_folder,"2020_ng_model")
+                for ngmodel in r_ids_2020.keys():
+                    if os.path.exists(os.path.join(model_folder, ngmodel)):
+                        logging.info(f"{ngmodel} already exists in your data directory.")
+                    else:
+                        logging.info(f"Downloading {ngmodel} from EDx.")
+                        try:
+                            download_edx(resource_id = r_ids_2020[ngmodel], api_key = model_specs.edx_api_key, output_dir = model_folder)
+                        except Exception as e:
+                            logging.error(f"Error downloading {ngmodel} from EDx. Error: {e}")
+                            sys.exit(1)
             # retrieve flow mapping document from edx [elci.csv]
             # check if flowmapping csv exists in data_dir
             if os.path.exists(os.path.join(data_folder, "elci.csv")):
@@ -326,16 +410,15 @@ def get_ng_lci(year):
                 logging.info(f"Downloading ELCI flow mapping document from EDx.")
                 r_id_elci = 'e2c8f934-e95e-470a-879b-17ebe4afd39e' # resource id of elci flow mapping document on EDx
                 try:
-                    download_edx(resource_id = r_id_elci, api_key = edx_api, output_dir = data_folder)
+                    download_edx(resource_id = r_id_elci, api_key = model_specs.edx_api_key, output_dir = data_folder)
                     flow_mapping_path = os.path.join(data_folder, "elci.csv")  
                 except Exception as e:
                     logging.error(f"Error downloading ELCI flow mapping document from EDx. Error: {e}")
                     sys.exit(1)
-            # production sheet name
-            production_sheet_name = '2020 Production Shares'
+
             # run the generate_ng_lci function and save it in data_dir
             try:
-                generate_lci (technobasins_basins, excel_file_path, flow_mapping_path, production_sheet_name, destination_path = data_folder, final_table_name = "ng_lci_2020rev1")
+                generate_lci (excel_folder_path = model_folder, flow_mapping_path = flow_mapping_path, destination_path = data_folder, final_table_name = "ng_lci_2020rev1")
                 ng_lci = pd.read_csv(
                     os.path.join(data_folder, "ng_lci_2020rev1.csv"),
                     index_col=[0,1,2,3,4,5]
@@ -345,14 +428,13 @@ def get_ng_lci(year):
                 sys.exit(1)
     return ng_lci
 
-def generate_lci(technobasins_basins, excel_file_path, flow_mapping_path, production_sheet_name, destination_path, final_table_name):
+def generate_lci(excel_folder_path, flow_mapping_path, destination_path, final_table_name):
     """
     This function reads an excel file, extracts the data, and generates a LCI for NG with the same format as the currently used file.
 
     Args:
-        technobasins_basins (dict): A dictionary that maps technobasins to basins
-        excel_file_path (str): The path to the excel file
-        production_sheet_name (str): The name of the sheet that contains the production shares
+        excel_folder_path (str): The path to the folder containing the excel files (ng models/inventories)
+        flow_mapping_path (str): The path to the flow mapping file
         destination_path (str): !!This is an optional input!! 
                                 The path to the destination folder. If not provided, the function 
                                 will save the file in the current working directory.
@@ -363,51 +445,32 @@ def generate_lci(technobasins_basins, excel_file_path, flow_mapping_path, produc
         final_table (pd.DataFrame): A dataframe with the LCI for NG with the same format as the currently used file.
 
     Notes:
-        - The function is senstive to the naming convention of the technobasins in the excel file.
-        - The current naming convention is: 'FI - <basin> <type>'. 
-        - Specifically, the current script is set up for the following sheet names:
-            - 'FI - App Shale', 'FI - Alaska Offshore', 'FI - Anadarko Conv', 'FI - Anadarko Shale', 'FI - Anadarko Tight', 
-            'FI - Arkla Conv', 'FI - Arkla Shale', 'FI - Arkla Tight', 'FI - Arkoma Conv', 'FI - Arkoma Shale', 'FI - East Texas Conv', 
-            'FI - East Texas Shale', 'FI - East Texas Tight', 'FI - Fort Worth Shale', 'FI - Green River Conv', 'FI - Green River Tight', 
-            'FI - Gulf Conv', 'FI - Gulf Shale', 'FI - Gulf TIght', 'FI - Permian Conv', 'FI - Permian Shale', 'FI - Piceance Tight', 
-            'FI - San Juan CBM', 'FI - San Juan Shale', 'FI - South OK Shale', 'FI - Strawn Shale', 'FI - Uinta Conv', 'FI - Uinta Tight', 
-            'FI - GoM Offshore'
+        - The function is senstive to the naming convention of the regions in the excel file.
     """
-    # 0. Develop dictionary for basin, technobasins, and production shares
-    technobasins_basins = final_dictionary (technobasins_basins, excel_file_path, production_sheet_name)
-    print(technobasins_basins)
-
     final_table = pd.DataFrame()
 
-    # 1. Read excel file
-    input_data = pd.ExcelFile(excel_file_path)
-    sheet_names = input_data.sheet_names
-    sheet_names = [name for name in sheet_names if name.startswith("FI")]
-    sheet_names = sheet_names[1:] # Drop the US Average sheet
+    # determine folder path containing the excel files
+    
+    # 1. Read excel files in the folder path containing the model
+    for filename in os.listdir(excel_folder_path):
+        if filename.endswith('.xlsx'):
+            file_path = os.path.join(excel_folder_path, filename)
+            logging.info(f"Reading file: {file_path}")
+            input_data = pd.ExcelFile(file_path)
+            sheet_names = input_data.sheet_names
+            sheet_name = [name for name in sheet_names if name in region_sheets_dict.values()][0]
 
-    # Get unused ground and water emissions based on average US emissions "FI - US Average"
-    unused_ground_emissions, unused_water_emissions = get_unused_flows(excel_file_path, "FI - US Average")
-
-    for sheet in sheet_names:
         # Extract air, water, and ground emissions data for the selected sheet (i.e., technobasin)
-        air_emissions_data, water_emissions_data, ground_emissions_data = read_technobasin_data(excel_file_path, sheet)
+        air_emissions_data, water_emissions_data, ground_emissions_data = read_region_data(file_path, sheet_name)
         
         # Air emissions Get the correct flow names, compartment, and uuid for each flow
         full_air_emissions_data = correct_netl_flow_names(air_emissions_data, flow_mapping_path)
         full_air_emissions_data = full_air_emissions_data[full_air_emissions_data['FlowUUID'].notna()] # drop rows with FlowUUID NaN
         
-        # Water emissions - drop unused flows
-        if unused_water_emissions is not None:
-            for flow in unused_water_emissions['FlowName']:
-                water_emissions_data = water_emissions_data.drop(water_emissions_data[water_emissions_data['FlowName'] == flow].index)        
         # Water emissions - get the correct flow names, compartment, and uuid for each flow
         full_water_emissions_data = correct_netl_flow_names(water_emissions_data, flow_mapping_path)
         full_water_emissions_data = full_water_emissions_data[full_water_emissions_data['FlowUUID'].notna()] # drop rows with FlowUUID NaN
         
-        # Ground emissions - drop unused flows
-        if unused_ground_emissions is not None:
-            for flow in unused_ground_emissions['FlowName']:
-                ground_emissions_data = ground_emissions_data.drop(ground_emissions_data[ground_emissions_data['FlowName'] == flow].index)
         # Ground emissions - get the correct flow names, compartment, and uuid for each flow
         full_ground_emissions_data = correct_netl_flow_names(ground_emissions_data, flow_mapping_path)
         full_ground_emissions_data = full_ground_emissions_data[full_ground_emissions_data['FlowUUID'].notna()] # drop rows with FlowUUID NaN
@@ -415,13 +478,9 @@ def generate_lci(technobasins_basins, excel_file_path, flow_mapping_path, produc
         # combine dataframes
         df1 = pd.concat([full_air_emissions_data, full_water_emissions_data, full_ground_emissions_data])
         df1 = df1.sort_values(by='FlowUUID') # sort by FlowUUID
-        basin_name = find_basin (technobasins_basins, sheet)
+        region = [key for key, v in region_sheets_dict.items() if v == sheet_name][0]
         df1['FlowAmount'] = df1['FlowAmount'].astype(float)
         df1['FlowAmount'] = df1['FlowAmount'].fillna(0)
-        norm_value = get_normalized_values(technobasins_basins, sheet)
-        df1['norm'] = norm_value
-        df1['norm'] = df1['norm'].astype(float)
-        df1['normalized_emissions'] = df1['FlowAmount'] * df1['norm']
 
         # create final_table structure in 1st iteration
         if final_table.empty:
@@ -432,66 +491,25 @@ def generate_lci(technobasins_basins, excel_file_path, flow_mapping_path, produc
             final_table = final_table[['Compartment', 'FlowName', 'FlowUUID', 'Unit', 'flow_type', 'input']]
             final_table.columns = ['compartment', 'flow_name', 'uuid', 'unit', 'flow_type', 'is_input']
             # add a column for each basin
-            basins_columns = list (technobasins_basins.keys())
-            for basin in basins_columns:
-                final_table[basin] = 0
-        final_table.head()
-        final_table.shape
+            region_columns = list (region_sheets_dict.keys())
+            for r in region_columns:
+                final_table[r] = 0
         
-        # Compute normalized emissions and add to final table   
+        # add region emissions to final table   
         try:
-            final_table['normalized_emissions'] = df1['normalized_emissions'].values
-            final_table[basin_name] += final_table['normalized_emissions']
-            final_table = final_table.drop(columns=['normalized_emissions'])
+            logging.info(f"Adding emissions for {region}")
+            logging.info(f"df1: {df1['FlowAmount'].head(5)}")
+            final_table[region] = df1['FlowAmount']
         except Exception as e:
             sys.exit(f"Error reading sheet. Make sure your excel file follows the correct naming convention.For reference, refer to the source code, lines 70-78. Error: {e}")
 
-
     # 2. Save final table to excel
     save_ng_lci(final_table, final_table_name ,destination_path)
-    print(f"Final table saved to {destination_path}/{final_table_name}.csv")
+    print(f"Final table saved to {destination_path}/{final_table_name}.xlsx")
     
     return final_table
 
-def get_unused_flows(excel_file_path, sheet_name):
-    """
-    This function extracts the unused ground and water emissions from a given natural gas results dataset
-
-    Inputs:
-    - excel_file_path: path to the excel file
-    - sheet_name: name of the sheet to extract the data from
-
-    Outputs:
-    - unused_ground_emissions: dataframe containing the unused ground emissions
-    - unused_water_emissions: dataframe containing the unused water emissions
-    """
-    us_average_data = pd.read_excel(excel_file_path, sheet_name=sheet_name,skiprows=0,header=None) 
-    us_average_data.iloc[0] = us_average_data.iloc[0].ffill()
-    us_average_data.iloc[1] = us_average_data.iloc[1].ffill()
-    us_average_data.columns = us_average_data.iloc[2]
-    us_average_data = us_average_data.drop(columns=["P2.5", "P97.5"])
-    us_average_data.columns = us_average_data.iloc[0]
-    us_average_data = us_average_data.drop(us_average_data.index[0])
-    #extract ground data from us_average sheet
-    ground_emissions_data = us_average_data.iloc[:, [us_average_data.shape[1]-3, us_average_data.shape[1]-2]]
-    ground_emissions_data.columns.values[0] = "FlowName"
-    ground_emissions_data.columns.values[1] = "FlowAmount"
-    ground_emissions_data = ground_emissions_data.dropna()
-    ground_emissions_data = ground_emissions_data.iloc[1:]
-    #extract water data from us_average sheet
-    water_emissions_data = us_average_data.iloc[:, [us_average_data.shape[1]-3, us_average_data.shape[1]-1]]
-    water_emissions_data.columns.values[0] = "FlowName"
-    water_emissions_data.columns.values[1] = "FlowAmount"
-    water_emissions_data = water_emissions_data.iloc[2:]
-    water_emissions_data = water_emissions_data.dropna()
-    #unused ground emissions
-    unused_ground_emissions = ground_emissions_data[ground_emissions_data['FlowAmount'] == 0.00e+00]
-    #unused water emissions
-    unused_water_emissions = water_emissions_data[water_emissions_data['FlowAmount'] == 0.00e+00]
-
-    return unused_ground_emissions, unused_water_emissions
-
-def read_technobasin_data(excel_file_path, sheet_name):
+def read_region_data(excel_file_path, sheet_name):
     """
     This function reads an excel file, extracts the data, and generates a df for NG emissions for air, water, and ground.
     The df includes the flow name and flow amount (P2.5 and P97.5 values are dropped).
@@ -548,47 +566,6 @@ def read_technobasin_data(excel_file_path, sheet_name):
     ground_emissions_data ['input'] = False
 
     return air_emissions_data, water_emissions_data, ground_emissions_data
-
-
-# Helper function to calculate normalized values for each technobasin
-def get_normalized_values(technobasins_basins, technobasin):
-    for outer, inner in technobasins_basins.items():
-        if technobasin in inner:
-            total = sum(inner.values())
-            return float(inner[technobasin] / total)
-    return None
-
-# helper function to find basins for a given technobasin
-def find_basin(technobasins_basins, technobasin_name):
-    for outer, inner in technobasins_basins.items():
-        if technobasin_name in inner:
-            return outer
-    return None
-
-# Helper function to use aliases to normalize technobasin naming
-def _normalize_technobasin_naming(name):
-    name_lower = name.lower().strip()
-    
-    # Check exact or partial match
-    for alias, canonical in aliases.items():
-        alias_clean = alias.lower()
-        if name_lower in alias_clean or alias_clean in name_lower:
-            return canonical
-
-# Helper function to create the final dictionary including basin, technobasin, and production share
-def final_dictionary(technobasins_basins, excel_file_path, production_sheet_name):
-    production_shares_2020 = pd.read_excel(excel_file_path, sheet_name=production_sheet_name)
-    production_shares_2020 = production_shares_2020.iloc[1:]
-    production_shares_2020['Scenario Normalized'] = production_shares_2020['Scenario'].apply(lambda x: _normalize_technobasin_naming(x))
-    production_shares_2020 = production_shares_2020.drop(columns=production_shares_2020.columns[0])
-    production_shares_2020.columns.values[1] = 'Scenario'
-    production_shares_2020 = production_shares_2020[['Scenario', 'Production Shares (%)']]
-    # final dictionary including basin, technobasin, and production share
-    technobasins_basins = {
-        key: {num: production_shares_2020.set_index('Scenario').loc[num, 'Production Shares (%)'] for num in nums}
-        for key, nums in technobasins_basins.items()
-    }
-    return technobasins_basins
 
 def save_ng_lci(df, filename, destination_path):
     """
