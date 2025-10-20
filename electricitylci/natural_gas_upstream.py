@@ -19,6 +19,7 @@ from electricitylci.generation import add_temporal_correlation_score
 from electricitylci.model_config import model_specs
 from electricitylci.utils import download_edx
 from electricitylci.globals import paths
+from electricitylci.utils import check_output_dir
 ##############################################################################
 # MODULE DOCUMENTATION
 ##############################################################################
@@ -61,8 +62,8 @@ region_state_mapping = {
     'MO':'Midwest','NE':'Midwest','SD':'Midwest','IL':'Midwest','IN':'Midwest','OH':'Midwest','WI':'Midwest','MI':'Midwest',
     'AR':'Southeast','LA':'Southeast','AL':'Southeast','FL':'Southeast','GA':'Southeast','MS':'Southeast','SC':'Southeast','KY':'Southeast',
     'NC':'Southeast','TN':'Southeast','VA':'Southeast','WV':'Southeast','DE':'Southeast','MD':'Southeast','CT':'Northeast','MA':'Northeast',
-    'NH':'Northeast','RI':'Northeast','VT':'Northeast','NJ':'Northeast','NY':'Northeast','PA':'Northeast','ME':'Northeast',
-} #TOTAL 48 -- EXCLUDING AL, HI, AND DC
+    'NH':'Northeast','RI':'Northeast','VT':'Northeast','NJ':'Northeast','NY':'Northeast','PA':'Northeast','ME':'Northeast', 'DC':'Northeast',
+} #TOTAL 48 -- EXCLUDING AK and HI
 
 ##############################################################################
 # MAN FUNCTION
@@ -153,7 +154,7 @@ def generate_upstream_ng(year):
         ng_lci_mapped["Compartment"].str.contains("Technosphere/"),
         "ElementaryFlowPrimeContext"] = "technosphere"
     # Issue #296 - adding DQI information for upstream processes
-    ng_lci_mapped["Year"] = 2016
+    ng_lci_mapped["Year"] = model_specs.ng_model_year
     ng_lci_mapped["DataReliability"] = 3
     ng_lci_mapped["TemporalCorrelation"] = add_temporal_correlation_score(
         ng_lci_mapped["Year"], model_specs.electricity_lci_target_year
@@ -369,8 +370,7 @@ def get_ng_lci(year):
     else:
         data_folder = os.path.join(paths.local_path, 'netl')
         # create new directory for ng if non existing
-        if not os.path.exists(os.path.join(data_folder,"2020_ng")):
-            os.makedirs(os.path.join(data_folder,"2020_ng"))
+        check_output_dir(os.path.join(data_folder,"2020_ng"))
         data_folder = os.path.join(data_folder,"2020_ng")
         # check if the ng_lci_2020rev1.csv already exists - if it does then we can skip all the below
         if os.path.exists(os.path.join(data_folder, "ng_lci_2020rev1.csv")):
@@ -385,21 +385,18 @@ def get_ng_lci(year):
             # this step will require downloading files from edx      
             # retrieve ng model
             # check if model is data_dir
-            if not os.path.exists(os.path.join(data_folder,"2020_ng_model")):
-                os.makedirs(os.path.join(data_folder,"2020_ng_model"))
-                model_folder = os.path.join(data_folder,"2020_ng_model")
-            else:
-                model_folder = os.path.join(data_folder,"2020_ng_model")
-                for ngmodel in r_ids_2020.keys():
-                    if os.path.exists(os.path.join(model_folder, ngmodel)):
-                        logging.info(f"{ngmodel} already exists in your data directory.")
-                    else:
-                        logging.info(f"Downloading {ngmodel} from EDx.")
-                        try:
-                            download_edx(resource_id = r_ids_2020[ngmodel], api_key = model_specs.edx_api_key, output_dir = model_folder)
-                        except Exception as e:
-                            logging.error(f"Error downloading {ngmodel} from EDx. Error: {e}")
-                            sys.exit(1)
+            check_output_dir(os.path.join(data_folder,"2020_ng_model"))
+            model_folder = os.path.join(data_folder,"2020_ng_model")
+            for ngmodel in r_ids_2020.keys():
+                if os.path.exists(os.path.join(model_folder, ngmodel)):
+                    logging.info(f"{ngmodel} already exists in your data directory.")
+                else:
+                    logging.info(f"Downloading {ngmodel} from EDx.")
+                    try:
+                        download_edx(resource_id = r_ids_2020[ngmodel], api_key = model_specs.edx_api_key, output_dir = model_folder)
+                    except Exception as e:
+                        logging.error(f"Error downloading {ngmodel} from EDx. Error: {e}")
+                        sys.exit(1)
             # retrieve flow mapping document from edx [elci.csv]
             # check if flowmapping csv exists in data_dir
             if os.path.exists(os.path.join(data_folder, "elci.csv")):
