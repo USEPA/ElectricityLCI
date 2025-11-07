@@ -857,15 +857,15 @@ coal_upstream:
 gas_upstream:
 
   techno_intro: &gas_upstream_techno_intro
-    - 'The cradle-to-gate inventory for production of gas aggregated to basin. '
+    - 'The cradle-to-gate inventory for production of gas aggregated to basin or region, depending on the year selected in the model configuration. '
 
   techno_process: &gas_upstream_techno_process
     - 'The NETL natural gas life cycle model includes parameters to generate inventories for natural gas extraction based on region or basin and geology which determines the gas extraction type (e.g., Appalachian Shale using hydraulic fracturing).
       2016 or 2020 natural gas production then informs the amount of each type of technology/region that form the mix in the regions, depending on the year selected in the model configuration.
       These can be further aggregated to a US average.
-      More details are in the natural gas upstream report at the link below
-      2016: https://www.netl.doe.gov/energy-analysis/details?id=4f43cb3f-c0d7-482e-bf01-39995a7c7497
-      2020: https://www.netl.doe.gov/energy-analysis/details?id=546d4009-c43b-43f5-bcc9-64d5e63fc8d5
+      More details are in the natural gas upstream report at the following links.
+      Link for 2016: https://www.netl.doe.gov/energy-analysis/details?id=4f43cb3f-c0d7-482e-bf01-39995a7c7497
+      Link for 2020: https://www.netl.doe.gov/energy-analysis/details?id=546d4009-c43b-43f5-bcc9-64d5e63fc8d5
       '
 
   Description:
