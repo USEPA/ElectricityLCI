@@ -866,6 +866,7 @@ gas_upstream:
       More details are in the natural gas upstream report at the link below
       2016: https://www.netl.doe.gov/energy-analysis/details?id=4f43cb3f-c0d7-482e-bf01-39995a7c7497
       2020: https://www.netl.doe.gov/energy-analysis/details?id=546d4009-c43b-43f5-bcc9-64d5e63fc8d5
+      '
 
   Description:
   - *gas_upstream_techno_intro
