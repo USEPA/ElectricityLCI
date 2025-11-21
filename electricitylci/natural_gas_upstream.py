@@ -16,6 +16,8 @@ from electricitylci.eia923_generation import eia923_download_extract
 import electricitylci.PhysicalQuantities as pq
 from electricitylci.generation import add_temporal_correlation_score
 from electricitylci.model_config import model_specs
+
+
 ##############################################################################
 # MODULE DOCUMENTATION
 ##############################################################################
