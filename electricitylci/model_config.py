@@ -17,6 +17,7 @@ from electricitylci.globals import list_model_names_in_config
 from electricitylci.globals import output_dir
 from electricitylci.globals import COAL_MODEL_YEARS
 from electricitylci.globals import RENEWABLE_VINTAGES
+from electricitylci.globals import NG_MODEL_YEARS
 
 
 ##############################################################################
@@ -141,6 +142,8 @@ class ModelSpecs:
         Absolute path to JSON-LD zip output file.
         File name includes the model name and current time stamp and is
         located by default in the output directory (see globals.py).
+    ng_model_year : int
+        The natural gas model year (e.g., 2016 or 2020).
     """
     def __init__(self, model_specs, model_name):
         """Class initialization.
@@ -201,6 +204,7 @@ class ModelSpecs:
             f"{output_dir}/{model_name}_jsonld_"
             f"{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
         )
+        self.ng_model_year = model_specs["ng_model_year"]
 
 
 ##############################################################################
@@ -330,9 +334,18 @@ def check_model_specs(model_specs):
         err_str += " or ".join([str(x) for x in COAL_MODEL_YEARS])
         err_str += " not %s!" % model_specs['coal_model_year']
         raise ConfigurationError(err_str)
+    
     if not model_specs['renewable_vintage'] in RENEWABLE_VINTAGES:
         err_str = "The renewable inventory vintage must be one of "
         err_str += " or ".join([str(x) for x in RENEWABLE_VINTAGES])
         err_str += " not %s!" % model_specs['renewable_vintage']
         raise ConfigurationError(err_str)
+    
+    if not model_specs['ng_model_year'] in NG_MODEL_YEARS:
+        err_str = "The natural gas model year must be one of "
+        err_str += " or ".join([str(x) for x in NG_MODEL_YEARS])
+        err_str += " not %s!" % model_specs['ng_model_year']
+        raise ConfigurationError(err_str)
+    
     logging.info("Checks passed!")
+
