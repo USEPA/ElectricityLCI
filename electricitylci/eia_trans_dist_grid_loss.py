@@ -114,11 +114,19 @@ def eia_trans_dist_download_extract(year):
                 + "/xls/"
                 + filename
             )
-            # bugfix: url for year 2023 [FH]
-            # this has to be updated later when 2023 data gets archived 
-            # and links should be rechecked for compatibility with 2024 data (when released)
+            # bugfix: url for year 2024 [FH]
             url_c = (
                 "https://www.eia.gov/electricity/state/"
+                + "/xls/"
+                + "SEP Tables for "
+                + STATE_ABBREV[key].upper()
+                + ".xlsx"
+            )
+            # HOTFIX: url for newly archived year 2023 [FH] 
+            url_d = (
+                "https://www.eia.gov/electricity/state/archive/"
+                + year
+                + "/"
                 + key.replace(" ", "")
                 + "/xls/"
                 + "SEP Tables for "
@@ -127,9 +135,14 @@ def eia_trans_dist_download_extract(year):
             )           
             # HOTFIX: https://github.com/USEPA/ElectricityLCI/issues/235
             #adding 20s timeout to avoid long delays due to server issues.
-            # bugfix: added condition to account for the 2023 data link format [FH]
-            if year == "2023":
+            # HOTFIX: url to be used for year 2024 (for future reference) [FH]
+            if year == "2024":
                 r = requests.get(url_c, timeout=20)
+                with open (filename, "wb") as f:
+                    f.write(r.content)
+            # HOTFIX: use url for newly archived year 2023 [FH] 
+            elif year == "2023":
+                r = requests.get(url_d, timeout=20)
                 with open (filename, "wb") as f:
                     f.write(r.content)
             else:
