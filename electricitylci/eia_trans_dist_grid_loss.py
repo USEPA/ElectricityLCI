@@ -117,7 +117,7 @@ def eia_trans_dist_download_extract(year):
             # bugfix: url for year 2024 [FH]
             url_c = (
                 "https://www.eia.gov/electricity/state/"
-                + "/xls/"
+                + "xls/"
                 + "SEP Tables for "
                 + STATE_ABBREV[key].upper()
                 + ".xlsx"
