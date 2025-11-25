@@ -99,55 +99,22 @@ def eia_trans_dist_download_extract(year):
         filename = f"{STATE_ABBREV[key]}.xlsx"
         if not os.path.exists(filename):
             logging.info(f"Downloading archive data for {STATE_ABBREV[key]}")
-            # HOTFIX: URLs for two-word states have space omitted.
-            url_a = (
-                "https://www.eia.gov/electricity/state/archive/"
-                + year
-                + "/"
-                + key.replace(" ", "")
-                + "/xls/"
-                + filename
-            )
-            url_b = (
-                "https://www.eia.gov/electricity/state/"
-                + key.replace(" ", "")
-                + "/xls/"
-                + filename
-            )
-            # bugfix: url for year 2023 [FH]
-            # this has to be updated later when 2023 data gets archived 
-            # and links should be rechecked for compatibility with 2024 data (when released)
-            url_c = (
-                "https://www.eia.gov/electricity/state/"
-                + key.replace(" ", "")
-                + "/xls/"
-                + "SEP Tables for "
-                + STATE_ABBREV[key].upper()
-                + ".xlsx"
-            )           
+
+            url_key = key.replace(" ", "")
+            url = f"https://www.eia.gov/electricity/state/archive/{year}/{url_key}/xls/"
+            if int(year) > 2023:
+                url = url.replace(f"/archive/{year}/{url_key}/", "/")
+                url += "SEP%20Tables%20for%20" + f"{STATE_ABBREV[key].upper()}.xlsx"
+            elif int(year) == 2023:
+                url += "SEP%20Tables%20for%20" + f"{STATE_ABBREV[key].upper()}.xlsx"
+            else:
+                url += f"{STATE_ABBREV[key]}.xlsx"
+            
+            r = requests.get(url, timeout=20)    
             # HOTFIX: https://github.com/USEPA/ElectricityLCI/issues/235
             #adding 20s timeout to avoid long delays due to server issues.
-            # bugfix: added condition to account for the 2023 data link format [FH]
-            if year == "2023":
-                r = requests.get(url_c, timeout=20)
-                with open (filename, "wb") as f:
+            with open (filename, "wb") as f:
                     f.write(r.content)
-            else:
-                r = requests.get(url_a, timeout=20)
-                r_head = r.headers.get("Content-Type", "")
-                if not r.ok or r_head.startswith("text"):
-                    logging.info(f"Trying alternative site {STATE_ABBREV[key]}")
-                    #adding 20s timeout to avoid long delays due to server issues.
-                    r = requests.get(url_b, timeout=20)
-                    r_head = r.headers.get("Content-Type", "")
-
-                if r.ok and not r_head.startswith("text"):
-                    with open(filename, 'wb') as f:
-                        f.write(r.content)
-                else:
-                    logging.error(
-                        f"No TD loss data for {STATE_ABBREV[key]} {year}")
-
         try:
             df = pd.read_excel(
                 filename,
