@@ -254,7 +254,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     # Hoping to reduce memory usage or at least make more of it available
     # for the later groupby.
     del(arg)
-    # See https://github.com/USEPA/fedelemflowlist
+    # See https://github.com/FLCAC-admin/fedelemflowlist
     # The mapping data includes a conversion factor to convert everything into
     # standard units (e.g., kg, MJ, m2*a). Note that 'SourceFlowContext' is
     # already in lowercase letters, which is why no change happens below.
@@ -415,7 +415,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     # columns to be converted to objects, so undoing that here
     for col in actual_quant_columns:
         upstream_mapped_df[col]=upstream_mapped_df[col].astype(float)
-    
+
     # Preserve unmapped resource flows;
     #   copy over the flow name, compartment and units and
     #   set conversion factor equal to 1.0.
@@ -492,7 +492,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         "Source",
         "Year",
     ] + actual_quant_columns
-    
+
     if "input" in upstream_columns:
         final_columns = final_columns + ["input"]
 
@@ -587,9 +587,9 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
     )
     # 3/19/2025 MBJ: more memory management. When this process is called from
     # __init__.combine_upstream_and_gen_df the up_df is 12GB big. Previously
-    # we used a merge to add all the regional columns, but that requires a 
+    # we used a merge to add all the regional columns, but that requires a
     # tremendous amount of memory. Invidually assigning columns will be a bit
-    # slower but will greatly reduce memory usage...and ultimately end up 
+    # slower but will greatly reduce memory usage...and ultimately end up
     # faster if your computer tends to run out of memory using the previous
     # merge.
     for col in existing_region_cols:
@@ -600,7 +600,7 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
     # 3/19/2025 - these would be instances where there is a plant_id in up_df
     # but not a matching eGRID_ID. With the new, by-column mapping performed above
     # eGRID_ID does not exist so no Nans to fill. In previous versions, I believe
-    # the use of fillnans with plant_id being the source would result in the 
+    # the use of fillnans with plant_id being the source would result in the
     # same thing as below.
     up_df['eGRID_ID'] = up_df['plant_id'].astype("int")
 

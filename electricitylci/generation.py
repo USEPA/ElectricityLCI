@@ -929,7 +929,9 @@ def create_generation_process_df():
         # numbers and maps them to eGRID facility numbers.
         # NOTE: there are unmatched facilities that are found in FRS_bridge,
         # but not in EIA (e.g., EGRID, RCRA).
-        emissions_and_wastes_by_facility = get_combined_stewicombo_file(model_specs)
+        emissions_and_wastes_by_facility = get_combined_stewicombo_file(
+            model_specs
+        )
         ewf_df = pd.merge(
             left=emissions_and_wastes_by_facility,
             right=eia860_FRS,
