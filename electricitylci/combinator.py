@@ -588,7 +588,7 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
     # 3/19/2025 MBJ: more memory management. When this process is called from
     # __init__.combine_upstream_and_gen_df the up_df is 12GB big. Previously
     # we used a merge to add all the regional columns, but that requires a
-    # tremendous amount of memory. Invidually assigning columns will be a bit
+    # tremendous amount of memory. Individually assigning columns will be a bit
     # slower but will greatly reduce memory usage...and ultimately end up
     # faster if your computer tends to run out of memory using the previous
     # merge.
@@ -598,10 +598,10 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
     # HOTFIX: during the merge, a lot eGRID_IDs are unmatched, so fill them in!
     # NOTE: triggers a pandas futurewarning on downcasting object datatypes.
     # 3/19/2025 - these would be instances where there is a plant_id in up_df
-    # but not a matching eGRID_ID. With the new, by-column mapping performed above
-    # eGRID_ID does not exist so no Nans to fill. In previous versions, I believe
-    # the use of fillnans with plant_id being the source would result in the
-    # same thing as below.
+    # but not a matching eGRID_ID. With the new, by-column mapping performed
+    # above eGRID_ID does not exist so no Nans to fill. In previous versions,
+    # I believe the use of fillnans with plant_id being the source would result
+    # in the same thing as below.
     up_df['eGRID_ID'] = up_df['plant_id'].astype("int")
 
     # NOTE: the only columns in up_df not in pl_df should be:
