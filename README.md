@@ -123,6 +123,9 @@ The `main()` method has four steps:
         * ELCI_2020
         * ELCI_2021
         * ELCI_2022
+    - Version 2.1 baselines include:
+        * ELCI_2023
+        * ELCI_2024
     - These configurations statically change the module, model_config.py, which is an object read by other modules.
     - To change configuration values, edit the YAML before running the code.
 2. `run_generation()`
