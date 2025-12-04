@@ -31,11 +31,12 @@ replace_egrid: true
 # construction LCI.
 coal_model_year: 2023
 
-# NG baseline year
-# this is used to determine which NG inventory to use. 
-# this impacts the upstream ng emissions for production, gathering and boosting,
-# processing, transmission, storage, and distribution
-# Select between 2016 and 2020 model inventories.
+# The NG baseline model year is used to determine which NG inventory to use.
+# This impacts the upstream NG emissions for production, gathering and boosting,
+# processing, transmission, storage, and distribution.
+# Select between 2016 and 2020 model inventories:
+#   2016 model: https://doi.org/10.2172/1529553
+#   2020 model: https://doi.org/10.18141/2568690
 ng_model_year: 2020
 
 # NETL developed profiles for renewable generation to capture construction
