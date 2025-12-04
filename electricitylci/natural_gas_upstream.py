@@ -29,17 +29,22 @@ __doc__ = """This module uses LCA emissions data to calculate the upstream
 component of natural gas power plant operation (extraction, processing, and
 transportation) for every plant in EIA-923.
 
+TODO:
+- Make eLCI.csv resource a public submission.
+
 Created:
     2019-02-18
 Last updated:
-    2025-10-15
+    2025-11-25
 """
 __all__ = [
     "generate_upstream_ng",
 ]
 
-# Supporting Dicts
-# #######################################################################################################
+
+##############################################################################
+# GLOBALS
+##############################################################################
 region_sheets_dict = {
     'Pacific': 'FI - Pacific Delivery',
     'Rocky Mountain': 'FI - Rocky Mountain Delivery',
@@ -48,6 +53,7 @@ region_sheets_dict = {
     'Southeast': 'FI - Southeast Delivery',
     'Northeast': 'FI - Northeast Delivery'
  }
+'''dict : Region names mapped to Excel workbook sheet names.'''
 
 r_ids_2020 = {
     'Appendix_F_2020_Full_Inventory_Results_Midwest_ProdThruTrans.xlsx':'5665de40-fc2b-4643-b647-ceec226af2bb',
@@ -57,6 +63,7 @@ r_ids_2020 = {
     'Appendix_F_2020_Full_Inventory_Results_Southeast_ProdThruTrans.xlsx' :'4590712b-db21-4428-b488-6ded3b65d18b',
     'Appendix_F_2020_Full_Inventory_Results_Southwest_ProdThruTrans.xlsx':'9dd7a6e5-df1a-461e-87e7-0b9d8d600f26'
 }
+'''dict : Excel workbook file names mapped to EDX resource IDs.'''
 
 region_state_mapping = {
     'WA':'Pacific','CA':'Pacific','OR':'Pacific','MT':'Rocky Mountain','ID':'Rocky Mountain','CO':'Rocky Mountain','NV':'Rocky Mountain','UT':'Rocky Mountain','WY':'Rocky Mountain',
@@ -65,10 +72,12 @@ region_state_mapping = {
     'AR':'Southeast','LA':'Southeast','AL':'Southeast','FL':'Southeast','GA':'Southeast','MS':'Southeast','SC':'Southeast','KY':'Southeast',
     'NC':'Southeast','TN':'Southeast','VA':'Southeast','WV':'Southeast','DE':'Southeast','MD':'Southeast','CT':'Northeast','MA':'Northeast',
     'NH':'Northeast','RI':'Northeast','VT':'Northeast','NJ':'Northeast','NY':'Northeast','PA':'Northeast','ME':'Northeast', 'DC':'Northeast',
-} #TOTAL 48 -- EXCLUDING AK and HI
+}
+'''dict : U.S. state abbreviations mapped to region. Excludes AK and HI.'''
+
 
 ##############################################################################
-# MAN FUNCTION
+# FUNCTIONS
 ##############################################################################
 def generate_upstream_ng(year):
     """
@@ -98,28 +107,37 @@ def generate_upstream_ng(year):
     """
     logging.info("Generating natural gas inventory")
 
-    # get plant data and map each plant to its ng source: basin or region
-    # the 2016 ng emissions inventory is only available by basin
-    #   as such, plants can only be connected to upstream emissions via basin assignment
-    # newer data (2020) is available by region
-    #   plants are connected to upstream ng emissions via region assignment
+    # Get plant data and map each plant to its ng source: basin or region.
+    # The 2016 ng emissions inventory is only available by basin.
+    # As such, plants can only be connected to upstream emissions via basin
+    # assignment newer data (2020) is available by region plants are connected
+    # to upstream ng emissions via region assignment
 
+    # 'year' refers to eia_gen_year
     if model_specs.ng_model_year == 2016:
-        ng_generation_data_mapped = map_ng_by_basin(year) # 'year' refers to eia_generation_year
+        ng_generation_data_mapped = map_ng_by_basin(year)
     else:
-        ng_generation_data_mapped = map_ng_by_region(year) # 'year' refers to eia_generation_year
+        ng_generation_data_mapped = map_ng_by_region(year)
 
     # Read the NG LCI file
-    # if year = 2016 - this step will directly ready NG_LCI.csv from the data_dir - returns lci (by basin)
-    # if year = 2020 - this step will require edx api, download ng model and mapping - returns lci (by region)
-    # document from edx, and generate lci
+    # If year = 2016
+    # - this step will directly ready NG_LCI.csv from the data_dir
+    # - returns lci (by basin)
+    # If year = 2020
+    # - this step will require edx api, download ng model and mapping
+    # - returns lci (by region)
+    # Document from edx, and generate lci
     ng_lci = get_ng_lci(model_specs.ng_model_year)
 
     # merge ng lci and plants based on the common parameter: region or basin
     if model_specs.ng_model_year == 2016:
-        ng_lci_mapped = map_ng_lci_to_plants_by_basin(ng_lci, ng_generation_data_mapped)
+        ng_lci_mapped = map_ng_lci_to_plants_by_basin(
+            ng_lci, ng_generation_data_mapped
+        )
     else:
-        ng_lci_mapped = map_ng_lci_to_plants_by_region(ng_lci, ng_generation_data_mapped)
+        ng_lci_mapped = map_ng_lci_to_plants_by_region(
+            ng_lci, ng_generation_data_mapped
+        )
 
     # Multiplying with the EIA 923 fuel consumption; conversion factor is
     # for MMBtu to MJ
@@ -132,7 +150,7 @@ def generate_upstream_ng(year):
 
     ng_lci_mapped = ng_lci_mapped.rename(
         columns={'Total Fuel Consumption MMBtu':'quantity'})
-    ng_lci_mapped["quantity"]=ng_lci_mapped["quantity"]*btu_to_MJ
+    ng_lci_mapped["quantity"] = ng_lci_mapped["quantity"]*btu_to_MJ
 
     # Output is kg emission for the specified year by facility Id,
     # not normalized to electricity output
@@ -164,19 +182,17 @@ def generate_upstream_ng(year):
     ng_lci_mapped["GeographicalCorrelation"] = 1
     ng_lci_mapped["TechnologicalCorrelation"] = 1
     ng_lci_mapped["DataCollection"] = 1
-    #3/20/2025 MBJ - replacing renewable vintage here so that temporal correlation
-    #is based on the year the inventory is based on, but when electricity
-    #generation is combined, it needs to be based on the target year for the
-    #inventory.
-    ng_lci_mapped["Year"]=year
+
+    # 3/20/2025 MBJ - replacing renewable vintage here so that temporal
+    # correlation is based on the year the inventory is based on, but when
+    # electricity generation is combined, it needs to be based on the target
+    # year for the inventory.
+    ng_lci_mapped["Year"] = year
 
     return ng_lci_mapped
 
-##############################################################################
-# HELPER FUNCTIONS
-##############################################################################
 
-def map_ng_lci_to_plants_by_basin (ng_lci, ng_generation_data_mapped):
+def map_ng_lci_to_plants_by_basin(ng_lci, ng_generation_data_mapped):
     """
     Map the natural gas generation data by basin.
     """
@@ -203,7 +219,8 @@ def map_ng_lci_to_plants_by_basin (ng_lci, ng_generation_data_mapped):
     )
     return ng_lci_mapped
 
-def map_ng_lci_to_plants_by_region (ng_lci, ng_generation_data_mapped):
+
+def map_ng_lci_to_plants_by_region(ng_lci, ng_generation_data_mapped):
     """
     Map the natural gas generation data by basin.
     """
@@ -231,17 +248,20 @@ def map_ng_lci_to_plants_by_region (ng_lci, ng_generation_data_mapped):
     return ng_lci_mapped
 
 
-def map_ng_by_region (year):
+def map_ng_by_region(year):
     """
     Map the natural gas generation data by region.
-    This includes 6 regions: Pacific, Rocky Mountain, Southwest, Midwest, Southeast, and Northeast.
+    This includes 6 regions: Pacific, Rocky Mountain, Southwest, Midwest,
+    Southeast, and Northeast.
 
     Notes
     -----
-    * Downloads eia plant data for the specified year
-    * Filters the data to only include NG facilities and on positive fuel consumption
-    * Groups the data by Plant Id and aggregates the fuel consumption by summing the total fuel consumption
-    * Maps each plant to a region using the region_state_mapping dictionary
+    -   Downloads EIA plant data for the specified year.
+    -   Filters the data to only include NG facilities and on positive fuel
+        consumption.
+    -   Groups the data by Plant Id and aggregates the fuel consumption by
+        summing the total fuel consumption.
+    -   Maps each plant to a region using the region_state_mapping dictionary.
 
     Parameters
     ----------
@@ -274,15 +294,16 @@ def map_ng_by_region (year):
     return ng_generation_data_region
 
 
-def map_ng_by_basin (year):
+def map_ng_by_basin(year):
     """
     Map the natural gas generation data by basin.
 
     Notes
     -----
-    * Downloads eia plant data for the specified year
-    * Filters the data to only include NG facilities and on positive fuel consumption
-    * maps each plant to a basin using the gas_supply_basin_mapping.csv file
+    -   Downloads EIA plant data for the specified year.
+    -   Filters the data to only include NG facilities and on positive fuel
+        consumption.
+    -   Maps each plant to a basin using the gas_supply_basin_mapping.csv file.
 
     Parameters
     ----------
@@ -315,8 +336,8 @@ def map_ng_by_basin (year):
     ng_generation_data['Plant Id'] = ng_generation_data['Plant Id'].astype(int)
 
     # Import the mapping file which has the source gas basin for each Plant Id.
-    # NOTE:
-    #   This is a 2 MB file that provides about 100 kB of info!
+    # NOTE: This is a 2 MB file that provides about 100 kB of info!
+    # TODO: Move this resource to EDX.
     ng_basin_mapping = pd.read_csv(
         os.path.join(data_dir, 'gas_supply_basin_mapping.csv')
     )
@@ -335,46 +356,53 @@ def map_ng_by_basin (year):
     )
     return ng_generation_data_basin
 
+
 def get_ng_lci(year):
     """
     Get the natural gas life cycle inventory for a given year.
     Depending on the year, the natural gas life cycle inventory is either:
-        ** retrieved from existing data
-        ** calculated using the natural gas life cycle inventory model
+
+    - retrieved from existing data
+    - calculated using the natural gas life cycle inventory model
 
     Parameters
     ----------
     year : str, int
         The year for which to get the natural gas life cycle inventory.
-        This is retrieved from the model configuration
+        This should reflect the model configuration, ``ng_model_year``.
 
     Returns
     -------
-    a dataframe containing the emissions associated with the natural gas
-    production through transportation for each basin during the given year.
+    pandas.DataFrame
+        A dataframe containing the emissions associated with the natural gas
+        production through transportation for each basin during the given year.
 
     Notes
     -----
     This method depends on:
-        ** the configuration parameter: ------------
-        ** the NG_LCI csv file (if the old model is selected in the configuration)
-        ** the EDx API (if the new model is selected in the configuration)
-        ** the elci flow mapping csv file (if the new model is selected in the configuration)
+
+    -   the NG_LCI CSV file (if the old model is selected in the configuration)
+    -   the EDX API (if the new model is selected in the configuration)
+    -   the elci flow mapping CSV file (if the new model is selected in the
+        configuration)
     """
     if isinstance(year, int):
         year = str(year)
     if year == "2016":
-        logging.info(f"Retrieving the 2016 natural gas life cycle inventory by basin.")
+        logging.info(
+            f"Retrieving the 2016 natural gas life cycle inventory by basin."
+        )
         ng_lci = pd.read_csv(
             os.path.join(data_dir, "NG_LCI.csv"),
             index_col=[0,1,2,3,4,5]
         )
     else:
         data_folder = os.path.join(paths.local_path, 'netl')
-        # create new directory for ng if non existing
+        # Create new directory for ng if non existing.
         check_output_dir(os.path.join(data_folder,"2020_ng"))
         data_folder = os.path.join(data_folder,"2020_ng")
-        # check if the ng_lci_2020rev1.csv already exists - if it does then we can skip all the below
+        # Check if the ng_lci_2020rev1.csv already exists
+        # - if it does then we can skip all the below
         if os.path.exists(os.path.join(data_folder, "ng_lci_2020rev1.csv")):
             logging.info(f"NG LCI already exists in your data directory.")
             ng_lci = pd.read_csv(
@@ -382,73 +410,119 @@ def get_ng_lci(year):
                 index_col=[0,1,2,3,4,5]
             )
         else:
-            # if it does not exist, then we need to generate it
-            logging.info(f"Retrieving the {year} natural gas life cycle inventory by region.")
-            # this step will require downloading files from edx
-            # retrieve ng model
-            # check if model is data_dir
-            check_output_dir(os.path.join(data_folder,"2020_ng_model"))
-            model_folder = os.path.join(data_folder,"2020_ng_model")
+            # If it does not exist, then generate it.
+            logging.info(
+                f"Retrieving the {year} natural gas life cycle inventory "
+                "by region."
+            )
+            # This step will require downloading files from EDX.
+            # - retrieve ng model
+            # - check if model is data_dir
+            check_output_dir(os.path.join(data_folder, "2020_ng_model"))
+            model_folder = os.path.join(data_folder, "2020_ng_model")
             for ngmodel in r_ids_2020.keys():
                 if os.path.exists(os.path.join(model_folder, ngmodel)):
-                    logging.info(f"{ngmodel} already exists in your data directory.")
+                    logging.info(
+                        f"{ngmodel} already exists in your data directory."
+                    )
                 else:
-                    logging.info(f"Downloading {ngmodel} from EDx.")
+                    logging.info(f"Downloading {ngmodel} from EDX.")
                     try:
-                        download_edx(resource_id = r_ids_2020[ngmodel], api_key = model_specs.edx_api_key, output_dir = model_folder)
+                        download_edx(
+                            resource_id=r_ids_2020[ngmodel],
+                            api_key=model_specs.edx_api_key,
+                            output_dir=model_folder
+                        )
                     except Exception as e:
-                        logging.error(f"Error downloading {ngmodel} from EDx. Error: {e}")
+                        logging.error(
+                            f"Error downloading {ngmodel} from EDX. Error: {e}"
+                        )
                         sys.exit(1)
-            # retrieve flow mapping document from edx [elci.csv]
-            # check if flowmapping csv exists in data_dir
-            if os.path.exists(os.path.join(data_folder, "elci.csv")):
-                logging.info(f"ELCI flow mapping document already exists in your data directory.")
-                flow_mapping_path = os.path.join(data_folder, "elci.csv")
+            # Retrieve flow mapping document from EDX, eLCI.csv, and check if
+            # flow mapping CSV exists in data_dir.
+            if os.path.exists(os.path.join(data_folder, "eLCI.csv")):
+                logging.info(
+                    "ELCI flow mapping document already exists in your "
+                    "data directory."
+                )
+                flow_mapping_path = os.path.join(data_folder, "eLCI.csv")
             else:
-                # download flowmapping document from edx
-                logging.info(f"Downloading ELCI flow mapping document from EDx.")
-                r_id_elci = 'e2c8f934-e95e-470a-879b-17ebe4afd39e' # resource id of elci flow mapping document on EDx
+                # Download flow mapping document from EDX.
+                logging.info(
+                    "Downloading ELCI flow mapping document from EDX."
+                )
+                # Resource id of eLCI flow mapping document on EDX
+                # NOTE: Currently in Life Cycle Collaborations Workspace
+                #       ---not public!!!
+                r_id_elci = 'e2c8f934-e95e-470a-879b-17ebe4afd39e'
                 try:
-                    download_edx(resource_id = r_id_elci, api_key = model_specs.edx_api_key, output_dir = data_folder)
-                    flow_mapping_path = os.path.join(data_folder, "elci.csv")
+                    download_edx(
+                        resource_id=r_id_elci,
+                        api_key=model_specs.edx_api_key,
+                        output_dir=data_folder
+                    )
+                    flow_mapping_path = os.path.join(data_folder, "eLCI.csv")
                 except Exception as e:
-                    logging.error(f"Error downloading ELCI flow mapping document from EDx. Error: {e}")
+                    logging.error(
+                        "Error downloading ELCI flow mapping document from "
+                        f"EDX. Error: {e}"
+                    )
                     sys.exit(1)
 
-            # run the generate_ng_lci function and save it in data_dir
+            # Run the generate_ng_lci function and save it in data_dir.
             try:
-                generate_lci (excel_folder_path = model_folder, flow_mapping_path = flow_mapping_path, destination_path = data_folder, final_table_name = "ng_lci_2020rev1")
+                generate_lci(
+                    excel_folder_path=model_folder,
+                    flow_mapping_path=flow_mapping_path,
+                    destination_path=data_folder,
+                    final_table_name="ng_lci_2020rev1"
+                )
                 ng_lci = pd.read_csv(
                     os.path.join(data_folder, "ng_lci_2020rev1.csv"),
                     index_col=[0,1,2,3,4,5]
                 )
             except Exception as e:
-                logging.error(f"Error generating natural gas life cycle inventory. Error: {e}")
+                logging.error(
+                    "Error generating natural gas life cycle inventory. "
+                    f"Error: {e}"
+                )
                 sys.exit(1)
     return ng_lci
 
-def generate_lci(excel_folder_path, flow_mapping_path, destination_path, final_table_name):
+
+def generate_lci(excel_folder_path,
+                 flow_mapping_path,
+                 destination_path,
+                 final_table_name):
     """
-    This function reads an excel file, extracts the data, and generates a LCI for NG with the same format as the currently used file.
+    Read Excel file, extract data, and generate NG LCI in the correct format.
 
-    Args:
-        excel_folder_path (str): The path to the folder containing the excel files (ng models/inventories)
-        flow_mapping_path (str): The path to the flow mapping file
-        destination_path (str): !!This is an optional input!!
-                                The path to the destination folder. If not provided, the function
-                                will save the file in the current working directory.
-        final_table_name (str): The name of the final table to be saved
-                                Optional input. If not provided, the function will save the file with the name 'final_table.xlsx'.
+    Parameters
+    ----------
+    excel_folder_path : str
+        The path to the folder containing the excel files (i.e., NG models and
+        inventories).
+    flow_mapping_path: str
+        The path to the flow mapping file.
+    destination_path : str, optional
+        The path to the destination folder. If not provided, the function
+        will save the file in the current working directory.
+    final_table_name : str, optional
+        The name of the final table to be saved. If not provided, the function
+        will save the file with the name 'final_table.xlsx'.
 
-    Returns:
-        final_table (pd.DataFrame): A dataframe with the LCI for NG with the same format as the currently used file.
+    Returns
+    -------
+    pandas.DataFrame
+        A dataframe with the LCI for NG with the same format as the currently
+        used file.
 
-    Notes:
-        - The function is senstive to the naming convention of the regions in the excel file.
+    Notes
+    -----
+    The function is sensitive to the naming convention of the regions in the
+    Excel file.
     """
     final_table = pd.DataFrame()
-
-    # determine folder path containing the excel files
 
     # 1. Read excel files in the folder path containing the model
     for filename in os.listdir(excel_folder_path):
@@ -457,50 +531,100 @@ def generate_lci(excel_folder_path, flow_mapping_path, destination_path, final_t
             logging.info(f"Reading file: {file_path}")
             input_data = pd.ExcelFile(file_path)
             sheet_names = input_data.sheet_names
-            sheet_name = [name for name in sheet_names if name in region_sheets_dict.values()][0]
+            sheet_name = [
+                name for name in sheet_names if name in region_sheets_dict.values()
+            ][0]
 
-        # Extract air, water, and ground emissions data for the selected sheet (i.e., technobasin)
+        # Extract air, water, and ground emissions data for the selected sheet
+        # (i.e., technobasin).
         air_emissions_data, water_emissions_data, ground_emissions_data = read_region_data(file_path, sheet_name)
 
-        # Air emissions Get the correct flow names, compartment, and uuid for each flow
-        full_air_emissions_data = correct_netl_flow_names(air_emissions_data, flow_mapping_path)
-        full_air_emissions_data = full_air_emissions_data[full_air_emissions_data['FlowUUID'].notna()] # drop rows with FlowUUID NaN
+        # Air emissions
+        # - Get the correct flow names, compartment, and uuid for each flow
+        full_air_emissions_data = correct_netl_flow_names(
+            air_emissions_data,
+            flow_mapping_path
+        )
+        # Drop rows with FlowUUID NaN.
+        full_air_emissions_data = full_air_emissions_data[
+            full_air_emissions_data['FlowUUID'].notna()
+        ]
 
-        # Water emissions - get the correct flow names, compartment, and uuid for each flow
-        full_water_emissions_data = correct_netl_flow_names(water_emissions_data, flow_mapping_path)
-        full_water_emissions_data = full_water_emissions_data[full_water_emissions_data['FlowUUID'].notna()] # drop rows with FlowUUID NaN
+        # Water emissions
+        # - get the correct flow names, compartment, and uuid for each flow.
+        full_water_emissions_data = correct_netl_flow_names(
+            water_emissions_data,
+            flow_mapping_path
+        )
+        # Drop rows with FlowUUID NaN.
+        full_water_emissions_data = full_water_emissions_data[
+            full_water_emissions_data['FlowUUID'].notna()
+        ]
 
-        # Ground emissions - get the correct flow names, compartment, and uuid for each flow
-        full_ground_emissions_data = correct_netl_flow_names(ground_emissions_data, flow_mapping_path)
-        full_ground_emissions_data = full_ground_emissions_data[full_ground_emissions_data['FlowUUID'].notna()] # drop rows with FlowUUID NaN
+        # Ground emissions
+        # - get the correct flow names, compartment, and uuid for each flow
+        full_ground_emissions_data = correct_netl_flow_names(
+            ground_emissions_data,
+            flow_mapping_path
+        )
+        full_ground_emissions_data = full_ground_emissions_data[
+            full_ground_emissions_data['FlowUUID'].notna()
+        ]
 
-        # combine dataframes
-        df1 = pd.concat([full_air_emissions_data, full_water_emissions_data, full_ground_emissions_data])
-        df1 = df1.sort_values(by='FlowUUID') # sort by FlowUUID
-        region = [key for key, v in region_sheets_dict.items() if v == sheet_name][0]
+        # Combine dataframes.
+        df1 = pd.concat([
+            full_air_emissions_data,
+            full_water_emissions_data,
+            full_ground_emissions_data
+        ])
+        df1 = df1.sort_values(by='FlowUUID')
+        region = [
+            key for key, v in region_sheets_dict.items() if v == sheet_name
+        ][0]
         df1['FlowAmount'] = df1['FlowAmount'].astype(float)
         df1['FlowAmount'] = df1['FlowAmount'].fillna(0)
 
-        # create final_table structure in 1st iteration
+        # Create final_table structure in 1st iteration.
         if final_table.empty:
-            final_table = df1[['FlowName', 'Compartment', 'Unit', 'input', 'FlowUUID']]
+            final_table = df1[[
+                'FlowName', 'Compartment', 'Unit', 'input', 'FlowUUID'
+            ]]
             final_table = final_table.sort_values(by='FlowUUID')
             final_table ['flow_type'] = 'ELEMENTARY_FLOW'
-            #reorder and rename columns
-            final_table = final_table[['Compartment', 'FlowName', 'FlowUUID', 'Unit', 'flow_type', 'input']]
-            final_table.columns = ['compartment', 'flow_name', 'uuid', 'unit', 'flow_type', 'is_input']
-            # add a column for each basin
-            region_columns = list (region_sheets_dict.keys())
+            # Reorder and rename columns.
+            final_table = final_table[[
+                'Compartment',
+                'FlowName',
+                'FlowUUID',
+                'Unit',
+                'flow_type',
+                'input'
+            ]]
+            final_table.columns = [
+                'compartment',
+                'flow_name',
+                'uuid',
+                'unit',
+                'flow_type',
+                'is_input'
+            ]
+            # Add a column for each basin
+            region_columns = list(region_sheets_dict.keys())
             for r in region_columns:
                 final_table[r] = 0
 
-        # add region emissions to final table
+        # Add region emissions to final table
         try:
             logging.info(f"Adding emissions for {region}")
             logging.info(f"df1: {df1['FlowAmount'].head(5)}")
             final_table[region] = df1['FlowAmount']
         except Exception as e:
-            sys.exit(f"Error reading sheet. Make sure your excel file follows the correct naming convention.For reference, refer to the source code, lines 70-78. Error: {e}")
+            sys.exit(
+                "Error reading sheet. "
+                "Make sure your excel file follows the correct naming "
+                "convention. For reference, refer to the source code, "
+                f"lines 70-78. Error: {e}"
+            )
 
     # 2. Save final table to excel
     save_ng_lci(final_table, final_table_name ,destination_path)
@@ -508,25 +632,40 @@ def generate_lci(excel_folder_path, flow_mapping_path, destination_path, final_t
 
     return final_table
 
+
 def read_region_data(excel_file_path, sheet_name):
     """
-    This function reads an excel file, extracts the data, and generates a df for NG emissions for air, water, and ground.
-    The df includes the flow name and flow amount (P2.5 and P97.5 values are dropped).
+    Read Excel file, extract data, and generate a data frame for NG emissions
+    for air, water, and ground. The data frame includes the flow name and flow
+    amount (P2.5 and P97.5 values are dropped).
 
-    Inputs:
-    - excel_file_path: path to the excel file
-    - sheet_name: name of the sheet to extract the data from
+    Parameters
+    ----------
+    excel_file_path : str
+        Path to the Excel file.
+    sheet_name : str
+        Name of the sheet to extract the data from.
 
-    Outputs:
-    - air_emissions_data: dataframe containing the air emissions data
-    - water_emissions_data: dataframe containing the water emissions data
-    - ground_emissions_data: dataframe containing the ground emissions data
+    Returns
+    -------
+    tuple
+        A tuple of length three:
+
+        - pandas.DataFrame, the air emissions data
+        - pandas.DataFrame, the water emissions data
+        - pandas.DataFrame, the ground emissions data
     """
     print(f"Processing sheet: {sheet_name}")
     # create empty database
     df = pd.DataFrame()
     # Extract all the data from the sheet
-    df = pd.read_excel(excel_file_path, sheet_name=sheet_name, skiprows=0, header=None)
+    df = pd.read_excel(
+        excel_file_path,
+        sheet_name=sheet_name,
+        skiprows=0,
+        header=None
+    )
+
     # Adjustments: 1) changing header, 2) dropping P2.5 and P97.5 columns
     df.iloc[0] = df.iloc[0].ffill()
     df.iloc[1] = df.iloc[1].ffill()
@@ -534,17 +673,27 @@ def read_region_data(excel_file_path, sheet_name):
     df = df.drop(columns=["P2.5", "P97.5"])
     df.columns = df.iloc[0]
     df = df.drop(df.index[0])
-    # separate water, soil, ground, and air emissions - and map them to FEDEFL elementary flows
+
+    # Separate water, soil, ground, and air emissions - and map them to
+    # FEDEFL elementary flows
+
     # Air emissions
-    air_emissions_data = df.drop(columns=[col for col in df.columns if col != df.columns[1]])
-    air_emissions_data = air_emissions_data.iloc[:, :-2]    # drop the last two columns (empty columns from excel)
-    air_emissions_data[f'FlowAmount'] = air_emissions_data.iloc[:, 1:11].sum(axis=1)  # sum columns 2:11 for each row
+    air_emissions_data = df.drop(
+        columns=[col for col in df.columns if col != df.columns[1]]
+    )
+    # Drop the last two columns (empty columns from excel)
+    air_emissions_data = air_emissions_data.iloc[:, :-2]
+    # Sum columns 2:11 for each row
+    air_emissions_data[f'FlowAmount'] = air_emissions_data.iloc[:, 1:11].sum(
+        axis=1
+    )
     air_emissions_data = air_emissions_data.iloc[2:]
     air_emissions_data = air_emissions_data.iloc[:, [0,-1]]
-    air_emissions_data['Compartment'] = 'Air' # add compartment
+    air_emissions_data['Compartment'] = 'Air'
     air_emissions_data.columns.values[0] = 'FlowName' # change header
-    air_emissions_data['Unit'] = 'kg' # add unit
-    air_emissions_data ['input'] = False # add input
+    air_emissions_data['Unit'] = 'kg'
+    air_emissions_data ['input'] = False # not an input
+
     # Water emissions
     water_emissions_data = df.iloc[:, [df.shape[1]-3, df.shape[1]-1]]
     water_emissions_data.columns.values[0] = "FlowName"
@@ -554,6 +703,7 @@ def read_region_data(excel_file_path, sheet_name):
     water_emissions_data['Compartment'] = 'Water'
     water_emissions_data['Unit'] = 'kg'
     water_emissions_data ['input'] = False
+
     # Ground emissions
     ground_emissions_data = df.iloc[:, [df.shape[1]-3, df.shape[1]-2]]
     ground_emissions_data.columns.values[0] = "FlowName"
@@ -566,9 +716,10 @@ def read_region_data(excel_file_path, sheet_name):
 
     return air_emissions_data, water_emissions_data, ground_emissions_data
 
+
 def save_ng_lci(df, filename, destination_path):
     """
-    This function saves the final table to an excel file.
+    Save the final table to CSV file.
     """
     if destination_path is None:
         destination_path = f"{os.getcwd()}/"
@@ -576,6 +727,7 @@ def save_ng_lci(df, filename, destination_path):
         filename = 'final_table'
     full_path = os.path.join(destination_path, f"{filename}.csv")
     df.to_csv(full_path, index=False)
+
 
 def correct_netl_flow_names(df, flow_mapping_path, amount_col="FlowAmount"):
     """A helper method that replaces NETL air, water, and ground emissions
@@ -689,6 +841,7 @@ def correct_netl_flow_names(df, flow_mapping_path, amount_col="FlowAmount"):
     mapped_df = mapped_df.drop(columns=drop_cols)
 
     return mapped_df
+
 
 ##############################################################################
 # MAIN
