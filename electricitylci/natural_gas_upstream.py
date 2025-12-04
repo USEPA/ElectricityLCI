@@ -35,7 +35,7 @@ TODO:
 Created:
     2019-02-18
 Last updated:
-    2025-11-25
+    2025-12-04
 """
 __all__ = [
     "generate_upstream_ng",
@@ -79,415 +79,118 @@ region_state_mapping = {
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def generate_upstream_ng(year):
-    """
-    Generate the annual gas extraction, processing and transportation
-    emissions (in kg) for each plant in EIA923.
-
-    Notes
-    -----
-    Depends on the data file, gas_supply_basin_mapping.csv, which includes the
-    identification information for every natural gas plant in the U.S.
-    Once imported, this data frame is simplified to contain just the plant
-    code and its NG_LCI_Name.
-
-    Also depends on the data file, NG_LCI.csv, which includes the LCA impact
-    species determined for every natural gas basin in the U.S.
-    Flows are separated by specific upstream process: production, gathering
-    & boosting, processing, transmission, storage, and pipeline.
+def correct_netl_flow_names(df, flow_mapping_path, amount_col="FlowAmount"):
+    """A helper method that replaces NETL air, water, and ground emissions
+    with Federal Elementary Flow List equivalents based on a subset of
+    flows defined in USEPA's eLCI mapping using the Python package
+    `fedelemflowlist <https://github.com/USEPA/fedelemflowlist>`_
 
     Parameters
     ----------
-    year: int
-        Year of EIA-923 fuel data to use.
-
-    Returns
-    ----------
-    pandas.DataFrame
-    """
-    logging.info("Generating natural gas inventory")
-
-    # Get plant data and map each plant to its ng source: basin or region.
-    # The 2016 ng emissions inventory is only available by basin.
-    # As such, plants can only be connected to upstream emissions via basin
-    # assignment newer data (2020) is available by region plants are connected
-    # to upstream ng emissions via region assignment
-
-    # 'year' refers to eia_gen_year
-    if model_specs.ng_model_year == 2016:
-        ng_generation_data_mapped = map_ng_by_basin(year)
-    else:
-        ng_generation_data_mapped = map_ng_by_region(year)
-
-    # Read the NG LCI file
-    # If year = 2016
-    # - this step will directly ready NG_LCI.csv from the data_dir
-    # - returns lci (by basin)
-    # If year = 2020
-    # - this step will require edx api, download ng model and mapping
-    # - returns lci (by region)
-    # Document from edx, and generate lci
-    ng_lci = get_ng_lci(model_specs.ng_model_year)
-
-    # merge ng lci and plants based on the common parameter: region or basin
-    if model_specs.ng_model_year == 2016:
-        ng_lci_mapped = map_ng_lci_to_plants_by_basin(
-            ng_lci, ng_generation_data_mapped
-        )
-    else:
-        ng_lci_mapped = map_ng_lci_to_plants_by_region(
-            ng_lci, ng_generation_data_mapped
-        )
-
-    # Multiplying with the EIA 923 fuel consumption; conversion factor is
-    # for MMBtu to MJ
-    btu_to_MJ = pq.convert(10**6,'Btu','MJ')
-    ng_lci_mapped["FlowAmount"]=(
-        ng_lci_mapped["FlowAmount"]
-        * ng_lci_mapped['Total Fuel Consumption MMBtu']
-        * btu_to_MJ
-    )
-
-    ng_lci_mapped = ng_lci_mapped.rename(
-        columns={'Total Fuel Consumption MMBtu':'quantity'})
-    ng_lci_mapped["quantity"] = ng_lci_mapped["quantity"]*btu_to_MJ
-
-    # Output is kg emission for the specified year by facility Id,
-    # not normalized to electricity output
-
-    ng_lci_mapped['FuelCategory'] = 'GAS'
-    ng_lci_mapped.rename(
-        columns={
-            'Plant Id':'plant_id',
-            'NG_LCI_Region': 'stage_code',
-            'NG_LCI_Name':'stage_code',
-            'Stage':'stage'},
-        inplace=True
-    )
-    ng_lci_mapped["Year"] = year
-    ng_lci_mapped["Source"] = "netlgaseiafuel"
-    ng_lci_mapped["ElementaryFlowPrimeContext"] = "emission"
-    ng_lci_mapped.loc[
-        ng_lci_mapped["Compartment"].str.contains("resource/"),
-        "ElementaryFlowPrimeContext"] = "resource"
-    ng_lci_mapped.loc[
-        ng_lci_mapped["Compartment"].str.contains("Technosphere/"),
-        "ElementaryFlowPrimeContext"] = "technosphere"
-    # Issue #296 - adding DQI information for upstream processes
-    ng_lci_mapped["Year"] = model_specs.ng_model_year
-    ng_lci_mapped["DataReliability"] = 3
-    ng_lci_mapped["TemporalCorrelation"] = add_temporal_correlation_score(
-        ng_lci_mapped["Year"], model_specs.electricity_lci_target_year
-    )
-    ng_lci_mapped["GeographicalCorrelation"] = 1
-    ng_lci_mapped["TechnologicalCorrelation"] = 1
-    ng_lci_mapped["DataCollection"] = 1
-
-    # 3/20/2025 MBJ - replacing renewable vintage here so that temporal
-    # correlation is based on the year the inventory is based on, but when
-    # electricity generation is combined, it needs to be based on the target
-    # year for the inventory.
-    ng_lci_mapped["Year"] = year
-
-    return ng_lci_mapped
-
-
-def map_ng_lci_to_plants_by_basin(ng_lci, ng_generation_data_mapped):
-    """
-    Map the natural gas generation data by basin.
-    """
-    ng_lci_columns=[
-        "Compartment",
-        "FlowName",
-        "FlowUUID",
-        "Unit",
-        "FlowType",
-        "input",
-        "Basin",
-        "FlowAmount"
-    ]
-    ng_lci_stack = pd.DataFrame(ng_lci.stack()).reset_index()
-    ng_lci_stack.columns=ng_lci_columns
-
-    # Merge basin data with LCI dataset
-    ng_lci_mapped = pd.merge(
-        ng_lci_stack,
-        ng_generation_data_mapped,
-        left_on = 'Basin',
-        right_on = 'NG_LCI_Name',
-        how='left'
-    )
-    return ng_lci_mapped
-
-
-def map_ng_lci_to_plants_by_region(ng_lci, ng_generation_data_mapped):
-    """
-    Map the natural gas generation data by basin.
-    """
-    ng_lci_columns=[
-        "Compartment",
-        "FlowName",
-        "FlowUUID",
-        "Unit",
-        "FlowType",
-        "input",
-        "Region",
-        "FlowAmount"
-    ]
-    ng_lci_stack = pd.DataFrame(ng_lci.stack()).reset_index()
-    ng_lci_stack.columns=ng_lci_columns
-
-    # Merge basin data with LCI dataset
-    ng_lci_mapped = pd.merge(
-        ng_lci_stack,
-        ng_generation_data_mapped,
-        left_on = 'Region',
-        right_on = 'NG_LCI_Region',
-        how='left'
-    )
-    return ng_lci_mapped
-
-
-def map_ng_by_region(year):
-    """
-    Map the natural gas generation data by region.
-    This includes 6 regions: Pacific, Rocky Mountain, Southwest, Midwest,
-    Southeast, and Northeast.
-
-    Notes
-    -----
-    -   Downloads EIA plant data for the specified year.
-    -   Filters the data to only include NG facilities and on positive fuel
-        consumption.
-    -   Groups the data by Plant Id and aggregates the fuel consumption by
-        summing the total fuel consumption.
-    -   Maps each plant to a region using the region_state_mapping dictionary.
-
-    Parameters
-    ----------
-    year: int, str
-        The year of the eia923 plant data to use.
-
-    Returns
-    ----------
-    pandas.DataFrame
-        A dataframe with the natural gas generation data by region.
-    """
-    if isinstance(year, str):
-        year = int(year)
-
-    eia_generation_data = eia923_download_extract(year)
-
-    column_filt = ((eia_generation_data['Reported Fuel Type Code'] == 'NG') &
-                   (eia_generation_data['Total Fuel Consumption MMBtu'] > 0))
-
-    ng_generation_data = eia_generation_data[column_filt]
-
-    ng_generation_data = ng_generation_data.groupby('Plant Id').agg(
-        {'Total Fuel Consumption MMBtu':'sum','State':'first'}).reset_index()
-    ng_generation_data['Plant Id'] = ng_generation_data['Plant Id'].astype(int)
-
-    ng_generation_data_region = ng_generation_data.copy()
-
-    ng_generation_data_region['NG_LCI_Region'] = ng_generation_data['State'].map(region_state_mapping)
-
-    return ng_generation_data_region
-
-
-def map_ng_by_basin(year):
-    """
-    Map the natural gas generation data by basin.
-
-    Notes
-    -----
-    -   Downloads EIA plant data for the specified year.
-    -   Filters the data to only include NG facilities and on positive fuel
-        consumption.
-    -   Maps each plant to a basin using the gas_supply_basin_mapping.csv file.
-
-    Parameters
-    ----------
-    year: int, str
-        The year of the eia923 plant data to use.
-
-    Returns
-    ----------
-    pandas.DataFrame
-        A dataframe with the natural gas generation data by region.
-    """
-    if isinstance(year, str):
-        year = int(year)
-
-    # Get the EIA generation data for the specified year, this dataset includes
-    # the fuel consumption for generating electricity for each facility
-    # and fuel type. Filter the data to only include NG facilities and on
-    # positive fuel consumption. Group that data by Plant Id as it is possible
-    # to have multiple rows for the same facility and fuel based on different
-    # prime movers (e.g., gas turbine and combined cycle).
-
-    eia_generation_data = eia923_download_extract(year)
-
-    column_filt = ((eia_generation_data['Reported Fuel Type Code'] == 'NG') &
-                   (eia_generation_data['Total Fuel Consumption MMBtu'] > 0))
-    ng_generation_data = eia_generation_data[column_filt]
-
-    ng_generation_data = ng_generation_data.groupby('Plant Id').agg(
-        {'Total Fuel Consumption MMBtu':'sum'}).reset_index()
-    ng_generation_data['Plant Id'] = ng_generation_data['Plant Id'].astype(int)
-
-    # Import the mapping file which has the source gas basin for each Plant Id.
-    # NOTE: This is a 2 MB file that provides about 100 kB of info!
-    # TODO: Move this resource to EDX.
-    ng_basin_mapping = pd.read_csv(
-        os.path.join(data_dir, 'gas_supply_basin_mapping.csv')
-    )
-    subset_cols = ['Plant Code', 'NG_LCI_Name']
-    ng_basin_mapping = ng_basin_mapping[subset_cols]
-
-    # Merge with ng_generation dataframe.
-    ng_generation_data_basin = pd.merge(
-        left = ng_generation_data,
-        right = ng_basin_mapping,
-        left_on = 'Plant Id',
-        right_on = 'Plant Code'
-    )
-    ng_generation_data_basin = ng_generation_data_basin.drop(
-        columns=['Plant Code']
-    )
-    return ng_generation_data_basin
-
-
-def get_ng_lci(year):
-    """
-    Get the natural gas life cycle inventory for a given year.
-    Depending on the year, the natural gas life cycle inventory is either:
-
-    - retrieved from existing data
-    - calculated using the natural gas life cycle inventory model
-
-    Parameters
-    ----------
-    year : str, int
-        The year for which to get the natural gas life cycle inventory.
-        This should reflect the model configuration, ``ng_model_year``.
+    df : pandas.DataFrame
+        A life cycle inventory data frame with columns, 'FlowName',
+        'Compartment', 'Unit', and ``amount_col``.
+    amount_col : str, optional
+        The column title representing the flow amount, by default "FlowAmount"
 
     Returns
     -------
     pandas.DataFrame
-        A dataframe containing the emissions associated with the natural gas
-        production through transportation for each basin during the given year.
-
-    Notes
-    -----
-    This method depends on:
-
-    -   the NG_LCI CSV file (if the old model is selected in the configuration)
-    -   the EDX API (if the new model is selected in the configuration)
-    -   the elci flow mapping CSV file (if the new model is selected in the
-        configuration)
+        A new data frame with the same number of rows and columns as the
+        sent data frame. Flow names, compartments, units, and flow amounts
+        are updated based on emissions matches with the FEDEFL. All unmatched
+        flows are returned 'as is'. If FlowUUID was not in the column list,
+        it is created; otherwise, the matched UUIDs are updated.
     """
-    if isinstance(year, int):
-        year = str(year)
-    if year == "2016":
-        logging.info(
-            f"Retrieving the 2016 natural gas life cycle inventory by basin."
-        )
-        ng_lci = pd.read_csv(
-            os.path.join(data_dir, "NG_LCI.csv"),
-            index_col=[0,1,2,3,4,5]
-        )
-    else:
-        data_folder = os.path.join(paths.local_path, 'netl')
-        # Create new directory for ng if non existing.
-        check_output_dir(os.path.join(data_folder,"2020_ng"))
-        data_folder = os.path.join(data_folder,"2020_ng")
-        # Check if the ng_lci_2020rev1.csv already exists
-        # - if it does then we can skip all the below
-        if os.path.exists(os.path.join(data_folder, "ng_lci_2020rev1.csv")):
-            logging.info(f"NG LCI already exists in your data directory.")
-            ng_lci = pd.read_csv(
-                os.path.join(data_folder, "ng_lci_2020rev1.csv"),
-                index_col=[0,1,2,3,4,5]
-            )
-        else:
-            # If it does not exist, then generate it.
-            logging.info(
-                f"Retrieving the {year} natural gas life cycle inventory "
-                "by region."
-            )
-            # This step will require downloading files from EDX.
-            # - retrieve ng model
-            # - check if model is data_dir
-            check_output_dir(os.path.join(data_folder, "2020_ng_model"))
-            model_folder = os.path.join(data_folder, "2020_ng_model")
-            for ngmodel in r_ids_2020.keys():
-                if os.path.exists(os.path.join(model_folder, ngmodel)):
-                    logging.info(
-                        f"{ngmodel} already exists in your data directory."
-                    )
-                else:
-                    logging.info(f"Downloading {ngmodel} from EDX.")
-                    try:
-                        download_edx(
-                            resource_id=r_ids_2020[ngmodel],
-                            api_key=model_specs.edx_api_key,
-                            output_dir=model_folder
-                        )
-                    except Exception as e:
-                        logging.error(
-                            f"Error downloading {ngmodel} from EDX. Error: {e}"
-                        )
-                        sys.exit(1)
-            # Retrieve flow mapping document from EDX, eLCI.csv, and check if
-            # flow mapping CSV exists in data_dir.
-            if os.path.exists(os.path.join(data_folder, "eLCI.csv")):
-                logging.info(
-                    "ELCI flow mapping document already exists in your "
-                    "data directory."
-                )
-                flow_mapping_path = os.path.join(data_folder, "eLCI.csv")
-            else:
-                # Download flow mapping document from EDX.
-                logging.info(
-                    "Downloading ELCI flow mapping document from EDX."
-                )
-                # Resource id of eLCI flow mapping document on EDX
-                # NOTE: Currently in Life Cycle Collaborations Workspace
-                #       ---not public!!!
-                r_id_elci = 'e2c8f934-e95e-470a-879b-17ebe4afd39e'
-                try:
-                    download_edx(
-                        resource_id=r_id_elci,
-                        api_key=model_specs.edx_api_key,
-                        output_dir=data_folder
-                    )
-                    flow_mapping_path = os.path.join(data_folder, "eLCI.csv")
-                except Exception as e:
-                    logging.error(
-                        "Error downloading ELCI flow mapping document from "
-                        f"EDX. Error: {e}"
-                    )
-                    sys.exit(1)
+    # This data frame has about 4k source flow names and contexts associated
+    # with NETL unit process models (e.g., petro, nuclear, coal).
+    flow_mapping = pd.read_csv(flow_mapping_path, encoding='ISO-8859-1')
 
-            # Run the generate_ng_lci function and save it in data_dir.
-            try:
-                generate_lci(
-                    excel_folder_path=model_folder,
-                    flow_mapping_path=flow_mapping_path,
-                    destination_path=data_folder,
-                    final_table_name="ng_lci_2020rev1"
-                )
-                ng_lci = pd.read_csv(
-                    os.path.join(data_folder, "ng_lci_2020rev1.csv"),
-                    index_col=[0,1,2,3,4,5]
-                )
-            except Exception as e:
-                logging.error(
-                    "Error generating natural gas life cycle inventory. "
-                    f"Error: {e}"
-                )
-                sys.exit(1)
-    return ng_lci
+    # Matching occurs on name, compartment and units; help this along by
+    # lowering the case (improves coal UP matches from 10% to 42%).
+    df["FlowName_orig"] = df["FlowName"]
+    df["Compartment_orig"] = df["Compartment"]
+    df["FlowName"] = df["FlowName"].str.lower().str.rstrip()
+    df["Compartment"] = df["Compartment"].str.lower().str.rstrip()
+
+    # In the map, also lower-case names and compartments and remove trailing
+    # space; note this introduces duplicate entries in the map, so remove them.
+    # The duplicates are from later entries, so ignore mapper, verifier and
+    # last updated cols when searching for duplicates. [250917; TWD]
+    flow_mapping['SourceFlowName'] = flow_mapping[
+        'SourceFlowName'].str.lower().str.rstrip()
+    flow_mapping['SourceFlowContext'] = flow_mapping[
+        "SourceFlowContext"].str.lower().str.rstrip()
+    ignore_cols = ['Mapper', 'Verifier', 'LastUpdated']
+    flow_mapping = flow_mapping.drop_duplicates(
+        subset=[x for x in flow_mapping.columns if x not in ignore_cols]
+    )
+
+    # Some compartments in NETL UPs are complex (e.g., 'Emission to water/fresh
+    # water'), but are listed simply in the FEDEFL eLCI mapper (e.g., 'emission/
+    # water'). Improves coal mining UP matches from 42% to 62%.
+    is_emission = df['input'] == False
+    is_water = df['Compartment'].str.contains('water')
+    is_air = df['Compartment'].str.contains('air')
+    is_ground = df['Compartment'].str.contains('ground')
+
+    df.loc[is_emission * is_water, 'Compartment'] = 'emission/water'
+    df.loc[is_emission * is_air, 'Compartment'] = 'emission/air'
+    df.loc[is_emission * is_ground, 'Compartment'] = 'emission/ground'
+
+    # HOTFIX: Map against source units [250205; TWD]
+    # For coal mining, reduces matches from >62% to <62% (about 2k less rows)
+    logging.info("Mapping emissions to FEDEFL")
+    mapped_df = pd.merge(
+        df,
+        flow_mapping,
+        left_on=["FlowName", "Compartment", "Unit"],
+        right_on=["SourceFlowName", "SourceFlowContext", "SourceUnit"],
+        how="left",
+    )
+
+    # If TargetFlowName is present, there was a match.
+    is_match = mapped_df["TargetFlowName"].notnull()
+    logging.info("Correcting %d NETL flows" % is_match.sum())
+
+    # Quality Check (coal_df)
+    #   Check that target unit matches source unit.
+    #   No! Hydrogen, Uranium, and Lead-210/kg have mis-matched units.
+    #   Therefore, unit conversions are necessary.
+
+    # Return flow names and compartments back to their original values.
+    df["FlowName"] = df["FlowName_orig"]
+    df["Compartment"] = df["Compartment_orig"]
+    del df['FlowName_orig']      # use this syntax since you're editing
+    del df['Compartment_orig']   # a reference object that isn't returned
+    mapped_df['FlowName'] = mapped_df['FlowName_orig']
+    mapped_df["Compartment"] = mapped_df["Compartment_orig"]
+    mapped_df = mapped_df.drop(columns=['FlowName_orig', 'Compartment_orig'])
+
+    # Replace FlowName, Unit, and Compartment with new names (where matched)
+    mapped_df.loc[is_match, "FlowName"] = mapped_df.loc[
+        is_match, "TargetFlowName"]
+    mapped_df.loc[is_match, "Compartment"] = mapped_df.loc[
+        is_match, "TargetFlowContext"]
+    mapped_df.loc[is_match, "Unit"] = mapped_df.loc[is_match, "TargetUnit"]
+
+    # Correct values using the conversion factor
+    mapped_df.loc[is_match, amount_col] *= mapped_df.loc[
+        is_match, 'ConversionFactor']
+
+    if 'FlowUUID' in mapped_df.columns:
+        # Update existing values with new UUIDs
+        mapped_df.loc[is_match, 'FlowUUID'] = mapped_df.loc[
+            is_match, 'TargetFlowUUID']
+    else:
+        # Set UUIDs to target values
+        mapped_df = mapped_df.rename(columns={"TargetFlowUUID": "FlowUUID"})
+
+    # Drop all unneeded cols
+    drop_cols = [x for x in flow_mapping.columns if x in mapped_df.columns]
+    mapped_df = mapped_df.drop(columns=drop_cols)
+
+    return mapped_df
 
 
 def generate_lci(excel_folder_path,
@@ -633,6 +336,419 @@ def generate_lci(excel_folder_path,
     return final_table
 
 
+def generate_upstream_ng(year):
+    """
+    Generate the annual gas extraction, processing and transportation
+    emissions (in kg) for each plant in EIA923.
+
+    Notes
+    -----
+    This is the main method called outside this module.
+
+    Depends on the data file, gas_supply_basin_mapping.csv, which includes the
+    identification information for every natural gas plant in the U.S.
+    Once imported, this data frame is simplified to contain just the plant
+    code and its NG_LCI_Name.
+
+    Also depends on the data file, NG_LCI.csv, which includes the LCA impact
+    species determined for every natural gas basin in the U.S.
+    Flows are separated by specific upstream process: production, gathering
+    & boosting, processing, transmission, storage, and pipeline.
+
+    Parameters
+    ----------
+    year: int
+        Year of EIA-923 fuel data to use.
+
+    Returns
+    ----------
+    pandas.DataFrame
+    """
+    logging.info("Generating natural gas inventory")
+
+    # Get plant data and map each plant to its ng source: basin or region.
+    # The 2016 ng emissions inventory is only available by basin.
+    # As such, plants can only be connected to upstream emissions via basin
+    # assignment newer data (2020) is available by region plants are connected
+    # to upstream ng emissions via region assignment
+
+    # 'year' refers to eia_gen_year
+    if model_specs.ng_model_year == 2016:
+        ng_generation_data_mapped = map_ng_by_basin(year)
+    else:
+        ng_generation_data_mapped = map_ng_by_region(year)
+
+    # Read the NG LCI file
+    # If year = 2016
+    # - this step will directly ready NG_LCI.csv from the data_dir
+    # - returns lci (by basin)
+    # If year = 2020
+    # - this step will require edx api, download ng model and mapping
+    # - returns lci (by region)
+    # Document from edx, and generate lci
+    ng_lci = get_ng_lci(model_specs.ng_model_year)
+
+    # merge ng lci and plants based on the common parameter: region or basin
+    if model_specs.ng_model_year == 2016:
+        ng_lci_mapped = map_ng_lci_to_plants_by_basin(
+            ng_lci, ng_generation_data_mapped
+        )
+    else:
+        ng_lci_mapped = map_ng_lci_to_plants_by_region(
+            ng_lci, ng_generation_data_mapped
+        )
+
+    # Multiplying with the EIA 923 fuel consumption; conversion factor is
+    # for MMBtu to MJ
+    btu_to_MJ = pq.convert(10**6,'Btu','MJ')
+    ng_lci_mapped["FlowAmount"]=(
+        ng_lci_mapped["FlowAmount"]
+        * ng_lci_mapped['Total Fuel Consumption MMBtu']
+        * btu_to_MJ
+    )
+
+    ng_lci_mapped = ng_lci_mapped.rename(
+        columns={'Total Fuel Consumption MMBtu':'quantity'})
+    ng_lci_mapped["quantity"] = ng_lci_mapped["quantity"]*btu_to_MJ
+
+    # Output is kg emission for the specified year by facility Id,
+    # not normalized to electricity output
+
+    ng_lci_mapped['FuelCategory'] = 'GAS'
+    ng_lci_mapped.rename(
+        columns={
+            'Plant Id':'plant_id',
+            'NG_LCI_Region': 'stage_code',
+            'NG_LCI_Name':'stage_code',
+            'Stage':'stage'},
+        inplace=True
+    )
+    ng_lci_mapped["Year"] = year
+    ng_lci_mapped["Source"] = "netlgaseiafuel"
+    ng_lci_mapped["ElementaryFlowPrimeContext"] = "emission"
+    ng_lci_mapped.loc[
+        ng_lci_mapped["Compartment"].str.contains("resource/"),
+        "ElementaryFlowPrimeContext"] = "resource"
+    ng_lci_mapped.loc[
+        ng_lci_mapped["Compartment"].str.contains("Technosphere/"),
+        "ElementaryFlowPrimeContext"] = "technosphere"
+    # Issue #296 - adding DQI information for upstream processes
+    ng_lci_mapped["Year"] = model_specs.ng_model_year
+    ng_lci_mapped["DataReliability"] = 3
+    ng_lci_mapped["TemporalCorrelation"] = add_temporal_correlation_score(
+        ng_lci_mapped["Year"], model_specs.electricity_lci_target_year
+    )
+    ng_lci_mapped["GeographicalCorrelation"] = 1
+    ng_lci_mapped["TechnologicalCorrelation"] = 1
+    ng_lci_mapped["DataCollection"] = 1
+
+    # 3/20/2025 MBJ - replacing renewable vintage here so that temporal
+    # correlation is based on the year the inventory is based on, but when
+    # electricity generation is combined, it needs to be based on the target
+    # year for the inventory.
+    ng_lci_mapped["Year"] = year
+
+    return ng_lci_mapped
+
+
+def get_ng_lci(year):
+    """
+    Get the natural gas life cycle inventory for a given year.
+    Depending on the year, the natural gas life cycle inventory is either:
+
+    - retrieved from existing data
+    - calculated using the natural gas life cycle inventory model
+
+    Parameters
+    ----------
+    year : str, int
+        The year for which to get the natural gas life cycle inventory.
+        This should reflect the model configuration, ``ng_model_year``.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A dataframe containing the emissions associated with the natural gas
+        production through transportation for each basin during the given year.
+
+    Notes
+    -----
+    This method depends on:
+
+    -   the NG_LCI CSV file (if the old model is selected in the configuration)
+    -   the EDX API (if the new model is selected in the configuration)
+    -   the elci flow mapping CSV file (if the new model is selected in the
+        configuration)
+    """
+    if isinstance(year, int):
+        year = str(year)
+    if year == "2016":
+        logging.info(
+            f"Retrieving the 2016 natural gas life cycle inventory by basin."
+        )
+        ng_lci = pd.read_csv(
+            os.path.join(data_dir, "NG_LCI.csv"),
+            index_col=[0,1,2,3,4,5]
+        )
+    else:
+        data_folder = os.path.join(paths.local_path, 'netl')
+        # Create new directory for ng if non existing.
+        check_output_dir(os.path.join(data_folder,"2020_ng"))
+        data_folder = os.path.join(data_folder,"2020_ng")
+        # Check if the ng_lci_2020rev1.csv already exists
+        # - if it does then we can skip all the below
+        if os.path.exists(os.path.join(data_folder, "ng_lci_2020rev1.csv")):
+            logging.info(f"NG LCI already exists in your data directory.")
+            ng_lci = pd.read_csv(
+                os.path.join(data_folder, "ng_lci_2020rev1.csv"),
+                index_col=[0,1,2,3,4,5]
+            )
+        else:
+            # If it does not exist, then generate it.
+            logging.info(
+                f"Retrieving the {year} natural gas life cycle inventory "
+                "by region."
+            )
+            # This step will require downloading files from EDX.
+            # - retrieve ng model
+            # - check if model is data_dir
+            check_output_dir(os.path.join(data_folder, "2020_ng_model"))
+            model_folder = os.path.join(data_folder, "2020_ng_model")
+            for ngmodel in r_ids_2020.keys():
+                if os.path.exists(os.path.join(model_folder, ngmodel)):
+                    logging.info(
+                        f"{ngmodel} already exists in your data directory."
+                    )
+                else:
+                    logging.info(f"Downloading {ngmodel} from EDX.")
+                    try:
+                        download_edx(
+                            resource_id=r_ids_2020[ngmodel],
+                            api_key=model_specs.edx_api_key,
+                            output_dir=model_folder
+                        )
+                    except Exception as e:
+                        logging.error(
+                            f"Error downloading {ngmodel} from EDX. Error: {e}"
+                        )
+                        sys.exit(1)
+            # Retrieve flow mapping document from EDX, eLCI.csv, and check if
+            # flow mapping CSV exists in data_dir.
+            if os.path.exists(os.path.join(data_folder, "eLCI.csv")):
+                logging.info(
+                    "ELCI flow mapping document already exists in your "
+                    "data directory."
+                )
+                flow_mapping_path = os.path.join(data_folder, "eLCI.csv")
+            else:
+                # Download flow mapping document from EDX.
+                logging.info(
+                    "Downloading ELCI flow mapping document from EDX."
+                )
+                # Resource id of eLCI flow mapping document on EDX
+                # NOTE: Currently in Life Cycle Collaborations Workspace
+                #       ---not public!!!
+                r_id_elci = 'e2c8f934-e95e-470a-879b-17ebe4afd39e'
+                try:
+                    download_edx(
+                        resource_id=r_id_elci,
+                        api_key=model_specs.edx_api_key,
+                        output_dir=data_folder
+                    )
+                    flow_mapping_path = os.path.join(data_folder, "eLCI.csv")
+                except Exception as e:
+                    logging.error(
+                        "Error downloading ELCI flow mapping document from "
+                        f"EDX. Error: {e}"
+                    )
+                    sys.exit(1)
+
+            # Run the generate_ng_lci function and save it in data_dir.
+            try:
+                generate_lci(
+                    excel_folder_path=model_folder,
+                    flow_mapping_path=flow_mapping_path,
+                    destination_path=data_folder,
+                    final_table_name="ng_lci_2020rev1"
+                )
+                ng_lci = pd.read_csv(
+                    os.path.join(data_folder, "ng_lci_2020rev1.csv"),
+                    index_col=[0,1,2,3,4,5]
+                )
+            except Exception as e:
+                logging.error(
+                    "Error generating natural gas life cycle inventory. "
+                    f"Error: {e}"
+                )
+                sys.exit(1)
+    return ng_lci
+
+
+def map_ng_by_basin(year):
+    """
+    Map the natural gas generation data by basin.
+
+    Notes
+    -----
+    -   Downloads EIA plant data for the specified year.
+    -   Filters the data to only include NG facilities and on positive fuel
+        consumption.
+    -   Maps each plant to a basin using the gas_supply_basin_mapping.csv file.
+
+    Parameters
+    ----------
+    year: int, str
+        The year of the eia923 plant data to use.
+
+    Returns
+    ----------
+    pandas.DataFrame
+        A dataframe with the natural gas generation data by region.
+    """
+    if isinstance(year, str):
+        year = int(year)
+
+    # Get the EIA generation data for the specified year, this dataset includes
+    # the fuel consumption for generating electricity for each facility
+    # and fuel type. Filter the data to only include NG facilities and on
+    # positive fuel consumption. Group that data by Plant Id as it is possible
+    # to have multiple rows for the same facility and fuel based on different
+    # prime movers (e.g., gas turbine and combined cycle).
+
+    eia_generation_data = eia923_download_extract(year)
+
+    column_filt = ((eia_generation_data['Reported Fuel Type Code'] == 'NG') &
+                   (eia_generation_data['Total Fuel Consumption MMBtu'] > 0))
+    ng_generation_data = eia_generation_data[column_filt]
+
+    ng_generation_data = ng_generation_data.groupby('Plant Id').agg(
+        {'Total Fuel Consumption MMBtu':'sum'}).reset_index()
+    ng_generation_data['Plant Id'] = ng_generation_data['Plant Id'].astype(int)
+
+    # Import the mapping file which has the source gas basin for each Plant Id.
+    # NOTE: This is a 2 MB file that provides about 100 kB of info!
+    # TODO: Move this resource to EDX.
+    ng_basin_mapping = pd.read_csv(
+        os.path.join(data_dir, 'gas_supply_basin_mapping.csv')
+    )
+    subset_cols = ['Plant Code', 'NG_LCI_Name']
+    ng_basin_mapping = ng_basin_mapping[subset_cols]
+
+    # Merge with ng_generation dataframe.
+    ng_generation_data_basin = pd.merge(
+        left = ng_generation_data,
+        right = ng_basin_mapping,
+        left_on = 'Plant Id',
+        right_on = 'Plant Code'
+    )
+    ng_generation_data_basin = ng_generation_data_basin.drop(
+        columns=['Plant Code']
+    )
+    return ng_generation_data_basin
+
+
+def map_ng_by_region(year):
+    """
+    Map the natural gas generation data by region.
+    This includes 6 regions: Pacific, Rocky Mountain, Southwest, Midwest,
+    Southeast, and Northeast.
+
+    Notes
+    -----
+    -   Downloads EIA plant data for the specified year.
+    -   Filters the data to only include NG facilities and on positive fuel
+        consumption.
+    -   Groups the data by Plant Id and aggregates the fuel consumption by
+        summing the total fuel consumption.
+    -   Maps each plant to a region using the region_state_mapping dictionary.
+
+    Parameters
+    ----------
+    year: int, str
+        The year of the eia923 plant data to use.
+
+    Returns
+    ----------
+    pandas.DataFrame
+        A dataframe with the natural gas generation data by region.
+    """
+    if isinstance(year, str):
+        year = int(year)
+
+    eia_generation_data = eia923_download_extract(year)
+
+    column_filt = ((eia_generation_data['Reported Fuel Type Code'] == 'NG') &
+                   (eia_generation_data['Total Fuel Consumption MMBtu'] > 0))
+
+    ng_generation_data = eia_generation_data[column_filt]
+
+    ng_generation_data = ng_generation_data.groupby('Plant Id').agg(
+        {'Total Fuel Consumption MMBtu':'sum','State':'first'}).reset_index()
+    ng_generation_data['Plant Id'] = ng_generation_data['Plant Id'].astype(int)
+
+    ng_generation_data_region = ng_generation_data.copy()
+
+    ng_generation_data_region['NG_LCI_Region'] = ng_generation_data['State'].map(region_state_mapping)
+
+    return ng_generation_data_region
+
+
+def map_ng_lci_to_plants_by_basin(ng_lci, ng_generation_data_mapped):
+    """
+    Map the natural gas generation data by basin.
+    """
+    ng_lci_columns=[
+        "Compartment",
+        "FlowName",
+        "FlowUUID",
+        "Unit",
+        "FlowType",
+        "input",
+        "Basin",
+        "FlowAmount"
+    ]
+    ng_lci_stack = pd.DataFrame(ng_lci.stack()).reset_index()
+    ng_lci_stack.columns=ng_lci_columns
+
+    # Merge basin data with LCI dataset
+    ng_lci_mapped = pd.merge(
+        ng_lci_stack,
+        ng_generation_data_mapped,
+        left_on = 'Basin',
+        right_on = 'NG_LCI_Name',
+        how='left'
+    )
+    return ng_lci_mapped
+
+
+def map_ng_lci_to_plants_by_region(ng_lci, ng_generation_data_mapped):
+    """
+    Map the natural gas generation data by basin.
+    """
+    ng_lci_columns=[
+        "Compartment",
+        "FlowName",
+        "FlowUUID",
+        "Unit",
+        "FlowType",
+        "input",
+        "Region",
+        "FlowAmount"
+    ]
+    ng_lci_stack = pd.DataFrame(ng_lci.stack()).reset_index()
+    ng_lci_stack.columns=ng_lci_columns
+
+    # Merge basin data with LCI dataset
+    ng_lci_mapped = pd.merge(
+        ng_lci_stack,
+        ng_generation_data_mapped,
+        left_on = 'Region',
+        right_on = 'NG_LCI_Region',
+        how='left'
+    )
+    return ng_lci_mapped
+
+
 def read_region_data(excel_file_path, sheet_name):
     """
     Read Excel file, extract data, and generate a data frame for NG emissions
@@ -729,125 +845,11 @@ def save_ng_lci(df, filename, destination_path):
     df.to_csv(full_path, index=False)
 
 
-def correct_netl_flow_names(df, flow_mapping_path, amount_col="FlowAmount"):
-    """A helper method that replaces NETL air, water, and ground emissions
-    with Federal Elementary Flow List equivalents based on a subset of
-    flows defined in USEPA's eLCI mapping using the Python package
-    `fedelemflowlist <https://github.com/USEPA/fedelemflowlist>`_
-
-    Parameters
-    ----------
-    df : pandas.DataFrame
-        A life cycle inventory data frame with columns, 'FlowName',
-        'Compartment', 'Unit', and ``amount_col``.
-    amount_col : str, optional
-        The column title representing the flow amount, by default "FlowAmount"
-
-    Returns
-    -------
-    pandas.DataFrame
-        A new data frame with the same number of rows and columns as the
-        sent data frame. Flow names, compartments, units, and flow amounts
-        are updated based on emissions matches with the FEDEFL. All unmatched
-        flows are returned 'as is'. If FlowUUID was not in the column list,
-        it is created; otherwise, the matched UUIDs are updated.
-    """
-    # This data frame has about 4k source flow names and contexts associated
-    # with NETL unit process models (e.g., petro, nuclear, coal).
-    flow_mapping = pd.read_csv(flow_mapping_path, encoding='ISO-8859-1')
-
-    # Matching occurs on name, compartment and units; help this along by
-    # lowering the case (improves coal UP matches from 10% to 42%).
-    df["FlowName_orig"] = df["FlowName"]
-    df["Compartment_orig"] = df["Compartment"]
-    df["FlowName"] = df["FlowName"].str.lower().str.rstrip()
-    df["Compartment"] = df["Compartment"].str.lower().str.rstrip()
-
-    # In the map, also lower-case names and compartments and remove trailing
-    # space; note this introduces duplicate entries in the map, so remove them.
-    # The duplicates are from later entries, so ignore mapper, verifier and
-    # last updated cols when searching for duplicates. [250917; TWD]
-    flow_mapping['SourceFlowName'] = flow_mapping[
-        'SourceFlowName'].str.lower().str.rstrip()
-    flow_mapping['SourceFlowContext'] = flow_mapping[
-        "SourceFlowContext"].str.lower().str.rstrip()
-    ignore_cols = ['Mapper', 'Verifier', 'LastUpdated']
-    flow_mapping = flow_mapping.drop_duplicates(
-        subset=[x for x in flow_mapping.columns if x not in ignore_cols]
-    )
-
-    # Some compartments in NETL UPs are complex (e.g., 'Emission to water/fresh
-    # water'), but are listed simply in the FEDEFL eLCI mapper (e.g., 'emission/
-    # water'). Improves coal mining UP matches from 42% to 62%.
-    is_emission = df['input'] == False
-    is_water = df['Compartment'].str.contains('water')
-    is_air = df['Compartment'].str.contains('air')
-    is_ground = df['Compartment'].str.contains('ground')
-
-    df.loc[is_emission * is_water, 'Compartment'] = 'emission/water'
-    df.loc[is_emission * is_air, 'Compartment'] = 'emission/air'
-    df.loc[is_emission * is_ground, 'Compartment'] = 'emission/ground'
-
-    # HOTFIX: Map against source units [250205; TWD]
-    # For coal mining, reduces matches from >62% to <62% (about 2k less rows)
-    logging.info("Mapping emissions to FEDEFL")
-    mapped_df = pd.merge(
-        df,
-        flow_mapping,
-        left_on=["FlowName", "Compartment", "Unit"],
-        right_on=["SourceFlowName", "SourceFlowContext", "SourceUnit"],
-        how="left",
-    )
-
-    # If TargetFlowName is present, there was a match.
-    is_match = mapped_df["TargetFlowName"].notnull()
-    logging.info("Correcting %d NETL flows" % is_match.sum())
-
-    # Quality Check (coal_df)
-    #   Check that target unit matches source unit.
-    #   No! Hydrogen, Uranium, and Lead-210/kg have mis-matched units.
-    #   Therefore, unit conversions are necessary.
-
-    # Return flow names and compartments back to their original values.
-    df["FlowName"] = df["FlowName_orig"]
-    df["Compartment"] = df["Compartment_orig"]
-    del df['FlowName_orig']      # use this syntax since you're editing
-    del df['Compartment_orig']   # a reference object that isn't returned
-    mapped_df['FlowName'] = mapped_df['FlowName_orig']
-    mapped_df["Compartment"] = mapped_df["Compartment_orig"]
-    mapped_df = mapped_df.drop(columns=['FlowName_orig', 'Compartment_orig'])
-
-    # Replace FlowName, Unit, and Compartment with new names (where matched)
-    mapped_df.loc[is_match, "FlowName"] = mapped_df.loc[
-        is_match, "TargetFlowName"]
-    mapped_df.loc[is_match, "Compartment"] = mapped_df.loc[
-        is_match, "TargetFlowContext"]
-    mapped_df.loc[is_match, "Unit"] = mapped_df.loc[is_match, "TargetUnit"]
-
-    # Correct values using the conversion factor
-    mapped_df.loc[is_match, amount_col] *= mapped_df.loc[
-        is_match, 'ConversionFactor']
-
-    if 'FlowUUID' in mapped_df.columns:
-        # Update existing values with new UUIDs
-        mapped_df.loc[is_match, 'FlowUUID'] = mapped_df.loc[
-            is_match, 'TargetFlowUUID']
-    else:
-        # Set UUIDs to target values
-        mapped_df = mapped_df.rename(columns={"TargetFlowUUID": "FlowUUID"})
-
-    # Drop all unneeded cols
-    drop_cols = [x for x in flow_mapping.columns if x in mapped_df.columns]
-    mapped_df = mapped_df.drop(columns=drop_cols)
-
-    return mapped_df
-
-
 ##############################################################################
 # MAIN
 ##############################################################################
 if __name__=='__main__':
     from electricitylci.globals import output_dir
-    year=2016
+    year = 2016
     df = generate_upstream_ng(year)
     df.to_csv(output_dir+'/ng_emissions_{}.csv'.format(year))
