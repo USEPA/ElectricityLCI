@@ -29,10 +29,14 @@ setup(
     long_description=open('README.md').read(),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
-        "Environment :: IDE",
+        "Environment :: Console",
         "Intended Audience :: Science/Research",
         "License :: CC0",
-        "Programming Language :: Python :: 3.12",
+        "Natural Language :: English",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3.x",
+        "Topic :: Software Development :: Libraries :: Python Modules",
+        "Topic :: Scientific/Engineering",
         "Topic :: Utilities",
     ]
 )
