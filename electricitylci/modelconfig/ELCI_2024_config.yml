@@ -8,7 +8,7 @@
 # The target year is used to determine the temporal correlation of data with
 # the electricity generation processes, which can be used in uncertainty
 # calculations.
-electricity_lci_target_year: 2018
+electricity_lci_target_year: 2025
 
 # Select a regional aggregation from "eGRID", "NERC", "BA", "US", "FERC",
 # and "EIA". The EPA_eGRID trading method can only be used with "eGRID".
@@ -19,8 +19,8 @@ regional_aggregation: 'BA'
 # to True. This will trigger the use of EPA CEMS and EIA data as substitutes
 # for eGRID. Replacing eGRID will also use EIA generation data to determine
 # the generation mix.
-egrid_year: 2018
-eia_gen_year: 2017
+egrid_year: 2023
+eia_gen_year: 2024
 replace_egrid: true
 
 # In 2023, NETL published the Cradle-to-Gate Life Cycle Analysis Baseline
@@ -29,7 +29,7 @@ replace_egrid: true
 # Select between the 2020 and 2023 model inventories. This impacts both
 # the mining and transportation LCIs, but does not impact the coal power plant
 # construction LCI.
-coal_model_year: 2020
+coal_model_year: 2023
 
 # The NG baseline model year is used to determine which NG inventory to use.
 # This impacts the upstream NG emissions for production, gathering and boosting,
@@ -37,7 +37,7 @@ coal_model_year: 2020
 # Select between 2016 and 2020 model inventories:
 #   2016 model: https://doi.org/10.2172/1529553
 #   2020 model: https://doi.org/10.18141/2568690
-ng_model_year: 2016
+ng_model_year: 2020
 
 # NETL developed profiles for renewable generation to capture construction
 # and O&M impacts (e.g., solar PV manufacturing and power plant operations).
@@ -46,20 +46,26 @@ ng_model_year: 2016
 # re-creating the 2016 baseline). In the 2020 inventory, these were separated
 # into individual inventories (recommended for future baselines).
 include_renewable_generation: true
-renewable_vintage: 2016
+renewable_vintage: 2020
 
 # NETL has developed profiles for power plant water use.
+# Set to true to include these impacts.
 include_netl_water: true
 
 # Upstream data from NETL can be included in the outputs.
 include_upstream_processes: true
 
+# For the inventories of interest, see vintages available from StEWI
+# (https://github.com/USEPA/standardizedinventories).
+# If you plan to run a baseline, use the prescribed stewicombo file for
+# consistent results. Stewicombo files are listed in their corresponding folder
+# on the AWS site (https://dmap-data-commons-ord.s3.amazonaws.com/index.html).
 inventories_of_interest:
-  eGRID: 2018
-  TRI: 2017
-  NEI: 2017
-  RCRAInfo: 2017
-
+  eGRID: 2023
+  TRI: 2023
+  NEI: 2020
+  RCRAInfo: 2023
+stewicombo_file: 'ELCI_2020_v1.1.4'
 
 # Provide uncertainty estimates for emissions.
 calculate_uncertainty: true
@@ -84,7 +90,7 @@ epa_cam_api: ""
 # global parameter in `bulk_eia_data` and the EBA manifest text file.
 # To register for a free API key, go to: https://www.eia.gov/opendata/, and
 # copy-and-paste it for `eia_api` below.
-use_eia_bulk_zip: true
+use_eia_bulk_zip: false
 bypass_bulk_vintage: true
 eia_api: ""
 
@@ -130,15 +136,16 @@ efficiency_of_distribution_grid: 0.95
 # Electricity trading can be calculated using a method from EPA (with or
 # without a surplus trading pool) that is based on eGRID regions or a method
 # from NETL that uses an input-output approach using exchange data between
-# balancing authorities from EIA.
+# balancing authorities from EIA. If false, net trading is used.
 EPA_eGRID_trading: false
 
-# Select between net trading (true) or gross trading (false) between NERC and
-# eGRID regions for consumption mix calculations.
+# For net trading, select between two options for for consumption mix
+# calculations: net trading (true) or gross trading (false) between NERC
+# and eGRID regions.
 net_trading: false
 
 # Trading year for EIA data used for net trading.
-NETL_IO_trading_year: 2016
+NETL_IO_trading_year: 2024
 
 
 # POST PROCESSING

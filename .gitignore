@@ -43,3 +43,5 @@ electricitylci/output/*
 
 # Whitelist everything except this!
 electricitylci/data/EFs/.DS_Store
+
+Notes.txt

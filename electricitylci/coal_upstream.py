@@ -58,7 +58,7 @@ inventories, including newer background data, for coal mining and
 transportation, but still mainly represents 2016.
 
 Last updated:
-    2025-06-09
+    2025-09-05
 """
 __all__ = [
     "basin_codes",       # Globals
@@ -436,7 +436,8 @@ def eia_7a_download(year, save_path):
     see https://github.com/USEPA/ElectricityLCI/issues/230 for a solution.
     """
     eia7a_base_url = 'http://www.eia.gov/coal/data/public/xls/'
-    name = 'coalpublic{}.xls'.format(year)
+    name = ('coalpublic{}.xls'.format(year) if year <= 2022 else
+            'coalpublic{}.xlsx'.format(year))
     url = eia7a_base_url + name
     try:
         os.makedirs(save_path)
@@ -1675,11 +1676,18 @@ def read_eia7a_public_coal(year):
         return_name=False)
     # If you're here, then see the following for hotfix:
     # https://github.com/USEPA/ElectricityLCI/issues/230
-    eia7a_df = pd.read_excel(
-        eia7a_path,
-        sheet_name='Hist_Coal_Prod',
-        skiprows=3
-    )
+    try:
+        eia7a_df = pd.read_excel(
+            eia7a_path,
+            sheet_name='Hist_Coal_Prod',
+            skiprows=3
+        )
+    except ValueError:
+        raise ValueError(
+            f'Error reading {eia7a_path}. Please see '
+            'https://github.com/USEPA/ElectricityLCI/issues/230 '
+            'for a solution'
+        )
     eia7a_df = _clean_columns(eia7a_df)
 
     return eia7a_df

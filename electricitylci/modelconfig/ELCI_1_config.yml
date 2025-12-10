@@ -31,6 +31,14 @@ replace_egrid: true
 # construction LCI.
 coal_model_year: 2020
 
+# The NG baseline model year is used to determine which NG inventory to use.
+# This impacts the upstream NG emissions for production, gathering and boosting,
+# processing, transmission, storage, and distribution.
+# Select between 2016 and 2020 model inventories:
+#   2016 model: https://doi.org/10.2172/1529553
+#   2020 model: https://doi.org/10.18141/2568690
+ng_model_year: 2016
+
 # NETL developed profiles for renewable generation to capture construction
 # and O&M impacts (e.g., solar PV manufacturing and power plant operations).
 # There are two vintages for renewable inventories: 2016 and 2020. The 2016

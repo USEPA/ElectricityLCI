@@ -156,6 +156,7 @@ egrid_facilities = stewi.getInventoryFacilities(
 # Rename columns. NOTE: missing names resolved
 # (https://github.com/USEPA/standardizedinventories/issues/153)
 egrid_facilities.rename(columns={
+    'Plant primary fuel category': 'FuelCategory', # added for 2023 STEWI data
     'Plant primary coal/oil/gas/ other fossil fuel category': 'FuelCategory',
     'Plant primary fuel': 'PrimaryFuel',
     'eGRID subregion acronym': 'Subregion',
