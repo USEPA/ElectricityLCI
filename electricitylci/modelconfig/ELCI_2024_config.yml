@@ -157,3 +157,6 @@ run_post_processes: true
 
 
 # OTHER PARAMETERS
+add_residual_mix: true
+rem_weight_method: 'count'
+neg_rem_method: 'zero'

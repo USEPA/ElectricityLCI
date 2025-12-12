@@ -257,6 +257,12 @@ GREEN_E = ['HYDRO', 'BIOMASS', 'SOLAR', 'SOLARTHERMAL', 'WIND', 'GEOTHERMAL']
 OVERFLOW_E = ['MIXED', 'OTHF']
 '''list: Non-green fuels that can lend overflow electricity for res. mixes.'''
 
+REM_WEIGHT_METHODS = ['count',]
+'''list : State-level REC sales to Balancing authority weighting methods.'''
+
+NEG_REM_METHODS = ['zero', 'keep']
+'''list : Accounting methods for negative renewable generation for REM.'''
+
 
 ##############################################################################
 # FUNCTIONS
