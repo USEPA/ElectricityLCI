@@ -2049,10 +2049,10 @@ def write_csv_to_output(f_name, data, to_zip=False):
     ------
     TypeError : If the data type is not recognized.
     """
-    f_path = os.path.join(output_dir, f_name)
+    fpath = os.path.join(output_dir, f_name)
 
-    if os.path.isfile(f_path):
-        logging.warning("File exists! Overwriting %s" % f_path)
+    if os.path.isfile(fpath):
+        logging.warning("File exists! Overwriting %s" % fpath)
 
     if isinstance(data, pd.DataFrame):
         if to_zip:
