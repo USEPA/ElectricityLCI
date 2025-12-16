@@ -51,6 +51,7 @@ References:
 
 Changelog (since v2.0):
 
+    -   [25.12.16] New build residual processes method.
     -   [25.06.11] New method for updating product system description text.
 
 Last edited:
@@ -59,6 +60,7 @@ Last edited:
 __all__ = [
     "add_to_product_system_description",
     "build_product_systems",
+    "build_residual_processes",
     "check_exchanges",
     "clean_json",
     "write",
@@ -174,8 +176,30 @@ def build_product_systems(file_path, elci_config):
     _save_to_json(file_path, data)
 
 
-# IN PROGRESS
+# IN PROGRESS - needs tested
 def build_residual_processes(json_path, rem_ref, rem_txt=""):
+    """Post-processing step that creates residual mix processes for a given
+    JSON-LD.
+
+    Parameters
+    ----------
+    json_path : str
+        File path to JSON-LD.
+    rem_ref : str, pandas.DataFrame
+        Either a file path to CSV file or a pandas data frame containing
+        the balancing authority level residual mixes (e.g., as provided by
+        :func:`get_rem` in residual_grid_mix.py).
+    rem_txt : str, optional
+        Additional residual process description text, by default ""
+
+    Raises
+    ------
+    FileNotFoundError
+        If a non-existent CSV file path was provided for ``rem_ref``.
+    TypeError
+        If ``rem_ref`` was not provided as a file path or data frame.
+    """
+    # 1. READ RESIDUAL MIX DATA
     # Two options supported here: send pandas DataFrame or CSV file path.
     if isinstance(rem_ref, pd.DataFrame):
         logging.info(
@@ -199,33 +223,77 @@ def build_residual_processes(json_path, rem_ref, rem_txt=""):
             "CSV file path, not %s" % type(rem_ref)
         )
 
-    # Read all JSON-LD data.
+    # 2. READ JSON-LD DATA
     try:
         data = _read_jsonld(json_path, _root_entity_dict())
     except OSError:
         logging.warning("Failed to read JSON-LD file, %s" % json_path)
     else:
-        # TODO: consider whether to keep this check. It runs quick.
+        # TODO: consider whether to keep this check. It runs quick. Keep.
         check_exchanges(data['Process']['objs'])
+
+    # 3. CREATE RESIDUAL GENERATION MIX PROCESSES
+    logging.info("Creating residual generation mix processes")
+
+    # Initialize process mapping dictionary
+    p_map = {}
 
     # Find the electricity generation processes in JSON-LD
     q = re.compile("^Electricity; at grid; generation mix - (.*)$")
     r = _match_process_names(data['Process']['objs'], q)
     logging.debug("Found %d generation mix processes." % len(r))
 
-    # Initialize process mapping dictionary
-    p_map = {}
-
     for pid in r:
         p_idx = data['Process']['ids'].index(pid)
         p_obj = data['Process']['objs'][p_idx]
         ba = q.match(p_obj.name).group(1)
-        rid, data = _make_rem_mix_process(p_obj.id, ba, data, rem_txt, rem)
+        rid, data = _make_rem_gen_process(p_obj.id, ba, data, rem_txt, rem)
         p_map[pid] = rid
 
-    # TODO:
-    # Next, create at-grid consumption mix and at-user consumption mix
-    # processes that link to their respective providers.
+    # 4. CREATE RESIDUAL CONSUMPTION MIX PROCESSES
+    logging.info("Creating residual consumption mix processes")
+
+    # Find the electricity consumption processes in JSON-LD
+    q = re.compile(
+        "^Electricity; at (?:user|grid); consumption mix - (.*) - (BA|FERC|US)$"
+    )
+    r = _match_process_names(data['Process']['objs'], q)
+    logging.debug("Found %d consumption mix processes." % len(r))
+
+    for pid in r:
+        rid, data = _make_rem_con_process(pid, data, rem_txt)
+        p_map[pid] = rid
+
+    # 5. UPDATE CONSUMPTION MIX PROCESS PROVIDERS
+    logging.info("Updating residual mix process default providers")
+    for pid in r:
+        # Find the residual process associated with this consumption process.
+        rid = p_map[pid]
+
+        # Extract the residual process object; the default providers will be
+        # updated on this object.
+        r_idx = data['Process']['ids'].index(rid)
+        r_obj = data['Process']['objs'][r_idx]
+
+        # Read through residual process's exchange table
+        num_ex = len(r_obj.exchanges)
+        for i in range(num_ex):
+            p_ex = r_obj.exchanges[i]
+            # Skip outputs and inputs w/o providers (e.g., elem flows)
+            if p_ex.is_input and p_ex.default_provider is not None:
+                # Read the provider UUID and find its replacement
+                dp_id = p_ex.default_provider.id
+                rp_id = p_map[dp_id] # <- throws error when not found
+                # Get the provider process object
+                rp_idx = data['Process']['ids'].index(rp_id)
+                rp_obj = data['Process']['objs'][rp_idx]
+                # Update residual process object; link to new provider
+                r_obj.exchanges[i].default_provider = rp_obj.to_ref()
+        # Update the master entity dictionary w/ updated process
+        data['Process']['objs'][r_idx] = r_obj
+
+    # 6. SAVE RESULTS
+    _save_to_json(json_path, data)
 
 
 def check_exchanges(p_list):
@@ -1504,7 +1572,73 @@ def _make_process_ref(p_obj):
     return ref_obj
 
 
-def _make_rem_mix_process(pid, ba_name, e_dict, rem_txt, rem_df):
+# IN PROGRESS: needs tested
+def _make_rem_con_process(pid, e_dict, rem_txt):
+    """Helper function to create residual consumption process.
+
+    Parameters
+    ----------
+    pid : str
+        A universally unique identified associated with a consumption mix
+        process (e.g., 'Electricity; at grid; consumption mix - CAISO - FERC')
+    e_dict : dict
+        The master entity dictionary.
+    rem_txt : str
+        Additional residual process description.
+
+    Returns
+    -------
+    tuple
+        A tuple of length two:
+
+        - str, the new residual consumption process UUID
+        - dict, the updated master entity dictionary
+
+    Notes
+    -----
+    This method adds the new residual consumption mix to the master
+    entity dictionary.
+    """
+    # Extract the original process data & convert to dictionary
+    p_idx = e_dict['Process']['ids'].index(pid)
+    p_obj = e_dict['Process']['objs'][p_idx]
+    p_dict = p_obj.to_dict()
+
+    # Rename to a residual process; try both combinations
+    try:
+        p_dict['name'] = _make_residual_process_name(
+            p_dict['name'], True, False
+        )
+    except ValueError:
+        p_dict['name'] = _make_residual_process_name(
+            p_dict['name'], False, False
+        )
+
+    # Reset UUID (to trigger new UUID generation) and update description.
+    p_dict['@id'] = None
+    if isinstance(p_dict['description'], str):
+        p_dict['description'] += " "
+        p_dict['description'] += rem_txt
+    else:
+        p_dict['description'] = rem_txt
+
+    # Create new residual process
+    rem_obj, e_dict, _ = _process(p_dict, e_dict)
+
+    # Add new process to master entity list
+    if rem_obj.id not in e_dict['Process']['ids']:
+        e_dict['Process']['ids'].append(rem_obj.id)
+        e_dict['Process']['objs'].append(rem_obj)
+    else:
+        # This message should never display.
+        logging.warning(
+            "New residual process UUID already exists! %s" % rem_obj.id
+        )
+
+    return (rem_obj.id, e_dict)
+
+
+def _make_rem_gen_process(pid, ba_name, e_dict, rem_txt, rem_df):
     """Create a residual mix process for a given at-grid generation mix
     process.
 
