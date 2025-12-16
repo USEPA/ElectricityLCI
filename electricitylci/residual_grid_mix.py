@@ -15,9 +15,11 @@ from electricitylci.globals import OVERFLOW_E
 from electricitylci.model_config import model_specs
 from electricitylci import get_generation_mix_process_df
 from electricitylci.eia860_facilities import eia860_balancing_authority
+from electricitylci.olca_jsonld_writer import build_residual_processes
 from electricitylci.utils import get_nrel_rec
 from electricitylci.utils import map_ba_codes
 from electricitylci.utils import write_csv_to_output
+from electricitylci.globals import NREL_REC_URL
 
 
 ##############################################################################
@@ -34,7 +36,7 @@ on NREL's Status and Trends in the U.S. Voluntary Green Power Market Excel workb
     DOI: 10.18141/2503966
 
 Last updated:
-    2025-12-12
+    2025-12-16
 """
 __all__ = [
     "agg_by_count",
@@ -49,6 +51,48 @@ __all__ = [
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
+# IN PROGRESS
+def add_rem():
+    # TODO: add check to run_post_processes in __init__.py to run this method.
+
+    # Create the residual process description text.
+    # NOTE: This is added to all residual process descriptions.
+    rem_text = (
+        "Electricity generation mixes updated to reflect residual grid "
+        "mix based on NREL's Status and Trends in the Voluntary Market "
+        f"for sales in year {config.model_specs.eia_gen_year} "
+        f"({NREL_REC_URL}). "
+    )
+    if config.model_specs.rem_weight_method == 'count':
+        rem_text += (
+            "The balancing authority residual mix is based on a facility "
+            "count weighting method of state-level REC sales where excess REC "
+        )
+    elif config.model_specs.rem_weight_method == 'area':
+        rem_text += (
+            "The balancing authority residual mix is based on an areal "
+            "weighting method of state-level REC sales where excess REC "
+        )
+
+    if config.model_specs.neg_rem_method == 'zero':
+        rem_text += (
+            "generation amounts (MWh) are ignored (i.e., assumed zero; "
+            "accounts for all available renewable generation)."
+        )
+    elif config.model_specs.neg_rem_method == 'keep':
+        rem_text += (
+            "generation amounts (MWh) are subtracted from non-renewables, "
+            "assuming that some renewable energy may be provided from a "
+            "non-renewable fuel category (e.g., mixed/other fuels)."
+        )
+
+    # Create residual mix for BA by fuel category.
+    df = get_rem()
+
+    # Add residual process to JSON-LD
+    build_residual_processes(config.model_specs.namestr, df, rem_text)
+
+
 def agg_by_count():
     """Partition state-based REC electricity generation using the fractional
     weights of electricity generating facility counts found within the shared
@@ -340,7 +384,7 @@ def update_mix(df):
 
     # Get the aggregation series and pair to BA area names
     # NOTE: name corrections for geo BA dataframe should fix any mis-matches
-    logging.info("Using %s method" % model_specs.rem_weight_method)
+    logging.info("Using '%s' weighting method" % model_specs.rem_weight_method)
     agg_df = get_rec_agg(model_specs.rem_weight_method, as_series=False)
 
     for baa in df['Subregion'].unique():
@@ -428,3 +472,144 @@ def update_mix(df):
             df.update(g_df[m_cols], join='left', overwrite=True)
 
     return df
+
+
+#
+# SANDBOX - draft of ``add_rem`` and ``build_residual_processes`` methods.
+#
+if __name__ == '__main__':
+    # Setup logging
+    from electricitylci.utils import get_logger
+    log = get_logger(stream=True, rfh=False, str_lv='DEBUG')
+
+    # Setup model
+    import electricitylci.model_config as config
+    config.model_specs = config.build_model_class('ELCI_2023')
+
+    # Create residual mix for BA by fuel category.
+    from electricitylci.residual_grid_mix import get_rem
+    df = get_rem()
+
+    # Define test JSON-LD for ELCI 2023
+    import os
+    home_dir = os.path.expanduser("~")
+    work_dir = os.path.join(home_dir, "Workspace", "olca", "json-ld")
+    json_path = os.path.join(work_dir, "ELCI_2023_jsonld_20251125_REM_TEST.zip")
+
+    # Read JSON-LD
+    from electricitylci.olca_jsonld_writer import _init_root_entities
+    from electricitylci.olca_jsonld_writer import check_exchanges
+    data = _init_root_entities(json_path)
+    check_exchanges(data['Process']['objs'])
+
+    # Generate the description based on the model specs configuration:
+    from electricitylci.globals import NREL_REC_URL
+    rem_text = (
+        "Electricity generation mixes updated to reflect residual grid "
+        "mix based on NREL's Status and Trends in the Voluntary Market "
+        f"for sales in year {config.model_specs.eia_gen_year} "
+        f"({NREL_REC_URL}). "
+    )
+    if config.model_specs.rem_weight_method == 'count':
+        rem_text += (
+            "The balancing authority residual mix is based on a facility "
+            "count weighting method of state-level REC sales where excess REC "
+        )
+    elif config.model_specs.rem_weight_method == 'area':
+        rem_text += (
+            "The balancing authority residual mix is based on an areal "
+            "weighting method of state-level REC sales where excess REC "
+        )
+
+    if config.model_specs.neg_rem_method == 'zero':
+        rem_text += (
+            "generation amounts (MWh) are ignored (i.e., assumed zero; "
+            "accounts for all available renewable generation)."
+        )
+    elif config.model_specs.neg_rem_method == 'keep':
+        rem_text += (
+            "generation amounts (MWh) are subtracted from non-renewables, "
+            "assuming that some renewable energy may be provided from a "
+            "non-renewable fuel category (e.g., mixed/other fuels)."
+        )
+
+    #
+    # GENERATION MIXES
+    #
+
+    # Find generation mix process UUIDs
+    import re
+    from electricitylci.olca_jsonld_writer import _match_process_names
+    q = re.compile("^Electricity; at grid; generation mix - (.*)$")
+    r = _match_process_names(data['Process']['objs'], q)
+    # found 68 generation mix processes for 2023
+
+    # Initialize process mapping dictionary
+    p_map = {}
+
+    # Iterate over generation processes:
+    from electricitylci.olca_jsonld_writer import _make_rem_gen_process
+    for pid in r:
+        # Extract (the original process data)
+        p_idx = data['Process']['ids'].index(pid)
+        p_obj = data['Process']['objs'][p_idx]
+
+        # Find (balancing authority name)
+        ba_name = q.match(p_obj.name).group(1)
+
+        # Notably, this also adds the REM process to ``data`` dictionary.
+        rid, data = _make_rem_gen_process(pid, ba_name, data, rem_text, df)
+        p_map[pid] = rid
+
+    #
+    # CONSUMPTION MIXES
+    #
+
+    # Find consumption mix process UUIDs
+    from electricitylci.olca_jsonld_writer import _make_rem_con_process
+    q12 = re.compile(
+        "^Electricity; at (?:user|grid); consumption mix - (.*) - (BA|FERC|US)$"
+    )
+    r12 = _match_process_names(data['Process']['objs'], q12)
+
+    # Create new residual Process objects & map them.
+    for pid in r12:
+        rid, data = _make_rem_con_process(pid, data, rem_text)
+        p_map[pid] = rid
+
+    # Update providers in residual consumption processes
+    # TODO: this could be a subroutine
+    for pid in r12:
+        # Find the residual process associated with this consumption process.
+        rid = p_map[pid]
+
+        # Extract the residual process object; the default providers will be
+        # updated on this object.
+        r_idx = data['Process']['ids'].index(rid)
+        r_obj = data['Process']['objs'][r_idx]
+
+        # Read through residual process's exchange table
+        num_ex = len(r_obj.exchanges)
+        for i in range(num_ex):
+            p_ex = r_obj.exchanges[i]
+            # Skip outputs and inputs w/o providers (e.g., elem flows)
+            if p_ex.is_input and p_ex.default_provider is not None:
+                # Read the provider UUID and find its replacement
+                dp_id = p_ex.default_provider.id
+                rp_id = p_map[dp_id] # <- throws error when not found
+                # Get the provider process object
+                rp_idx = data['Process']['ids'].index(rp_id)
+                rp_obj = data['Process']['objs'][rp_idx]
+                # Update residual process object; link to new provider
+                r_obj.exchanges[i].default_provider = rp_obj.to_ref()
+        # Update the master entity dictionary w/ updated process
+        data['Process']['objs'][r_idx] = r_obj
+
+    #
+    # SAVE
+    #
+
+    # Write out the master entity dictionary to a new JSON-LD file.
+    from electricitylci.olca_jsonld_writer import _save_to_json
+    out_path = os.path.join(work_dir, "residual_test_2025-12-16.zip")
+    _save_to_json(out_path, data)
