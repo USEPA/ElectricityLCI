@@ -20,6 +20,7 @@ import fedelemflowlist
 import olca_schema as o
 import olca_schema.units as o_units
 import olca_schema.zipio as zipio
+import pandas as pd
 import pytz
 import requests
 
@@ -53,7 +54,7 @@ Changelog (since v2.0):
     -   [25.06.11] New method for updating product system description text.
 
 Last edited:
-    2025-06-11
+    2025-12-16
 """
 __all__ = [
     "add_to_product_system_description",
@@ -171,6 +172,60 @@ def build_product_systems(file_path, elci_config):
 
     # Overwrite JSON-LD
     _save_to_json(file_path, data)
+
+
+# IN PROGRESS
+def build_residual_processes(json_path, rem_ref, rem_txt=""):
+    # Two options supported here: send pandas DataFrame or CSV file path.
+    if isinstance(rem_ref, pd.DataFrame):
+        logging.info(
+            "Building residual mix processes using provided data frame."
+        )
+        rem = rem_ref
+    elif isinstance(rem_ref, str) and os.path.isfile(rem_ref):
+        # NOTE: the CSV file may round data frame's machine precision
+        # (e.g., 1.0499999999 -> 1.05).
+        logging.info(
+            "Building residual mix processes using provided CSV file."
+        )
+        rem = pd.read_csv(rem_ref)
+    elif isinstance(rem_ref, str) and not os.path.isfile(rem_ref):
+        raise FileNotFoundError(
+            "Failed to find the residual mix CSV located at %s!" % rem_ref
+        )
+    else:
+        raise TypeError(
+            "Residual mixes may be passed as either a pandas DataFrame or "
+            "CSV file path, not %s" % type(rem_ref)
+        )
+
+    # Read all JSON-LD data.
+    try:
+        data = _read_jsonld(json_path, _root_entity_dict())
+    except OSError:
+        logging.warning("Failed to read JSON-LD file, %s" % json_path)
+    else:
+        # TODO: consider whether to keep this check. It runs quick.
+        check_exchanges(data['Process']['objs'])
+
+    # Find the electricity generation processes in JSON-LD
+    q = re.compile("^Electricity; at grid; generation mix - (.*)$")
+    r = _match_process_names(data['Process']['objs'], q)
+    logging.debug("Found %d generation mix processes." % len(r))
+
+    # Initialize process mapping dictionary
+    p_map = {}
+
+    for pid in r:
+        p_idx = data['Process']['ids'].index(pid)
+        p_obj = data['Process']['objs'][p_idx]
+        ba = q.match(p_obj.name).group(1)
+        rid, data = _make_rem_mix_process(p_obj.id, ba, data, rem_txt, rem)
+        p_map[pid] = rid
+
+    # TODO:
+    # Next, create at-grid consumption mix and at-user consumption mix
+    # processes that link to their respective providers.
 
 
 def check_exchanges(p_list):
@@ -447,10 +502,18 @@ def _actor(name, dict_s):
     tuple
         olca_schema.Ref : Reference object to an Actor.
         dict : The updated root entities dictionary, ``dict_s``.
+
+    Note
+    ----
+    Creates/overwrites Actor UUID using a standard method.
     """
+    # HOTFIX: extract actor names from dictionary; [25.12.16; TWD]
+    if isinstance(name, dict):
+        name = _val(name, 'name', default="")
+
     # Skip unnamed or missing actors.
     if not isinstance(name, str) or name == '':
-        return None
+        return (None, dict_s)  # HOTFIX return type; [25.12.16; TWD]
 
     # Generate a standard UUID based on actor name:
     uid = _uid(o.ModelType.ACTOR, name)
@@ -788,6 +851,13 @@ def _exchange(dict_d, dict_s):
     tuple
         olca_schema.Exchange : Exchange object (or NoneType)
         dict : The olca-schema root entity dictionary, updated
+
+    Note
+    ----
+    Secondary dictionary keywords based on olca-schema v2 added in 2025
+    in order to create residual mix processes. The first keywords are based
+    on the eLCI model runs, while the secondary keywords are the standard
+    openLCA keywords.
     """
     # Error handle missing data:
     if dict_d is None:
@@ -796,12 +866,26 @@ def _exchange(dict_d, dict_s):
 
     e = o.Exchange.from_dict({
         'isQuantitativeReference': _val(
-            dict_d, 'quantitativeReference', default=False),
-        'isInput': _val(dict_d, 'input', default=False),
-        'isAvoidedProduct': _val(dict_d, 'avoidedProduct', default=False),
+            dict_d,
+            'quantitativeReference',
+            'isQuantitativeReference', # HOTFIX: add 2nd keyword [25.12.16;TWD]
+            default=False),
+        'isInput': _val(
+            dict_d,
+            'input',
+            'isInput',                 # HOTFIX: add 2nd keyword [25.12.16;TWD]
+            default=False),
+        'isAvoidedProduct': _val(
+            dict_d,
+            'avoidedProduct',
+            'isAvoidedProduct',        # HOTFIX: add 2nd keyword [25.12.16;TWD]
+            default=False),
         'amount': _val(dict_d, 'amount', default=0.0),
         'dqEntry': _format_dq_entry(_val(dict_d, 'dqEntry')),
-        'description': _val(dict_d, 'comment')
+        'description': _val(
+            dict_d,
+            'comment',
+            'description')             # HOTFIX: add 2nd keyword [25.12.16;TWD]
     })
 
     # Set unit (uses olca unit references)
@@ -820,7 +904,10 @@ def _exchange(dict_d, dict_s):
     # Find the provider process reference (or create one);
     #  note that this does not update the dict_s entries, but searches them!
     #  BUG: are you sure this doesn't update dict_s?
-    p_ref, dict_s, _ = _process(_val(dict_d, 'provider'), dict_s)
+    #  HOTFIX: add secondary keyword for 'defaultProvider' [25.12.16; TWD]
+    p_ref, dict_s, _ = _process(
+        _val(dict_d, 'provider', 'defaultProvider'), dict_s
+    )
     if p_ref is not None:
         e.default_provider = p_ref.to_ref()
 
@@ -1098,9 +1185,15 @@ def _format_date(entry):
         logging.warning("Expected date as string, found %s" % type(entry))
         return None
     except ValueError:
-        logging.warning(
-            "Received unexpected date format (M/D/YYYY): '%s'" % entry)
-        return None
+        # HOTFIX: add a second-level test for ISO correctness; [25.12.16;TWD]
+        try:
+            d_obj = datetime.datetime.fromisoformat(entry)
+        except ValueError:
+            logging.warning(
+                "Received unexpected date format (M/D/YYYY): '%s'" % entry)
+            return None
+        else:
+            return d_obj.isoformat()
     except Exception as e:
         logging.warning("Encountered an unexpected error. %s" % str(e))
         return None
@@ -1411,6 +1504,169 @@ def _make_process_ref(p_obj):
     return ref_obj
 
 
+def _make_rem_mix_process(pid, ba_name, e_dict, rem_txt, rem_df):
+    """Create a residual mix process for a given at-grid generation mix
+    process.
+
+    Parameters
+    ----------
+    pid : str
+        At-grid generation mix process for a given balancing authority.
+    ba_name : str
+        The name of the given balancing authority.
+    e_dict : dict
+        Master entity dictionary (stored all olca-schema root entities).
+    rem_txt : str
+        Additional process description text.
+    rem_df : pandas.DataFrame
+        Data frame for the given balancing authority with new generation mixes.
+
+    Returns
+    -------
+    tuple
+        A tuple of length two:
+
+        - str, the new residual grid mix process UUID
+        - dict, the updated master entity database
+    """
+    #
+    # Step 1: Create a new Process object.
+    #
+    # Extract (the original process data)
+    p_idx = e_dict['Process']['ids'].index(pid)
+    p_obj = e_dict['Process']['objs'][p_idx]
+    # Convert (to dictionary for editing)
+    p_dict = p_obj.to_dict()
+    # Rename (to a residual process)
+    # NOTE: may want to pass the two booleans along as arguments to this func.
+    p_dict['name'] = _make_residual_process_name(p_dict['name'], True, True)
+    # Reset (to trigger new UUID generation)
+    p_dict['@id'] = None
+    # Update (w/ new residual process description)
+    if isinstance(p_dict['description'], str):
+        p_dict['description'] += " "
+        p_dict['description'] += rem_txt
+    else:
+        p_dict['description'] = rem_txt
+    # Create (new residual process)
+    rem_obj, e_dict, _ = _process(p_dict, e_dict)
+
+    #
+    # Step 2: Update exchange amounts to reflect residuals.
+    #
+    # Define query for searching fuel category from exchange description
+    fq = re.compile("^from (\\w+) - (.*)$")
+    # Extract (residual mix data for current balancing authority)
+    b = rem_df.query("`%s` == '%s'" % ('Subregion', ba_name))
+    # Iterate (over each new process exchange)
+    for p_ex in rem_obj.exchanges:
+        # NOTE: For electricity grid mixes, there are always two or more
+        # exchanges: one output and X inputs. The inputs have the grid mix
+        # values we want.
+        if p_ex.is_input:
+            # Get fuel name (e.g. 'GAS').
+            f_name = ""
+            fc = fq.match(p_ex.description)
+            if fc:
+                f_name = fc.group(1)
+
+            # Query BA data for new mix associated with current fuel.
+            a = b.query("`%s` == '%s'" % ('FuelCategory', f_name))
+
+            # Update mix amounts
+            if len(a) == 1:
+                # Best case scenario; set new mix amount
+                new_mix = a.iloc[0].Gen_Ratio_new
+                logging.info("Replacing %s with %s for %s" % (
+                    p_ex.amount, new_mix, f_name))
+                p_ex.amount = new_mix
+            elif len(a) == 0 and len(b) == 0:
+                # Failed to find BA in the data frame.
+                # Could be that there is just no REC data to remove.
+                # For the time being, keep it, because we're none the wiser.
+                logging.info("Failed to find '%s'; skipping" % ba_name)
+            elif len(a) == 0:
+                # Failed to find fuel for a known BA; set to zero.
+                # TODO: consider removing this exchange from exchanges list
+                logging.info("Zeroing mix for '%s'" % f_name)
+                p_ex.amount = 0.0
+            else:
+                # This is a bad place to be.
+                logging.warning(
+                    "Found multiple matches of '%s' for '%s'!" % (
+                        f_name, ba_name
+                    )
+                )
+
+    #
+    # Step 3: Add new residual process to the master entity list
+    #
+    if rem_obj.id not in e_dict['Process']['ids']:
+        e_dict['Process']['ids'].append(rem_obj.id)
+        e_dict['Process']['objs'].append(rem_obj)
+    else:
+        logging.warning(
+            "New residual process UUID already exists! %s" % rem_obj.id
+        )
+
+    return (rem_obj.id, e_dict)
+
+
+def _make_residual_process_name(p_name, at_grid=True, is_gen=True):
+    """Create a new process name for residual generation at grid.
+
+    Parameters
+    ----------
+    p_name : str
+        process name (e.g., Electricity; at grid; generation mix)
+    at_grid : bool, optional
+        Whether name includes "at grid"; otherwise, "at user";
+        defaults to True
+    is_gen : bool, optional
+        Whether names includes "generation"; otherwise, "consumption";
+        defaults to True
+
+    Returns
+    -------
+    str
+        The same electricity generation grid mix process name, but with
+        'residual' added to the name.
+
+    Raises
+    ------
+    ValueError
+        For a process name that is not 'Electricity; at grid; generation mix'.
+
+    Notes
+    -----
+    This method is taken from Davis et al. (2025) NetlOlca. Online:
+    https://edx.netl.doe.gov/dataset/netlolca, DOI:10.18141/2503973.
+
+    Examples
+    --------
+    >>> orig_name = (
+    ...     "Electricity; at grid; generation mix - Arlington Valley, LLC"
+    ... )
+    >>> _make_residual_process_name(orig_name, True, True)
+    'Electricity; at grid; residual generation mix - Arlington Valley, LLC'
+    """
+    g_txt = "at user"
+    if at_grid:
+        g_txt = "at grid"
+    c_txt = "consumption"
+    if is_gen:
+        c_txt = "generation"
+    q = re.compile("^(Electricity; %s;)( %s mix - .*)$" % (g_txt, c_txt))
+    if q.match(p_name):
+        return q.sub("\\1 residual\\2", p_name)
+    else:
+        raise ValueError(
+            "Expected 'Electricity; %s; %s process', found '%s'" % (
+                g_txt, c_txt, p_name
+            )
+        )
+
+
 def _match_process_names(p_list, q):
     """Return a list of process UUIDs that match a given name query.
 
@@ -1456,9 +1712,17 @@ def _process(dict_d, dict_s):
     Returns
     -------
     tuple
-        olca_schema.Process or NoneType : the process object
-        dict : the root entity dictionary, updated
-        olca_schema.Exchange or NoneType : quantitative reference exchange
+        A tuple of length three.
+
+        - olca_schema.Process or NoneType, the process object
+        - dict, the (potentially) updated root entity dictionary
+        - olca_schema.Exchange or NoneType, quantitative reference exchange
+
+    Notes
+    -----
+    The root entity dictionary does not get the new process by default;
+    however, other entities (e.g., Location, DQSystem, Actor, and Source) are
+    added to the root entity dictionary if encountered for the first time.
     """
     if not isinstance(dict_d, dict):
         return (None, dict_s, None)
@@ -1467,6 +1731,10 @@ def _process(dict_d, dict_s):
     name = _val(dict_d, 'name')
     category = _val(dict_d, 'category', default='')
     location_code = _val(dict_d, 'location', 'name', default='')
+
+    # Hotfix location code dictionary [25.12.16; TWD]
+    if isinstance(location_code, dict) and 'name' in location_code:
+        location_code = location_code['name']
 
     # Generate the standardized UUID, if absent
     if uid is None:
@@ -2301,10 +2569,12 @@ def _unit(unit_name):
             unit_name = ""
             logging.error(
                 'dict passed as unit_name but does not contain name key')
-    logging.debug("Creating unit, '%s'" % unit_name)
     r_obj = o_units.unit_ref(unit_name)
     if r_obj is None:
-        logging.error("unknown unit, '%s'; no unit reference" % unit_name)
+        logging.error("Unknown unit, '%s'; no unit reference!" % unit_name)
+    else:
+        logging.debug("Returning unit, '%s'" % unit_name)
+
     return r_obj
 
 
