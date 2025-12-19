@@ -36,7 +36,7 @@ on NREL's Status and Trends in the U.S. Voluntary Green Power Market Excel workb
     DOI: 10.18141/2503966
 
 Last updated:
-    2025-12-16
+    2025-12-19
 """
 __all__ = [
     "agg_by_count",
@@ -51,9 +51,24 @@ __all__ = [
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-# IN PROGRESS
-def add_rem():
-    # TODO: add check to run_post_processes in __init__.py to run this method.
+def add_residual_mixes():
+    """Helper function to generate residual mix processes.
+
+    Takes model configuration parameters (``eia_gen_year``,
+    ``rem_weight_method``, and ``neg_rem_method``) to generate residual
+    mix data frame (see :func:`get_rem`), which may be saved to CSV
+    (depending on config parameter, ``output_residual_mix``), and
+    passes the residual mix to olca_jsonld_writer for creating the processes.
+
+    Notes
+    -----
+    This method will not run if the configuration parameter,
+    ``add_residual_mix`` is set to false.
+    """
+    # Stop process if configuration is not set up for residual mixes.
+    if not model_specs.add_residual_mix:
+        logging.info("Residual mix processes are not created.")
+        return
 
     # Create the residual process description text.
     # NOTE: This is added to all residual process descriptions.
@@ -86,8 +101,9 @@ def add_rem():
             "non-renewable fuel category (e.g., mixed/other fuels)."
         )
 
-    # Create residual mix for BA by fuel category.
-    df = get_rem()
+    # Create residual mix for BA by fuel category;
+    # let user decide to save mix as CSV file in outputs
+    df = get_rem(to_save=config.model_specs.output_residual_mix)
 
     # Add residual process to JSON-LD
     build_residual_processes(config.model_specs.namestr, df, rem_text)
@@ -498,9 +514,7 @@ if __name__ == '__main__':
 
     # Read JSON-LD
     from electricitylci.olca_jsonld_writer import _init_root_entities
-    from electricitylci.olca_jsonld_writer import check_exchanges
     data = _init_root_entities(json_path)
-    check_exchanges(data['Process']['objs'])
 
     # Generate the description based on the model specs configuration:
     from electricitylci.globals import NREL_REC_URL
@@ -567,6 +581,7 @@ if __name__ == '__main__':
 
     # Find consumption mix process UUIDs
     from electricitylci.olca_jsonld_writer import _make_rem_con_process
+    from electricitylci.olca_jsonld_writer import _update_providers
     q12 = re.compile(
         "^Electricity; at (?:user|grid); consumption mix - (.*) - (BA|FERC|US)$"
     )
@@ -578,30 +593,15 @@ if __name__ == '__main__':
         p_map[pid] = rid
 
     # Update providers in residual consumption processes
-    # TODO: this could be a subroutine
     for pid in r12:
         # Find the residual process associated with this consumption process.
         rid = p_map[pid]
-
-        # Extract the residual process object; the default providers will be
-        # updated on this object.
         r_idx = data['Process']['ids'].index(rid)
         r_obj = data['Process']['objs'][r_idx]
 
-        # Read through residual process's exchange table
-        num_ex = len(r_obj.exchanges)
-        for i in range(num_ex):
-            p_ex = r_obj.exchanges[i]
-            # Skip outputs and inputs w/o providers (e.g., elem flows)
-            if p_ex.is_input and p_ex.default_provider is not None:
-                # Read the provider UUID and find its replacement
-                dp_id = p_ex.default_provider.id
-                rp_id = p_map[dp_id] # <- throws error when not found
-                # Get the provider process object
-                rp_idx = data['Process']['ids'].index(rp_id)
-                rp_obj = data['Process']['objs'][rp_idx]
-                # Update residual process object; link to new provider
-                r_obj.exchanges[i].default_provider = rp_obj.to_ref()
+        # Swap old w/ new providers
+        r_obj = _update_providers(r_obj, p_map, data)
+
         # Update the master entity dictionary w/ updated process
         data['Process']['objs'][r_idx] = r_obj
 
@@ -611,5 +611,69 @@ if __name__ == '__main__':
 
     # Write out the master entity dictionary to a new JSON-LD file.
     from electricitylci.olca_jsonld_writer import _save_to_json
-    out_path = os.path.join(work_dir, "residual_test_2025-12-16.zip")
+    out_path = os.path.join(work_dir, "residual_test_2025-12-19.zip")
+    _save_to_json(out_path, data)
+
+    #
+    # NEW: Make Product Systems
+    # (based on ``build_product_systems`` in olca_jsonld_writer.py)
+    #
+
+    # You have to re-read the JSON-LD
+    data = _init_root_entities(out_path)
+
+    # Query for only at-user residual consumption mixes
+    rps = []
+
+    qs1 = "^Electricity; at user; consumption mix - (.*) - BA$"
+    qs2 = "^Electricity; at user; consumption mix - (.*) - FERC$"
+    qs3 = "^Electricity; at user; consumption mix - US - US$"
+
+    qr1 = qs1.replace("; consumption", "; residual consumption")
+    qr2 = qs2.replace("; consumption", "; residual consumption")
+    qr3 = qs3.replace("; consumption", "; residual consumption")
+
+    q4 = re.compile(qr1)
+    q5 = re.compile(qr2)
+    q6 = re.compile(qr3)
+
+    r4 = _match_process_names(data['Process']['objs'], q4)
+    r5 = _match_process_names(data['Process']['objs'], q5)
+    r6 = _match_process_names(data['Process']['objs'], q6)
+
+    rps += r4
+    rps += r5
+    rps += r6
+
+    import datetime
+    from electricitylci import __version__ as VERSION
+    t_now = datetime.datetime.now()
+    d_txt = (
+        "This product system was created in openLCA "
+        "by linking default providers. "
+        "The processes were generated by ElectricityLCI "
+        "(https://github.com/USEPA/ElectricityLCI) "
+        f"version {VERSION} using "
+        f"the {config.model_specs.model_name} configuration. "
+        f"Created: {t_now.isoformat()}."
+    )
+
+    from electricitylci.olca_jsonld_writer import _make_product_system
+    import logging
+    for pid in rps:
+        p_idx = data['Process']['ids'].index(pid)
+        p_obj = data['Process']['objs'][p_idx]
+        # Send the new JSON-LD
+        ps_obj = _make_product_system(out_path, p_obj, d_txt)
+
+        # Update master data dictionary
+        data['ProductSystem']['objs'].append(ps_obj)
+        data['ProductSystem']['ids'].append(ps_obj.id)
+        logging.debug("Created %s" % ps_obj.name)
+
+    #
+    # SAVE
+    #
+
+    # Write out the master entity dictionary to a new JSON-LD file.
     _save_to_json(out_path, data)

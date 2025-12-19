@@ -51,11 +51,12 @@ References:
 
 Changelog (since v2.0):
 
+    -   [25.12.19] New update providers helper function.
     -   [25.12.16] New build residual processes method.
     -   [25.06.11] New method for updating product system description text.
 
 Last edited:
-    2025-12-16
+    2025-12-19
 """
 __all__ = [
     "add_to_product_system_description",
@@ -114,7 +115,7 @@ def add_to_product_system_description(file_path, description_txt):
         _save_to_json(file_path, data)
 
 
-def build_product_systems(file_path, elci_config):
+def build_product_systems(file_path, elci_config, add_residuals=False):
     """Generates product systems for electricity at user consumption mixes.
 
     Parameters
@@ -123,6 +124,9 @@ def build_product_systems(file_path, elci_config):
         A file path to an existing JSON-LD file with process data saved.
     elci_config : str
         The model configuration used to make the inventory (e.g., "ELCI_1")
+    add_residuals : bool, optional
+        Whether to create consumption mix product systems for residual mix
+        processes.
 
     Notes
     -----
@@ -141,13 +145,37 @@ def build_product_systems(file_path, elci_config):
         logging.info("Building product systems in JSON-LD")
 
     # Find all processes for 'at user' consumption mixes
-    q1 = re.compile("^Electricity; at user; consumption mix - (.*) - BA$")
-    q2 = re.compile("^Electricity; at user; consumption mix - (.*) - FERC$")
-    q3 = re.compile("^Electricity; at user; consumption mix - US - US$")
+    # NOTE: residual processes could also be converted to product systems.
+    qs1 = "^Electricity; at user; consumption mix - (.*) - BA$"
+    qs2 = "^Electricity; at user; consumption mix - (.*) - FERC$"
+    qs3 = "^Electricity; at user; consumption mix - US - US$"
+
+    q1 = re.compile(qs1)
+    q2 = re.compile(qs2)
+    q3 = re.compile(qs3)
+
     r1 = _match_process_names(data['Process']['objs'], q1)
     r2 = _match_process_names(data['Process']['objs'], q2)
     r3 = _match_process_names(data['Process']['objs'], q3)
     r = r1 + r2 + r3
+
+    # Provide residual mix support
+    if add_residuals:
+        qr1 = qs1.replace("; consumption", "; residual consumption")
+        qr2 = qs2.replace("; consumption", "; residual consumption")
+        qr3 = qs3.replace("; consumption", "; residual consumption")
+
+        q4 = re.compile(qr1)
+        q5 = re.compile(qr2)
+        q6 = re.compile(qr3)
+
+        r4 = _match_process_names(data['Process']['objs'], q4)
+        r5 = _match_process_names(data['Process']['objs'], q5)
+        r6 = _match_process_names(data['Process']['objs'], q6)
+
+        r += r4
+        r += r5
+        r += r6
     logging.info("Processing %d product systems" % len(r))
 
     # Create a common description text
@@ -228,9 +256,6 @@ def build_residual_processes(json_path, rem_ref, rem_txt=""):
         data = _read_jsonld(json_path, _root_entity_dict())
     except OSError:
         logging.warning("Failed to read JSON-LD file, %s" % json_path)
-    else:
-        # TODO: consider whether to keep this check. It runs quick. Keep.
-        check_exchanges(data['Process']['objs'])
 
     # 3. CREATE RESIDUAL GENERATION MIX PROCESSES
     logging.info("Creating residual generation mix processes")
@@ -269,26 +294,16 @@ def build_residual_processes(json_path, rem_ref, rem_txt=""):
     for pid in r:
         # Find the residual process associated with this consumption process.
         rid = p_map[pid]
-
-        # Extract the residual process object; the default providers will be
-        # updated on this object.
         r_idx = data['Process']['ids'].index(rid)
-        r_obj = data['Process']['objs'][r_idx]
+        r_obj = data['Process']['objs'][r_idx]  # the object being modified
 
-        # Read through residual process's exchange table
-        num_ex = len(r_obj.exchanges)
-        for i in range(num_ex):
-            p_ex = r_obj.exchanges[i]
-            # Skip outputs and inputs w/o providers (e.g., elem flows)
-            if p_ex.is_input and p_ex.default_provider is not None:
-                # Read the provider UUID and find its replacement
-                dp_id = p_ex.default_provider.id
-                rp_id = p_map[dp_id] # <- throws error when not found
-                # Get the provider process object
-                rp_idx = data['Process']['ids'].index(rp_id)
-                rp_obj = data['Process']['objs'][rp_idx]
-                # Update residual process object; link to new provider
-                r_obj.exchanges[i].default_provider = rp_obj.to_ref()
+        # The replacement step---
+        #   Read through a process's exchanges (r_obj.exchanges).
+        #   Examine any/all default providers.
+        #   Find replacement UUID in ``p_map`` (note: may throw KeyError)
+        #   Replace with Ref object (i.e., search for it in ``data``).
+        r_obj = _update_providers(r_obj, p_map, data)
+
         # Update the master entity dictionary w/ updated process
         data['Process']['objs'][r_idx] = r_obj
 
@@ -300,6 +315,9 @@ def check_exchanges(p_list):
     """Iterate over process exchanges and log as error when an amount is nan.
 
     This occurrence causes openLCA to crash on upload of JSON-LD.
+    It needs only to be run once; currently implemented in
+    :func:`build_product_systems`, which is the last post-processes
+    step.
 
     Parameters
     ----------
@@ -700,8 +718,7 @@ def _build_supply_chain(zh, pid, e_list=[], p_list=[]):
     1.  This method does not apply any standardization for UUID generation.
         It is arbitrarily generated by olca_schema class initialization.
     2.  The methods here are heavily based on those from NETL's NetlOlca class
-        currently under development by KeyLogic, here:
-        https://github.com/KeyLogicLCA/netlolca
+        currently available online: https://github.com/NETL-RIC/netlolca.
     """
     # Pull process object from JSON-LD and add to the processes list.
     p_obj = zh.read(o.Process, pid)
@@ -1503,12 +1520,12 @@ def _make_product_system(f_path, process, description=""):
     process : olca-schema.Process
         A Process object to be converted to a Product System.
     description : str, optional
-        The product system description text, by default ""
+        The product system description text, by default "".
 
     Returns
     -------
     olca-schema.ProductSystem
-        A product system build on default providers for the given process.
+        A product system built on default providers for the given process.
     """
     # Find the reference process
     r_ex = _find_ref_exchange(process)
@@ -2747,6 +2764,44 @@ def _update_data(cur_data, new_data):
         new_data[k]['objs'] = objs
 
     return new_data
+
+
+def _update_providers(p, p_map, e_dict):
+    """Helper function to replace default providers found in a process's
+    exchange table based on a UUID replacement map (i.e., old UUID -> new UUID).
+
+    Parameters
+    ----------
+    p : olca-schema.Process
+        An instance of a Process class to be updated.
+    p_map : dict
+        A dictionary with Process UUIDs and keys (old providers) and Process
+        UUIDs as values (new providers).
+    e_dict : dict
+        The master entity dictionary (e.g., see :func:`_init_root_entities`).
+
+    Returns
+    -------
+    olca-schema.Process
+        A modified version of parameter, ``p``, where default providers
+        are updated based on the UUID map, ``p_map``.
+    """
+    # Read through residual process's exchange table
+    num_ex = len(p.exchanges)
+    for i in range(num_ex):
+        p_ex = p.exchanges[i]
+        # Skip outputs and inputs w/o providers (e.g., elem flows)
+        if p_ex.is_input and p_ex.default_provider is not None:
+            # Read the default provider UUID and find replacement provider
+            dp_id = p_ex.default_provider.id
+            rp_id = p_map[dp_id] # <- throws KeyError when not found
+            # Get the replacement provider's Process object
+            rp_idx = e_dict['Process']['ids'].index(rp_id)
+            rp_obj = e_dict['Process']['objs'][rp_idx]
+            # Update residual process object; link to new provider
+            p.exchanges[i].default_provider = rp_obj.to_ref()
+
+    return p
 
 
 def _val(dict_d, *path, **kvargs):
