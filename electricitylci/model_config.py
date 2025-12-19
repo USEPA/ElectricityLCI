@@ -148,6 +148,10 @@ class ModelSpecs:
         The natural gas model year (e.g., 2016 or 2020).
     add_residual_mix : bool
         Whether to include residual electricity mix processes in JSON-LD.
+    output_residual_mix : bool
+        Whether to save the residual mix data as CSV in output folder.
+    add_rem_product_systems : bool
+        Whether to create "at user; residual consumption mix" product systems.
     rem_weight_method : str
         The state-to-balancing authority weighting method (e.g., by facility
         'count' or by 'areal' weights).
@@ -212,6 +216,10 @@ class ModelSpecs:
         self.calculate_uncertainty = model_specs.get(
             "calculate_uncertainty", True)
         self.add_residual_mix = model_specs.get("add_residual_mix", False)
+        self.add_rem_product_systems = model_specs.get(
+            "add_rem_product_systems", False
+        )
+        self.output_residual_mix = model_specs.get("output_residual_mix", False)
         # Use empty string rather than crash b/c not implemented in all YAMLs
         self.rem_weight_method = model_specs.get("rem_weight_method", "")
         self.neg_rem_method = model_specs.get("neg_rem_method", "")
@@ -362,6 +370,12 @@ def check_model_specs(model_specs):
         err_str += "; not '%s'!" % model_specs['ng_model_year']
         raise ConfigurationError(err_str)
 
+    if model_specs['add_rem_product_systems'] and (
+            not model_specs['add_residual_mix']):
+        raise ConfigurationError(
+            "Residual mix product systems cannot be created unless "
+            "`add_residual_mix` is set to true!"
+        )
     if model_specs['add_residual_mix']:
         if not model_specs['rem_weight_method'] in REM_WEIGHT_METHODS:
             err_str = "The residual mix weighting method must be one of: "
@@ -376,4 +390,3 @@ def check_model_specs(model_specs):
             raise ConfigurationError(err_str)
 
     logging.info("Checks passed!")
-
