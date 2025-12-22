@@ -26,7 +26,27 @@ from electricitylci.globals import NREL_REC_URL
 # MODULE DOCUMENTATION
 ##############################################################################
 __doc__ = """A module to calculate residual electricity grid mix (REM) based
-on NREL's Status and Trends in the U.S. Voluntary Green Power Market Excel workbook[1]. Methods are based on ``elci_to_rem`` Python tool version 2[2].
+on the Energy Information Administration (EIA) Form 923 generation data
+(filtered based on :func:`build_generation_data` found in eia923_generation.py)
+and mix calculations (e.g., generation ratio and fuel category) based on
+:func:`create_generation_mix_process_df_from_model_generation_data` found in
+generation_mix.py. The publicly released Excel workbook, Status and Trends in
+the U.S. Voluntary Green Power Market,[1] published by the National Laboratory
+of the Rockies, provides state-level renewable energy certificate (REC) sales.
+Power plant regional information (based on EIA Form 860) is used to map state
+REC sales to balancing authority generation (e.g., by facility counts and,
+in future releases by facility generation).
+
+Balancing authority generation is reduced by an amount of "green energy" sold
+(not purchased) using a constant relative ratio of green energy fuel sources.
+This is due to the fact that RECs do not label the fuel type associated with
+the sale (e.g., solar, wind, or hydro). Negative generation amounts are
+possible due to the inexact process of reducing green energy generation, which
+may be either 'zeroed' or 'kept'; in the latter, MIXED or OTHER fuel categories
+are used to accommodate the additional generation sales, as they may contain a
+variety of fuel sources.
+
+Methods are based on ``elci_to_rem`` Python tool version 2.[2]
 
 1.  E. O'Shaughnessy, S. Jena, and D. Salyer. 2025. Status and Trends in the
     Voluntary Market (2024 Data). Golden, CO: NREL. Online:
@@ -36,7 +56,7 @@ on NREL's Status and Trends in the U.S. Voluntary Green Power Market Excel workb
     DOI: 10.18141/2503966
 
 Last updated:
-    2025-12-19
+    2025-12-22
 """
 __all__ = [
     "agg_by_count",
@@ -75,26 +95,26 @@ def add_residual_mixes():
     rem_text = (
         "Electricity generation mixes updated to reflect residual grid "
         "mix based on NREL's Status and Trends in the Voluntary Market "
-        f"for sales in year {config.model_specs.eia_gen_year} "
+        f"for sales in year {model_specs.eia_gen_year} "
         f"({NREL_REC_URL}). "
     )
-    if config.model_specs.rem_weight_method == 'count':
+    if model_specs.rem_weight_method == 'count':
         rem_text += (
             "The balancing authority residual mix is based on a facility "
             "count weighting method of state-level REC sales where excess REC "
         )
-    elif config.model_specs.rem_weight_method == 'area':
+    elif model_specs.rem_weight_method == 'area':
         rem_text += (
             "The balancing authority residual mix is based on an areal "
             "weighting method of state-level REC sales where excess REC "
         )
 
-    if config.model_specs.neg_rem_method == 'zero':
+    if model_specs.neg_rem_method == 'zero':
         rem_text += (
             "generation amounts (MWh) are ignored (i.e., assumed zero; "
             "accounts for all available renewable generation)."
         )
-    elif config.model_specs.neg_rem_method == 'keep':
+    elif model_specs.neg_rem_method == 'keep':
         rem_text += (
             "generation amounts (MWh) are subtracted from non-renewables, "
             "assuming that some renewable energy may be provided from a "
@@ -102,11 +122,11 @@ def add_residual_mixes():
         )
 
     # Create residual mix for BA by fuel category;
-    # let user decide to save mix as CSV file in outputs
-    df = get_rem(to_save=config.model_specs.output_residual_mix)
+    #   let the user decide to save mix as CSV file in outputs
+    df = get_rem(to_save=model_specs.output_residual_mix)
 
     # Add residual process to JSON-LD
-    build_residual_processes(config.model_specs.namestr, df, rem_text)
+    build_residual_processes(model_specs.namestr, df, rem_text)
 
 
 def agg_by_count():
@@ -492,6 +512,7 @@ def update_mix(df):
 
 #
 # SANDBOX - draft of ``add_rem`` and ``build_residual_processes`` methods.
+#           Added additional product system dev to testing.
 #
 if __name__ == '__main__':
     # Setup logging
