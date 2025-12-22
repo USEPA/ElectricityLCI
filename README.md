@@ -116,7 +116,7 @@ The `main()` method has four steps:
 1. `build_model_config()`
     - Prompts the user to select one of the model configurations.
     - The 2016 baseline configurations are:
-        * ELCI_1
+        * ELCI_1 (_Fed Commons published version_)
         * ELCI_2
         * ELCI_3
     - Version 2 baselines include:
@@ -144,17 +144,17 @@ The `main()` method has four steps:
     - Builds the product systems for balancing authority areas, FERC regions, and US.
 
 # Known Issues
-See Appendix A in [this discussion](https://github.com/USEPA/ElectricityLCI/discussions/288) for an overview of unresolved issues in version 2.
+See Appendix A in [this discussion](https://github.com/NETL-RIC/ElectricityLCI/discussions/288) for an overview of unresolved issues in version 2.
 
 # Troubleshooting
-If you receive a TypeError in `write_jsonld`, got unexpected keyword argument 'zw', then it's likely you have an outdated version of [fedelemflowlist](https://github.com/USEPA/fedelemflowlist).
-Please ensure these USEPA packages are up-to-date:
+If you receive a TypeError in `write_jsonld`, got unexpected keyword argument 'zw', then it's likely you have an outdated version of [fedelemflowlist](https://github.com/FLCAC-admin/fedelemflowlist).
 
-- esupy
-- fedelemflowlist
-- stewi
+Please ensure these additional USEPA packages are up-to-date:
 
-If GitHub-hosted packages fail to clone and install, manually downloading the zip files, extracting them, and running the pip install command within package folder also works (see snippet below for example for older version of fedelemflowlist).
+- [esupy](https://github.com/USEPA/esupy)
+- [stewi](https://github.com/USEPA/standardizedinventories)
+
+If GitHub-hosted packages fail to clone and install, manually downloading the zip files, extracting them, and running the `pip install .` command within package folder also works (see snippet below for example for older version of fedelemflowlist).
 
 ```bash
 # Download the correct version of the repo
@@ -190,7 +190,7 @@ The application folder for this package is 'electricitylci'.
 Inventory data is provided by USEPA's Standardized Emission and Waste Inventories ([StEWI](https://github.com/USEPA/standardizedinventories)) package (via stewicombo).
 The inventory data associated with StEWI are stored in the application folders, 'stewi' and 'stewicombo'.
 
-Flow mapping is handled using USEPA's Federal Elementary Flow List Python package and is saved in the application folder 'fedelemflowlist'.
+Flow mapping is handled using Federal LCA Commons's Federal Elementary Flow List Python package and is saved in the application folder 'fedelemflowlist'.
 
 The following is an example of the 181 data files downloaded from running the 2020 configuration file (updated in May 2025).
 EIA Form 860 Excel workbooks have worksheets that are summarized into CSV files for speed.
@@ -360,7 +360,7 @@ Note that once downloaded, these files are referenced (and not downloaded again)
 
 To install the dependencies for this package without installing the package itself, put the following in a text file, called requirements.txt
 
-    fedelemflowlist @ git+https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List#egg=fedelemflowlist
+    fedelemflowlist @ git+https://github.com/FLCAC-Admin/fedelemflowlist
     StEWI @ git+https://github.com/USEPA/standardizedinventories#egg=StEWI
     scipy>=1.10
 
