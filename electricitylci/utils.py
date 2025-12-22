@@ -34,7 +34,7 @@ from electricitylci.globals import NREL_REC_URL
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2025-12-12
+    2025-12-22
 
 Changelog:
     -   [25.12.12]: Add NREL REC data handler
@@ -1327,7 +1327,7 @@ def get_nrel_rec(year):
 
     See also
     --------
-    1.  https://www.nrel.gov/analysis/green-power.html
+    1.  https://www.nrel.gov/analysis/renewable-power
     2.  https://data.nrel.gov/submissions/174
 
     Parameters
