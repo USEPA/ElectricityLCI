@@ -1728,8 +1728,8 @@ def _make_rem_gen_process(pid, ba_name, e_dict, rem_txt, rem_df):
             if len(a) == 1:
                 # Best case scenario; set new mix amount
                 new_mix = a.iloc[0].Gen_Ratio_new
-                logging.info("Replacing %s with %s for %s" % (
-                    p_ex.amount, new_mix, f_name))
+                logging.info("Replacing %s with %s for %s in %s" % (
+                    p_ex.amount, new_mix, f_name, ba_name))
                 p_ex.amount = new_mix
             elif len(a) == 0 and len(b) == 0:
                 # Failed to find BA in the data frame.
@@ -1739,7 +1739,7 @@ def _make_rem_gen_process(pid, ba_name, e_dict, rem_txt, rem_df):
             elif len(a) == 0:
                 # Failed to find fuel for a known BA; set to zero.
                 # TODO: consider removing this exchange from exchanges list
-                logging.info("Zeroing mix for '%s'" % f_name)
+                logging.info("Zeroing mix for '%s' in %s" % (f_name, ba_name))
                 p_ex.amount = 0.0
             else:
                 # This is a bad place to be.
