@@ -37,14 +37,45 @@ Power plant regional information (based on EIA Form 860) is used to map state
 REC sales to balancing authority generation (e.g., by facility counts and,
 in future releases by facility generation).
 
-Balancing authority generation is reduced by an amount of "green energy" sold
-(not purchased) using a constant relative ratio of green energy fuel sources.
-This is due to the fact that RECs do not label the fuel type associated with
-the sale (e.g., solar, wind, or hydro). Negative generation amounts are
-possible due to the inexact process of reducing green energy generation, which
-may be either 'zeroed' or 'kept'; in the latter, MIXED or OTHER fuel categories
-are used to accommodate the additional generation sales, as they may contain a
-variety of fuel sources.
+To calculate the residual mix, a balancing authority's generation mix is
+categorized as either REC (renewable energy sold as a certificate) or non-REC
+(the desired residual generation). REC generation is based on the above
+aggregation method from the public sales data. Following this division, the
+next step is to determine the fuel-based mix of the residual generation. This
+is accomplished in :func:`update_mix`, where the original mix is divided into
+renewable (REC-compatible generation) and non-renewable (not for REC sale)
+generation. Non-renewable generation is by definition non-REC, thus carries
+over to the non-REC generation mix.
+
+The renewable generation may be labeled under several fuel categories as
+defined in the global variable, ``GREEN_E`` (e.g., hydro, biomass, solar, wind,
+geo). REC sales do not (as of writing) distinguish the fuel type used;
+therefore, the ratio of renewable generation by fuel category and total
+renewable generation is calculated using :func:`calc_relative_ratio`. The
+renewable electricity sold as REC is subtracted from the total renewable
+generation to determine the non-REC renewable generation. The ratio of renewable
+generation by fuel category is used to allocate the non-REC renewable
+generation to each fuel category (i.e., assumes the same relative ratio across
+renewable fuel categories).
+
+Negative non-REC renewable generation amounts are possible due to the inexact
+process of allocating REC sales to balancing authorities. In the case of
+negative non-REC renewable generation, the user may elect one of two options
+(i.e., 'zero' or 'keep' in the YAML configuration). For the 'keep' option, the
+MIXED or OTHER fuel categories are queried in the non-renewable mix fuels. If
+found, the non-renewable non-REC generation is reduced by the overage in REC
+sales to renewable generation (i.e., the assumption that renewable energy
+exists within the MIXED or OTHER fuels); note that this is done
+indiscriminantly across all non-renewable fuel categories using the relative
+ratio method used for renewable fuels. If the user elects to 'zero' the
+overage, the non-REC non-renewable generation remains unchanged. The non-REC
+renewable energy is zeroed regardless of selection.
+
+The non-renewable and renewable non-REC generation amounts are summed to
+determine the non-REC generation total. The fuel-specific generation amounts
+(i.e., based on the renewable and non-renewable non-REC generation amounts
+allocated using the relative ratio method) are divided by the new non-REC
+generation total to determine the new residual mix.
 
 Methods are based on ``elci_to_rem`` Python tool version 2.[2]
 
@@ -56,7 +87,7 @@ Methods are based on ``elci_to_rem`` Python tool version 2.[2]
     DOI: 10.18141/2503966
 
 Last updated:
-    2025-12-22
+    2025-12-23
 """
 __all__ = [
     "agg_by_count",
