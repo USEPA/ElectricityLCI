@@ -154,7 +154,7 @@ class ModelSpecs:
         Whether to create "at user; residual consumption mix" product systems.
     rem_weight_method : str
         The state-to-balancing authority weighting method (e.g., by facility
-        'count' or by 'areal' weights).
+        'count' or by facility 'gen' weights).
     neg_rem_method : str
         The method to deal with negative renewable electricity generation
         (e.g., if REC sales in a BA are greater than renewable electricity generation); choose either to 'zero' excess or 'keep' excess and
