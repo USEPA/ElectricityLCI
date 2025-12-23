@@ -141,6 +141,7 @@ The `main()` method has four steps:
     - Creates the at-user consumption mix processes (based on calculated transmission and distribution losses)
 4. `run_post_processes()`
     - Cleans the JSON-LD files (e.g., removing zero-value product flows, removing untracked flows, correcting flow categories, and creating consecutive internal exchange IDs)
+    - Generates residual electricity mix processes (based on public sales data provided by O'Shaughnessy et al., 2025).
     - Builds the product systems for balancing authority areas, FERC regions, and US.
 
 # Known Issues
