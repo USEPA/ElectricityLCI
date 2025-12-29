@@ -379,7 +379,7 @@ def check_model_specs(model_specs):
     if model_specs['output_residual_mix'] and (
             not model_specs['add_residual_mix']):
         raise ConfigurationError(
-            "Residual mix data cabbot be generated unless "
+            "Residual mix data cannot be generated unless "
             "`add_residual_mix` is set to true!"
         )
     if model_specs['add_residual_mix']:
