@@ -20,7 +20,7 @@ __doc__ = """Define paths, variables, and functions used across several
 modules.
 
 Last updated:
-    2025-08-14
+    2025-12-12
 """
 
 
@@ -33,28 +33,43 @@ try:
 except NameError:
     modulepath = 'electricitylci/'
 
-paths=Paths()
+paths = Paths()
+'''Paths : esupy class object to connect user's data directory.'''
 paths.local_path = os.path.realpath(str(paths.local_path) + "/electricitylci")
+
 # NOTE: output_dir used in a handful of modules (e.g., combinator)
 # HOTFIX PosixPath in os.path.join [TWD; 2023-07-27]
 output_dir = os.path.join(str(paths.local_path), 'output')
-data_dir = os.path.join(modulepath,  'data')
+'''str : The ElectricityLCI local output folder (where models are saved).'''
 
+data_dir = os.path.join(modulepath,  'data')
+'''str : The ElectricityLCI Python package's data folder.'''
+
+elci_version = "0.0.0"
+'''str : The ElectricityLCI Python package version.'''
 try:
     # HOTFIX: remove dependency on setuptools and its deprecated pkg_resources
     elci_version = version("ElectricityLCI")
 except:
-    elci_version = "2.0.0"
+    elci_version = "2.1.0"
 
 # ref Table 1.1 NERC report
 electricity_flow_name_generation_and_distribution = (
     'Electricity, AC, 2300-7650 V')
 electricity_flow_name_consumption = 'Electricity, AC, 120 V'
 
-# EIA923 download url - this is just the base, need to add
-# extension and file name
+# EIA base URLs - need to add file name
 EIA923_BASE_URL = 'https://www.eia.gov/electricity/data/eia923/'
+'''str : The base URL for EIA Form 923 workbooks.'''
 EIA860_BASE_URL = 'https://www.eia.gov/electricity/data/eia860/'
+'''str : The base URL for EIA Form 860 workbooks.'''
+NREL_REC_YEAR = 2024
+'''int : See https://www.nrel.gov/analysis/renewable-power for pub years.'''
+NREL_REC_URL = (
+    "https://www.nrel.gov/"
+    f"docs/libraries/analysis/nrel-green-power-data-v{NREL_REC_YEAR}.xlsx"
+)
+'''str : NREL voluntary renewable power procurement data sheet URL.'''
 
 # EPA Clean Air Markets API URL
 # https://www.epa.gov/power-sector/cam-api-portal
@@ -235,6 +250,19 @@ RENEWABLE_VINTAGES = [2016, 2020]
 
 NG_MODEL_YEARS = [2016, 2020]
 '''list : The valid years for natural gas model (i.e., 2016 and 2020).'''
+
+GREEN_E = ['HYDRO', 'BIOMASS', 'SOLAR', 'SOLARTHERMAL', 'WIND', 'GEOTHERMAL']
+'''list: Green or renewable energy categories for residual mixes.'''
+
+OVERFLOW_E = ['MIXED', 'OTHF']
+'''list: Non-green fuels that can lend overflow electricity for res. mixes.'''
+
+REM_WEIGHT_METHODS = ['count',]
+'''list : State-level REC sales to Balancing authority weighting methods.'''
+
+NEG_REM_METHODS = ['zero', 'keep']
+'''list : Accounting methods for negative renewable generation for REM.'''
+
 
 ##############################################################################
 # FUNCTIONS

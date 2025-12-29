@@ -24,7 +24,7 @@ __doc__ = """This module contains the main API functions to be used by the
 end user.
 
 Last updated:
-    2025-06-09
+    2025-12-19
 """
 __version__ = elci_version
 
@@ -805,15 +805,19 @@ def run_post_processes():
     4.  DO NOT ADD NETL TRACI 2.1 characterization factors
     5.  Fix labeling of Heat input to elementary flow
         https://github.com/USEPA/ElectricityLCI/issues/293
-    6.  Create product systems for select processes (user, consumption mixes)
+    6.  Create product systems for select processes (user, consumption mixes);
+        now includes residual mixes (if configured in model specifications)
     """
     from electricitylci.olca_jsonld_writer import build_product_systems
     from electricitylci.olca_jsonld_writer import clean_json
+    from electricitylci.residual_grid_mix import add_residual_mixes
 
     clean_json(config.model_specs.namestr)
+    add_residual_mixes()  # skipped if not configured
     build_product_systems(
         file_path=config.model_specs.namestr,
-        elci_config=config.model_specs.model_name
+        elci_config=config.model_specs.model_name,
+        add_residuals=config.model_specs.add_rem_product_systems
     )
 
 

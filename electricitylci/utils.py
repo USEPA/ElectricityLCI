@@ -25,6 +25,7 @@ from electricitylci.globals import data_dir
 from electricitylci.globals import output_dir
 from electricitylci.globals import API_SLEEP
 from electricitylci.globals import CAM_API_URL
+from electricitylci.globals import NREL_REC_URL
 
 
 ##############################################################################
@@ -33,9 +34,10 @@ from electricitylci.globals import CAM_API_URL
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2025-08-27
+    2025-12-22
 
 Changelog:
+    -   [25.12.12]: Add NREL REC data handler
     -   [25.08.27]: Update archive EPA CAMS method
     -   [25.08.13]: Move check API utility function here
     -   [25.08.01]: Read line from file helper method
@@ -61,11 +63,15 @@ __all__ = [
     "download_unzip",
     "fill_default_provider_uuids",
     "find_file_in_folder",
+    "find_worksheet_header_row",
+    "get_ba_map",
     "get_logger",
+    "get_nrel_rec",
     "get_stewi_invent_years",
     "join_with_underscore",
     "linear_search",
     "make_valid_version_num",
+    "map_ba_codes",
     "next_month",
     "read_line_from_file",
     "read_ba_codes",
@@ -1134,6 +1140,100 @@ def find_file_in_folder(folder_path, file_pattern_match, return_name=True):
         return (file_path, file_name)
 
 
+def find_worksheet_header_row(workbook, worksheet, keywords, num_rows_to_scan):
+    """Dynamically scans the top rows of an Excel worksheet to find the
+    header row based on a list of identifying keywords.
+
+    This function reads a limited number of rows (num_rows_to_scan) without a
+    header, iterates through them, and checks if all provided keywords are
+    present in any single row's content. It is designed to handle Excel files
+    where the header row position changes across different vintages.
+
+    Parameters
+    ----------
+    workbook : str
+        The file path to the Excel workbook (.xlsx, .xls, etc.).
+    worksheet : str, int
+        The name (str) or index (int) of the worksheet to scan.
+    keywords : list
+        A list of required column names (or parts of names) that uniquely
+        identify the correct header row. Matching is case-insensitive.
+    num_rows_to_scan : int
+        The maximum number of initial rows to read from the worksheet to
+        search for the header.
+
+    Returns
+    -------
+    int
+        The 0-based row index of the detected header, or -1 if the header
+        was not found within the scanned range or if an error occurred.
+
+    Examples
+    --------
+    >>> wb = 'data.xlsx'
+    >>> ws = 'Sheet1'
+    >>> required_cols = ['Year', 'Emissions', 'Region']
+    >>> idx = find_worksheet_header_row(wb, ws, required_cols, 20)
+
+    Notes
+    -----
+    This method was built using Gemini AI.
+    """
+    header_row_index = -1
+
+    try:
+        # A temporary slice of the worksheet.
+        df_temp = pd.read_excel(
+            workbook,
+            header=None,
+            sheet_name=worksheet,
+            nrows=num_rows_to_scan
+        )
+        for idx, row in df_temp.iterrows():
+            # Convert to single, lowercase string for keyword checking
+            row_content = ' '.join(
+                row.dropna().astype(str).str.lower().tolist()
+            )
+            if all(keyword.lower() in row_content for keyword in keywords):
+                header_row_index = idx
+                break
+
+        if header_row_index == -1:
+            logging.error(
+                "Header row not found in the first %d rows!" % (
+                    num_rows_to_scan
+                )
+            )
+    except FileNotFoundError:
+        logging.error("Failed to find Excel workbook!")
+    except Exception as e:
+        logging.error("Unexpected error, %s" % str(e))
+
+    return  header_row_index
+
+
+def get_ba_map():
+    """Return a dictionary of balancing authority names and their abbreviations.
+
+    Parameters
+    ----------
+    year : int
+        The year for eLCI generation data.
+
+    Returns
+    -------
+    dict
+        A dictionary with keys of balancing authority names (as per EIA 923)
+        and values of abbreviations.
+    """
+    ba_codes = read_ba_codes()
+    ba_map = {}
+    for idx, row in ba_codes.iterrows():
+        ba_map[row['BA_Name']] = idx
+
+    return ba_map
+
+
 def get_logger(stream=True, rfh=True, str_lv='INFO', rfh_lv='DEBUG'):
     """A helper function for creating or retrieving a root logger with
     only one instance of stream and/or rotating file handler.
@@ -1207,6 +1307,98 @@ def get_logger(stream=True, rfh=True, str_lv='INFO', rfh_lv='DEBUG'):
             log.handlers[i].setLevel("CRITICAL")
 
     return log
+
+
+def get_nrel_rec(year):
+    """Create state-level voluntary green power generation (MWh) data frame.
+
+    Notes
+    -----
+    Data are based on the NREL Green Power Data by State (2013-2023)[1]_.
+    Estimates are based on green power generated in each state, regardless of
+    where the renewable energy certificate (REC) is retired.
+    Some state-level totals do not add up to market-wide totals because some
+    green power is purchased from Canada.
+
+    There is an estimated 192.1 million MWh sold in 2020.
+
+    [1] E. O'Shaughnessy, S. Jena, and D. Salyer. 2024. Status and Trends in
+    the Voluntary Market (2023 Data). Golden, CO: NREL.
+
+    See also
+    --------
+    1.  https://www.nrel.gov/analysis/renewable-power
+    2.  https://data.nrel.gov/submissions/174
+
+    Parameters
+    ----------
+    year : int
+        The year for REC sales data.
+
+    Returns
+    -------
+    pandas.DataFrame
+        A data frame with state-based green electricity generated (MWh).
+        The "State" column provides the two-letter U.S. state name
+        abbreviations and the "Total" column provides the total green
+        electricity generated and sold as a REC in MWh.
+
+        Other columns include:
+        - "Year" (matches the year provided)
+        - "Utility Green Pricing"
+        - "Utility Renewable Contracts"
+        - "Competitive Suppliers"
+        - "Unbundled RECs"
+        - "CCAs" (community choice aggregations)
+        - "PPAs" (power purchase agreements)
+
+    Examples
+    --------
+    >>> my_df = get_rec(2023)
+    """
+    # Make sure year is an integer and in the valid range
+    if not isinstance(year, int):
+        raise TypeError("Year should be an integer not, %s" % type(year))
+    if year not in range(2016, 2025, 1):
+        raise ValueError("Year should be between 2016-2024, not %d" % year)
+
+    # Define the NREL data store
+    nrel_dir = os.path.join(paths.local_path, "nrel")
+    if check_output_dir(nrel_dir):
+        logging.debug("NREL data store exists")
+
+    # Define the NREL REC Excel workbook file path
+    rec_name = os.path.basename(NREL_REC_URL)
+    rec_path = os.path.join(nrel_dir, rec_name)
+
+    # If file does not exist, download Excel workbook
+    if not os.path.exists(rec_path):
+        download(NREL_REC_URL, rec_path)
+
+    if not os.path.exists(rec_path):
+        raise OSError(
+            "Failed to download NREL Voluntary Renewable Procurement workbook!"
+        )
+
+    # Dynamically find header row (it may change depending on the workbook year)
+    header_row = find_worksheet_header_row(
+        rec_path,
+        "State-Level Generation",
+        ["state", "year", "PPAs", "total"],
+        20
+    )
+
+    # Sheet name, header, and index are based on examining the file.
+    df = pd.read_excel(
+        rec_path,
+        sheet_name="State-Level Generation",
+        header=header_row,
+        index_col=None
+    )
+    # Ensure year is integer for comparison purposes
+    df["Year"] = df["Year"].astype(int)
+    df = df.loc[df["Year"]==year]
+    return df
 
 
 def get_stewi_invent_years(year):
@@ -1354,6 +1546,32 @@ def make_valid_version_num(foo):
     """
     result = re.sub('[^0-9,.]', '', foo)
     return result
+
+
+def map_ba_codes(df):
+    """Map balancing authority abbreviation codes based on EIA Form 930 naming.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        A data frame with column, 'Subregion' or 'BA_NAME' used to match
+        against balancing authority abbreviation map.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The same as the sent data frame with a new column, "BA_CODE".
+    """
+    m_col = 'Subregion'
+    if 'Subregion' not in df.columns and 'BA_NAME' in df.columns:
+        m_col = 'BA_NAME'
+    elif 'Subregion' not in df.columns and 'BA_NAME' not in df.columns:
+        logging.warning("No matching column for BA codes!")
+
+    ba_map = get_ba_map()
+    df['BA_CODE'] = df[m_col].map(ba_map)
+    logging.info("%d mis-matched BA codes" % df['BA_CODE'].isna().sum())
+    return df
 
 
 def next_month(dt0):
@@ -1812,7 +2030,7 @@ def set_dir(directory):
     return directory
 
 
-def write_csv_to_output(f_name, data):
+def write_csv_to_output(f_name, data, to_zip=False):
     """Write data to CSV file in the outputs directory.
 
     Parameters
@@ -1823,31 +2041,59 @@ def write_csv_to_output(f_name, data):
         A data object to be written to file.
         A data frame is written using `to_csv` without index.
         A string is written to a plain text file.
+    to_zip : bool, optional
+        Whether to compress the output data using ZIP format.
+        Defaults to false.
 
     Raises
     ------
     TypeError : If the data type is not recognized.
     """
-    f_path = os.path.join(output_dir, f_name)
-    if os.path.isfile(f_path):
-        logging.warning("File exists! Overwriting %s" % f_path)
+    fpath = os.path.join(output_dir, f_name)
+
+    if os.path.isfile(fpath):
+        logging.warning("File exists! Overwriting %s" % fpath)
+
     if isinstance(data, pd.DataFrame):
-        try:
-            data.to_csv(f_path, index=False)
-        except:
-            logging.error("Failed to write '%s' to file" % f_path)
+        if to_zip:
+            if not fpath.endswith('.zip'):
+                fpath += ".zip"
+            try:
+                data.to_csv(
+                    fpath, encoding="utf-8", compression="zip", index=False)
+            except:
+                raise
+            else:
+                logging.debug("Saved dataframe to zip.")
         else:
-            logging.info(
-                "Wrote %d lines to file, %s" % (len(data), f_path)
-            )
+            try:
+                data.to_csv(fpath, index=False, encoding="utf-8")
+            except:
+                raise
+            else:
+                logging.debug("Saved dataframe to CSV.")
     elif isinstance(data, str):
-        try:
-            with open(f_path, 'w') as f:
-                f.write(data)
-        except:
-            logging.error("Failed to write '%s' to file" % f_path)
+        if to_zip:
+            if not fpath.endswith(".zip"):
+                fpath += ".zip"
+            try:
+                with zipfile.ZipFile(fpath,
+                             'w',
+                             compression=zipfile.ZIP_DEFLATED,
+                             compresslevel=3) as z:
+                    z.write(data, arcname=os.path.basename(fpath))
+            except:
+                raise
+            else:
+                logging.debug("Saved data to zip.")
         else:
-            logging.info("Wrote data to file, %s" % f_path)
+            try:
+                with open(fpath, 'w') as f:
+                    f.write(data)
+            except:
+                raise
+            else:
+                logging.debug("Saved data to CSV.")
     else:
         logging.error("Data type, %s, not recognized!" % type(data))
         raise TypeError("Data type, %s, not recognized!" % type(data))
