@@ -376,6 +376,12 @@ def check_model_specs(model_specs):
             "Residual mix product systems cannot be created unless "
             "`add_residual_mix` is set to true!"
         )
+    if model_specs['output_residual_mix'] and (
+            not model_specs['add_residual_mix']):
+        raise ConfigurationError(
+            "Residual mix data cabbot be generated unless "
+            "`add_residual_mix` is set to true!"
+        )
     if model_specs['add_residual_mix']:
         if not model_specs['rem_weight_method'] in REM_WEIGHT_METHODS:
             err_str = "The residual mix weighting method must be one of: "
