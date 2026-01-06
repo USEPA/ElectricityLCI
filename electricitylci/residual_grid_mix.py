@@ -15,6 +15,7 @@ from electricitylci.globals import OVERFLOW_E
 from electricitylci.model_config import model_specs
 from electricitylci import get_generation_mix_process_df
 from electricitylci.eia860_facilities import eia860_balancing_authority
+from electricitylci.eia923_generation import build_generation_data
 from electricitylci.olca_jsonld_writer import build_residual_processes
 from electricitylci.utils import get_nrel_rec
 from electricitylci.utils import map_ba_codes
@@ -216,6 +217,76 @@ def agg_by_count():
     return tot_df
 
 
+def agg_by_gen():
+    """Partition state-based REC electricity generation using the fractional
+    weights of electricity generating facilities found within the shared
+    boundaries of each state and balancing authority area weighted by
+    facility-level annual generation.
+
+    Returns
+    -------
+    pandas.Series
+        A Pandas series where the index is 'BA_CODE' (balancing authority
+        abbreviation) and the values are 'REC_FRAC' (allocated REC
+        generation from states to their BA areas).
+    """
+    logging.info("Aggregating by facility-level generation.")
+
+    # Get state and BA info for each facility.
+    ba_df = eia860_balancing_authority(year=model_specs.eia_gen_year)
+    ba_df.rename(columns={
+        'Balancing Authority Name': "BA_NAME",
+        'Balancing Authority Code': "BA_CODE",
+        "Plant Id": "FacilityID"}, inplace=True)
+
+    # Not every plant has a BA and State, so drop NAs
+    ba_df = ba_df.dropna(subset='BA_CODE')
+
+    # Fix column type for merging purposes.
+    ba_df['FacilityID'] = ba_df['FacilityID'].astype("int")
+
+    # Get facility-level generation amounts
+    fac_gen = build_generation_data(
+        generation_years=[model_specs.eia_gen_year,]
+    )
+    fac_gen = fac_gen.drop(columns='Year')
+
+    # Add annual generation to facility data (i.e., 'Electricity' column).
+    ba_df = ba_df.merge(fac_gen, on='FacilityID', how='inner')
+
+    # Create plant generation tables
+    table_a = ba_df.groupby(
+        by=['State', 'BA_CODE']).agg({'Electricity': 'sum'}).Electricity
+    table_b = ba_df.groupby(
+        by='State').agg({'Electricity': 'sum'}).Electricity
+
+    table_a.name = "STBA_GEN"
+    table_b.name = "ST_GEN"
+
+    # Join these series together
+    ta_df = table_a.reset_index(drop=False)
+    tb_df = table_b.reset_index(drop=False)
+    ta_df = ta_df.merge(tb_df, how='left', on='State')
+
+    # Calculate state-level fractions;
+    # these should add to 1.0 for each state given the NA drop above.
+    ta_df["ST_FRAC"] = ta_df['STBA_GEN'] / ta_df['ST_GEN']
+
+    # Join REC data
+    rec_df = get_nrel_rec(model_specs.eia_gen_year)
+    rec_df = rec_df[['State', 'Total']].copy()
+    jdf = ta_df.merge(rec_df, how='left', on='State')
+
+    # Calculate BA REC amounts using facility-level generation weights
+    jdf['REC_FRAC'] = jdf['ST_FRAC'] * jdf['Total']
+
+    # Allocate RECs to their BA areas using the new relative fractions
+    # the sum of REC_FRAC should equal the sum of Total in the REC data frame
+    tot_df = jdf.groupby(by='BA_CODE').agg({'REC_FRAC': 'sum'})
+
+    return tot_df
+
+
 def calc_relative_ratio(df, add_total=False):
     """Calculate the relative electricity generation fractions in a data frame.
 
@@ -283,10 +354,10 @@ def get_rec_agg(agg_type, as_series=True):
         There are two options to determine the fraction of each state's
         RECs allocated to each balancing authority area.
 
-        -   The 'area' option performs normalized areal-weighting method
-            between state and balancing authority boundaries.
         -   The 'count' option uses facility counts that fall within the
             shared regions of states and balancing authorities.
+        -   The 'gen' option uses facility-level generation as a weighting
+            factor to the 'count' method.
 
     as_series : bool, optional
         Switch to return object as either a Pandas series (if true) or as a
@@ -303,8 +374,8 @@ def get_rec_agg(agg_type, as_series=True):
     ValueError
         If aggregation type is not valid.
     """
-    if agg_type == 'area':
-        logging.warning("Areal-weighting method is not implemented.")
+    if agg_type == 'gen':
+        r = agg_by_gen()
     elif agg_type == 'count':
         r = agg_by_count()
     else:
@@ -542,190 +613,83 @@ def update_mix(df):
 
 
 #
-# SANDBOX - draft of ``add_rem`` and ``build_residual_processes`` methods.
-#           Added additional product system dev to testing.
+# SANDBOX
 #
 if __name__ == '__main__':
     # Setup logging
     from electricitylci.utils import get_logger
-    log = get_logger(stream=True, rfh=False, str_lv='DEBUG')
+    log = get_logger(stream=True, rfh=False)
 
     # Setup model
     import electricitylci.model_config as config
     config.model_specs = config.build_model_class('ELCI_2023')
 
-    # Create residual mix for BA by fuel category.
+    # Test new 'gen' method; six BAs with negative renewable energy.
     from electricitylci.residual_grid_mix import get_rem
-    df = get_rem()
+    df = get_rem(to_save=True)
 
-    # Define test JSON-LD for ELCI 2023
-    import os
-    home_dir = os.path.expanduser("~")
-    work_dir = os.path.join(home_dir, "Workspace", "olca", "json-ld")
-    json_path = os.path.join(work_dir, "ELCI_2023_jsonld_20251125_REM_TEST.zip")
+    #
+    # AGG BY GEN draft
+    # See comparison of facility count and generation weights for ELCI_2023:
+    # https://edx.netl.doe.gov/resource/af61a48f-a372-458f-a0e5-c37cf387f384
+    #
 
-    # Read JSON-LD
-    from electricitylci.olca_jsonld_writer import _init_root_entities
-    data = _init_root_entities(json_path)
+    # Get state and BA info for each facility.
+    ba_df = eia860_balancing_authority(year=config.model_specs.eia_gen_year)
+    ba_df.rename(columns={
+        'Balancing Authority Name': "BA_NAME",
+        'Balancing Authority Code': "BA_CODE",
+        "Plant Id": "FacilityID"}, inplace=True)
 
-    # Generate the description based on the model specs configuration:
-    from electricitylci.globals import NREL_REC_URL
-    rem_text = (
-        "Electricity generation mixes updated to reflect residual grid "
-        "mix based on NREL's Status and Trends in the Voluntary Market "
-        f"for sales in year {config.model_specs.eia_gen_year} "
-        f"({NREL_REC_URL}). "
+    # Not every plant has a BA and State, so drop NAs
+    ba_df = ba_df.dropna(subset='BA_CODE')
+
+    # Fix column type for merging purposes.
+    ba_df['FacilityID'] = ba_df['FacilityID'].astype("int")
+
+    # Get facility-level generation amounts
+    from electricitylci.eia923_generation import build_generation_data
+
+    # Decision point:
+    #   a) If you send the plant IDs, you get 72% of 2023 plants;
+    #      --> includes hugely negative plant generations ;(
+    #   b) If you don't specify plant IDs, you get 68% of 2023 plants.
+    # Probably better to go route (b) and avoid negative generation.
+    fac_gen = build_generation_data(
+        # egrid_facilities_to_include=ba_df['Plant Id'].to_list(),
+        generation_years=[config.model_specs.eia_gen_year,]
     )
-    if config.model_specs.rem_weight_method == 'count':
-        rem_text += (
-            "The balancing authority residual mix is based on a facility "
-            "count weighting method of state-level REC sales where excess REC "
-        )
-    elif config.model_specs.rem_weight_method == 'area':
-        rem_text += (
-            "The balancing authority residual mix is based on an areal "
-            "weighting method of state-level REC sales where excess REC "
-        )
+    fac_gen = fac_gen.drop(columns='Year')
 
-    if config.model_specs.neg_rem_method == 'zero':
-        rem_text += (
-            "generation amounts (MWh) are ignored (i.e., assumed zero; "
-            "accounts for all available renewable generation)."
-        )
-    elif config.model_specs.neg_rem_method == 'keep':
-        rem_text += (
-            "generation amounts (MWh) are subtracted from non-renewables, "
-            "assuming that some renewable energy may be provided from a "
-            "non-renewable fuel category (e.g., mixed/other fuels)."
-        )
+    # Add annual generation to facility data (i.e., 'Electricity' column).
+    ba_df = ba_df.merge(fac_gen, on='FacilityID', how='inner')
 
-    #
-    # GENERATION MIXES
-    #
+    # Create plant count tables
+    table_a = ba_df.groupby(
+        by=['State', 'BA_CODE']).agg({'Electricity': 'sum'}).Electricity
+    table_b = ba_df.groupby(
+        by='State').agg({'Electricity': 'sum'}).Electricity
 
-    # Find generation mix process UUIDs
-    import re
-    from electricitylci.olca_jsonld_writer import _match_process_names
-    q = re.compile("^Electricity; at grid; generation mix - (.*)$")
-    r = _match_process_names(data['Process']['objs'], q)
-    # found 68 generation mix processes for 2023
+    table_a.name = "STBA_GEN"
+    table_b.name = "ST_GEN"
 
-    # Initialize process mapping dictionary
-    p_map = {}
+    # Join these series together
+    ta_df = table_a.reset_index(drop=False)
+    tb_df = table_b.reset_index(drop=False)
+    ta_df = ta_df.merge(tb_df, how='left', on='State')
 
-    # Iterate over generation processes:
-    from electricitylci.olca_jsonld_writer import _make_rem_gen_process
-    for pid in r:
-        # Extract (the original process data)
-        p_idx = data['Process']['ids'].index(pid)
-        p_obj = data['Process']['objs'][p_idx]
+    # Calculate state-level fractions;
+    # these should add to 1.0 for each state given the NA drop above.
+    ta_df["ST_FRAC"] = ta_df['STBA_GEN'] / ta_df['ST_GEN']
 
-        # Find (balancing authority name)
-        ba_name = q.match(p_obj.name).group(1)
+    # Join REC data
+    rec_df = get_nrel_rec(config.model_specs.eia_gen_year)
+    rec_df = rec_df[['State', 'Total']].copy()
+    jdf = ta_df.merge(rec_df, how='left', on='State')
 
-        # Notably, this also adds the REM process to ``data`` dictionary.
-        rid, data = _make_rem_gen_process(pid, ba_name, data, rem_text, df)
-        p_map[pid] = rid
+    # Calculate BA REC amounts using facility-level generation weights
+    jdf['REC_FRAC'] = jdf['ST_FRAC'] * jdf['Total']
 
-    #
-    # CONSUMPTION MIXES
-    #
-
-    # Find consumption mix process UUIDs
-    from electricitylci.olca_jsonld_writer import _make_rem_con_process
-    from electricitylci.olca_jsonld_writer import _update_providers
-    q12 = re.compile(
-        "^Electricity; at (?:user|grid); consumption mix - (.*) - (BA|FERC|US)$"
-    )
-    r12 = _match_process_names(data['Process']['objs'], q12)
-
-    # Create new residual Process objects & map them.
-    for pid in r12:
-        rid, data = _make_rem_con_process(pid, data, rem_text)
-        p_map[pid] = rid
-
-    # Update providers in residual consumption processes
-    for pid in r12:
-        # Find the residual process associated with this consumption process.
-        rid = p_map[pid]
-        r_idx = data['Process']['ids'].index(rid)
-        r_obj = data['Process']['objs'][r_idx]
-
-        # Swap old w/ new providers
-        r_obj = _update_providers(r_obj, p_map, data)
-
-        # Update the master entity dictionary w/ updated process
-        data['Process']['objs'][r_idx] = r_obj
-
-    #
-    # SAVE
-    #
-
-    # Write out the master entity dictionary to a new JSON-LD file.
-    from electricitylci.olca_jsonld_writer import _save_to_json
-    out_path = os.path.join(work_dir, "residual_test_2025-12-19.zip")
-    _save_to_json(out_path, data)
-
-    #
-    # NEW: Make Product Systems
-    # (based on ``build_product_systems`` in olca_jsonld_writer.py)
-    #
-
-    # You have to re-read the JSON-LD
-    data = _init_root_entities(out_path)
-
-    # Query for only at-user residual consumption mixes
-    rps = []
-
-    qs1 = "^Electricity; at user; consumption mix - (.*) - BA$"
-    qs2 = "^Electricity; at user; consumption mix - (.*) - FERC$"
-    qs3 = "^Electricity; at user; consumption mix - US - US$"
-
-    qr1 = qs1.replace("; consumption", "; residual consumption")
-    qr2 = qs2.replace("; consumption", "; residual consumption")
-    qr3 = qs3.replace("; consumption", "; residual consumption")
-
-    q4 = re.compile(qr1)
-    q5 = re.compile(qr2)
-    q6 = re.compile(qr3)
-
-    r4 = _match_process_names(data['Process']['objs'], q4)
-    r5 = _match_process_names(data['Process']['objs'], q5)
-    r6 = _match_process_names(data['Process']['objs'], q6)
-
-    rps += r4
-    rps += r5
-    rps += r6
-
-    import datetime
-    from electricitylci import __version__ as VERSION
-    t_now = datetime.datetime.now()
-    d_txt = (
-        "This product system was created in openLCA "
-        "by linking default providers. "
-        "The processes were generated by ElectricityLCI "
-        "(https://github.com/USEPA/ElectricityLCI) "
-        f"version {VERSION} using "
-        f"the {config.model_specs.model_name} configuration. "
-        f"Created: {t_now.isoformat()}."
-    )
-
-    from electricitylci.olca_jsonld_writer import _make_product_system
-    import logging
-    for pid in rps:
-        p_idx = data['Process']['ids'].index(pid)
-        p_obj = data['Process']['objs'][p_idx]
-        # Send the new JSON-LD
-        ps_obj = _make_product_system(out_path, p_obj, d_txt)
-
-        # Update master data dictionary
-        data['ProductSystem']['objs'].append(ps_obj)
-        data['ProductSystem']['ids'].append(ps_obj.id)
-        logging.debug("Created %s" % ps_obj.name)
-
-    #
-    # SAVE
-    #
-
-    # Write out the master entity dictionary to a new JSON-LD file.
-    _save_to_json(out_path, data)
+    # Allocate RECs to their BA areas using the new relative fractions
+    # the sum of REC_FRAC should equal the sum of Total in the REC data frame
+    tot_df = jdf.groupby(by='BA_CODE').agg({'REC_FRAC': 'sum'})
