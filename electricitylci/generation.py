@@ -57,33 +57,14 @@ desired regional aggregation categories, and creates the dictionaries (i.e.,
 the LCA inventories but in python dictionary format) and stores them in
 computer memory.
 
-CHANGELOG
+CHANGELOG (since v2.0)
 
--   Remove module logger.
--   Remove unused imports.
--   Add missing documentation to methods.
--   Clean up formatting towards PEP8.
--   Note: the uncertainty calculations in :func:`aggregate_data` are
-    questionable (see doc strings of submodules for details).
--   Fix the outdated pd.DataFrame.append call in :func:`turn_data_to_dict`
--   Remove :func:`add_flow_representativeness_data_quality_scores` because
-    unused.
--   Replace .values with .squeeze().values when calling a data frame with
-    only one column of data in :func:`olcaschema_genprocess`.
--   Fix groupby for source_db in :func:`calculate_electricity_by_source` to
-    match the filter used to find multiple source entries.
--   Add empty database check in :func:`calculate_electricity_by_source`
--   Separate replace egrid function
--   Fix zero division error in aggregate data
--   Implement Hawkins-Young uncertainty
--   Add uncertainty switch
--   Drop NaNs in exchange table
--   Move FRS file download to its own function
+- Hotfix DQI entry in :func:`turn_data_to_dict` [260109; TWD]
 
 Created:
     2019-06-04
 Last edited:
-    2025-06-09
+    2026-01-09
 """
 __all__ = [
     "add_data_collection_score",
@@ -1745,8 +1726,8 @@ def turn_data_to_dict(data, upstream_dict):
     ----------
     data : pandas.DataFrame
         A multi-row data frame containing aggregated emissions to be turned
-        into openLCA unit processes. Columns include the follow (as defined by
-        `ng_agg_cols` in :func:`olcaschema_genprocess`):
+        into openLCA unit processes. Columns include the following (as defined
+        by `ng_agg_cols` in :func:`olcaschema_genprocess`):
 
         - stage_code
         - FlowName
@@ -1807,6 +1788,7 @@ def turn_data_to_dict(data, upstream_dict):
         logging.info("Removing %d nans from exchange table" % num_nans)
     data = data.dropna(subset='Emission_factor')
 
+    # Create new columns and fill with relevant info
     data["internalId"] = ""
     data["@type"] = "Exchange"
     data["avoidedProduct"] = False
@@ -1859,17 +1841,15 @@ def turn_data_to_dict(data, upstream_dict):
     data["quantitativeReference"] = False
 
     # Pull pedigree matrix values for DQI
+    # HOTFIX: this assumes the first row's DQI value is the same for all
+    # rows; however, each flow has its own DQI values [260109; TWD]
     data["dqEntry"] = (
         "("
-        + str(round(data["DataReliability"].iloc[0], 1))
-        + ";"
-        + str(round(data["TemporalCorrelation"].iloc[0], 1))
-        + ";"
-        + str(round(data["GeographicalCorrelation"].iloc[0], 1))
-        + ";"
-        + str(round(data["TechnologicalCorrelation"].iloc[0], 1))
-        + ";"
-        + str(round(data["DataCollection"].iloc[0], 1))
+        + data['DataReliability'].round().astype(int).astype(str) + ';'
+        + data['TemporalCorrelation'].round().astype(int).astype(str) + ';'
+        + data['GeographicalCorrelation'].round().astype(int).astype(str) + ';'
+        + data['TechnologicalCorrelation'].round().astype(int).astype(str) + ';'
+        + data['DataCollection'].round().astype(int).astype(str)
         + ")"
     )
     data["pedigreeUncertainty"] = ""
