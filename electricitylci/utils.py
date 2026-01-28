@@ -34,9 +34,10 @@ from electricitylci.globals import NREL_REC_URL
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2025-12-22
+    2026-01-28
 
 Changelog:
+    -   [26.01.28]: Allow resetting log levels
     -   [25.12.12]: Add NREL REC data handler
     -   [25.08.27]: Update archive EPA CAMS method
     -   [25.08.13]: Move check API utility function here
@@ -1275,8 +1276,10 @@ def get_logger(stream=True, rfh=True, str_lv='INFO', rfh_lv='DEBUG'):
     for h in log.handlers:
         if h.name == 'elci_stream':
             has_stream = True
+            h.setLevel(str_lv)      # handle level change requests
         elif h.name == 'elci_rfh':
             has_rfh = True
+            h.setLevel(rfh_lv)
 
     # Create stream handler for info messages
     if stream and not has_stream:
@@ -1681,7 +1684,7 @@ def read_ba_codes():
     table, which includes a comprehensive list of balancing authorities, see
     https://www.eia.gov/electricity/930-content/EIA930_Reference_Tables.xlsx
 
-    Referenced in combinatory.py, eia_io_trading.py, and import_impacts.py
+    Referenced in combinator.py, eia_io_trading.py, and import_impacts.py
     and is utilized elsewhere (e.g., via importing `BA_CODES` from combinator).
 
     Returns
