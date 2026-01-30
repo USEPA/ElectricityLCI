@@ -21,7 +21,7 @@ and replaces them with names in the Federal LCA Commons elementary flows list.
 Types of flows and compartment information are also determined and indexed.
 
 Last updated:
-    2025-12-30
+    2026-01-30
 """
 __all__ = [
     "add_flow_direction",
@@ -153,10 +153,6 @@ def correct_netl_flow_names(df, amount_col="FlowAmount"):
     flow_mapping = flow_mapping.drop_duplicates(
         subset=[x for x in flow_mapping.columns if x not in ignore_cols]
     )
-
-    flow_mapping['SourceFlowName'] = flow_mapping['SourceFlowName'].str.lower()
-    flow_mapping['SourceFlowContext'] = flow_mapping[
-        "SourceFlowContext"].str.lower()
 
     # Some compartments in NETL UPs are complex (e.g., 'Emission to water/fresh
     # water'), but are listed simply in the FEDEFL eLCI mapper (e.g., 'emission/
