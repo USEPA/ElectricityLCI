@@ -7,7 +7,7 @@ Pre-configured model specifications are included (in the modelconfig directory o
 The created LCI models are exported for use in standard life cycle assessment software (i.e., in JSON-LD format using the openLCA v2.0 schema).
 
 This code was created as part of a collaboration between US EPA Office of Research and Development (USEPA) and the National Energy Technology Laboratory (NETL) with contributions from the National Renewable Energy Laboratory (NREL) and support from Eastern Research Group (ERG).
-More information on this effort can be found in the [Framework for an Open-Source Life Cycle Baseline for Electricity Consumption in the United States](https://netl.doe.gov/energy-analysis/details?id=4004).
+More information on this effort can be found in the [Framework for an Open-Source Life Cycle Baseline for Electricity Consumption in the United States](https://www.osti.gov/biblio/1576767).
 
 ## Disclaimer
 
@@ -21,43 +21,40 @@ More information on this effort can be found in the [Framework for an Open-Sourc
     imply their endorsement, recommendation or favoring by EPA or NETL.
 
 # Setup
-A Python virtual environment (recommended v3.12) is required with the following packages installed, which were recorded in February 2025.
+A Python environment (recommended v3.12) is required with the following packages installed, which were recorded in January 2026.
 _Note that Python 3.14 is not supported (yet)._
 
-+ `pip install git+https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List#egg=fedelemflowlist`
++ `pip install git+https://github.com/FLCAC-admin/fedelemflowlist`
     * Successfully installs:
         + appdirs-1.4.4
-        + boto3-1.36.18
-        + botocore-1.36.18
-        + certifi-2025.1.31
-        + charset-normalizer-3.4.1
-        + esupy-0.4.0
-        + fedelemflowlist-1.3.0
-        + idna-3.10
-        + jmespath-1.0.1
-        + numpy-2.2.2
+        + boto3-1.42.37
+        + botocore-1.42.37
+        + certifi-2026.1.4
+        + charset-normalizer-3.4.4
+        + esupy-0.4.2
+        + fedelemflowlist-1.3.1
+        + idna-3.11
+        + jmespath-1.1.0
+        + numpy-2.4.1
         + olca-schema-2.4.0
-        + pandas-2.2.3
-        + pyarrow-19.0.0
+        + pandas-3.0.0
+        + pyarrow-23.0.0
         + python-dateutil-2.9.0
-        + pytz-2025.1
-        + PyYAML-6.0.2
-        + requests-2.32.3
-        + s3transfer-0.11.2
+        + PyYAML-6.0.3
+        + requests-2.32.5
+        + s3transfer-0.16.0
         + six-1.17.0
-        + tzdata-2025.1
-        + urllib3-2.3.0
+        + tzdata-2025.3
+        + urllib3-2.6.3
 + `pip install git+https://github.com/USEPA/standardizedinventories#egg=StEWI`
     * Successfully installed:
-        + StEWI-1.1.4
-        + beautifulsoup4-4.12.3
+        + StEWI-1.2.1
         + et-xmlfile-2.0.0
         + openpyxl-3.1.5
-        + soupsieve-2.5
-        + xlrd-2.0.1
+        + xlrd-2.0.2
 + `pip install scipy`
     * Successfully installs:
-        + scipy-1.15.1
+        + scipy-1.17.0
 
 # API
 In the latest version of ElectricityLCI, there is a dependency on three external datasets that require the use of an application programming interface (API) key.
@@ -74,8 +71,8 @@ Request a free API key by registering at the following address.
 
 - https://www.eia.gov/opendata/.
 
-NETL's coal transportation inventory update is provided through a public URL on [EDX](https://edx.netl.doe.gov), found within the [Life Cycle Analysis](https://edx.netl.doe.gov/group/life-cycle-analysis) group.
-An automated download of the Excel workbook will trigger a request for an EDX API key.
+NETL's upstream inventory data (e.g., coal transportation and natural gas extraction and processing) are provided through public URLs on [EDX](https://edx.netl.doe.gov), found within the [Life Cycle Analysis](https://edx.netl.doe.gov/group/life-cycle-analysis) group.
+An automated download of the Excel workbooks will trigger a request for an EDX API key.
 API keys require registration.
 
 - https://edx.netl.doe.gov/user/register
@@ -159,11 +156,12 @@ If GitHub-hosted packages fail to clone and install, manually downloading the zi
 
 ```bash
 # Download the correct version of the repo
-wget https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List/archive/refs/tags/v1.1.2.zip
+wget https://github.com/FLCAC-admin/fedelemflowlist/archive/refs/tags/v1.1.2.zip
 unzip v1.1.2.zip
-cd cd Federal-LCA-Commons-Elementary-Flow-List-1.1.2/
+cd cd fedelemflowlist-1.1.2/
 pip install .
 ```
+
 
 # Data Store
 This package downloads a significant amount of background and inventory data (>2.5 GB) in order to process electricity baselines.
