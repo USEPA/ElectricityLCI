@@ -24,7 +24,7 @@ __doc__ = """This module contains the main API functions to be used by the
 end user.
 
 Last updated:
-    2025-12-19
+    2026-01-30
 """
 __version__ = elci_version
 
@@ -812,8 +812,9 @@ def run_post_processes():
     from electricitylci.olca_jsonld_writer import clean_json
     from electricitylci.residual_grid_mix import add_residual_mixes
 
-    clean_json(config.model_specs.namestr)
+    # HOTFIX: clean JSON after residual mix processes [260107; TWD]
     add_residual_mixes()  # skipped if not configured
+    clean_json(config.model_specs.namestr)
     build_product_systems(
         file_path=config.model_specs.namestr,
         elci_config=config.model_specs.model_name,
