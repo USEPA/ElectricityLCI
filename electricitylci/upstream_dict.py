@@ -35,7 +35,7 @@ petroleum extraction and processing, coal transport, nuclear fuel extraction,
 processing, and transport, and power plant construction.
 
 Last updated:
-    2025-06-09
+    2026-02-06
 """
 __all__ = [
     "olcaschema_genupstream_processes",
@@ -556,8 +556,9 @@ def olcaschema_genupstream_processes(merged):
                 _exchange_table_creation_ref("Coal transport")
             )
         elif fuel_type == "GAS":
+            # HOTFIX: address Issue 320 [26.02.06; TWD]
             combined_name = (
-                "natural gas extraction and processing - "
+                "natural gas extraction, processing, and transport - "
                 + merged_summary_filter.loc[first_row, "stage_code"]
             )
             exchanges_list.append(_exchange_table_creation_ref(fuel_type))
