@@ -38,7 +38,7 @@ JSON-LD format as prescribed by OpenLCA software.
 Portions of this code were cleaned using ChatGPTv3.5.
 
 Last updated:
-    2025-06-09
+    2026-02-06
 """
 __all__ = [
     'con_process_ref',
@@ -939,7 +939,6 @@ def process_description_creation(process_type="fossil"):
     else:
         subkey = "use_egrid"
 
-    global year
     key = "Description"
 
     try:
@@ -1005,7 +1004,6 @@ def process_doc_creation(process_type="default"):
     else:
         subkey = "use_egrid"
 
-    global year
     ar = dict()
 
     for kw, key in OLCA_TO_METADATA.items():
