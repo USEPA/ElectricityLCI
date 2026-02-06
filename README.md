@@ -55,6 +55,9 @@ _Note that Python 3.14 is not supported (yet)._
 + `pip install scipy`
     * Successfully installs:
         + scipy-1.17.0
++ `pip install pytz`
+    * Successfully installs:
+        + pytz-2025.2
 
 # API
 In the latest version of ElectricityLCI, there is a dependency on three external datasets that require the use of an application programming interface (API) key.
@@ -362,7 +365,7 @@ To install the dependencies for this package without installing the package itse
     fedelemflowlist @ git+https://github.com/FLCAC-Admin/fedelemflowlist
     StEWI @ git+https://github.com/USEPA/standardizedinventories#egg=StEWI
     scipy>=1.10
-
+    pytz
 
 To checkout a pull request locally for testing:
 
