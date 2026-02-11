@@ -34,9 +34,10 @@ from electricitylci.globals import NREL_REC_URL
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2026-01-28
+    2026-02-10
 
 Changelog:
+    -   [26.02.10]: New filter out zero helper function
     -   [26.01.28]: Allow resetting log levels
     -   [25.12.12]: Add NREL REC data handler
     -   [25.08.27]: Update archive EPA CAMS method
@@ -63,6 +64,7 @@ __all__ = [
     "download",
     "download_unzip",
     "fill_default_provider_uuids",
+    "filter_out_zero",
     "find_file_in_folder",
     "find_worksheet_header_row",
     "get_ba_map",
@@ -1087,6 +1089,44 @@ def fill_default_provider_uuids(dict_to_fill, *args):
     else:
         logging.warning(f"All arguments into function must be dictionaries")
     return dict_to_fill
+
+
+def filter_out_zero(df, col_name):
+    """Filter all rows with zero value in a given column from a pandas data
+    frame.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        A data frame that must have a column, ``col_name`` that is numeric.
+    col_name : str
+        A column name in ``df`` that may have zero values that correspond to
+        rows that are unwanted.
+
+    Returns
+    -------
+    pandas.DataFrame
+        The same data frame that is sent where rows with a zero value in
+        ``col_name`` are dropped.
+
+    Raises
+    ------
+    IndexError
+        If the column name does not exist in the data frame.
+    TypeError
+        If the column's data type is not numeric (must be able to have a zero
+        value).
+    """
+    if col_name not in df.columns:
+        raise IndexError("Column, '%s', not in data frame!" % col_name)
+    if not pd.api.types.is_numeric_dtype(df[col_name]):
+        raise TypeError("Column, '%s', is not numeric!" % col_name)
+
+    zero_filter = df[col_name] != 0
+    logging.debug(
+        "Dropping %d rows from column, '%s'" % (zero_filter.sum(), col_name)
+    )
+    return df.loc[zero_filter, :]
 
 
 def find_file_in_folder(folder_path, file_pattern_match, return_name=True):

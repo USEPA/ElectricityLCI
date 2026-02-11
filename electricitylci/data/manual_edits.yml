@@ -145,3 +145,18 @@ generation.py:
           filters:
             Balancing Authority Code:
               - "HECO"
+# Entries 12 & 13 drop the elevated Chloromethane air emissions from WI hydro
+# power plants; see Issue 324.
+        entry_12:
+          edit_type: "remove"
+          data_source: "yaml"
+          filters:
+            eGRID_ID:
+              - 3971
+              - 3974
+            FlowName:
+              - "Chloromethane"
+            Source:
+              - "NEI"
+            Year:
+               - 2020
