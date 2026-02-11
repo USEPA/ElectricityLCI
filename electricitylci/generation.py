@@ -219,26 +219,23 @@ def _wtd_mean(pdser, total_db):
         The flow-amount-weighted average of values.
     """
     # HOTFIX: averaging with NaNs in the array.
-    non_nans = pdser.values[~np.isnan(pdser.values)]
+    nan_filter = ~np.isnan(pdser)
+    non_nans = pdser[nan_filter].values
     if len(non_nans) == 0:
         logging.debug("Encountered a NaN array!")
-        result = float("nan")
+        return np.nan
     else:
-        try:
-            wts = total_db.loc[
-                pdser[~np.isnan(pdser)].index, "FlowAmount"].values
-            result = np.average(non_nans, weights=wts)
-        except:
-            logging.debug(
-                f"Error calculating weighted mean for {pdser.name}-"
-                f"likely from 0 FlowAmounts"
-            )
-            try:
-                with np.errstate(all='raise'):
-                    result = np.average(non_nans)
-            except (ArithmeticError, ValueError, FloatingPointError):
-                result = float("nan")
-    return result
+        # Attempt a cleaner weighting approach [26.02.11; TWD]
+        wts = total_db.loc[pdser[nan_filter].index, "FlowAmount"].values
+        # HOTFIX: any NaN flow amount always come back NaN; zero these weights
+        #   If all FlowAmounts are NaNs, then perform standard average.
+        wts = np.nan_to_num(wts, nan=0.0)
+        wts_sum = np.sum(wts)
+        if wts_sum != 0:
+            return np.average(non_nans, weights=wts)
+        else:
+            # Triggers if wts is empty or NaN array or weights sum to zero.
+            return np.average(non_nans)
 
 
 def add_data_collection_score(db, elec_df, subregion="BA"):
@@ -1506,7 +1503,6 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     # Create a data frame with one massive column of exchanges
     logging.info("Creating exchanges")
     database_groupby = database.groupby(by=base_cols)
-    # BUG: Issue 321; ValueError Incompatible indexer with Series.
     process_df = pd.DataFrame(
         database_groupby[non_agg_cols].apply(
             turn_data_to_dict,
@@ -1824,7 +1820,7 @@ def turn_data_to_dict(data, upstream_dict):
     data.loc[input_filter, "input"] = True
 
     # Define products based on compartment label
-    # HOTFIT: input compartment tends to be technosphere flow
+    # HOTFIX: input compartment tends to be technosphere flow
     product_filter = (
         (data["Compartment"].str.lower().str.contains("technosphere"))
         | (data["Compartment"].str.lower().str.contains("valuable"))
