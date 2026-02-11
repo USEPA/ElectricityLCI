@@ -64,7 +64,7 @@ CHANGELOG (since v2.0)
 Created:
     2019-06-04
 Last edited:
-    2026-01-09
+    2026-02-11
 """
 __all__ = [
     "add_data_collection_score",
@@ -1497,6 +1497,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     # Create a data frame with one massive column of exchanges
     logging.info("Creating exchanges")
     database_groupby = database.groupby(by=base_cols)
+    # BUG: Issue 321; ValueError Incompatible indexer with Series.
     process_df = pd.DataFrame(
         database_groupby[non_agg_cols].apply(
             turn_data_to_dict,
@@ -1729,7 +1730,6 @@ def turn_data_to_dict(data, upstream_dict):
         into openLCA unit processes. Columns include the following (as defined
         by `ng_agg_cols` in :func:`olcaschema_genprocess`):
 
-        - stage_code
         - FlowName
         - FlowUUID
         - Compartment
@@ -1747,6 +1747,9 @@ def turn_data_to_dict(data, upstream_dict):
         - Emission_factor
         - GeomMean
         - GeomSD
+
+        The data.name should return the group tuple (e.g., balancing authority
+        name, fuel category, stage code).
 
     upstream_dict : dict
         Dictionary as created by upstream_dict.py, containing the openLCA
@@ -1813,7 +1816,7 @@ def turn_data_to_dict(data, upstream_dict):
 
     # Define products based on compartment label
     # HOTFIT: input compartment tends to be technosphere flow
-    product_filter=(
+    product_filter = (
         (data["Compartment"].str.lower().str.contains("technosphere"))
         | (data["Compartment"].str.lower().str.contains("valuable"))
         | (data["Compartment"].str.lower().str.contains("input"))
@@ -1826,9 +1829,11 @@ def turn_data_to_dict(data, upstream_dict):
     )
     data.loc[waste_filter, "FlowType"] = "WASTE_FLOW"
 
-    data["flow"] = ""
-    data["uncertainty"] = ""
+    # HOTFIX: pandas 3 has dedicated 'str' datatype; use None for generic object
+    data["flow"] = None
+    data["uncertainty"] = None
     for index, row in data.iterrows():
+        # Reminder: use '.at' to assign dictionary as a single row/col's value
         data.at[index, "uncertainty"] = uncertainty_table_creation(
             data.loc[index:index, :]
         )
