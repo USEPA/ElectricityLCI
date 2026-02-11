@@ -64,7 +64,7 @@ CHANGELOG (since v2.0)
 Created:
     2019-06-04
 Last edited:
-    2026-01-09
+    2026-02-11
 """
 __all__ = [
     "add_data_collection_score",
@@ -75,10 +75,13 @@ __all__ = [
     "calculate_electricity_by_source",
     "create_generation_process_df",
     "eia_facility_fuel_region",
+    "get_facilities_w_fuel_region",
+    "get_generation_years",
     "hawkins_young",
     "hawkins_young_sigma",
     "hawkins_young_uncertainty",
     "olcaschema_genprocess",
+    "read_stewi_frs",
     "replace_egrid",
     "turn_data_to_dict",
 ]
@@ -923,6 +926,7 @@ def create_generation_process_df():
 
         # Effectively removes all non-EIA facilities from StEWICombo inventory.
         #   drops 909 rows in 2022 inventory
+        #   drops 2,545 rows in 2023 inventory
         ewf_df.dropna(subset=["PGM_SYS_ID"], inplace=True)
 
         # Drop unused columns; note legacy column names are still here.
@@ -1067,15 +1071,20 @@ def create_generation_process_df():
         final_database.rename(columns={"Year_x": "Year"}, inplace=True)
 
     # Use the Federal Elementary Flow List (FEDEFL) to map flow UUIDs
-    # NOTE: 10,000 unmatched flows; mostly wastes and product flows
+    # NOTE: 10,000 unmatched flows; mostly wastes and product flows.
+    # For 2023, only 91 flows without a UUID; mainly wastes, but also
+    # includes 'Heat' input, 'Steam' output, and 'Dibenzo(a,h)Anthracene' to
+    # air.
     final_database = map_emissions_to_fedelemflows(final_database)
 
     # Sanity check that no duplicated columns exist in the data frame.
+    #   27 columns for 2023
     final_database = final_database.loc[
         :, ~final_database.columns.duplicated()
     ]
 
     # Sanity check that no duplicate emission rows are in the data frame.
+    #   2023: 60% of rows were duplicates
     dup_cols_check = [
         "eGRID_ID",
         "FuelCategory",
@@ -1100,7 +1109,7 @@ def create_generation_process_df():
     final_database["DataCollection"] = 5
     final_database["GeographicalCorrelation"] = 1
 
-    # For surety's sake
+    # For super surety's sake
     final_database["eGRID_ID"] = final_database["eGRID_ID"].astype(int)
 
     # Organize database by facility, then by emission compartment
