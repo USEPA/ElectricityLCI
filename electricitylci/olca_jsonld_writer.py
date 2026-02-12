@@ -51,12 +51,13 @@ References:
 
 Changelog (since v2.0):
 
+    -   [26.02.12] Check v3 & v4 UUIDs for locations.
     -   [25.12.19] New update providers helper function.
     -   [25.12.16] New build residual processes method.
     -   [25.06.11] New method for updating product system description text.
 
 Last edited:
-    2025-12-19
+    2026-02-12
 """
 __all__ = [
     "add_to_product_system_description",
@@ -1456,7 +1457,7 @@ def _location(dict_d, dict_s):
         return (None, dict_s)
 
     # Check for valid UUID; otherwise, generate one
-    if not _uid_is_valid(uid):
+    if not (_uid_is_valid(uid, 3) or _uid_is_valid(uid, 4)):
         uid = _uid(o.ModelType.LOCATION, code)
 
     # Check if location already exists in our records; otherwise, create
