@@ -64,7 +64,7 @@ CHANGELOG (since v2.0)
 Created:
     2019-06-04
 Last edited:
-    2026-02-11
+    2026-02-12
 """
 __all__ = [
     "add_data_collection_score",
@@ -106,7 +106,9 @@ def _calc_sigma(p_series):
         Assumes a 90% confidence level (see :param:`alpha`).
     """
     alpha = 0.9
-    if model_specs.calculate_uncertainty:
+    # HOTFIX: skip zero-length and all NaN series [26.02.12; TWD]
+    is_empty = p_series.dropna().empty
+    if model_specs.calculate_uncertainty and not is_empty:
         (is_error, sigma) = hawkins_young_sigma(p_series.values, alpha)
     else:
         return None
