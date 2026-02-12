@@ -21,7 +21,6 @@ from electricitylci.process_dictionary_writer import (
 from electricitylci.utils import make_valid_version_num
 from electricitylci.globals import elci_version
 # Issue #150, need Balancing Authority names for regional construction
-from electricitylci.eia860_facilities import eia860_balancing_authority
 from electricitylci.eia860_facilities import add_balancing_authorities_to_plants
 import electricitylci.model_config as config
 
@@ -36,7 +35,7 @@ petroleum extraction and processing, coal transport, nuclear fuel extraction,
 processing, and transport, and power plant construction.
 
 Last updated:
-    2026-02-06
+    2026-02-12
 """
 __all__ = [
     "olcaschema_genupstream_processes",
@@ -156,7 +155,8 @@ def _exchange_table_creation_ref(fuel_type):
             "2371: Utility System Construction")
     }
 
-    # The following link provides the undefined variables:
+    # The following link provides the undefined variables (i.e, the None
+    # placeholders for GEOTHERMAL, SOLAR, and WIND below):
     # https://github.com/KeyLogicLCA/ElectricityLCI/commit/f61d28a3d0cf5b0ef61ca147f870e15a863f8ec3
     ar = dict()
     ar["internalId"] = ""
@@ -185,17 +185,17 @@ def _exchange_table_creation_ref(fuel_type):
     # NOTE: presently, there are no upstream processes for these
     elif fuel_type == "GEOTHERMAL":
         logging.warning("Undefined geothermal flow")
-        ar["flow"] = geothermal_flow
+        ar["flow"] = None # geothermal_flow
         ar["unit"] = _unit("MWh")
         ar["amount"] = 1
     elif fuel_type == "SOLAR":
         logging.warning("Undefined solar flow")
-        ar["flow"] = solar_flow
+        ar["flow"] = None # solar_flow
         ar["unit"] = _unit("Item(s)")
         ar["amount"] = 1
     elif fuel_type == "WIND":
         logging.warning("Undefined wind flow")
-        ar["flow"] = wind_flow
+        ar["flow"] = None # wind_flow
         ar["unit"] = _unit("Item(s)")
         ar["amount"] = 1
     # END NOTE
