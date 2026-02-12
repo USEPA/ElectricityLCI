@@ -455,9 +455,11 @@ def aggregate_data(total_db, subregion="BA"):
     logging.debug("Reduce data from %d to %d rows" % (sz_tdb, len(total_db)))
 
     # Calculate electricity totals by region and source
+    logging.info("Calculating electricity by source")
     total_db, electricity_df = calculate_electricity_by_source(
         total_db, subregion
     )
+    logging.info("Finished calculating electricity by source")
 
     # Assign data score based on percent generation
     total_db = add_data_collection_score(total_db, electricity_df, subregion)
