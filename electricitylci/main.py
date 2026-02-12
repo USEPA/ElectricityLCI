@@ -32,7 +32,7 @@ options. The selection of configuration file will occur after the start
 of this script or it may be passed following the command-line argument, '-c'.
 
 Last updated:
-    2025-03-14
+    2026-02-12
 
 Changelog:
     -   Address logging handler import for Python 3.12 compatibility.
@@ -46,6 +46,14 @@ Changelog:
     -   Test facility-level inventory generation.
     -   Make use of the post-processing configuration parameter.
     -   Make main() runnable (add ``is_set`` param)
+
+Quick start. Use the following to create a logger and initialize model
+specifications.
+
+>>> from electricitylci.utils import get_logger
+>>> log = get_logger(True, False)
+>>> import electricitylci.model_config as config
+>>> config.model_specs = config.build_model_class()
 """
 __all__ = [
     "main",

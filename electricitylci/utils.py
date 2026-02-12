@@ -2073,7 +2073,7 @@ def set_dir(directory):
     return directory
 
 
-def write_csv_to_output(f_name, data, to_zip=False):
+def write_csv_to_output(f_name, data, to_zip=False, add_index=False):
     """Write data to CSV file in the outputs directory.
 
     Parameters
@@ -2086,6 +2086,9 @@ def write_csv_to_output(f_name, data, to_zip=False):
         A string is written to a plain text file.
     to_zip : bool, optional
         Whether to compress the output data using ZIP format.
+        Defaults to false.
+    add_index : bool, optional
+        Whether to include a data frame's index in the output CSV.
         Defaults to false.
 
     Raises
@@ -2103,14 +2106,14 @@ def write_csv_to_output(f_name, data, to_zip=False):
                 fpath += ".zip"
             try:
                 data.to_csv(
-                    fpath, encoding="utf-8", compression="zip", index=False)
+                    fpath, encoding="utf-8", compression="zip", index=add_index)
             except:
                 raise
             else:
                 logging.debug("Saved dataframe to zip.")
         else:
             try:
-                data.to_csv(fpath, index=False, encoding="utf-8")
+                data.to_csv(fpath, index=add_index, encoding="utf-8")
             except:
                 raise
             else:
