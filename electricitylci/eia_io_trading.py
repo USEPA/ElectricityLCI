@@ -68,7 +68,7 @@ References:
     52(11), 6666-6675. https://doi.org/10.1021/acs.est.7b05191
 
 Last updated:
-    2025-06-09
+    2026-02-12
 """
 __all__ = [
     "ba_io_trading_model",
@@ -506,6 +506,8 @@ def _make_net_gen(year, ba_cols, ng_json_list):
     # Net Generation Data Import
     logging.info("Creating net generation data frame with datetime")
     df_net_gen = row_to_df(ng_json_list, 'net_gen')
+    # HOTFIX: convert 'net_gen' str values to float [26.02.12;TWD]
+    df_net_gen['net_gen'] = df_net_gen['net_gen'].astype('float')
 
     logging.info("Pivoting")
     df_net_gen = df_net_gen.pivot(
@@ -524,7 +526,7 @@ def _make_net_gen(year, ba_cols, ng_json_list):
     # Add in missing columns, then sort in alphabetical order
     logging.info("Cleaning net_gen data frame")
     for i in col_diff:
-        df_net_gen[i] = 0
+        df_net_gen[i] = 0.0  # HOTFIX: all cols to floats [26.02.12; TWD]
 
     # Keep only the columns that match the balancing authority names;
     # there are several other columns included in the dataset
@@ -568,6 +570,7 @@ def _make_net_gen_sum(net_trade, eia_gen, ca_gen):
     # Sum values in each column
     # Creates a data frame with one column, rows are BA codes, values are
     # annual sums of net generation.
+    # BUG: net_trade is a mix of ints, str, and objects
     df_net_gen_sum = net_trade.sum(axis=0).to_frame()
 
     # Add Canadian import data to the net generation dataset,
