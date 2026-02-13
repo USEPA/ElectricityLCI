@@ -1363,7 +1363,7 @@ def _get_olca_locations():
 
     # Only read locally if needed (i.e., if data wasn't just downloaded)
     if os.path.exists(loc_path) and len(loc_list) == 0:
-        logging.info("Reading locations from local JSON")
+        logging.debug("Reading locations from local JSON")
         with open(loc_path, 'r') as f:
             my_list = json.load(f)
         for my_item in my_list:
