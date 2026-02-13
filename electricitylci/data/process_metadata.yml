@@ -509,7 +509,7 @@ nuclear_upstream:
     - 'This process represents the cradle-to-gate inventory for the production of electricity from US generation II nuclear reactors, including uranium extraction, enrichment, fuel fabrication, fuel transport, power plant construction, and power plant emissions. '
 
   techno_process: &nuclear_techno_process
-    - 'Documentation for the original model is available at http://www.netl.doe.gov/energy-analysis/details?id=620.
+    - 'Documentation for the original model is available in Skone (2012).
       This inventory represents an update to some portions of the model to represent 2016 operations, namely the retirement of US gaseous diffusion enrichment operations and to a lesser extent an updated mix of nuclear fuel sources.
 
       The inventory is on the basis of 1 MWh generated electricity and, as a result, is the same for all nuclear power plants.'
@@ -520,7 +520,7 @@ nuclear_upstream:
 
   TechnologyDescription:
 
-  ModelingConstants: 'http://www.netl.doe.gov/energy-analysis/details?id=620'
+  ModelingConstants: 'See Skone (2012).'
 
   DatasetOwner: 'NETL'
 
@@ -599,7 +599,7 @@ geothermal:
       Profiles were developed for different states based on the available data.
       Geothermal power plants are based on a variety of technologies.
       All technologies are captured within the state-level profiles.
-      This inventory is an extension of that described in http://www.netl.doe.gov/energy-analysis/details?id=591.'
+      This inventory is an extension of that described in Skone et al. (2012).'
 
   Description:
   - *geothermal_techno_intro
@@ -613,7 +613,7 @@ geothermal:
 
   DataDocumentor: 'NETL'
 
-  DataTreatment: 'http://www.netl.doe.gov/energy-analysis/details?id=591'
+  DataTreatment: 'See Skone et al. (2012).'
 
   DataSelection: 'Non-condensible gas species are from Argonne National Laboratory Geochemical database.
     Details on the types of geothermal power plants in each state are provided by EIA 860 and openei.org.
@@ -623,13 +623,13 @@ geothermal:
   - 'BOUNDARY CONDITIONS
 
     The system boundary includes the construction of geothermal wells, facility installation/deinstallation, and power plant operations.
-    http://www.netl.doe.gov/energy-analysis/details?id=591
+    See Skone et al. (2012).
 
     '
 
   - 'DATA COLLECTION
 
-    The full description of data collection is available at http://www.netl.doe.gov/energy-analysis/details?id=591
+    The full description of data collection is available in Skone et al. (2012).
 
     '
 
@@ -637,7 +637,7 @@ geothermal:
 
   - 'FURTHER DOCUMENTATION
 
-    http://www.netl.doe.gov/energy-analysis/details?id=591'
+    See Skone et al. (2012).'
 
   DataCollectionPeriod: '2016-2018'
 
@@ -1099,7 +1099,7 @@ gas_upstream:
 
   - 'MORE INFORMATION
 
-    More information on the inventory is available at https://www.netl.doe.gov/energy-analysis/details?id=3198 '
+    More information on the inventory is available in Littlefield et al. (2019). '
 
   Sources:
 
@@ -1246,7 +1246,7 @@ construction_upstream:
     - 'The cradle-to-gate inventory for the construction of the fossil fuel generators (coal, gas, and oil). '
 
   techno_process: &construction_techno_process
-    - 'The inventories represent the construction of either natural gas combined cycle or coal power plants using an economic input output life cycle inventory model (https://doi.org/10.1016/j.jclepro.2017.04.150) and the construction costs for these plants as detailed by NETL techno-economics analysis (https://www.netl.doe.gov/energy-analysis/details?id=729).
+    - 'The inventories represent the construction of either natural gas combined cycle or coal power plants using an economic input output life cycle inventory model (https://doi.org/10.1016/j.jclepro.2017.04.150) and the construction costs for these plants as detailed by NETL techno-economics analysis (Fout et al., 2015).
       These type different types of power plants are then assigned to the various power plants according to the plant they most resemble.
       The inventories are then scaled according to power plant capacity relative to the source power plants and then allocated over an assumed 30 year life.
       The single year of impacts are then divided by the generation of the year selected in the model configuration.'
@@ -1265,7 +1265,7 @@ construction_upstream:
 
   ModelingConstants: ''
 
-  DataSelection: 'The inventories represent the construction of either natural gas combined cycle or coal power plants using an economic input output life cycle inventory model (https://doi.org/10.1016/j.jclepro.2017.04.150) and the construction costs for these plants as detailed by NETL techno-economics analysis (https://www.netl.doe.gov/energy-analysis/details?id=729).'
+  DataSelection: 'The inventories represent the construction of either natural gas combined cycle or coal power plants using an economic input output life cycle inventory model (https://doi.org/10.1016/j.jclepro.2017.04.150) and the construction costs for these plants as detailed by NETL techno-economics analysis (Fout et al., 2015).'
 
   DataTreatment: 'These type different types of power plants are then assigned to the various power plants according to the plant they most resemble.
     The inventories are then scaled according to power plant capacity relative to the source power plants and then allocated over an assumed 30 year life.
