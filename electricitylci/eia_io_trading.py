@@ -68,7 +68,7 @@ References:
     52(11), 6666-6675. https://doi.org/10.1021/acs.est.7b05191
 
 Last updated:
-    2026-02-12
+    2026-02-13
 """
 __all__ = [
     "ba_io_trading_model",
@@ -1666,6 +1666,8 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     # WARNING: Peaks around 11 GB of memory
     logging.info("Creating trading data frame")
     df_ba_trade = ba_exchange_to_df(BA_TO_BA_ROWS, data_type='ba_to_ba')
+    # HOTFIX: cast string to integer (values range -172k to 316k).
+    df_ba_trade['ba_to_ba'] = df_ba_trade['ba_to_ba'].astype('int')
     del(BA_TO_BA_ROWS)
 
     # Make export-import trade pivot table, make it square.
@@ -1748,7 +1750,8 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     return {
         'BA': BAA_final_trade,
         'FERC': ferc_final_trade,
-        'US': us_final_trade}
+        'US': us_final_trade
+    }
 
 
 def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
@@ -2035,3 +2038,32 @@ def qio_model(net_gen_df, trade_pivot, ba_map, ba_list, roi=None, thresh=1e-5):
     )
 
     return df_final_trade_out_filt_melted_merge
+
+
+#
+# MAIN
+#
+if __name__ == "__main__":
+    from electricitylci.eia_io_trading import _check_json
+    from electricitylci.eia_io_trading import _fix_final_trade
+    from electricitylci.eia_io_trading import _get_ca_imports
+    from electricitylci.eia_io_trading import _get_zero_traders
+    from electricitylci.eia_io_trading import _get_zero_traders_w_demand
+    from electricitylci.eia_io_trading import _make_ba_trade
+    from electricitylci.eia_io_trading import _make_ferc_trade
+    from electricitylci.eia_io_trading import _make_net_gen
+    from electricitylci.eia_io_trading import _make_net_gen_sum
+    from electricitylci.eia_io_trading import _make_square_pivot
+    from electricitylci.eia_io_trading import _make_trade_pivot
+    from electricitylci.eia_io_trading import _make_us_trade
+    from electricitylci.eia_io_trading import _match_df_cols
+    from electricitylci.eia_io_trading import _read_ba
+    from electricitylci.eia_io_trading import _read_bulk
+    from electricitylci.eia_io_trading import _read_bulk_api
+    from electricitylci.eia_io_trading import _read_bulk_json
+    from electricitylci.eia_io_trading import _read_bulk_zip
+    from electricitylci.eia_io_trading import _read_ca_imports
+    from electricitylci.eia_io_trading import _read_dng_api
+    from electricitylci.eia_io_trading import _read_eia_gen
+    from electricitylci.eia_io_trading import _read_id_api
+    from electricitylci.eia_io_trading import _write_bulk_api
