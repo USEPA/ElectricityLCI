@@ -16,6 +16,7 @@ import re
 import uuid
 from zipfile import ZipFile
 
+from esupy.location import olca_location_meta
 import fedelemflowlist
 import olca_schema as o
 import olca_schema.units as o_units
@@ -57,7 +58,7 @@ Changelog (since v2.0):
     -   [25.06.11] New method for updating product system description text.
 
 Last edited:
-    2026-02-12
+    2026-02-13
 """
 __all__ = [
     "add_to_product_system_description",
@@ -682,14 +683,16 @@ def _archive_json(data_list, file_path):
     Parameters
     ----------
     data_list : list
-        A list of dictionaries.
+        A list of olca schema objects.
     file_path : str
         A valid filepath to be written to (CAUTION: overwrites existing data)
     """
     logging.debug("Writing %d items to %s" % (len(data_list), file_path))
-    out_str = ",".join([json.dumps(x.to_dict()) for x in data_list])
+    out_str = ",".join([
+        json.dumps(x.to_dict(), ensure_ascii=False) for x in data_list
+    ])
     out_str = "[%s]" % out_str
-    with open(file_path, 'w') as f:
+    with open(file_path, 'w', encoding='utf-8') as f:
         f.write(out_str)
 
 
@@ -1321,6 +1324,77 @@ def _format_dq_entry(entry):
     return '(%s)' % ';'.join(nums)
 
 
+def _get_olca_locations():
+    """Helper method to create a list of location objects based on
+    Green Delta's openLCA list of locations.
+
+    Returns
+    -------
+    list
+        List of Location objects.
+    """
+    # Putting these in Fed Commons data store; albeit from GreenDelta.
+    data_dir = os.path.join(paths.local_path, "fedcommons")
+
+    loc_file = "locations.json"
+    loc_path = os.path.join(data_dir, loc_file)
+    loc_list = []
+
+    if not os.path.isfile(loc_path) and check_output_dir(data_dir):
+        # esupy's method reads GreenDelta's GitHub.
+        # https://github.com/USEPA/esupy/blob/main/esupy/location.py
+        loc_meta = olca_location_meta()
+
+        # Create a location dictionary.
+        # Based on `build_location_dict` in generate_processes.py
+        # on flac-utils https://github.com/FLCAC-admin/flcac-utils.
+        loc_meta = loc_meta.drop(columns='Category')
+        loc_meta.columns = loc_meta.columns.str.lower()
+        loc_meta['description'] = loc_meta['description'].fillna("")
+        loc_meta = loc_meta.rename(
+            columns={'id': '@id'}
+        ).to_dict(orient='index')
+
+        # Create your location objects
+        for loc_code in loc_meta:
+            loc_list.append(o.Location().from_dict(loc_meta[loc_code]))
+
+        _archive_json(loc_list, loc_path)
+
+    # Only read locally if needed (i.e., if data wasn't just downloaded)
+    if os.path.exists(loc_path) and len(loc_list) == 0:
+        logging.info("Reading locations from local JSON")
+        with open(loc_path, 'r') as f:
+            my_list = json.load(f)
+        for my_item in my_list:
+            loc_list.append(o.Location.from_dict(my_item))
+
+    return loc_list
+
+
+def _get_location_dict():
+    """Helper method to create a dictionary of location metadata based on
+    GreenDelta's openLCA locations.
+
+    Returns
+    -------
+    dict
+        A dictionary of location metadata where keys are the location codes
+        (e.g., 'CA', 'CA-BC', 'US', 'US-PA').
+
+    Notes
+    -----
+    Used in :func:`_location` to reference against location codes for processes
+    """
+    loc_dict = {}
+    loc_list = _get_olca_locations()
+    for loc_item in loc_list:
+        code = loc_item.code
+        if code not in loc_dict:
+            loc_dict[code] = loc_item.to_dict()
+    return loc_dict
+
+
 def _heat_elem_flow():
     """Returns Energy, heat resource from FEDEFL Elementary Flow List
 
@@ -1456,6 +1530,12 @@ def _location(dict_d, dict_s):
     if code == '':
         return (None, dict_s)
 
+    # HOTFIX: Use GreenDelta's location codes [26.02.13; TWD].
+    gd_loc = _get_location_dict()
+    if code in gd_loc:
+        dict_d = gd_loc.get(code)
+        uid = _val(dict_d, 'id', '@id')
+
     # Check for valid UUID; otherwise, generate one
     if not (_uid_is_valid(uid, 3) or _uid_is_valid(uid, 4)):
         uid = _uid(o.ModelType.LOCATION, code)
@@ -1469,7 +1549,7 @@ def _location(dict_d, dict_s):
     else:
         logging.debug("Creating new location entry for '%s'" % code)
         location = o.Location(id=uid, code=code)
-        location.name = code
+        location.name = _val(dict_d, 'name')
         location.latitude = _val(dict_d, 'latitude')
         location.longitude = _val(dict_d, 'longitude')
         location.description = _val(dict_d, 'description')
@@ -2851,3 +2931,26 @@ def _val(dict_d, *path, **kvargs):
     if r_val is None and 'default' in kvargs:
         r_val = kvargs['default']
     return r_val
+
+
+#
+# SANDBOX --- testing grounds for ILCD process renaming.
+#
+if __name__ == '__main__':
+    import os
+    import re
+    from electricitylci.utils import get_logger
+    from electricitylci.globals import output_dir
+    from electricitylci.olca_jsonld_writer import _read_jsonld
+    from electricitylci.olca_jsonld_writer import _root_entity_dict
+
+    log = get_logger(True, False)
+
+    # Read the full JSON-LD into memory
+    my_file = os.path.join(output_dir, "ELCI_2023_jsonld_20260213_091215.zip")
+    my_dict = _read_jsonld(my_file, _root_entity_dict(), False)
+
+    # The focus of ILCD renaming is on Process (and Product System)
+    # Let's start with upstream (2121: Coal Mining)
+    # The groups are (1) region, (2) coal type, (3) mine type / processing
+    p = re.match("^coal extraction and processing - (.*), (.*), (.*)$")
