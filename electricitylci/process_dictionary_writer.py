@@ -38,7 +38,7 @@ JSON-LD format as prescribed by OpenLCA software.
 Portions of this code were cleaned using ChatGPTv3.5.
 
 Last updated:
-    2026-02-06
+    2026-02-13
 """
 __all__ = [
     'con_process_ref',
@@ -1586,7 +1586,6 @@ def unit(unt):
     >>> unit_entry = unit(unit_name)
     """
     ar = dict()
-    ar["internalId"] = ""
     ar["@type"] = "Unit"
     ar["name"] = unt
     return ar
