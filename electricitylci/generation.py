@@ -64,7 +64,7 @@ CHANGELOG (since v2.0)
 Created:
     2019-06-04
 Last edited:
-    2026-02-12
+    2026-02-13
 """
 __all__ = [
     "add_data_collection_score",
@@ -104,6 +104,16 @@ def _calc_sigma(p_series):
     float
         The fitted sigma for a Hawkins-Young uncertainty method.
         Assumes a 90% confidence level (see :param:`alpha`).
+        Returns NaN if the series is empty or all NaNs.
+
+    Notes
+    -----
+    This method is responsible for infrequent ValueErrors, 'zero-size array to
+    reduction operation minimum which has no identity'. Occasionally, pandas
+    performs an inference check to determine the best datatype for a column.
+    In the off chance that numpy is called in to infer a NoneType, you may end
+    up with a 'no identity' error. By changing the return type from None to
+    NaN, the latter being a float, should *potentially* eliminate the problem.
     """
     alpha = 0.9
     # HOTFIX: skip zero-length and all NaN series [26.02.12; TWD]
@@ -111,10 +121,10 @@ def _calc_sigma(p_series):
     if model_specs.calculate_uncertainty and not is_empty:
         (is_error, sigma) = hawkins_young_sigma(p_series.values, alpha)
     else:
-        return None
+        return np.nan
 
     if is_error:
-        return None
+        return np.nan
     else:
         return sigma
 
