@@ -34,31 +34,368 @@ no_uncertainty_statement: &no_uncertainty
 
     This process does not contain any uncertainty.'
 
-source_ingwersen_etal: &ingwersen_etal
-  Name: 'Ingwersen, et al. ElectricityLCI: A Python Package for U.S. Regionalized Electricity Life Cycle Inventory Data Creation'
+source_bergesen_etal: &bergesen_etal
+  Name:
+    'Bergesen et al. (2014). Thin-Film Photovoltaic Power Generation Offers Decreasing Greenhouse Gas Emissions and Increasing Environmental Co-benefits in the Long Term'
+  TextReference:
+    'Bergesen, J. D., Heath, G. A., Gibon, T., & Suh, S. (2014).
+    Thin-film photovoltaic power generation offers decreasing greenhouse gas emissions and increasing environmental co-benefits in the long term.
+    Environmental Science & Technology, 48(16), 9834–9843.
+    https://doi.org/10.1021/es405539z. '
+  Year:
+    2014
+  Url:
+    'https://doi.org/10.1021/es405539z'
+  Category:
+    'NREL'
+  Version:
+    '2.1.0'
 
-  TextReference: 'Ingwersen, et al. (in preparation).
+source_cooney_etal: &cooney_etal
+  Name:
+    'Cooney et al. (2016).
+    Updating the U.S. Life Cycle GHG Petroleum Baseline to 2014 with Projections to 2040 Using Open-Source Engineering-Based Models'
+  TextReference:
+    'Cooney, G., Jamieson, M., Marriott, J., Bergerson, J., Brandt, A., & Skone, T. (2016).
+    Updating the U.S. Life Cycle GHG Petroleum Baseline to 2014 with Projections to 2040 Using Open-Source Engineering-Based Models.
+    Environmental Science & Technology.
+    doi: 10.1021/acs.est.6b02819.'
+  Year:
+    2016
+  Version:
+    '2.1.0'
+  Url:
+    'http://doi.org/10.1021/acs.est.6b02819'
+  Category:
+    ''
+
+source_de_chalendar: &de_chalendar_2019
+    Name:
+      'de Chalendar et al. (2019). Tracking emissions in the US electricity system'
+    TextReference:
+      'de Chalendar, J. A., Taggart, J., & Benson, S. M. (2019).
+      Tracking emissions in the US electricity system.
+      Proceedings of the National Academy of Sciences, 116(51), 25497-25502.
+      doi: 10.1073/pnas.1912950116.'
+    Year:
+      2020
+    Url:
+      'https://doi.org/10.1073/pnas.1912950116'
+    Version:
+      '2.1.0'
+    Category:
+      ''
+
+source_fingersh_etal: &fingersh_etal
+  Name:
+    'Fingersh et al. (2006). Wind Turbine Design Cost and Scaling Model'
+  TextReference:
+    'Fingersh, L., Hand, M., and Laxson, A. (2006).
+    Wind Turbine Design Cost and Scaling Model.
+    NREL/TP-500-40566: National Renewable Energy Laboratory, Golden, CO. Accessed February 13, 2026.
+    https://doi.org/10.2172/897434.'
+  Year:
+    2006
+  Url:
+    'https://doi.org/10.2172/897434'
+  Version:
+    '2.1.0'
+  Category:
+    'NREL'
+
+source_frischknecht: &frischknecht_etal
+  Name:
+    'Frischknecht et al. (2015). Life cycle inventories and life cycle assessment of photovoltaic systems'
+  TextReference:
+    'Frischknecht, R., Itten, R., Sinha, P., de Wild-Scholten, M., Zhang, J., Fthenakis, V., Kim, H. C., Raugei, M., & Stucki, M. (2015).
+    Life cycle inventories and life cycle assessment of photovoltaic systems.
+    International Energy Agency (IEA) PVPS Task 12, Report T12, 4, 2015.'
+  Year:
+    2015
+  Url:
+    'https://iea-pvps.org/wp-content/uploads/2020/01/IEA-PVPS_Task_12_LCI_LCA.pdf'
+  Version:
+    '2.1.0'
+  Category:
+    'NREL'
+
+source_hottle_ghosh: &hottle_ghosh_2021
+  Name:
+    'Hottle & Ghosh (2021). Regional electricity consumption mixes using trade data for representative inventories'
+  TextReference:
+    'Hottle, T., and Ghosh, T. (2021), Regional electricity consumption mixes using trade data for representative inventories.
+    The International Journal of Life Cycle Assessment 26(6), 1211-1222.
+    doi: 10.1007/s11367-021-01876-3. '
+  Year:
+    2021
+  Url:
+    'https://doi.org/10.1007/s11367-021-01876-3'
+  Version:
+    '2.1.0'
+  Category:
+    ''
+
+source_ingwersen_etal: &ingwersen_etal
+  Name:
+    'ElectricityLCI: A Python Package for U.S. Regionalized Electricity Life Cycle Inventory Data Creation'
+  TextReference:
+    'Ingwersen, et al. (in preparation).
     ElectricityLCI: A Python Package for U.S. Regionalized Electricity Life Cycle Inventory Data Creation.
     Manuscript in preparation.'
+  Version:
+    '2.1.0'
+  Category:
+    'In_Preparation'
 
-  Version: '2.0.0'
+source_mason_etal: &mason_etal
+  Name:
+    'Mason et al. (2006). Energy payback and life-cycle CO2 emissions of the BOS in an optimized 3.5 MW PV installation'
+  Year:
+    2015
+  TextReference:
+    'Mason, J. E., Fthenakis, V. M., Hansen, T., & Kim, H. C. (2006).
+    Energy payback and life-cycle CO2 emissions of the BOS in an optimized 3.5 MW PV installation.
+    Progress in Photovoltaics: Research and Applications, 14(2), 179–190.
+    https://doi.org/10.1002/pip.652. '
+  Url:
+    'https://doi.org/10.1002/pip.652'
+  Version:
+    '2.1.0'
+  Category:
+    'Brookhaven'
 
-  Category: 'In_Preparation'
+source_nalukowe_etal: &nalukowe_etal
+  Name:
+    'Nalukowe et al. (2006). Life Cycle Assessment of a Wind Turbine'
+  TextReference:
+    'Nalukowe, B. B., Liu, J., Damien, W., Lukawski, T. (2006).
+    Life Cycle Assessment of a Wind Turbine.
+    Unpublished. '
+  Year:
+    2006
+  Url:
+    'www.infra.kth.se/fms/utbildning/lca/projects%202006/Group%2007%20(Wind%20turbine).pdf'
+  Version:
+    '2.1.0'
+  Category:
+    'Unpublished'
 
-source_netl_coal_baseline_2024: &netl_coal_baseline
-  Name: 'NETL (2023). Cradle-to-Gate Life Cycle Analysis Baseline for United States Coal Mining and Delivery'
+source_netl_2011_1502: &netl_2011_1502
+  Name:
+    'Role of Alternative Energy Sources: Nuclear Technology Assessment'
+  TextReference:
+    'Skone, Timothy J. (2012).
+    Role of Alternative Energy Sources: Nuclear Technology Assessment.
+    NETL/DOE-2011/1502: National Energy Technology Laboratory, Pittsburgh, PA.
+    https://doi.org/10.2172/1515246. '
+  Year:
+    2012
+  Url:
+    'https://www.netl.doe.gov/projects/files/FY13_RoleofAlternativeEnergySourcesNuclearTechnologyAssessment_080113.pdf'
+  Version:
+    '2.1.0'
+  Category:
+    'NETL'
 
-  Url: 'https://doi.org/10.2172/2370100'
+source_netl_2012_1531: &netl_2012_1531
+  Name:
+    'Skone et al. (2012). Role of Alternative Energy Sources: Geothermal Technology Assessment'
+  TextReference:
+    'Skone, Timothy J., Littlefield, James, Eckard, Robert, Cooney, Greg, & Marriott, Joe (2012).
+    Role of Alternative Energy Sources: Geothermal Technology Assessment.
+    DOE/NETL-2012/1531: National Energy Technology Laboratory, Pittsburgh, PA.
+    https://doi.org/10.2172/1515239. '
+  Year:
+    2012
+  Url:
+    'https://netl.doe.gov/projects/files/FY12_RoleofAlternativeEnergySourcesGeothermalTechnologyAssessment_090112.pdf'
+  Version:
+    '2.1.0'
+  Category:
+    'NETL'
 
-  Category: 'NETL'
+source_netl_2012_1532: &netl_2012_1532
+  Name:
+    'Skone et al. (2012). Role of Alternative Energy Sources: Solar Thermal Technology Assessment'
+  TextReference:
+    'Skone, Timothy J., Littlefield, J., Eckard, R., Cooney, G., Prica, M., Marriott, J. (2012).
+    Role of Alternative Energy Sources: Solar Thermal Technology Assessment.
+    DOE/NETL-2012/1532: National Energy Technology Laboratory, Pittsburgh, PA.
+    https://doi.org/10.2172/1515242. '
+  Year:
+    2012
+  Url:
+    'https://netl.doe.gov/energy-analysis/details?id=62dcb3e0-ad31-4711-8c35-cc1b340054ab'
+  Version:
+    '2.1.0'
+  Category:
+    'NETL'
 
-  Year: 2023
+source_netl_2015_1723: &netl_2015_1723
+  Name:
+    'Fout et al. (2015). Cost and Performance Baseline for Fossil Energy Plants
+    Volume 1a: Bituminous Coal (PC) and Natural Gas to Electricity Revision
+    3'
+  TextReference:
+    'Fout, T., Zoelle, A., Keairns, D., Turner, M., Woods, M., Kuehn, N., Shah, V., Chou, V., Pinkerton, L. (2015).
+    Cost and Performance Baseline for Fossil Energy Plants Volume 1a: Bituminous Coal (PC) and Natural Gas to Electricity Revision 3.
+    DOE/NETL-2015/1723: National Energy Technology Laboratory, Pittsburgh, PA.
+    Available from https://netl.doe.gov/energy-analysis/details?id=E6586E03-86F0-4D03-BC31-632FD0CE2AEC. '
+  Year:
+    2015
+  Url:
+    'https://netl.doe.gov/energy-analysis/details?id=E6586E03-86F0-4D03-BC31-632FD0CE2AEC'
+  Version:
+    '2.1.0'
+  Category:
+    'NETL'
 
-  Version: '1.00.00'
+source_netl_2019_2039: &netl_2019_2039
+  Name:
+    'Littlefield et al. (2019). Life Cycle Analysis of Natural Gas Extraction and Power Generation'
+  TextReference:
+    'Littlefield, J., Roman-White, S., Augustine, D., Pegallapati, A., Zaimes, G. G., Rai, S., Cooney, G., and Skone, T. J. (2019).
+    Life Cycle Analysis of Natural Gas Extraction and Power Generation.
+    DOE/NETL-2019/2039: National Energy Technology Laboratory, Pittsburgh, PA.
+    https://doi.org/10.2172/1529553'
+  Year:
+    2019
+  Url:
+    'https://doi.org/10.2172/1529553'
+  Version:
+    '2.1.0'
+  Category:
+    'NETL'
 
-  TextReference: 'NETL (2023).
-    Cradle-to-Gate Life Cycle Analysis Baseline for United States Coal Mining and Delivery, U.S. Department of Energy National Energy Technology Laboratory, Pittsburgh, PA.
-    Report DOE/NETL-2024/4846.'
+source_netl_coal_baseline_2024: &netl_2024_4846
+  Name:
+    'Cutshaw et al. (2023). Cradle-to-Gate Life Cycle Analysis Baseline for United States Coal Mining and Delivery'
+  TextReference:
+    'A. Cutshaw, D. Carlson, M. Henriksen, M. Krynock, M. Jamieson, and R. James III.
+    Cradle-to-Gate Life Cycle Analysis Baseline for United States Coal Mining and Delivery.
+    DOE/NETL-2024/4846: National Energy Technology Laboratory, Pittsburgh, PA.
+    https://doi.org/10.2172/2370100. '
+  Year:
+    2023
+  Url:
+    'https://doi.org/10.2172/2370100'
+  Version:
+    '2.1.0'
+  Category:
+    'NETL'
+
+source_qu_etal_2017: &qu_etal_2017
+  Name:
+    'Qu et al. (2017). A Quasi-Input-Output model to improve the estimation of emission factors for purchased electricity from interconnected grids'
+  TextReference:
+    'Qu, S., Wang, H., Liang, S., Shapiro, A.M., Suh, S., Sheldon, S., Zik, O., Fang, H., and Xu, M. (2017).
+    A Quasi-Input-Output model to improve the estimation of emission factors for purchased electricity from interconnected grids.
+    Applied Energy, 200, 249-259.
+    https://doi.org/10.1016/j.apenergy.2017.05.046. '
+  Year:
+    2017
+  Url:
+    'https://doi.org/10.1016/j.apenergy.2017.05.046'
+  Version:
+    '2.1.0'
+  Category:
+    ''
+
+source_qu_etal_2018: &qu_etal_2018
+  Name:
+    'Qu et al. (2018). Virtual CO2 Emission Flows in the Global Electricity Trade Network'
+  TextReference:
+    'Qu, S., Li, Y., Yuan, J., and Xu, M.  (2018).
+    Virtual CO2 Emission Flows in the Global Electricity Trade Network.
+    Environmental Science & Technology, 52(11), 6666-6675.
+    https://doi.org/10.1021/acs.est.7b05191. '
+  Year:
+    2018
+  Url:
+    'https://doi.org/10.1021/acs.est.7b05191'
+  Version:
+    '2.1.0'
+  Category:
+    ''
+
+source_scherer_etal: &scherer_etal
+  Name:
+    "Scherer & Pfister (2016). Hydropower's Biogenic Carbon Footprint"
+  TextReference:
+    "Scherer L, Pfister S (2016).
+    Hydropower's Biogenic Carbon Footprint.
+    PLoS ONE 11(9): e0161947.
+    https://doi.org/10.1371/journal.pone.0161947"
+  Year:
+    2016
+  Url:
+    'https://doi.org/10.1371/journal.pone.0161947'
+  Version:
+    '2.1.0'
+
+source_sengupta_etal: &sengupta_etal
+  Name:
+    'Sengupta et al. (2018). National Solar Radiation Database'
+  Year:
+    2018
+  TextReference:
+    'Sengupta, M., Habte, A., Xie, Y., Lopez, A., & Buster, G. (2018).
+    National Solar Radiation Database (NSRDB) [data set].
+    Open Energy Data Initiative (OEDI).
+    National Renewable Energy Laboratory.
+    https://doi.org/10.25984/1810289.'
+  Url:
+    'https://doi.org/10.25984/1810289'
+  Version:
+    '2.1.0'
+  Category:
+    'NREL'
+
+source_vestas: &razdan_garrett
+  Name:
+    'Razdan & Garrett (2015). Life Cycle Assessment of Electricity Production from an onshore V110-2.0 MW Wind Plant'
+  Year:
+    2015
+  TextReference:
+    'Razdan, P. and Garrett, P. (2015).
+    Life Cycle Assessment of Electricity Production from an onshore V110-2.0 MW Wind Plant.
+    Version 1.0.
+    Vestas Wind Systems A/S, Hedeager 42, Aarhus N, 8200, Denmark.'
+  Url:
+    'https://www.vestas.com/content/dam/vestas-com/global/en/sustainability/reports-and-ratings/lcas/LCAV11020MW181215.pdf.coredownload.inline.pdf'
+  Category: 'Vestas'
+
+source_wind_turbines_db: &wind_turbines_db
+  Name:
+    'Bauer & Matysik (2018). Wind Turbines Database'
+  TextReference:
+    'Bauer, L. and Matysik, S. (2018).
+    Wind turbines database.
+    wind-turbine-models.
+    Retrieved from https://en.wind-turbine-models.com/turbines.'
+  Year:
+    2018
+  Url:
+    'https://en.wind-turbine-models.com/turbines'
+  Version:
+    '2.1.0'
+
+source_yang_etal: &yang_etal
+  Name:
+    'Yang et al. (2017). USEEIO: A new and transparent United States environmentally-extended input-output model'
+  TextReference:
+    'Yang, Y., Ingwersen, W. W., Hawkins, T. R., Srocka, M., & Meyer, D. E. (2017).
+    USEEIO: A new and transparent United States environmentally-extended input-output model.
+    Journal of Cleaner Production, 158, 308-318.
+    doi: 10.1016/j.jclepro.2017.04.150'
+  Year:
+    2017
+  Url:
+    'https://doi.org/10.1016/j.jclepro.2017.04.150'
+  Version:
+    '2.1.0'
+  Category:
+    ''
 
 # The default documentation is going to serve as the documentation for
 # generation processes wherein the inventory is reported emissions from
@@ -162,6 +499,7 @@ default:
   DatasetOtherEvaluation: ''
 
   Sources:
+
     Source1:
       <<: *ingwersen_etal
 
@@ -190,10 +528,10 @@ nuclear_upstream:
 
   DataDocumentor: 'NETL'
 
-  DataTreatment: 'The full description of data treatment is available at http://www.netl.doe.gov/energy-analysis/details?id=620.
+  DataTreatment: 'The full description of data treatment is available in Skone (2012).
     The data represented here is a modification of that life cycle model - US fuel enrichment is now 100 percent centrifugal and some of the background data was updated with newer versions.'
 
-  DataSelection: 'The full description of data selection is available at http://www.netl.doe.gov/energy-analysis/details?id=620'
+  DataSelection: 'The full description of data selection is available in Skone (2012).'
 
   SamplingProcedure:
   - 'BOUNDARY CONDITIONS
@@ -204,7 +542,7 @@ nuclear_upstream:
 
   - 'DATA COLLECTION
 
-    The full description of data collection is available at http://www.netl.doe.gov/energy-analysis/details?id=620
+    The full description of data collection is available in Skone (2012).
 
     '
 
@@ -212,26 +550,14 @@ nuclear_upstream:
 
   - 'FURTHER DOCUMENTATION
 
-    https://www.netl.doe.gov/energy-analysis/details?id=620'
+    See Skone (2012).'
 
   DataCollectionPeriod: '2011 to present. Secondary/tertiary material inputs provided via thinkstep data are from service pack 34 - 2016'
 
   Sources:
+
     Source1:
-      Name: 'Role of Alternative Energy Sources: Nuclear Technology Assessment'
-
-      Year: 2012
-
-      TextReference: 'NETL. (2012).
-        Role of Alternative Energy Sources: Nuclear Technology Assessment.
-        Document Number: NETL/DOE-2011/1502 National Energy Technology Laboratory, Pittsburgh, PA.
-        Available from https://www.netl.doe.gov/energy-analysis/details?id=620 '
-
-      Version: '1.0.1'
-
-      Url: 'https://netl.doe.gov/energy-analysis/details?id=620'
-
-      Category: 'NETL'
+      <<: *netl_2011_1502
 
 biomass:
 
@@ -258,6 +584,7 @@ biomass:
   DataDocumentor: 'NETL'
 
   Sources:
+
     Source1:
       <<: *ingwersen_etal
 
@@ -317,20 +644,7 @@ geothermal:
   Sources:
 
     Source1:
-      Name: 'Role of Alternative Energy Sources: Geothermal Technology Assessment'
-
-      Year: 2012
-
-      TextReference: 'NETL. (2012).
-        Role of Alternative Energy Sources: Geothermal Technology Assessment.
-        Document Number: National Energy Technology Laboratory, Pittsburgh, PA.
-        Available from https://netl.doe.gov/energy-analysis/details?id=591'
-
-      Version: '1.0.1'
-
-      Url: 'https://netl.doe.gov/energy-analysis/details?id=591'
-
-      Category: 'NETL'
+      <<: *netl_2012_1531
 
 hydro:
 
@@ -375,19 +689,12 @@ hydro:
   DataCollectionPeriod: '2018'
 
   Sources:
+
     Source1:
       <<: *ingwersen_etal
 
     Source2:
-      Name: "Hydropower's Biogenic Carbon Footprint"
-
-      TextReference: "Scherer L, Pfister S (2016) Hydropower's Biogenic Carbon
-        Footprint. PLoS ONE 11(9): e0161947.
-        https://doi.org/10.1371/journal.pone.0161947"
-
-      Year: '2016'
-
-      Url: 'https://doi.org/10.1371/journal.pone.0161947'
+      <<: *scherer_etal
 
 solar:
 
@@ -444,60 +751,21 @@ solar:
   - *no_uncertainty
 
   Sources:
+
     Source1:
       <<: *ingwersen_etal
 
     Source2:
-      Name: 'Thin-Film Photovoltaic Power Generation Offers Decreasing Greenhouse Gas Emissions and Increasing Environmental Co-benefits in the Long Term'
-
-      Year: 2014
-
-      TextReference: 'Bergesen, J. D., Heath, G. A., Gibon, T., & Suh, S. (2014).
-        Thin-film photovoltaic power generation offers decreasing greenhouse gas emissions and increasing environmental co-benefits in the long term.
-        Environmental Science & Technology, 48(16), 9834–9843.'
-
-      Url: 'https://doi.org/10.1021/es405539z'
-
-      Category: 'NREL'
+      <<: *bergesen_etal
 
     Source3:
-      Name: 'Life cycle inventories and life cycle assessment of photovoltaic systems'
-
-      Year: 2015
-
-      TextReference: 'Frischknecht, R., Itten, R., Sinha, P., de Wild-Scholten, M., Zhang, J., Fthenakis, V., Kim, H. C., Raugei, M., & Stucki, M. (2015).
-        Life cycle inventories and life cycle assessment of photovoltaic systems.
-        International Energy Agency (IEA) PVPS Task 12, Report T12, 4, 2015.'
-
-      Url: 'https://iea-pvps.org/wp-content/uploads/2020/01/IEA-PVPS_Task_12_LCI_LCA.pdf'
-
-      Category: 'NREL'
+      <<: *frischknecht_etal
 
     Source4:
-      Name: 'Energy payback and life-cycle CO2 emissions of the BOS in an optimized 3.5 MW PV installation'
-
-      Year: 2015
-
-      TextReference: 'Mason, J. E., Fthenakis, V. M., Hansen, T., & Kim, H. C. (2006).
-        Energy payback and life-cycle CO2 emissions of the BOS in an optimized 3.5 MW PV installation.
-        Progress in Photovoltaics: Research and Applications, 14(2), 179–190.'
-
-      Url: 'https://doi.org/10.1002/pip.652'
-
-      Category: 'Brookhaven'
+      <<: *mason_etal
 
     Source5:
-      Name: 'National Solar Radiation Database (NSRDB)'
-
-      Year: 2018
-
-      TextReference: 'National Renewable Energy Laboratory. (2018).
-        National Solar Radiation Database (NSRDB) [data set].
-        Retrieved from https://dx.doi.org/10.25984/1810289.'
-
-      Url: 'https://dx.doi.org/10.25984/1810289'
-
-      Category: 'NREL'
+      <<: *sengupta_etal
 
 solarthermal:
 
@@ -547,21 +815,12 @@ solarthermal:
   - *no_uncertainty
 
   Sources:
+
     Source1:
       <<: *ingwersen_etal
 
     Source2:
-      Name: 'Role of Alternative Energy Sources: Solar Thermal Technology Assessment'
-
-      Year: 2012
-
-      TextReference: 'National Energy Technology Laboratory (2012).
-        Role of Alternative Energy Sources: Solar Thermal Technology Assessment.
-        Retrieved from https://netl.doe.gov/energy-analysis/details?id=62dcb3e0-ad31-4711-8c35-cc1b340054ab'
-
-      Url: 'https://netl.doe.gov/energy-analysis/details?id=62dcb3e0-ad31-4711-8c35-cc1b340054ab'
-
-      Category: 'NETL'
+      <<: *netl_2012_1532
 
 wind:
 
@@ -611,48 +870,21 @@ wind:
   - *no_uncertainty
 
   Sources:
+
     Source1:
       <<: *ingwersen_etal
 
     Source2:
-      Name: 'Life Cycle Assessment of Electricity Production from an onshore V110-2.0 MW Wind Plant'
-
-      Year: 2015
-
-      TextReference: 'Vestas (2015). Life Cycle Assessment of Electricity Production from an onshore V110-2.0 MW Wind Plant
-        18th December 2015, Version 1.0. Vestas Wind Systems A/S, Hedeager 42, Aarhus N, 8200, Denmark.'
-
-      Url: 'https://www.vestas.com/content/dam/vestas-com/global/en/sustainability/reports-and-ratings/lcas/LCAV11020MW181215.pdf.coredownload.inline.pdf'
-
-      Category: 'Vestas'
+      <<: *razdan_garrett
 
     Source3:
-      Name: 'Wind Turbine Design Cost and Scaling Model.'
-
-      Year: 2006
-
-      Category: 'NREL'
-
-      TextReference: 'Fingersh et al., 2006. Wind Turbine Design Cost and Scaling Model,
-        Technical Report NREL/TP-500-40566 (Accessed June 15, 2010)'
-
-      Url: 'https://docs.nrel.gov/docs/fy07osti/40566.pdf'
+      <<: *fingersh_etal
 
     Source4:
-      Name: 'Life Cycle Assessment of a Wind Turbine'
-
-      Year: 2006
-
-      TextReference: 'Barbara Batumbya Nalukowe,  Jianguo Liu, Wiedmer Damien, Tomasz Lukawski, 2006. Life Cycle Assessment of a Wind Turbine. May 22, 2006'
+      <<: *nalukowe_etal
 
     Source5:
-      Name: 'Wind Turbines Database'
-
-      Year: 2018
-
-      Url: 'https://en.wind-turbine-models.com/turbines'
-
-      TextReference: '(2018) Wind Turbines Database. Retrieved from https://en.wind-turbine-models.com/turbines'
+      <<: *wind_turbines_db
 
 consumption_mix:
 
@@ -680,20 +912,9 @@ consumption_mix:
     DataSelection: 'FERC Form 714'
 
     Sources:
+
       Source1:
-        Name: 'Hottle & Ghosh (2021) Regional electricity consumption mixes using trade data for representative inventories'
-
-        Url: 'https://doi.org/10.1007/s11367-021-01876-3'
-
-        TextReference: 'Hottle, T., and Ghosh, T. (2021), Regional electricity consumption mixes using trade data for representative inventories.
-          The International Journal of Life Cycle Assessment 26(6), 1211-1222.
-          doi: 10.1007/s11367-021-01876-3.'
-
-        Year: 2021
-
-        Version: '1.0.2'
-
-        Category: ''
+        <<: *hottle_ghosh_2021
 
   replace_egrid:
     DataTreatment: 'US Energy Information Administration (EIA) Form EIA-930 electricity trading data is used to inform an input/output model of electricity trading.
@@ -706,52 +927,15 @@ consumption_mix:
     DataSelection: 'EIA Form 930 and EIA 923'
 
     Sources:
+
       Source1:
-        Name: 'de Chalendar et al. (2019). Tracking emissions in the US electricity system'
-
-        Url: 'https://doi.org/10.1073/pnas.1912950116'
-
-        TextReference: 'de Chalendar, J. A., Taggart, J., & Benson, S. M. (2019).
-          Tracking emissions in the US electricity system.
-          Proceedings of the National Academy of Sciences, 116(51), 25497-25502.
-          doi: 10.1073/pnas.1912950116.'
-
-        Year: 2020
-
-        Version: '1.0.2'
-
-        Category: ''
+        <<: *de_chalendar_2019
 
       Source2:
-        Name: 'Qu et al. (2017). A Quasi-Input-Output model to improve the estimation of emission factors for purchased electricity from interconnected grids.'
-
-        Url: 'https://doi.org/10.1016/j.apenergy.2017.05.046'
-
-        TextReference: 'Qu, S., Wang, H., Liang, S., Shapiro, A.M., Suh, S., Sheldon, S., Zik, O., Fang, H., and Xu, M. (2017).
-          A Quasi-Input-Output model to improve the estimation of emission factors for purchased electricity from interconnected grids.
-          Applied Energy, 200, 249-259.'
-
-        Year: 2017
-
-        Version: '1.0.2'
-
-        Category: ''
+        <<: *qu_etal_2017
 
       Source3:
-
-        Name: 'Qu et al. (2018). Virtual CO2 Emission Flows in the Global Electricity Trade Network'
-
-        Url: 'https://doi.org/10.1021/acs.est.7b05191'
-
-        TextReference: 'Qu, S., Li, Y., Yuan, J., and Xu, M.  (2018).
-          Virtual CO2 Emission Flows in the Global Electricity Trade Network.
-          Environmental Science & Technology, 52(11), 6666-6675.'
-
-        Year: 2018
-
-        Version: '1.0.2'
-
-        Category: ''
+        <<: *qu_etal_2018
 
       Source4:
         <<: *ingwersen_etal
@@ -851,8 +1035,7 @@ coal_upstream:
   Sources:
 
     Source1:
-
-      <<: *netl_coal_baseline
+      <<: *netl_2024_4846
 
 gas_upstream:
 
@@ -917,25 +1100,11 @@ gas_upstream:
   - 'MORE INFORMATION
 
     More information on the inventory is available at https://www.netl.doe.gov/energy-analysis/details?id=3198 '
+
   Sources:
 
     Source1:
-
-      Name: 'NETL (2019). Life Cycle Analysis of Natural Gas Extraction and Power Generation'
-
-      Url: 'https://netl.doe.gov/energy-analysis/details?id=3198'
-
-      Version: '1.0.1'
-
-      Year: 2019
-
-      TextReference: 'NETL. (2019).
-        Life Cycle Analysis of Natural Gas Extraction and Power Generation.
-        DOE/NETL-2019/2039.
-        U.S. DOE National Energy Technology Laboratory, Pittsburgh, PA.
-        https://netl.doe.gov/energy-analysis/details?id=3198'
-
-      Category: 'NETL'
+      <<: *netl_2019_2039
 
 oil_upstream:
 
@@ -1001,22 +1170,9 @@ oil_upstream:
   DataCollectionPeriod: 'Data from 2016 was used to define the mix of crudes and petroleum refinery types.'
 
   Sources:
+
     Source1:
-      Name: 'Cooney et al. (2016).
-        Updating the U.S. Life Cycle GHG Petroleum Baseline to 2014 with Projections to 2040 Using Open-Source Engineering-Based Models.'
-
-      TextReference: 'Cooney, G., Jamieson, M., Marriott, J., Bergerson, J., Brandt, A., & Skone, T. (2016).
-        Updating the U.S. Life Cycle GHG Petroleum Baseline to 2014 with Projections to 2040 Using Open-Source Engineering-Based Models.
-        Environmental Science & Technology.
-        doi: 10.1021/acs.est.6b02819.'
-
-      Year: 2016
-
-      Version: '1.0.2'
-
-      Url: 'http://dx.doi.org/10.1021/acs.est.6b02819'
-
-      Category: ''
+      <<: *cooney_etal
 
 coal_transport_upstream:
 
@@ -1082,8 +1238,7 @@ coal_transport_upstream:
   Sources:
 
     Source1:
-
-      <<: *netl_coal_baseline
+      <<: *netl_2024_4846
 
 construction_upstream:
 
@@ -1136,39 +1291,10 @@ construction_upstream:
   Sources:
 
     Source1:
-
-      Name: 'Yang et al. (2017) USEEIO: A new and transparent United States environmentally-extended input-output model'
-
-      Url: 'https://doi.org/10.1016/j.jclepro.2017.04.150'
-
-      TextReference: 'Yang, Y., Ingwersen, W. W., Hawkins, T. R., Srocka, M., & Meyer, D. E. (2017).
-        USEEIO: A new and transparent United States environmentally-extended input-output model.
-        Journal of Cleaner Production, 158, 308-318.
-        doi: 10.1016/j.jclepro.2017.04.150'
-
-      Year: 2017
-
-      Version: '1.0.2'
-
-      Category: ''
+      <<: *yang_etal
 
     Source2:
-      Name: 'NETL. (2015). Cost and Performance Baseline for Fossil Energy Plants
-        Volume 1a: Bituminous Coal (PC) and Natural Gas to Electricity Revision
-        3.'
-
-      Url: 'https://netl.doe.gov/energy-analysis/details?id=729'
-
-      TextReference: 'NETL. (2015).
-        Cost and Performance Baseline for Fossil Energy Plants Volume 1a: Bituminous Coal (PC) and Natural Gas to Electricity Revision 3.
-        Document Number: National Energy Technology Laboratory, Pittsburgh, PA.
-        Available from https://netl.doe.gov/energy-analysis/details?id=729. '
-
-      Year: 2015
-
-      Version: '1.0.1'
-
-      Category: 'NETL'
+      <<: *netl_2015_1723
 
 solarpv_construction_upstream:
   # techno_intro: &solar_const_techno_intro
@@ -1223,60 +1349,21 @@ solarpv_construction_upstream:
   - *no_uncertainty
 
   Sources:
+
     Source1:
       <<: *ingwersen_etal
 
     Source2:
-      Name: 'Thin-Film Photovoltaic Power Generation Offers Decreasing Greenhouse Gas Emissions and Increasing Environmental Co-benefits in the Long Term'
-
-      Year: 2014
-
-      TextReference: 'Bergesen, J. D., Heath, G. A., Gibon, T., & Suh, S. (2014).
-        Thin-film photovoltaic power generation offers decreasing greenhouse gas emissions and increasing environmental co-benefits in the long term.
-        Environmental Science & Technology, 48(16), 9834–9843.'
-
-      Url: 'https://doi.org/10.1021/es405539z'
-
-      Category: 'NREL'
+      <<: *bergesen_etal
 
     Source3:
-      Name: 'Life cycle inventories and life cycle assessment of photovoltaic systems'
-
-      Year: 2015
-
-      TextReference: 'Frischknecht, R., Itten, R., Sinha, P., de Wild-Scholten, M., Zhang, J., Fthenakis, V., Kim, H. C., Raugei, M., & Stucki, M. (2015).
-        Life cycle inventories and life cycle assessment of photovoltaic systems.
-        International Energy Agency (IEA) PVPS Task 12, Report T12, 4, 2015.'
-
-      Url: 'https://iea-pvps.org/wp-content/uploads/2020/01/IEA-PVPS_Task_12_LCI_LCA.pdf'
-
-      Category: 'NREL'
+      <<: *frischknecht_etal
 
     Source4:
-      Name: 'Energy payback and life-cycle CO2 emissions of the BOS in an optimized 3.5 MW PV installation'
-
-      Year: 2015
-
-      TextReference: 'Mason, J. E., Fthenakis, V. M., Hansen, T., & Kim, H. C. (2006).
-        Energy payback and life-cycle CO2 emissions of the BOS in an optimized 3.5 MW PV installation.
-        Progress in Photovoltaics: Research and Applications, 14(2), 179–190.'
-
-      Url: 'https://doi.org/10.1002/pip.652'
-
-      Category: 'Brookhaven'
+      <<: *mason_etal
 
     Source5:
-      Name: 'National Solar Radiation Database (NSRDB)'
-
-      Year: 2018
-
-      TextReference: 'National Renewable Energy Laboratory. (2018).
-        National Solar Radiation Database (NSRDB) [data set].
-        Retrieved from https://dx.doi.org/10.25984/1810289.'
-
-      Url: 'https://dx.doi.org/10.25984/1810289'
-
-      Category: 'NREL'
+      <<: *sengupta_etal
 
 solartherm_construction_upstream:
   techno_intro: &solarthermal_const_techno_intro
@@ -1328,21 +1415,12 @@ solartherm_construction_upstream:
   - *no_uncertainty
 
   Sources:
+
     Source1:
       <<: *ingwersen_etal
 
     Source2:
-      Name: 'Role of Alternative Energy Sources: Solar Thermal Technology Assessment'
-
-      Year: 2012
-
-      TextReference: 'National Energy Technology Laboratory (2012).
-        Role of Alternative Energy Sources: Solar Thermal Technology Assessment.
-        Retrieved from https://netl.doe.gov/energy-analysis/details?id=62dcb3e0-ad31-4711-8c35-cc1b340054ab'
-
-      Url: 'https://netl.doe.gov/energy-analysis/details?id=62dcb3e0-ad31-4711-8c35-cc1b340054ab'
-
-      Category: 'NETL'
+      <<: *netl_2012_1532
 
 wind_construction_upstream:
   techno_intro: &wind_const_techno_intro
@@ -1392,45 +1470,18 @@ wind_construction_upstream:
   - *no_uncertainty
 
   Sources:
+
     Source1:
       <<: *ingwersen_etal
 
     Source2:
-      Name: 'Life Cycle Assessment of Electricity Production from an onshore V110-2.0 MW Wind Plant'
-
-      Year: 2015
-
-      TextReference: 'Vestas (2015). Life Cycle Assessment of Electricity Production from an onshore V110-2.0 MW Wind Plant
-        18th December 2015, Version 1.0. Vestas Wind Systems A/S, Hedeager 42, Aarhus N, 8200, Denmark.'
-
-      Url: 'https://www.vestas.com/content/dam/vestas-com/global/en/sustainability/reports-and-ratings/lcas/LCAV11020MW181215.pdf.coredownload.inline.pdf'
-
-      Category: 'Vestas'
+      <<: *razdan_garrett
 
     Source3:
-      Name: 'Wind Turbine Design Cost and Scaling Model.'
-
-      Year: 2006
-
-      Category: 'NREL'
-
-      TextReference: 'Fingersh et al., 2006. Wind Turbine Design Cost and Scaling Model,
-        Technical Report NREL/TP-500-40566 (Accessed June 15, 2010)'
-
-      Url: 'https://docs.nrel.gov/docs/fy07osti/40566.pdf'
+      <<: *fingersh_etal
 
     Source4:
-      Name: 'Life Cycle Assessment of a Wind Turbine'
-
-      Year: 2006
-
-      TextReference: 'Barbara Batumbya Nalukowe,  Jianguo Liu, Wiedmer Damien, Tomasz Lukawski, 2006. Life Cycle Assessment of a Wind Turbine. May 22, 2006'
+      <<: *nalukowe_etal
 
     Source5:
-      Name: 'Wind Turbines Database'
-
-      Year: 2018
-
-      Url: 'https://en.wind-turbine-models.com/turbines'
-
-      TextReference: '(2018) Wind Turbines Database. Retrieved from https://en.wind-turbine-models.com/turbines'
+      <<: *wind_turbines_db
