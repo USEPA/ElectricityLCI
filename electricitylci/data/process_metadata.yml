@@ -506,7 +506,7 @@ default:
 nuclear_upstream:
 
   techno_intro: &nuclear_techno_intro
-    - 'This process represents the cradle-to-gate inventory for the production of electricity from US generation II nuclear reactors, including uranium extraction, enrichment, fuel fabrication, fuel transport, power plant construction, and power plant emissions. '
+    - 'This process represents the cradle-to-gate inventory for the production of electricity from US generation II nuclear reactors, including uranium extraction, enrichment, fuel fabrication, fuel transport, power plant construction, and power plant operations. '
 
   techno_process: &nuclear_techno_process
     - 'Documentation for the original model is available in Skone (2012).
@@ -562,7 +562,7 @@ nuclear_upstream:
 biomass:
 
   techno_intro: &biomass_techno_intro
-    - 'This process represents the operational emissions from power plants categorized as biomass by the electricitylci aggregated to the stated region (e.g. balancing authority area: California ISO).
+    - 'This process represents the operational emissions from power plants categorized as biomass by the ElectricityLCI aggregated to the stated region (e.g. balancing authority area: California ISO).
       These include primary fuels of: black liquor (BLQ), wood/wood waste solids (WDS), wood/wood waste liquids (WDL), biogenic municipal solid waste (MSB), landfill gas (LFG), agricultural byproducts (AB), other biomass liquids (OBL), sludge waste (SLW), other biomass gas (OBG), and other biomass solids (OBS).
       Currently there are no fuel profiles for these fuel types in part because of the wide array and likely unique characteristics of the fuel used in each plant.
       Ideally, the fuel inventories would include the uptake of CO2 (biogenic CO2) that would offset the generally higher emissions of these plants, particular for solid fuels. '
@@ -722,9 +722,9 @@ solar:
 
   DataTreatment: 'Material requirements to construct the solar PV panels and the balance of system are calculated using plant nameplate capacity and local insolation estimates to calculate the required area of solar panels, which are then used to scale inventories provided by literature.
     The total inventory from construction over the plant life is then divided by the assumed 30 year lifetime to provide emissions per year.
-    When these emissions are divided by the generation for the specified year in the electricitylci, the inventory is placed on the basis of 1 MWh.
+    When these emissions are divided by the generation for the specified year in the ElectricityLCI, the inventory is placed on the basis of 1 MWh.
 
-    There also inventories for plant operations that are calculated for each plant and are placed on the basis of a MWh before importing to the electricitylci.
+    There also inventories for plant operations that are calculated for each plant and are placed on the basis of a MWh before importing to the ElectricityLCI.
     These emissions are mostly from fossil fuel combustion, hydraulic oil, and external electricity use associated with operations.
     There may also be publicly-reported emissions assigned to the plant.'
 
@@ -1320,9 +1320,9 @@ solarpv_construction_upstream:
 
   DataTreatment: 'Material requirements to construct the solar PV panels and the balance of system are calculated using plant nameplate capacity and local insolation estimates to calculate the required area of solar panels, which are then used to scale inventories provided by literature.
     The total inventory from construction over the plant life is then divided by the assumed 30 year lifetime to provide emissions per year.
-    When these emissions are divided by the generation for the specified year in the electricitylci, the inventory is placed on the basis of 1 MWh.
+    When these emissions are divided by the generation for the specified year in the ElectricityLCI, the inventory is placed on the basis of 1 MWh.
 
-    There also inventories for plant operations that are calculated for each plant and are placed on the basis of a MWh before importing to the electricitylci.
+    There also inventories for plant operations that are calculated for each plant and are placed on the basis of a MWh before importing to the ElectricityLCI.
     These emissions are mostly from fossil fuel combustion, hydraulic oil, and external electricity use associated with operations.
     There may also be publicly-reported emissions assigned to the plant.'
 
