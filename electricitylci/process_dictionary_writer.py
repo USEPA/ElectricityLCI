@@ -38,7 +38,7 @@ JSON-LD format as prescribed by OpenLCA software.
 Portions of this code were cleaned using ChatGPTv3.5.
 
 Last updated:
-    2026-02-13
+    2026-02-18
 """
 __all__ = [
     'con_process_ref',
@@ -934,10 +934,18 @@ def process_description_creation(process_type="fossil"):
     except AssertionError:
         process_type = "default"
 
+    # The subkeys "replace_egrid" and "use_egrid" are relevant to:
+    # - "default" process type (e.g., at-user; consumption mix);
+    # - "consumption_mix" process type (e.g., at-grid; consumption mix)
+    # - "generation_mix" process type (e.g., at-grid, generation mix)
     if model_specs.replace_egrid is True:
         subkey = "replace_egrid"
     else:
         subkey = "use_egrid"
+
+    # NEW: add subkey for natural gas modeling year. [26.02.18; TWD]
+    if process_type == "gas_upstream":
+        subkey = "NGI_" + str(model_specs.ng_model_year)
 
     key = "Description"
 
@@ -977,6 +985,10 @@ def process_doc_creation(process_type="default"):
     provided process type. It maps certain keys from OLCA to Metadata and
     retrieves values from the metadata based on the process type and keys.
 
+    This method is called for generation, generation mix, consumption mix, and
+    distribution processes, as well as upstream processes (as found in
+    :func:`_process_table_creation_gen` in upstream_dict.py).
+
     Parameters
     ----------
     process_type : str, optional
@@ -999,10 +1011,18 @@ def process_doc_creation(process_type="default"):
     except AssertionError:
         process_type = "default"
 
+    # The subkeys "replace_egrid" and "use_egrid" are relevant to:
+    # - "default" process type (e.g., at-user; consumption mix);
+    # - "consumption_mix" process type (e.g., at-grid; consumption mix)
+    # - "generation_mix" process type (e.g., at-grid, generation mix)
     if model_specs.replace_egrid is True:
         subkey = "replace_egrid"
     else:
         subkey = "use_egrid"
+
+    # NEW: add subkey for natural gas modeling year. [26.02.18; TWD]
+    if process_type == "gas_upstream":
+        subkey = "NGI_" + str(model_specs.ng_model_year)
 
     ar = dict()
 
@@ -1011,22 +1031,23 @@ def process_doc_creation(process_type="default"):
         if key is not None:
             try:
                 # First try the key at the process level
+                logging.debug(f"Looking for metadata {key}")
                 ar[kw] = metadata[process_type][key]
             except KeyError:
-                logging.debug(
-                    f"Failed first key ({kw}), trying subkey: {subkey}")
                 try:
                     # Try looking at the subkey level
-                    ar[kw] = metadata[process_type][subkey][key]
                     logging.debug(
-                        "Failed subkey, likely no entry in metadata for "
-                        f"{process_type}:{kw}")
+                        f"Failed key ({key}), trying: {subkey}: {key}"
+                    )
+                    ar[kw] = metadata[process_type][subkey][key]
                 except:
                     try:
+                        logging.debug("Failed subkey; looking at default")
                         # Check to see if default has the key
                         ar[kw] = metadata["default"][key]
                     except KeyError:
                         # Lastly, check to see if the default has the subkey
+                        logging.debug("Failed default key; looking at subkey")
                         ar[kw] = metadata['default'][subkey][key]
             except TypeError:
                 logging.debug(
@@ -1035,10 +1056,15 @@ def process_doc_creation(process_type="default"):
                 process_type = "default"
                 ar[kw] = metadata[process_type][key]
 
+    # TODO: add this field to process_metadata.yml
     ar["timeDescription"] = ""
-    # default valid year is the range of generation years
+
+    # Default valid year is the range of generation years
     if not ar["validUntil"]:
-        #Hot fix for https://github.com/USEPA/ElectricityLCI/issues/244
+        # Hot fix for https://github.com/USEPA/ElectricityLCI/issues/244
+        # TODO: fix this to EIA gen year (for gen processes and at-user
+        # consumption processes); NETL_IO_trading_year (for at-grid consumption
+        # processes); upstream processes likely have multi-years.
         year_range = get_generation_years()
         ar["validUntil"] = "12/31/" + str(max(year_range))
         ar["validFrom"] = "1/1/" + str(min(year_range))
@@ -1050,6 +1076,7 @@ def process_doc_creation(process_type="default"):
     ar["exchangeDqSystem"] = exchangeDqsystem()
     ar["dqSystem"] = processDqsystem()
     # Temp place holder for process DQ scores
+    # TODO: replace with (2;4)
     ar["dqEntry"] = "(5;5)"
     ar["description"] = process_description_creation(process_type)
 
@@ -1346,6 +1373,7 @@ def process_table_creation_surplus(region, exchanges_list):
 
     This function generates a dictionary representing a process table entry for
     a surplus pool process with the provided region and list of exchanges.
+    This method is called when not replacing eGRID.
 
     Parameters
     ----------

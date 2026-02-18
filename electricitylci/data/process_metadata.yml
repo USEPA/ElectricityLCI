@@ -271,6 +271,23 @@ source_netl_2019_2039: &netl_2019_2039
   Category:
     'NETL'
 
+source_netl_2025_4933: &netl_2025_4933
+  Name:
+    'Khutal et al. (2025). Life Cycle Analysis of Natural Gas Extraction and Power Generation: U.S. 2020 Emissions Profile'
+  TextReference:
+    'Khutal, H., Kirchner-Ortiz, K., Blackhurst, M., Willems, N., Matthews, H. S., Rai, S., Yanai, G., Chivukula, K., Priyadarshini, Jamieson, M. B., and Skone, T. J. (2025).
+    Life Cycle Analysis of Natural Gas Extraction and Power Generation: U.S. 2020 Emissions Profile.
+    DOE/NETL-2025/4933: National Energy Technology Laboratory, Pittsburgh, PA.
+    https://doi.org/10.2172/2572956'
+  Year:
+    2025
+  Url:
+    https://doi.org/10.2172/2572956
+  Version:
+    '2.1.0'
+  Category:
+    'NETL'
+
 source_netl_coal_baseline_2024: &netl_2024_4846
   Name:
     'Cutshaw et al. (2023). Cradle-to-Gate Life Cycle Analysis Baseline for United States Coal Mining and Delivery'
@@ -1043,27 +1060,63 @@ coal_upstream:
 
 gas_upstream:
 
-  techno_intro: &gas_upstream_techno_intro
-    - 'The cradle-to-gate inventory for production of gas aggregated to basin or region, depending on the year selected in the model configuration. '
+  NGI_2016:
 
-  techno_process: &gas_upstream_techno_process
-    - 'The NETL natural gas life cycle model includes parameters to generate inventories for natural gas extraction based on region or basin and geology which determines the gas extraction type (e.g., Appalachian Shale using hydraulic fracturing).
-      2016 or 2020 natural gas production then informs the amount of each type of technology/region that form the mix in the regions, depending on the year selected in the model configuration.
-      These can be further aggregated to a US average.
-      More details are in the natural gas upstream report at the following links.
-      Link for 2016: https://www.netl.doe.gov/energy-analysis/details?id=4f43cb3f-c0d7-482e-bf01-39995a7c7497
-      Link for 2020: https://www.netl.doe.gov/energy-analysis/details?id=546d4009-c43b-43f5-bcc9-64d5e63fc8d5
-      '
+    Description:
+      'This process represents the cradle-to-gate inventory for the production of gas aggregated to one of 14 production technobasins (i.e., Anadarko, Appalachian, Arkla, Arkoma, East Texas, Fort Worth, Green River, Gulf, Permian, Piceance, San Juan, South Oklahoma, Strawn, and Unita).
 
-  Description:
-  - *gas_upstream_techno_intro
-  - *gas_upstream_techno_process
+      Functional unit: 1 MJ of natural gas, through transmission
+
+      Co-products: N/A
+
+      Default co-product approach: N/A
+
+      Data source: Littlefield et al. (2019)
+
+      Intended for use as upstream for natural gas power plants. '
+
+    Start_date: '1/1/2016'
+
+    End_date: '12/31/2016'
+
+    Sources:
+
+      Source1:
+        <<: *netl_2019_2039
+
+  NGI_2020:
+
+    Description:
+      'This process represents the cradle-to-gate inventory for the production of gas aggregated to one of six downstream delivery regions (i.e., Pacific, Rocky Mountain, Southwest, Midwest, Southeast, and Northeast).
+
+      Functional unit: 1 MJ of natural gas, through transmission
+
+      Co-products: N/A
+
+      Default co-product approach: N/A
+
+      Data source: Khutal et al. (2025)
+
+      Intended for use as upstream for natural gas power plants. '
+
+    Start_date: '1/1/2020'
+
+    End_date: '12/31/2020'
+
+    Sources:
+
+      Source1:
+        <<: *netl_2025_4933
+
+      Source2:
+        <<: *netl_2019_2039
+
+  IntendedApplication:
+    'This process is intended to serve the upstream inventory to natural gas electricity generation and was created as a part of NETL''s electricity baseline.'
 
   TechnologyDescription:
-
-  Start_date: '1/1/2016'
-
-  End_date: '12/31/2016'
+    'The NETL natural gas life cycle model includes parameters to generate inventories for natural gas extraction across all stages of the natural gas supply chain based on scenarios developed in Littlefield et al. (2019).
+    Technologies span production, gathering & boosting, processing, transmission stations, storage, pipelines, and distribution. '
 
   DatasetOwner: 'NETL'
 
@@ -1071,14 +1124,17 @@ gas_upstream:
 
   DataDocumentor: 'NETL'
 
-  ModelingConstants: 'The model scope is intended to include fossil fuel resource production through delivery to the end user via the vehicle or pipeline transport in the United States.
+  ModelingConstants:
+    'The model scope is intended to include fossil fuel resource production through delivery to the end user via the vehicle or pipeline transport in the United States.
     This scope is broken down into stages for production, mixes of produced fuel, mixes of consumed fuel, and distribution to the final user.
     Inputs to fuel production including fuels, capital infrastructure and other purchased goods or extracted resources, and any chemical release and hazardous wastes generated.'
 
-  DataSelection: 'Data for this system process comes from a variety of sources.
+  DataSelection:
+    'Data for this system process comes from a variety of sources.
     Main sources for emissions are EPA Greenhouse Gas Reporting Program and drilling info which provides well-level production information.'
 
-  DataTreatment: 'The natural gas model divides annual reported and calculated emissions by either the production rate at a well or the throughput at a facility to provide results on the basis of 1 MJ natural gas (HHV).'
+  DataTreatment:
+    'The natural gas model divides annual reported and calculated emissions by either the production rate at a well or the throughput at a facility to provide results on the basis of 1 MJ natural gas (HHV).'
 
   SamplingProcedure:
   - 'BOUNDARY CONDITIONS
@@ -1100,15 +1156,6 @@ gas_upstream:
     In either case, the unit process used for the inventory does not provide any uncertainty - i.e., all emissions are static values.
 
     '
-
-  - 'MORE INFORMATION
-
-    More information on the inventory is available in Littlefield et al. (2019). '
-
-  Sources:
-
-    Source1:
-      <<: *netl_2019_2039
 
 oil_upstream:
 

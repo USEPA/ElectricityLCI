@@ -517,8 +517,8 @@ def map_ng_by_basin(year):
 
 def map_ng_by_region(year):
     """
-    Map the natural gas generation data by region.
-    This includes 6 regions: Pacific, Rocky Mountain, Southwest, Midwest,
+    Map the natural gas inventory data by downstream delivery region.
+    This includes six regions: Pacific, Rocky Mountain, Southwest, Midwest,
     Southeast, and Northeast.
 
     Notes
@@ -564,7 +564,7 @@ def map_ng_by_region(year):
 
 def map_ng_lci_to_plants_by_basin(ng_lci, ng_generation_data_mapped):
     """
-    Map the natural gas generation data by basin.
+    Map the natural gas inventory data by upstream production technobasin.
     """
     ng_lci_columns=[
         "Compartment",
