@@ -32,7 +32,9 @@ default_uncertainty_statement: &uncertainty_statement
 no_uncertainty_statement: &no_uncertainty
   - 'UNCERTAINTY ESTIMATION
 
-    This process does not contain any uncertainty.'
+    This process does not contain any uncertainty.
+
+    '
 
 source_bergesen_etal: &bergesen_etal
   Name:
@@ -85,6 +87,23 @@ source_de_chalendar: &de_chalendar_2019
       '2.1.0'
     Category:
       ''
+
+source_eia_u_2018: &eia_uranium_2018
+  Name:
+    'U.S. Energy Information Administration (2018). 2018 Uranium Marketing Annual Report'
+  TextReference:
+    'U.S. Energy Information Administration (2018).
+    2018 Uranium Marketing Annual Report.
+    U.S. Department of Energy, Washington, D.C. Accessed February 24, 2026.
+    https://www.eia.gov/uranium/marketing/archive/umar2018_2.pdf.'
+  Year:
+    2018
+  Url:
+    'https://www.eia.gov/uranium/marketing/archive/umar2018_2.pdf'
+  Version:
+    '2.1.0'
+  Category:
+    ''
 
 source_fingersh_etal: &fingersh_etal
   Name:
@@ -526,22 +545,29 @@ default:
 
 nuclear_upstream:
 
-  techno_intro: &nuclear_techno_intro
-    - 'This process represents the cradle-to-gate inventory for the production of electricity from US generation II nuclear reactors, including uranium extraction, enrichment, fuel fabrication, fuel transport, power plant construction, and power plant operations. '
+  Description:
+    - 'This process represents the cradle-to-gate inventory for the upstream production of electricity from US generation II nuclear reactors, including uranium extraction, enrichment, fuel fabrication, and fuel transport.'
+    - ''
+    - 'Functional Unit: 1 MWh of nuclear fuel, through transportation.'
+    - 'Co-products: N/A'
+    - 'Default co-product approach: N/A'
+    - 'Data source: Skone (2012)'
+    - ''
+    - 'This process is a part of NETL''s electricity baseline and is intended to capture the upstream life cycle inventory for nuclear powered electricity generation in the US. '
 
-  techno_process: &nuclear_techno_process
+  TechnologyDescription:
     - 'Documentation for the original model is available in Skone (2012).
       This inventory represents an update to some portions of the model to represent 2016 operations, namely the retirement of US gaseous diffusion enrichment operations and to a lesser extent an updated mix of nuclear fuel sources.
 
       The inventory is on the basis of 1 MWh generated electricity and, as a result, is the same for all nuclear power plants.'
 
-  Description:
-  - *nuclear_techno_intro
-  - *nuclear_techno_process
-
-  TechnologyDescription:
-
-  ModelingConstants: 'See Skone (2012).'
+  ModelingConstants:
+    - 'Uranium production comes from US and EU enrichment chains. '
+    - 'Gaseous diffusion technology was removed from the original enrichment process (now 100% centrifuge enrichment). '
+    - 'Uranium enrichment effluent is based on Urenco USA''s LES Claiborne Enrichment Plant in Eunice, NM. '
+    - 'Uranium production effluent is based on Honeywell Plant in Metropolis, IL. '
+    - 'Fuel fabrication emission quantities are modeled after operational reports from fabrication facilities: Framatome, Inc. in Richland, WA; Global Nuclear Fuel-Americas in Wilmington, NC; and Westinghouse Columbia Fuel Fabrication Facility in Columbia, SC. '
+    - 'Uranium mining is proxied by U.S. coal mining processes. '
 
   DatasetOwner: 'NETL'
 
@@ -549,36 +575,35 @@ nuclear_upstream:
 
   DataDocumentor: 'NETL'
 
-  DataTreatment: 'The full description of data treatment is available in Skone (2012).
+  DataTreatment:
+    'The full description of data treatment is available in Skone (2012).
     The data represented here is a modification of that life cycle model - US fuel enrichment is now 100 percent centrifugal and some of the background data was updated with newer versions.'
 
-  DataSelection: 'The full description of data selection is available in Skone (2012).'
+  DataSelection:
+    'The full description of data selection is available in Skone (2012).'
 
   SamplingProcedure:
-  - 'BOUNDARY CONDITIONS
+    - 'BOUNDARY CONDITIONS'
+    - 'The system boundary includes the extraction of uranium from mining operations, fuel enrichment, fuel fabrication, fuel transportation, power plant construction, and power plant operations.'
+    - ''
+    - 'DATA COLLECTION'
+    - 'The full description of data collection is available in Skone (2012).'
+    - ''
+    - *no_uncertainty
+    - ''
+    - 'FURTHER DOCUMENTATION'
+    - 'See Skone (2012).'
 
-    The system boundary includes the extraction of uranium from mining operations, fuel enrichment, fuel fabrication, fuel transportation, power plant construction, and power plant operations.
-
-    '
-
-  - 'DATA COLLECTION
-
-    The full description of data collection is available in Skone (2012).
-
-    '
-
-  - *no_uncertainty
-
-  - 'FURTHER DOCUMENTATION
-
-    See Skone (2012).'
-
-  DataCollectionPeriod: '2011 to present. Secondary/tertiary material inputs provided via thinkstep data are from service pack 34 - 2016'
+  DataCollectionPeriod:
+    '2011 to 2018. Secondary/tertiary material inputs provided via thinkstep data are from service pack 34 - 2016.'
 
   Sources:
 
     Source1:
       <<: *netl_2011_1502
+
+    Source2:
+      <<: *eia_uranium_2018
 
 biomass:
 
@@ -593,8 +618,8 @@ biomass:
       The boundary of these emissions are within the boundaries of the electricity generating facilities.'
 
   Description:
-  - *biomass_techno_intro
-  - *biomass_techno_process
+    - *biomass_techno_intro
+    - *biomass_techno_process
 
   TechnologyDescription:
 
@@ -656,7 +681,9 @@ geothermal:
 
   - *no_uncertainty
 
-  - 'FURTHER DOCUMENTATION
+  - '
+
+    FURTHER DOCUMENTATION
 
     See Skone et al. (2012).'
 
