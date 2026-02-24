@@ -38,7 +38,7 @@ JSON-LD format as prescribed by OpenLCA software.
 Portions of this code were cleaned using ChatGPTv3.5.
 
 Last updated:
-    2026-02-18
+    2026-02-24
 """
 __all__ = [
     'con_process_ref',
@@ -83,21 +83,31 @@ international_reg = list(pd.unique(international['Subregion']))
 
 # Read in general metadata to be used by all processes
 METADATA_FILE = "process_metadata.yml"
+'''str : The process metadata YAML file name.'''
 METADATA_PATH = os.path.join(data_dir, METADATA_FILE)
+'''str : The process metadata YAML file path.'''
+metadata = dict()
+'''dict : The dictionary of process metadata.'''
 with open(METADATA_PATH, encoding='utf-8') as f:
     metadata = yaml.safe_load(f)
 
 # Read in process location uuids
 location_UUID = pd.read_csv(os.path.join(data_dir, "location_UUIDs.csv"))
+'''pandas.DataFrame : Columns of NAME and REF_ID for locations.'''
 
 # Read in process name info
 process_name = pd.read_csv(os.path.join(data_dir, "processname_1.csv"))
+'''pandas.DataFrame : Contains naming conventions for electricity processes.'''
+
 generation_name_parts = process_name[
     process_name["Stage"] == "generation"
 ].iloc[0]
+'''pandas.Series : Naming convention for generation at facility processes.'''
+
 generation_mix_name_parts = process_name[
     process_name["Stage"] == "generation mix"
 ].iloc[0]
+'''pandas.Series : Naming convention for at-grid generation mix processes.'''
 
 generation_mix_name = (
     generation_mix_name_parts["Base name"]
@@ -106,6 +116,7 @@ generation_mix_name = (
     + "; "
     + generation_mix_name_parts["Mix type"]
 )
+'''str : At-grid electricity generation mix process name.'''
 
 fuel_mix_name = 'Electricity; at grid; USaverage'
 surplus_pool_name = "Electricity; at grid; surplus pool"
@@ -163,6 +174,7 @@ OLCA_TO_METADATA = {
     "dqSystem": None,
     "dqEntry": None
 }
+'''dict : Keys are olca-schema fields and values are YAML metadata keys.'''
 
 VALID_FUEL_CATS=[
     "default",
@@ -185,6 +197,7 @@ VALID_FUEL_CATS=[
     "solartherm_construction_upstream",
     "wind_construction_upstream",
 ]
+'''list : List of valid fuel categories found in the process metadata YAML.'''
 
 
 ##############################################################################
@@ -407,6 +420,10 @@ def exchange_table_creation_input_usaverage(database, fuelname):
     dict
         A dictionary representing the input exchange table entry for the US
         average electricity generation mix.
+
+    Notes
+    -----
+    Referenced in generation_mix.py and utilized during :func:`run_epa_trade`.
 
     Examples
     --------
@@ -1623,7 +1640,11 @@ def unit(unt):
 # POST-PROCESSING GLOBALS
 ##############################################################################
 for key in metadata.keys():
-    metadata[key] = process_metadata(metadata[key])
+    try:
+        metadata[key] = process_metadata(metadata[key])
+    except Exception as e:
+        logging.error("Failed to read metadata key, %s! %s" % (key, e))
+        raise
 
 
 ##############################################################################
