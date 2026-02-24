@@ -1079,10 +1079,17 @@ def process_doc_creation(process_type="default"):
     # Default valid year is the range of generation years
     if not ar["validUntil"]:
         # Hot fix for https://github.com/USEPA/ElectricityLCI/issues/244
-        # TODO: fix this to EIA gen year (for gen processes and at-user
-        # consumption processes); NETL_IO_trading_year (for at-grid consumption
-        # processes); upstream processes likely have multi-years.
+        # Default is the full scope of background data; should be true for
+        # fuel generation processes (i.e., the StEWI inventory of interest +
+        # NETL renewable data years). NOTE: upstream processes likely have
+        # their validity dates included in the process_metadata.yml.
         year_range = get_generation_years()
+        # For at-grid generation, the data for the EIA generation year.
+        if process_type == 'generation_mix':
+            year_range = [model_specs.eia_gen_year,]
+        # For at-grid consumption, the data are for the trading year.
+        if process_type == 'consumption_mix':
+            year_range = [model_specs.NETL_IO_trading_year,]
         ar["validUntil"] = "12/31/" + str(max(year_range))
         ar["validFrom"] = "1/1/" + str(min(year_range))
     ar["sources"] = [x for x in ar["sources"].values()]
