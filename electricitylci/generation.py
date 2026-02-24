@@ -30,7 +30,6 @@ from electricitylci.eia860_facilities import eia860_balancing_authority
 from electricitylci.eia923_generation import build_generation_data
 from electricitylci.eia923_generation import eia923_primary_fuel
 import electricitylci.emissions_other_sources as em_other
-from electricitylci.globals import elci_version
 from electricitylci.globals import paths
 from electricitylci.globals import output_dir
 import electricitylci.manual_edits as edits
@@ -39,7 +38,6 @@ from electricitylci.process_dictionary_writer import process_doc_creation
 from electricitylci.process_dictionary_writer import ref_exchange_creator
 from electricitylci.process_dictionary_writer import uncertainty_table_creation
 from electricitylci.process_dictionary_writer import unit
-from electricitylci.utils import make_valid_version_num
 from electricitylci.utils import check_output_dir
 from electricitylci.utils import write_csv_to_output
 from electricitylci.egrid_emissions_and_waste_by_facility import (
@@ -64,7 +62,7 @@ CHANGELOG (since v2.0)
 Created:
     2019-06-04
 Last edited:
-    2026-02-13
+    2026-02-24
 """
 __all__ = [
     "add_data_collection_score",
@@ -1483,6 +1481,11 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     -------
     dict
         Dictionary containing openLCA-formatted data.
+
+    Notes
+    -----
+    This process is responsible for naming the generation processes
+    (e.g., 'Electricity - SOLAR - Portland General Electric Company')
     """
     region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"]
@@ -1592,11 +1595,12 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     )
 
     # HOTFIX: construction processes are handled in upstream_dict.py;
-    # remove filter and assignment from here.
+    # filter and assignment removed from here.
     if region_agg is None:
         process_df["location"] = "US"
         process_df["description"] = (
-            "Electricity from "
+            "This process represents the cradle-to-gate inventory "
+            + "for the production of electricity from "
             + process_df[fuel_agg].squeeze().values
             + " produced at generating facilities in the US."
         )
@@ -1607,7 +1611,8 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         # HOTFIX: remove .values, which throws ValueError [2023-11-13; TWD]
         process_df["location"] = process_df[region_agg]
         process_df["description"] = (
-            "Electricity from "
+            "This process represents the cradle-to-gate inventory "
+            + "for the production of electricity from "
             + process_df[fuel_agg].squeeze().values
             + " produced at generating facilities in the "
             + process_df[region_agg].squeeze().values
@@ -1620,18 +1625,13 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
             + process_df[region_agg].squeeze().values
         )
 
-    # Add model reference and version number
-    process_df["description"] += (
-        " This process was created with ElectricityLCI "
-        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
-        + " using the " + model_specs.model_name + " configuration."
-    )
-    process_df["version"] = make_valid_version_num(elci_version)
+    # HOTFIX: remove duplicate eLCI model reference & version number---
+    # this is represented in the 'description' key in processDocumentation.
 
     # TODO: use `process_description_creation` from process_dictionary_writer to fill in this portion; note that the default text below is captured in the return string from that method.
 
     # Create the dictionaries for process documentation based on fuel type.
-    # NOTE: this creates process-level DQI (5;5)
+    # NOTE: this defines the process-level DQI
     process_df["processDocumentation"] = [
         process_doc_creation(x) for x in list(
             process_df["FuelCategory"].str.lower())
