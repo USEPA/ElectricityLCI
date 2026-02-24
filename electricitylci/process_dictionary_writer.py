@@ -1093,8 +1093,8 @@ def process_doc_creation(process_type="default"):
     ar["exchangeDqSystem"] = exchangeDqsystem()
     ar["dqSystem"] = processDqsystem()
     # Temp place holder for process DQ scores
-    # TODO: replace with (2;4)
-    ar["dqEntry"] = "(5;5)"
+    # HOTFIX: replace (5;5) with (2;4); see issue 322. [26.02.24;TWD]
+    ar["dqEntry"] = "(2;4)"
     ar["description"] = process_description_creation(process_type)
 
     return ar
