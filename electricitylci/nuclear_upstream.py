@@ -15,6 +15,9 @@ from electricitylci.globals import data_dir
 from electricitylci.eia923_generation import eia923_download_extract
 from electricitylci.generation import add_temporal_correlation_score
 from electricitylci.model_config import model_specs
+from electricitylci.utils import filter_out_zero
+
+
 ##############################################################################
 # MODULE DOCUMENTATION
 ##############################################################################
@@ -25,7 +28,7 @@ in EIA-923.
 Created:
     2019-05-31
 Last updated:
-    2024-01-10
+    2024-02-24
 """
 __all__ = [
     "generate_upstream_nuc",
@@ -56,32 +59,43 @@ def generate_upstream_nuc(year):
     """
     # Get the EIA generation data for the specified year, this dataset includes
     # the fuel consumption for generating electricity for each facility
-    # and fuel type. Filter the data to only include NG facilities and on
-    # positive fuel consumption. Group that data by Plant Id as it is possible
-    # to have multiple rows for the same facility and fuel based on different
-    # prime movers (e.g., gas turbine and combined cycle).
+    # and fuel type.
     eia_generation_data = eia923_download_extract(year)
 
+    # Filter the data on NUC facilities and on positive fuel consumption.
+    # NOTE:
+    # - 62 unique plants in 2016.
+    # - 58 unique plants in 2020.
+    # - 56 unique plants in 2021.
+    # - 55 unique plants in 2022.
+    # - 54 unique plants in 2023.
     column_filt = (eia_generation_data["Reported Fuel Type Code"] == "NUC") & (
         eia_generation_data["Net Generation (Megawatthours)"] > 0
     )
     nuc_generation_data = eia_generation_data[column_filt]
 
-    nuc_generation_data = (
-        nuc_generation_data.groupby("Plant Id")
-        .agg({"Net Generation (Megawatthours)": "sum"})
-        .reset_index()
-    )
+    # Group data by Plant Id in case multiple rows exist for the same facility
+    # and fuel (e.g., based on different prime movers.
+    # NOTE: This was not identified in years 2016, 2020--2023 [26.02.18; TWD]
+    nuc_generation_data = nuc_generation_data.groupby("Plant Id").agg(
+        {"Net Generation (Megawatthours)": "sum"}).reset_index()
+
     nuc_generation_data["Plant Id"] = nuc_generation_data[
         "Plant Id"].astype(int)
 
     # Read the nuclear LCI file
+    # NOTE: 2016 LCI has 1772 rows where 421 rows have zero flow amount.
     nuc_lci = pd.read_csv(
         os.path.join(data_dir, "nuclear_lci.csv"),
         index_col=0,
         low_memory=False
     )
-    nuc_lci.dropna(subset=["compartment"],inplace=True)
+
+    # HOTFIX: remove zero-flows from LCI [26.02.24; TWD]
+    nuc_lci = filter_out_zero(nuc_lci, 'FlowAmount')
+
+    # NOTE: the 14 flows without compartment data have no flow amounts
+    nuc_lci.dropna(subset=["compartment"], inplace=True)
 
     # There is no column to merge the inventory and generation data on,
     # so we iterate through the plants and make a new column in the lci
@@ -136,10 +150,10 @@ def generate_upstream_nuc(year):
     nuc_merged["GeographicalCorrelation"] = 3
     nuc_merged["TechnologicalCorrelation"] = 3
     nuc_merged["DataCollection"] = 4
-    #3/20/2025 MBJ - replacing 2016 here so that temporal correlation
-    #is based on the year the inventory is based on, but when electricity
-    #generation is combined, it needs to be based on the target year for the
-    #inventory.
+    # 3/20/2025 MBJ - replacing 2016 here so that temporal correlation
+    # is based on the year the inventory is based on, but when electricity
+    # generation is combined, it needs to be based on the target year for the
+    # inventory.
     nuc_merged["Year"] = year
     return nuc_merged
 
