@@ -36,7 +36,7 @@ data as needed and provides functions to access different pages of the Excel
 workbook.
 
 Last edited:
-    2025-09-05
+    2026-02-26
 """
 EIA923_PAGES = {
     "1": "Page 1 Generation and Fuel Data",
@@ -94,8 +94,9 @@ def _clean_columns(df):
     return df
 
 
-def build_generation_data(
-        egrid_facilities_to_include=None, generation_years=None):
+def build_generation_data(egrid_facilities_to_include=None,
+                          generation_years=None,
+                          keep_all_cols=False):
     """Build a dataset of facility-level generation using EIA923.
 
     This function applies filters for positive generation, generation
@@ -190,9 +191,12 @@ def build_generation_data(
         }
     )
 
-    all_years_gen = all_years_gen.loc[:, ["FacilityID", "Electricity", "Year"]]
     all_years_gen.reset_index(drop=True, inplace=True)
     all_years_gen["Year"] = all_years_gen["Year"].astype("int32")
+    if not keep_all_cols:
+        all_years_gen = all_years_gen.loc[
+            :, ["FacilityID", "Electricity", "Year"]
+        ]
     return all_years_gen
 
 
