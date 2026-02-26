@@ -150,7 +150,7 @@ def get_solarthermal_construction(year):
     # Fix/fill construction LCI
     solarthermal_upstream = fix_renewable(
         solarthermal_upstream, "netlsolarthermal")
-            # Issue #296 - adding DQI information for upstream processes
+    # Issue #296 - adding DQI information for upstream processes
     solarthermal_upstream["Year"] = model_specs.renewable_vintage
     solarthermal_upstream["DataReliability"] = 3
     solarthermal_upstream["TemporalCorrelation"] = add_temporal_correlation_score(
