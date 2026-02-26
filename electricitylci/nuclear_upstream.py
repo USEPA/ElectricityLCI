@@ -25,6 +25,15 @@ __doc__ = """This module generates the annual upstream emissions from the
 extraction, processing, and transportation of uranium for each nuclear plant
 in EIA-923.
 
+The upstream nuclear life cycle inventory is based on NETL unit processes,
+which were updated, and ecoinvent inventory (where NETL UPs were not
+available). The cradle-to-grave supply chain was modeled in Sphera's GaBi LCA
+software. Stage 1 (EU and US uranium enrichment chain) and Stage 2 (fuel
+assembly transport) were rolled up into a system process, scaled based on 1 MWh
+of nuclear power generated. This inventory is saved in the nuclear_lci.csv
+provided in the ElectricityLCI repository's data folder and represents
+activities conducted in 2020.
+
 Created:
     2019-05-31
 Last updated:
@@ -46,7 +55,7 @@ def generate_upstream_nuc(year):
     Notes
     -----
     Depends on data file, nuclear_lci.csv, which contains the upstream
-    emission impacts of a kilogram of uranium.
+    emission impacts associated with 1 MWh of nuclear fuel, at plant.
 
     Parameters
     ----------
