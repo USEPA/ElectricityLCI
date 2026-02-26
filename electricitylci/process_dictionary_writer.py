@@ -38,7 +38,7 @@ JSON-LD format as prescribed by OpenLCA software.
 Portions of this code were cleaned using ChatGPTv3.5.
 
 Last updated:
-    2026-02-24
+    2026-02-26
 """
 __all__ = [
     'con_process_ref',
@@ -970,7 +970,9 @@ def process_description_creation(process_type="fossil"):
         desc_string = metadata[process_type][key]
     except KeyError:
         logging.debug(
-            f"Failed first key ({key}), trying subkey: {subkey}")
+            f"Failed first key ({key}) for {process_type}, "
+            f"trying subkey: {subkey}"
+        )
         try:
             desc_string = metadata[process_type][subkey][key]
             logging.debug(
@@ -1024,8 +1026,11 @@ def process_doc_creation(process_type="default"):
     """
     from electricitylci.generation import get_generation_years
     try:
-        assert process_type in VALID_FUEL_CATS, f"Invalid process_type ({process_type}), using default"
+        assert process_type in VALID_FUEL_CATS
     except AssertionError:
+        logging.warning(
+            "Invalid process type, '%s', using 'default'" % process_type
+        )
         process_type = "default"
 
     # The subkeys "replace_egrid" and "use_egrid" are relevant to:
@@ -1202,20 +1207,18 @@ def process_table_creation_con_mix(region, exchanges_list):
     ar["exchanges"] = exchanges_list
     ar["location"] = location(region)
     ar["parameters"] = ""
-    ar["processDocumentation"] = process_doc_creation(
-        process_type="consumption_mix")
+    ar["processDocumentation"] = process_doc_creation("consumption_mix")
     ar["processType"] = "UNIT_PROCESS"
     ar["name"] = consumption_mix_name + " - " + region
-    ar["category"] = (
-        "22: Utilities/"
-        "2211: Electric Power Generation, Transmission and Distribution")
-    ar["description"] = (
-        "Electricity consumption mix using power plants in the "
-        + str(region) + " region.")
-    ar["description"] = (ar["description"]
-        + " This process was created with ElectricityLCI "
-        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
-        + " using the " + model_specs.model_name + " configuration."
+    ar["category"] = "%s/%s" % (                # <- same as gen mix
+        generation_mix_name_parts['Category'],
+        generation_mix_name_parts['Subcategory']
+    )
+    ar['description'] = (
+        'This process provides the electricity inputs from the various '
+        + 'trade regions that make up the electricity consumption '
+        + f'mix for the {region} region.'
+        + ar['processDocumentation']['description']
     )
     ar["version"] = make_valid_version_num(elci_version)
 
@@ -1245,21 +1248,18 @@ def process_table_creation_distribution(region, exchanges_list):
     ar["exchanges"] = exchanges_list
     ar["location"] = location(region)
     ar["parameters"] = ""
-    ar["processDocumentation"] = process_doc_creation()
+    ar["processDocumentation"] = process_doc_creation("distribution_mix")
     ar["processType"] = "UNIT_PROCESS"
     ar["name"] = distribution_to_end_user_name + " - " + region
-    ar["category"] = (
-        "22: Utilities/"
-        "2211: Electric Power Generation, Transmission and Distribution")
-    ar["description"] = (
-        "Electricity distribution to end user in the "
-        + str(region)
-        + " region."
+    ar["category"] = "%s/%s" % (                # <- same as gen mix
+        generation_mix_name_parts['Category'],
+        generation_mix_name_parts['Subcategory']
     )
-    ar["description"]=(ar["description"]
-        + " This process was created with ElectricityLCI "
-        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
-        + " using the " + model_specs.model_name + " configuration."
+    ar['description'] = (
+        'This process provides the electricity inputs from the various '
+        + 'trade regions that make up the electricity consumption '
+        + f'mix for the {region} region.'
+        + ar['processDocumentation']['description']
     )
     ar["version"] = make_valid_version_num(elci_version)
 
@@ -1339,7 +1339,7 @@ def process_table_creation_gen(fuelname, exchanges_list, region):
 
 def process_table_creation_genmix(region, exchanges_list):
     """
-    Create a dictionary representing a process table for a generation mix.
+    Create an olca-schema formatted dictionary a generation mix process.
 
     Parameters
     ----------
@@ -1356,39 +1356,42 @@ def process_table_creation_genmix(region, exchanges_list):
 
     Notes
     -----
-    This function creates a dictionary to represent a process table for a
-    generation mix. It populates the dictionary with various key-value pairs,
-    including region-specific information and exchanges.
+    -   This method is responsible for naming generation mix processes (i.e.,
+        "Electricity; at grid; generation mix - REGION").
+    -   Note that ``process_doc_creation`` includes the process description
+        field found in the YAML.
+
+    This method is referenced in ``olcaschema_genmix`` in generation_mix.py.
 
     Examples
     --------
-    >>> region = "ExampleRegion"
+    >>> region = "US"
     >>> exchanges = [exchange1, exchange2, exchange3]
     >>> process_table = process_table_creation_genmix(region, exchanges)
     """
-    process_dict = {
-        "@type": "Process",
-        "allocationFactors": "",
-        "defaultAllocationMethod": "",
-        "exchanges": exchanges_list,
-        "location": location(region),
-        "parameters": "",
-        "processDocumentation": process_doc_creation(
-            process_type="generation_mix"),
-        "processType": "UNIT_PROCESS",
-        "name": f"{generation_mix_name} - {region}",
-        "category": (
-            "22: Utilities/2211: Electric Power Generation, "
-            "Transmission and Distribution"),
-        "description": (
-            f"Electricity generation mix in the {region} region. "
-            "This process was created with ElectricityLCI "
-            "(https://github.com/USEPA/ElectricityLCI) version "
-            f"{elci_version} using the {model_specs.model_name} "
-            "configuration."),
-        "version": make_valid_version_num(elci_version)
-    }
-    return process_dict
+    # Update to resemble ``_process_table_creation_gen`` in upstream_dict.py
+    ar = dict()
+    ar["@type"] = "Process"
+    ar["allocationFactors"] = ""
+    ar["defaultAllocationMethod"] = ""
+    ar["exchanges"] = exchanges_list
+    ar["location"] = location(region)
+    ar["parameters"] = ""
+    ar["processDocumentation"] = process_doc_creation("generation_mix")
+    ar["processType"] = "UNIT_PROCESS"
+    ar["name"] = f"{generation_mix_name} - {region}"
+    ar["category"] = "%s/%s" % (
+        generation_mix_name_parts['Category'],
+        generation_mix_name_parts['Subcategory']
+    )
+    ar['description'] = (
+        'This process provides the electricity inputs from the various '
+        + 'generation technologies that make up the electricity generation '
+        + f'mix for the {region} region.'
+        + ar['processDocumentation']['description']
+    )
+    ar['version'] = make_valid_version_num(elci_version)
+    return ar
 
 
 def process_table_creation_surplus(region, exchanges_list):
@@ -1473,7 +1476,7 @@ def process_table_creation_usaverage(fuel, exchanges_list):
     ar["exchanges"] = exchanges_list
     ar["location"] = location('US')
     ar["parameters"] = ""
-    ar["processDocumentation"] = process_doc_creation(process_type="fuel_mix")
+    ar["processDocumentation"] = process_doc_creation("fuel_mix")
     ar["processType"] = "UNIT_PROCESS"
     ar["name"] = fuel_mix_name + " - " + str(fuel)
     ar["category"] = (
