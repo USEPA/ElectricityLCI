@@ -24,9 +24,12 @@ __doc__ = """This module contains the main API functions to be used by the
 end user.
 
 Last updated:
-    2026-01-30
+    2026-02-26
 """
 __version__ = elci_version
+__all__ = [
+    "basic_setup",
+]
 
 
 ##############################################################################
@@ -99,6 +102,14 @@ def aggregate_gen(gen_df, subregion="BA"):
     logging.info(f"Aggregating to subregion - {subregion}")
     aggregate_df = aggregate_data(gen_df, subregion=subregion)
     return aggregate_df
+
+
+def basic_setup(lvl='INFO', elci='ELCI_2023'):
+    """Quickly create a stream logger and define model specs."""
+    from electricitylci.utils import get_logger
+    log = get_logger(True, False, str_lv=lvl)
+    config.model_specs = config.build_model_class(elci)
+    log.info("Setup complete")
 
 
 def combine_upstream_and_gen_df(gen_df, upstream_df):
