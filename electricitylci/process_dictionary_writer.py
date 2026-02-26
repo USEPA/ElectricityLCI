@@ -1028,7 +1028,7 @@ def process_doc_creation(process_type="default"):
     try:
         assert process_type in VALID_FUEL_CATS
     except AssertionError:
-        logging.warning(
+        logging.debug(
             "Invalid process type, '%s', using 'default'" % process_type
         )
         process_type = "default"
@@ -1045,6 +1045,10 @@ def process_doc_creation(process_type="default"):
     # NEW: add subkey for natural gas modeling year. [26.02.18; TWD]
     if process_type == "gas_upstream":
         subkey = "NGI_" + str(model_specs.ng_model_year)
+
+    # NEW: subkey for renewable generation. [26.02.16]
+    if process_type in ["wind", "solarthermal", "solar"]:
+        subkey = "LCI_" + str(model_specs.renewable_vintage)
 
     ar = dict()
 
@@ -1328,12 +1332,8 @@ def process_table_creation_gen(fuelname, exchanges_list, region):
             + " region"
         )
     }
-    try:
-        # Use the software version number as the process version
-        ar["version"] = make_valid_version_num(elci_version)
-    except:
-        # Set to 1 by default
-        ar["version"] = 1
+    ar["version"] = make_valid_version_num(elci_version)
+
     return ar
 
 

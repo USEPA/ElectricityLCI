@@ -18,6 +18,11 @@ default_data_selection_statement: &data_selection_statement
   'Where possible data is sourced from freely available life cycle data, such as NETL unit processes or USLCI.
   If the material was not available there then ecoinvent processes are used.'
 
+default_data_treatment_renew: &data_treatment_renewable
+  'Material requirements to construct the solar PV panels and the balance of system are calculated using plant nameplate capacity and local insolation estimates to calculate the required area of solar panels, which are then used to scale inventories provided by literature.
+  The total inventory from construction over the plant life is then divided by the assumed 30 year lifetime to provide emissions per year.
+  These emissions are divided by the 2016 generation to create the inventory on the basis of 1 MWh.'
+
 default_uncertainty_statement: &uncertainty_statement
   - 'UNCERTAINTY ESTIMATION
 
@@ -784,7 +789,8 @@ solar:
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the emissions inventory for solar powered electricity generation in the US. '
 
-  TechnologyDescription: *solar_techno_process
+  TechnologyDescription:
+    'The technology is representative of U.S. photovoltaic power plants including, but not limited to, crystalline silicon, amorphous silicon, cadmium telluride (CdTe), and copper indium gallium selenide (CIGS) thin film.'
 
   DatasetOwner: 'IEA, NREL, JE Mason, VM Fthenakis, T Hansen, HC Kim'
 
@@ -792,30 +798,54 @@ solar:
 
   DataDocumentor: 'NETL'
 
-  DataTreatment:
-    'Material requirements to construct the solar PV panels and the balance of system are calculated using plant nameplate capacity and local insolation estimates to calculate the required area of solar panels, which are then used to scale inventories provided by literature.
-    The total inventory from construction over the plant life is then divided by the assumed 30 year lifetime to provide emissions per year.
-    When these emissions are divided by the generation for the specified year in the ElectricityLCI, the inventory is placed on the basis of 1 MWh.
-
-    There also inventories for plant operations that are calculated for each plant and are placed on the basis of a MWh before importing to the ElectricityLCI.
-    These emissions are mostly from fossil fuel combustion, hydraulic oil, and external electricity use associated with operations.
-    There may also be publicly-reported emissions assigned to the plant.'
-
   DataSelection: *data_selection_statement
 
-  # Entering the year 2024 for DataCollection Period to show
-  # when the most recent data was generated (representing 2020).
-  DataCollectionPeriod:
-    'This inventory is representative of efforts that happened in 2024.'
+  LCI_2016:
 
-  SamplingProcedure:
-    - 'BOUNDARY CONDITIONS'
-    - 'The boundaries include power plant construction with all known material inputs (e.g., steel, glass, concrete) and some minor material requirements and fuel combustion for plant operation.'
-    - ''
-    - 'DATA COLLECTION'
-    - 'Data for the material inputs to the plant are from: NETL unit processes, US LCI, and ecoinvent.'
-    - ''
-    - *no_uncertainty
+    DataTreatment:
+      - *data_treatment_renewable
+      - 'There also inventories for plant operations that are calculated for each plant and are placed on the basis of a MWh before importing to the ElectricityLCI.
+        These emissions are mostly from fossil fuel combustion, hydraulic oil, and external electricity use associated with operations.
+        There may also be publicly-reported emissions assigned to the plant.'
+
+    DataCollectionPeriod:
+      'This inventory is representative of efforts that happened between 2018 and 2020.'
+
+    SamplingProcedure:
+      - 'BOUNDARY CONDITIONS'
+      - 'The boundaries include power plant construction with all known material inputs (e.g., steel, glass, concrete) and some minor material requirements and fuel combustion for plant operation.'
+      - ''
+      - 'DATA COLLECTION'
+      - 'Inventories were developed for each solar PV plant identified in the 2016 EIA 860 data using a custom life cycle model.
+        Boundaries include plant construction and minor operating emissions from fuel combustion, etc.
+        The total inventory for the plant construction is allocated over an assumed 30 year life.
+        The resulting yearly construction emissions are divided by the 2016 generation to provide inventories per MWh (e.g., kg CO2/MWh).
+        This is combined with the operations inventory, also on a per MWh basis.'
+      - 'Data for the material inputs to the plant are from: NETL unit processes, US LCI, and ecoinvent.'
+      - ''
+      - *no_uncertainty
+
+  LCI_2020:
+
+    DataTreatment:
+      'The inventories for plant operations are calculated for each plant and are placed on the basis of a MWh.
+        These emissions are mostly from fossil fuel combustion, hydraulic oil, and external electricity use associated with operations.
+        There may also be publicly-reported emissions assigned to the plant.'
+
+    DataCollectionPeriod:
+      'This inventory is representative of efforts that happened between 2022 and 2024.'
+
+    SamplingProcedure:
+      - 'BOUNDARY CONDITIONS'
+      - 'The boundaries include power plant maintenance some minor material requirements and fuel combustion for plant operation.
+        Power plant construction is separate and provided in its own unit process.'
+      - ''
+      - 'DATA COLLECTION'
+      - 'Inventories were developed for each solar PV plant identified in the 2020 EIA 860 data using a custom life cycle model.
+        Boundaries include minor operating emissions from fuel combustion, etc.'
+      - 'Data for the material inputs to the plant are from: NETL unit processes, US LCI, and ecoinvent.'
+      - ''
+      - *no_uncertainty
 
   Sources:
 
@@ -847,10 +877,7 @@ solarthermal:
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the emissions inventory for solar thermal powered electricity generation in the US. '
 
   TechnologyDescription:
-    - 'Inventories were developed for each solar thermal plant in the 2016 or 2020 EIA 860 data, as specified in the model configuration, using a custom life cycle model.
-      Boundaries include plant construction and minor operating emissions from fuel combustion, etc.
-      The inventory for the plant is allocated over an assumed 30 year life.
-      The aggregation performed in the electricity LCI code will then divide those inventories by the generation in the selected year to provide results on the basis of MWh.'
+    'The technology is representative of U.S. parabolic trough and power tower solar plants (see Skone et al., 2012).'
 
   DatasetOwner: 'NREL'
 
@@ -858,24 +885,47 @@ solarthermal:
 
   DataDocumentor: 'NETL'
 
-  DataTreatment:
-    'Material requirements to construct the solar thermal power plants are based on the plant configuration (tower vs trough), capacity, and local solar insolation values.
-    The total inventory from construction and operations of the plant are then divided by the assumed 30 year lifetime to provide emissions per year.
-    When these emissions are divided by the generation for the specified year in the electricity baseline code, the inventory is placed on the basis of 1 MWh.'
-
   DataSelection: *data_selection_statement
 
-  DataCollectionPeriod:
-    'This inventory is representative of efforts that happened in 2024.'
+  LCI_2016:
 
-  SamplingProcedure:
-    - 'BOUNDARY CONDITIONS'
-    - 'The boundaries include power plant construction with all known material inputs (e.g., steel, glass, concrete) and some minor material requirements and fuel combustion for plant operation.'
-    - ''
-    - 'DATA COLLECTION'
-    - 'Data for the material inputs to the plant are from: NETL unit processes, US LCI, and ecoinvent.'
-    - ''
-    - *no_uncertainty
+    DataTreatment:
+      *data_treatment_renewable
+
+    DataCollectionPeriod:
+      'This inventory is representative of efforts that happened between 2018 and 2020.'
+
+    SamplingProcedure:
+      - 'BOUNDARY CONDITIONS'
+      - 'The boundaries include power plant construction with all known material inputs (e.g., steel, glass, concrete) and some minor material requirements and fuel combustion for plant operation.'
+      - ''
+      - 'DATA COLLECTION'
+      - 'Inventories were developed for each solar thermal plant identified in the 2016 EIA Form 860 using a custom life cycle model.
+        Boundaries include plant construction and minor operating emissions from fuel combustion, etc.
+        The inventory for the plant is allocated over an assumed 30 year life.
+        The aggregation performed in the ElectricityLCI divides those inventories by the 2016 generation to provide results on the basis of MWh.'
+      - 'Data for the material inputs to the plant are from NETL unit processes, US LCI, and ecoinvent.'
+      - ''
+      - *no_uncertainty
+
+  LCI_2020:
+
+    DataTreatment:
+      'The per-MWh operations inventory is multiplied by the 2020 generation and divided by the modeled generation year''s generation to provide an inventory on the basis of 1 MWh at the facility level before regional aggregation.'
+
+    DataCollectionPeriod:
+      'This inventory is representative of efforts that happened between 2022 and 2024.'
+
+    SamplingProcedure:
+      - 'BOUNDARY CONDITIONS'
+      - 'The boundary is for plant operations and maintenance and includes the minor operating emissions from fuel combustion, etc.
+        Power plant construction is separate and provided in its own unit process.'
+      - ''
+      - 'DATA COLLECTION'
+      - 'Inventories were developed for each solar thermal plant identified in the 2020 EIA Form 860 using a custom life cycle model.'
+      - 'Data for the material inputs to the plant are from NETL unit processes, US LCI, and ecoinvent.'
+      - ''
+      - *no_uncertainty
 
   Sources:
 
@@ -897,36 +947,62 @@ wind:
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the emissions inventory for electricity generation from wind farms in the US. '
 
-  TechnologyDescription:
-    - 'Inventories were developed for each wind farm in the 2016 or 2020 EIA 860 data, as specified in the model configuration, using a custom life cycle model.
-      Boundaries include wind turbine construction and minor operating emissions from fuel combustion, maintenance, etc.
-      The inventory for the wind farm is allocated over an assumed 30 year life.
-      The aggregation performed in the electricity LCI code will then divide those inventories by the generation in the selected year to provide results on the basis of MWh.'
-
   DatasetOwner: 'NREL and Vestas'
 
   DataGenerator: 'NETL'
 
   DataDocumentor: 'NETL'
 
-  DataTreatment:
-    'Material requirements to construct the wind farm are calculated using wind turbine manufacturer and size information to for each turbine and aggregating all of the turbines in the wind farm.
-    The total inventory from construction and operations over the plant life are then divided by the assumed 30 year lifetime to provide emissions per year.
-    When these emissions are divided by the generation for the specified year in the electricity baseline code, the inventory is placed on the basis of 1 MWh.'
-
   DataSelection: *data_selection_statement
 
-  DataCollectionPeriod:
-    'This inventory is representative of efforts that happened in 2024.'
+  TechnologyDescription:
+    "This technology represents onshore V110-2.0 MW wind plants (see Razdan & Garrett, 2015)"
 
-  SamplingProcedure:
-    - 'BOUNDARY CONDITIONS'
-    - 'The boundaries include power plant construction with all known material inputs (e.g., steel, glass fiber, concrete) and some minor material requirements and fuel combustion for plant operation.'
-    - ''
-    - 'DATA COLLECTION'
-    - 'Data for the material inputs to the plant are from: NETL unit processes, US LCI, and ecoinvent.'
-    - ''
-    - *no_uncertainty
+  LCI_2016:
+
+    DataTreatment:
+      - *data_treatment_renewable
+      - 'Material requirements to construct the wind farm are calculated using wind turbine manufacturer and size information to for each turbine and aggregating all of the turbines in the wind farm.'
+
+    DataCollectionPeriod:
+      'This inventory is representative of efforts that happened in 2018 through 2020.'
+
+    SamplingProcedure:
+      - 'BOUNDARY CONDITIONS'
+      - 'The boundaries include power plant construction with all known material inputs (e.g., steel, glass fiber, concrete) and some minor material requirements and fuel combustion for plant operation.'
+      - ''
+      - 'DATA COLLECTION'
+      - 'Inventories were developed for each wind farm identified in the 2016 EIA Form 860 using a custom life cycle model.
+        Generation data used in the model are based on 2016 EIA Form 923.
+        Boundaries include wind turbine construction and minor operating emissions from fuel combustion, maintenance, etc.
+        The inventory for the wind farm is allocated over an assumed 30 year life.
+        The inventories are multiplied by the 2016 generation and divided by the model-defined generation year''s generation to provide facility-level results on the basis of MWh before regional aggregation.'
+      - 'Data for the material inputs to the plant are from NETL unit processes, US LCI, and ecoinvent.'
+      - ''
+      - *no_uncertainty
+
+  LCI_2020:
+
+    DataTreatment:
+      'The emissions inventory is multiplied by the 2020 generation and divided by the model-specified generation at the facility level before regional aggregation.'
+
+    DataCollectionPeriod:
+      'This inventory is representative of efforts that happened between 2022 and 2024.'
+
+    SamplingProcedure:
+      - 'BOUNDARY CONDITIONS'
+      - 'This process represents the operations and maintenance of U.S. wind farms.
+        Power plant construction is separate and is provided in its own unit process.'
+      - ''
+      - 'DATA COLLECTION'
+      - 'Inventories were developed for each wind farm identified in the 2020 EIA Form 860 using a custom life cycle model.
+        Generation data used in the model are based on 2020 EIA Form 923.
+        Boundaries include wind turbine operating emissions from fuel combustion, maintenance, etc.
+        The inventory for the wind farm is allocated over an assumed 30 year life.
+        The aggregation performed in the ElectricityLCI divides those inventories by the 2020 generation to provide results on the basis of MWh.'
+      - 'Data for the material inputs to the plant are from NETL unit processes, US LCI, and ecoinvent.'
+      - ''
+      - *no_uncertainty
 
   Sources:
 
