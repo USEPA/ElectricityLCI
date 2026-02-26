@@ -35,7 +35,7 @@ petroleum extraction and processing, coal transport, nuclear fuel extraction,
 processing, and transport, and power plant construction.
 
 Last updated:
-    2026-02-12
+    2026-02-13
 """
 __all__ = [
     "olcaschema_genupstream_processes",
@@ -94,6 +94,29 @@ def _exchange_table_creation_output(data):
 
 
 def _exchange_table_creation_ref(fuel_type):
+    """Helper function for defining the quantitative reference flows for
+    upstream processes (e.g., natural gas transmission, processes and
+    transported coal, nuclear fuel production, and power plant construction)
+
+    Parameters
+    ----------
+    fuel_type : str
+        The fuel type (e.g., 'OIL', 'GAS', 'NUCLEAR, 'Coal transport', or 'CONSTRUCTION').
+
+    Returns
+    -------
+    dict
+        An olca-schema formatted dictionary for an Exchange object.
+
+    Notes
+    -----
+    This method is responsible for defining functional units of upstream
+    processes.
+
+    Includes undefined upstream flows for processes not found in the
+    electricity baseline (e.g., geothermal, solar & wind upstream and
+    operation).
+    """
     natural_gas_flow = {
         "flowType": "PRODUCT_FLOW",
         "flowProperties": "",
@@ -329,7 +352,7 @@ def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
     ar["allocationFactors"] = ""
     ar["defaultAllocationMethod"] = ""
     ar["exchanges"] = exchanges_list
-    ar["location"] = ""  # location(region)
+    ar["location"] = ""  # TODO: consider default location, 'US'
     ar["parameters"] = ""
 
     logging.debug(
@@ -391,10 +414,21 @@ def olcaschema_genupstream_processes(merged):
         :func:`get_upstream_process_df`).
 
     Returns
-    ----------
+    -------
     dict
         Dictionary containing all of the unit processes to be written to
         JSON-LD for import to openLCA.
+
+    Notes
+    -----
+    This method is responsible for naming upstream processes such as:
+
+    - "petroleum extraction and processing - PADD"
+    - "coal extraction and processing - basin/coal/mine"
+    - "natural gas extraction, processing, and transport - basin"
+    - "nuclear fuel extraction, processing, and transport"
+    - "coal transport - stage code"
+    - "power plant construction - fuel - US Average/region"
     """
     coal_type_codes_inv = dict(map(reversed, coal_type_codes.items()))
     mine_type_codes_inv = dict(map(reversed, mine_type_codes.items()))
