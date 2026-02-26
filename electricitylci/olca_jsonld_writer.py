@@ -21,13 +21,16 @@ import fedelemflowlist
 import olca_schema as o
 import olca_schema.units as o_units
 import olca_schema.zipio as zipio
+import numpy as np
 import pandas as pd
 import pytz
 import requests
 
+from electricitylci.globals import US_STATES
 from electricitylci.globals import paths
 from electricitylci.globals import elci_version as VERSION
 from electricitylci.utils import check_output_dir
+from electricitylci.utils import read_ba_codes
 
 
 ##############################################################################
@@ -58,7 +61,7 @@ Changelog (since v2.0):
     -   [25.06.11] New method for updating product system description text.
 
 Last edited:
-    2026-02-13
+    2026-02-26
 """
 __all__ = [
     "add_to_product_system_description",
@@ -1064,6 +1067,100 @@ def _find_dq(dict_d, dict_key):
     return dq
 
 
+def _find_location_code_name(loc):
+    """Helper function to find location codes and names amongst
+    balacing authority areas, EIA regions, NERC regions, U.S. states,
+    and openLCA countries & regions.
+
+    Parameters
+    ----------
+    loc : str
+        Location name or code.
+
+    Returns
+    -------
+    tuple
+        A tuple of length two:
+
+        - str, location code
+        - str, location name
+
+    Notes
+    -----
+    This method searches BA names (from ``utils``), US states (from
+    ``globals``) and openLCA locations (from :func:`_get_olca_locations`).
+
+    This method prioritizes U.S. state names over the FERC regions for
+    Hawaii and Alaska.
+    """
+    ba = read_ba_codes()
+    ba = ba.reset_index(drop=False)
+
+    # For any matched column, quickly find the code and name columns
+    code_name_map = {
+        'BA_Acronym': {'code': 'BA_Acronym', 'name': 'BA_Name'},
+        'BA_Name':  {'code': 'BA_Acronym', 'name': 'BA_Name'},
+        'EIA_Region_Abbr':  {'code': 'EIA_Region_Abbr', 'name': 'EIA_Region'},
+        'EIA_Region': {'code': 'EIA_Region_Abbr', 'name': 'EIA_Region'},
+        'FERC_Region': {'code': 'FERC_Region_Abbr', 'name': 'FERC_Region'},
+        'FERC_Region_Abbr': {'code': 'FERC_Region_Abbr', 'name': 'FERC_Region'}
+    }
+
+    # Don't search these columns for matches (looking at you, Time Zone!)
+    drop_cols = [x for x in ba.columns if x not in code_name_map.keys()]
+    ba = ba.drop(columns=drop_cols)
+
+    # Correct for U.S. states
+    if loc in US_STATES.keys():
+        logging.info("Found U.S. state abbreviation")
+        loc = "US-%s" % loc
+    elif loc in US_STATES.values():
+        logging.info("Found U.S. state name")
+        loc = "United States of America, %s" % loc
+
+    mask = (ba == loc)
+    _, col_indices = np.where(mask)
+
+    # Get the matching column indices
+    match_cols = list(set(col_indices))
+
+    # Initialize string returns
+    name = "%s" % loc
+    code = "%s" % loc
+
+    # Check to see if the location code is a BA, EIA, or FERC region
+    if len(match_cols) == 0:
+        logging.warning("Failed to find location for '%s'" % loc)
+
+        # See if it's already a location in openLCA
+        olca_locs = _get_olca_locations()
+        olca_dict = {x.code: x.name for x in olca_locs}
+        rev_dict = {x.name: x.code for x in olca_locs}
+        if loc in olca_dict.keys():
+            logging.info("Found code in openLCA locations")
+            code = loc
+            name = olca_dict[loc]
+        elif loc in rev_dict.keys():
+            logging.info("Found name in openLCA locations")
+            code = rev_dict[loc]
+            name = loc
+    else:
+        # Assumes hierarchy if multiple columns were matched:
+        #   BA first, EIA second, FERC last.
+        match_col = list(ba.columns)[match_cols[0]]
+        row_mask = ba[match_col] == loc
+        num_matches = row_mask.sum()
+
+        if num_matches > 1:
+            logging.warning(
+                "Found multiple matches for '%s' under '%s'" % (loc, match_col)
+            )
+        code = ba.loc[row_mask, code_name_map[match_col]['code']].values[0]
+        name = ba.loc[row_mask, code_name_map[match_col]['name']].values[0]
+
+    return (code, name)
+
+
 def _find_ref_exchange(p):
     """Return the exchange class object associated as the quantitative
     reference.
@@ -1516,23 +1613,24 @@ def _location(dict_d, dict_s):
     # No code, no location!
     # HOTFIX: locations may just be a string [2023-11-14; TWD]
     if isinstance(dict_d, str):
-        code = dict_d
+        code, name = _find_location_code_name(dict_d)
         uid = None
     elif isinstance(dict_d, dict):
-        code = _val(dict_d, 'name')
+        code, name = _find_location_code_name(_val(dict_d, 'name'))
         uid = _val(dict_d, 'id', '@id')
     else:
         code = ""
+        name = ""
         uid = ""
 
-    if not isinstance(code, str):
-        return (None, dict_s)
     if code == '':
+        logging.debug("No location!")
         return (None, dict_s)
 
     # HOTFIX: Use GreenDelta's location codes [26.02.13; TWD].
     gd_loc = _get_location_dict()
     if code in gd_loc:
+        logging.debug(f"Found location {code} in openLCA default locations")
         dict_d = gd_loc.get(code)
         uid = _val(dict_d, 'id', '@id')
 
@@ -1549,7 +1647,7 @@ def _location(dict_d, dict_s):
     else:
         logging.debug("Creating new location entry for '%s'" % code)
         location = o.Location(id=uid, code=code)
-        location.name = _val(dict_d, 'name')
+        location.name = name  # fix name based on new lookup [26.02.26;TWD]
         location.latitude = _val(dict_d, 'latitude')
         location.longitude = _val(dict_d, 'longitude')
         location.description = _val(dict_d, 'description')
