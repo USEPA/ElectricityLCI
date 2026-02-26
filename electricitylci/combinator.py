@@ -106,7 +106,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     # Fill in with appropriate fields.
     # NOTE: 'quantity' is units of Electricity (MWh) for construction and
     # nameplate capacity (MW) for coal, heat input (MJ) for petroleum, tons
-    # for coal mining, etc.
+    # for coal mining, net generation (MWh) for nuclear upstream, etc.
     fuel_df["Compartment"] = "input"
     fuel_df["FlowName"] = expand_fuel_df["q_reference_name"]
     fuel_df["stage_code"] = upstream_reduced["stage_code"]
@@ -217,6 +217,9 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     2036 matched flows for renewable energy power plants.
 
     This method sets all data vintages with EIA generation year.
+
+    Renames upstream 'fuel_type' column to 'FuelCategory' and standardizes
+    fuel category names (i.e., to all caps).
 
     Examples
     --------
@@ -564,6 +567,11 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
     Returns
     -------
     pandas.DataFrame
+
+    Notes
+    -----
+    This process is responsible for creating the 'eGRID_ID' column in the
+    upstream data frame.
     """
     # Match location data to the upstream inventory
     region_cols = [
