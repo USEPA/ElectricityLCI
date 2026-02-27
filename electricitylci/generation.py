@@ -62,7 +62,7 @@ CHANGELOG (since v2.0)
 Created:
     2019-06-04
 Last edited:
-    2026-02-24
+    2026-02-27
 """
 __all__ = [
     "add_data_collection_score",
@@ -1617,7 +1617,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
             + process_df[fuel_agg].squeeze().values
             + "-powered electricity produced at generating facilities in the "
             + process_df[region_agg].squeeze().values
-            + " region."
+            + " region.\n"
         )
         process_df["name"] = (
             "Electricity - "

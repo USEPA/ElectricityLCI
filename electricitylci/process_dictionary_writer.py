@@ -38,7 +38,7 @@ JSON-LD format as prescribed by OpenLCA software.
 Portions of this code were cleaned using ChatGPTv3.5.
 
 Last updated:
-    2026-02-26
+    2026-02-27
 """
 __all__ = [
     'con_process_ref',
@@ -146,7 +146,7 @@ electricity_at_user_flow = {
 }
 
 OLCA_TO_METADATA = {
-    "timeDescription": None,
+    "timeDescription": "TemporalDescription",
     "validUntil": "End_date",
     "validFrom": "Start_date",
     "technologyDescription": "TechnologyDescription",
@@ -1085,9 +1085,6 @@ def process_doc_creation(process_type="default"):
                 process_type = "default"
                 ar[kw] = metadata[process_type][key]
 
-    # TODO: add this field to process_metadata.yml
-    ar["timeDescription"] = ""
-
     # Default valid year is the range of generation years
     if not ar["validUntil"]:
         # Hot fix for https://github.com/USEPA/ElectricityLCI/issues/244
@@ -1097,7 +1094,8 @@ def process_doc_creation(process_type="default"):
         # their validity dates included in the process_metadata.yml.
         year_range = get_generation_years()
         # For at-grid generation, the data for the EIA generation year.
-        if process_type == 'generation_mix':
+        # For at-user consumption, the data are EIA gen year (for T&D).
+        if process_type in ['generation_mix', 'distribution_mix']:
             year_range = [model_specs.eia_gen_year,]
         # For at-grid consumption, the data are for the trading year.
         if process_type == 'consumption_mix':

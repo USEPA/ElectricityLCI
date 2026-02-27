@@ -464,14 +464,18 @@ default:
 
   TechnologyDescription: *default_techno_process
 
+  TemporalDescription: ''
+
   Start_date: ''
 
   End_date: ''
 
   SamplingProcedure:
-  - *boundary_statement
-  - *data_collection_statement
-  - *uncertainty_statement
+    - *boundary_statement
+    - ''
+    - *data_collection_statement
+    - ''
+    - *uncertainty_statement
 
   IntendedApplication:
     'The intended application for this inventory is to provide high-resolution electricity data for the establishment of robust background data used in LCIs of US systems.
@@ -593,7 +597,8 @@ nuclear_upstream:
     The data represented here is a modification of that life cycle model - US fuel enrichment is now 100 percent centrifugal and some of the background data was updated with newer versions.'
 
   DataSelection:
-    'The full description of data selection is available in Skone (2012).'
+    'Secondary/tertiary material inputs provided via thinkstep data are from service pack 34 - 2016.
+    The full description of data selection is available in Skone (2012).'
 
   SamplingProcedure:
     - 'BOUNDARY CONDITIONS'
@@ -608,8 +613,7 @@ nuclear_upstream:
     - 'See Skone (2012).'
 
   DataCollectionPeriod:
-    'This inventory is representative of efforts that happened from 2011 to 2018.
-    Secondary/tertiary material inputs provided via thinkstep data are from service pack 34 - 2016.'
+    'This inventory is representative of efforts that happened from 2011 to 2018.'
 
   Sources:
 
@@ -643,6 +647,9 @@ biomass:
     - *biomass_techno_intro
     - *biomass_techno_process
 
+  TemporalDescription: &gen_proc_temp_desc
+    'The time frame reflects the period for background data (e.g., eGRID, TRI, NEI, and RCRAInfo) and generation year (e.g., EIA Form 923).'
+
   DatasetOwner: 'NETL'
 
   DataGenerator: 'NETL'
@@ -672,6 +679,8 @@ geothermal:
       Geothermal power plants are based on a variety of technologies.
       All technologies are captured within the state-level profiles.
       This inventory is an extension of that described in Skone et al. (2012).'
+
+  TemporalDescription: *gen_proc_temp_desc
 
   DatasetOwner: 'NETL'
 
@@ -724,6 +733,8 @@ hydro:
       The boundary of these emissions are within the boundaries of the electricity generating facilities and the associated reservoir.
       See Data Treatment section for more details.'
 
+  TemporalDescription: *gen_proc_temp_desc
+
   DatasetOwner: 'NETL'
 
   DataGenerator: 'NETL'
@@ -772,6 +783,8 @@ solar:
 
   TechnologyDescription: &solar_techno_desc
     'The technology is representative of U.S. photovoltaic power plants including, but not limited to, crystalline silicon, amorphous silicon, cadmium telluride (CdTe), and copper indium gallium selenide (CIGS) thin film.'
+
+  TemporalDescription: *gen_proc_temp_desc
 
   DatasetOwner: 'IEA, NREL, JE Mason, VM Fthenakis, T Hansen, HC Kim'
 
@@ -865,6 +878,8 @@ solarthermal:
   TechnologyDescription: &solar_therm_techno
     'The technology is representative of U.S. parabolic trough and power tower solar plants (see Skone et al., 2012).'
 
+  TemporalDescription: *gen_proc_temp_desc
+
   DatasetOwner: 'NREL'
 
   DataGenerator: 'NETL'
@@ -951,6 +966,8 @@ wind:
   TechnologyDescription: &wind_techno_desc
     "This technology represents onshore V110-2.0 MW wind plants (see Razdan & Garrett, 2015)"
 
+  TemporalDescription: *gen_proc_temp_desc
+
   LCI_2016:
 
     DataTreatment:
@@ -1029,6 +1046,9 @@ consumption_mix:
 
   TechnologyDescription:
 
+  TemporalDescription:
+    'The time frame reflects the modeled trading year.'
+
   use_egrid:
 
     Description:
@@ -1103,6 +1123,8 @@ distribution_mix:
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the electricity at the end user for the given region in the US. '
 
+  TemporalDescription:
+    'The time frame reflects the modeled generation year, which is used for calculating the transmission and distribution losses.'
 
 generation_mix:
 
@@ -1160,6 +1182,9 @@ coal_upstream:
 
   TechnologyDescription:
     'Technologies represent U.S. surface and underground mining for bituminous, sub-bituminous, and lignite coal.'
+
+  TemporalDescription:
+    'The time frame reflects the data representativeness within the coal baseline (i.e., 2016).'
 
   Start_date: '1/1/2016'
 
@@ -1222,7 +1247,10 @@ gas_upstream:
       - 'Default co-product approach: N/A'
       - 'Data source: Littlefield et al. (2019)'
       - ''
-      - 'Intended for use as upstream for natural gas power plants. '
+      - 'Intended for use as upstream for natural gas power plants.'
+
+    TemporalDescription:
+      'The time frame reflects the data representativeness for the 2016 natural gas baseline.'
 
     Start_date: '1/1/2016'
 
@@ -1247,6 +1275,9 @@ gas_upstream:
       - 'Data source: Khutal et al. (2025)'
       - ''
       - 'Intended for use as upstream for natural gas power plants. '
+
+    TemporalDescription:
+      'The time frame reflects the data representativeness from the 2020 natural gas baseline.'
 
     Start_date: '1/1/2020'
 
@@ -1315,6 +1346,9 @@ oil_upstream:
 
   TechnologyDescription:
 
+  TemporalDescription:
+    'The time frame reflects the data representativeness for the crude oil mixes.'
+
   Start_date: '1/1/2016'
 
   End_date: '12/31/2016'
@@ -1350,7 +1384,7 @@ oil_upstream:
     - 'All processes are compiled by US region using boundaries based on PADDs defined as ''subregions'' by the Energy Information Administration (EIA).
       Upstream fuel processes are also aggregated by energy source.
       Delivery to the final user is targeted toward an average end user without separation between different user types.
-      The time span for all processes is one year, with the goal to represent the current (2018) year.'
+      The time span for all processes is one year.'
     - ''
     - 'DATA COLLECTION'
     - 'Data from 2016 were used to define the mix of crudes and petroleum refinery types.
@@ -1387,6 +1421,9 @@ coal_transport_upstream:
 
   TechnologyDescription:
     'This inventory includes impacts from fuel combustion for the various modes of coal transportation to power plants including: train, truck, tug and barge, ocean vessel, lake vessel, and conveyer.'
+
+  TemporalDescription:
+    'The time frame reflects the data representativeness within the coal baseline (i.e., 2016).'
 
   Start_date: '1/1/2016'
 
