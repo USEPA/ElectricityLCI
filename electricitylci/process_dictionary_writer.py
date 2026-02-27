@@ -986,12 +986,15 @@ def process_description_creation(process_type="fossil"):
         process_type = "default"
         desc_string = metadata[process_type][key]
 
+    # Append YAML description string with eLCI clause and clean up.
+    # HOTFIX: update GitHub URL [26.02.26; TWD]
     desc_string = (
-        desc_string
+        desc_string.rstrip()
         + " This process was created with ElectricityLCI "
-        + "(https://github.com/USEPA/ElectricityLCI) version "
+        + "(https://github.com/NETL-RIC/ElectricityLCI) version "
         + elci_version
         + " using the " + model_specs.model_name + " configuration.")
+    desc_string = desc_string.strip()
 
     return desc_string
 

@@ -1609,12 +1609,13 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         )
     else:
         # HOTFIX: remove .values, which throws ValueError [2023-11-13; TWD]
+        # Update the intro statement for generation processes [26.02.27; TWD]
         process_df["location"] = process_df[region_agg]
         process_df["description"] = (
             "This process represents the cradle-to-gate inventory "
-            + "for the production of electricity from "
+            + "for the production of "
             + process_df[fuel_agg].squeeze().values
-            + " produced at generating facilities in the "
+            + "-powered electricity produced at generating facilities in the "
             + process_df[region_agg].squeeze().values
             + " region."
         )
@@ -1628,8 +1629,6 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     # HOTFIX: remove duplicate eLCI model reference & version number---
     # this is represented in the 'description' key in processDocumentation.
 
-    # TODO: use `process_description_creation` from process_dictionary_writer to fill in this portion; note that the default text below is captured in the return string from that method.
-
     # Create the dictionaries for process documentation based on fuel type.
     # NOTE: this defines the process-level DQI
     process_df["processDocumentation"] = [
@@ -1637,6 +1636,8 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
             process_df["FuelCategory"].str.lower())
     ]
 
+    # Append YAML descriptions to generating processes (e.g., biomass,
+    # geothermal, hydro, solar, solarthermal, wind).
     process_df["description"] += [
         "\n" + x["description"] for x in process_df["processDocumentation"]
     ]
@@ -1651,10 +1652,12 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         "processDocumentation",
         "processType",
         "name",
-        "version",
+        "version",     # NEW--- failed to find this column [26.02.26; TWD]
         "category",
         "description",
     ]
+    # HOTFIX: make sure all columns are represented [26.02.26; TWD]
+    process_cols = [x for x in process_cols if x in process_df.columns]
     result = process_df[process_cols].to_dict("index")
 
     return result
