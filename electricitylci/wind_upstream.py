@@ -26,7 +26,7 @@ for wind farm construction for each plant in EIA 923 based on upstream
 contributions.
 
 Last updated:
-    2025-01-31
+    2026-02-27
 """
 __all__ = [
     "aggregate_wind",
@@ -76,7 +76,7 @@ def get_wind_construction(year):
             low_memory=False,
         )
     elif model_specs.renewable_vintage == 2016:
-        logging.info(
+        logging.warning(
             "The 2016 wind LCI does not separate construction and O&M."
             "Returning none.")
         return None
