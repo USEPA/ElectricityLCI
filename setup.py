@@ -25,6 +25,7 @@ setup(
         'fedelemflowlist @ git+https://github.com/FLCAC-Admin/fedelemflowlist',
         'StEWI @ git+https://github.com/USEPA/standardizedinventories#egg=StEWI',
         'scipy>=1.10',
+        'pandas<3.0',   # see issue 321
         'pytz',
         ],
     long_description=open('README.md').read(),
