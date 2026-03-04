@@ -1507,6 +1507,9 @@ construction_upstream:
     The inventories are then scaled according to power plant name plate capacity relative to the source power plants and then allocated over an assumed 30 year life.
     The single year of impacts are then divided by the generation of the year selected in the model configuration, which is why input amounts are typically less than 1 unit.'
 
+  TemporalDescription:
+    'The time frame reflects the generation data year.'
+
   SamplingProcedure:
     - 'BOUNDARY CONDITIONS'
     - 'The construction inventories are generated using an economic input output model and so should catch all materials and manufacturing processes that go into creating the power plant.'
@@ -1559,6 +1562,9 @@ solarpv_construction_upstream:
 
   ModelingConstants:
     'The 2022 model updates include 2020 EIA data, updated aluminum functional unit, and new aluminum LCI.'
+
+  TemporalDescription:
+    'The time frame reflects the generation data year.'
 
   SamplingProcedure: &renewable_const_sp
     - 'BOUNDARY CONDITIONS'
@@ -1619,6 +1625,9 @@ solartherm_construction_upstream:
   ModelingConstants:
     'The 2022 model updates include 2020 EIA data and corrections/updates to aluminum LCI.'
 
+  TemporalDescription:
+    'The time frame reflects the generation data year.'
+
   SamplingProcedure: *renewable_const_sp
 
   Sources:
@@ -1641,8 +1650,6 @@ wind_construction_upstream:
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the emissions inventory for the construction of wind farms in the US.'
 
-  TechnologyDescription: *wind_techno_desc
-
   DatasetOwner: 'NREL and Vestas'
 
   DataGenerator: 'NETL'
@@ -1661,6 +1668,11 @@ wind_construction_upstream:
 
   ModelingConstants:
     'The 2022 model updates include 2020 EIA data, corrections/updates to aluminum LCI, and corrections to turbine blade count, trunkline, and switchyard calculations.'
+
+  TechnologyDescription: *wind_techno_desc
+
+  TemporalDescription:
+    'The time frame reflects the generation data year.'
 
   SamplingProcedure: *renewable_const_sp
 
