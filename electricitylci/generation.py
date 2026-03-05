@@ -57,12 +57,13 @@ computer memory.
 
 CHANGELOG (since v2.0)
 
+- Add 2016 to get generation years for NETL water inventory [260305; TWD]
 - Hotfix DQI entry in :func:`turn_data_to_dict` [260109; TWD]
 
 Created:
     2019-06-04
 Last edited:
-    2026-02-27
+    2026-03-05
 """
 __all__ = [
     "add_data_collection_score",
@@ -1272,6 +1273,10 @@ def get_generation_years():
     # Check to see if hydro power plant data are used (always 2016)
     if model_specs.include_renewable_generation is True:
         generation_years += [2016]
+    # Check to see if NETL power plant water use is used (always 2016)
+    if model_specs.include_netl_water:
+        generation_years += [2016]
+
     # Add years of inventories of interest; remove duplicates, and
     # sort chronologically:
     generation_years = sorted(list(set(
