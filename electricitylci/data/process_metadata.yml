@@ -464,7 +464,8 @@ default:
 
   TechnologyDescription: *default_techno_process
 
-  TemporalDescription: ''
+  TemporalDescription: &gen_proc_temp_desc
+    'The time frame reflects the period for all background data (e.g., eGRID, TRI, NEI, and RCRAInfo), NETL inventory data (e.g., for renewables and power plant water use), and model generation year (e.g., EIA Form 923).'
 
   Start_date: ''
 
@@ -655,9 +656,6 @@ biomass:
     - *biomass_techno_intro
     - *biomass_techno_process
 
-  TemporalDescription: &gen_proc_temp_desc
-    'The time frame reflects the period for all background data (e.g., eGRID, TRI, NEI, and RCRAInfo), NETL inventory data (e.g., for renewables and power plant water use), and model generation year (e.g., EIA Form 923).'
-
   DatasetOwner: 'NETL'
 
   DataGenerator: 'NETL'
@@ -687,8 +685,6 @@ geothermal:
       Geothermal power plants are based on a variety of technologies.
       All technologies are captured within the state-level profiles.
       This inventory is an extension of that described in Skone et al. (2012).'
-
-  TemporalDescription: *gen_proc_temp_desc
 
   DatasetOwner: 'NETL'
 
@@ -741,8 +737,6 @@ hydro:
       The boundary of these emissions are within the boundaries of the electricity generating facilities and the associated reservoir.
       See Data Treatment section for more details.'
 
-  TemporalDescription: *gen_proc_temp_desc
-
   DatasetOwner: 'NETL'
 
   DataGenerator: 'NETL'
@@ -791,8 +785,6 @@ solar:
 
   TechnologyDescription: &solar_techno_desc
     'The technology is representative of U.S. photovoltaic power plants including, but not limited to, crystalline silicon, amorphous silicon, cadmium telluride (CdTe), and copper indium gallium selenide (CIGS) thin film.'
-
-  TemporalDescription: *gen_proc_temp_desc
 
   DatasetOwner: 'IEA, NREL, JE Mason, VM Fthenakis, T Hansen, HC Kim'
 
@@ -886,8 +878,6 @@ solarthermal:
   TechnologyDescription: &solar_therm_techno
     'The technology is representative of U.S. parabolic trough and power tower solar plants (see Skone et al., 2012).'
 
-  TemporalDescription: *gen_proc_temp_desc
-
   DatasetOwner: 'NREL'
 
   DataGenerator: 'NETL'
@@ -973,8 +963,6 @@ wind:
 
   TechnologyDescription: &wind_techno_desc
     "This technology represents onshore V110-2.0 MW wind plants (see Razdan & Garrett, 2015)"
-
-  TemporalDescription: *gen_proc_temp_desc
 
   LCI_2016:
 
