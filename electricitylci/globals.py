@@ -20,7 +20,7 @@ __doc__ = """Define paths, variables, and functions used across several
 modules.
 
 Last updated:
-    2025-12-12
+    2026-03-05
 """
 
 
@@ -78,6 +78,39 @@ CAM_API_URL = (
     "/emissions-mgmt/emissions/apportioned/annual/by-facility"
 )
 '''str : EPA CEMS annual apportioned emissions by facility API URL'''
+
+# Coal model constants
+COAL_BASIN_CODES = {
+    'Central Appalachia': 'CA',
+    'Central Interior': 'CI',
+    'Gulf Lignite': 'GL',
+    'Illinois Basin': 'IB',
+    'Lignite': 'L',
+    'Northern Appalachia': 'NA',
+    'Powder River Basin': 'PRB',
+    'Rocky Mountain': 'RM',
+    'Southern Appalachia': 'SA',
+    'West/Northwest': 'WNW',
+    'Import': 'IMP',
+}
+'''dict : A map between NETL coal basin names and their abbreviations.'''
+
+COAL_TYPE_CODES = {
+    'BIT': 'B',
+    'LIG': 'L',
+    'SUB': 'S',
+    'WC': 'W',
+    'RC' : 'RC',
+}
+'''dict : Map between EIA coal fuel source codes and NETL coal codes.'''
+
+COAL_MINE_CODES = {
+    'Surface': 'S',
+    'Underground': 'U',
+    'Facility': 'F',
+    'Processing': 'P',
+}
+'''dict : A map between coal mine type and their abbreviation.'''
 
 # Grouping of Reported fuel codes to EPA categories
 FUEL_CAT_CODES = {

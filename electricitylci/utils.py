@@ -26,6 +26,7 @@ from electricitylci.globals import output_dir
 from electricitylci.globals import API_SLEEP
 from electricitylci.globals import CAM_API_URL
 from electricitylci.globals import NREL_REC_URL
+from electricitylci.globals import COAL_BASIN_CODES
 
 
 ##############################################################################
@@ -66,6 +67,7 @@ __all__ = [
     "fill_default_provider_uuids",
     "filter_out_zero",
     "find_file_in_folder",
+    "find_upstream_location",
     "find_worksheet_header_row",
     "get_ba_map",
     "get_logger",
@@ -1181,6 +1183,69 @@ def find_file_in_folder(folder_path, file_pattern_match, return_name=True):
         return (file_path, file_name)
 
 
+def find_upstream_location(process_name, fuel_type):
+    """Helper function to extract regional names from upstream processes
+    including coal, oil, gas, nuclear, and construction.
+
+    Parameters
+    ----------
+    process_name : str
+        A process name (e.g., 'natural gas extraction, processing, and transport - Northeast')
+    fuel_type : str
+        A fuel type (e.g., 'GAS')
+
+    Returns
+    -------
+    str
+        Location string (e.g., 'US', 'Northeast', or 'RFO PADD 5').
+
+    Notes
+    -----
+    This method is specifically designed to work with eLCI process names,
+    not ILCD process names. At time of writing, ILCD naming is assumed to
+    a post-processing step (configurable in the model specs YAML) that
+    changes process names without changing UUIDs that are built on the
+    original eLCI process names.
+
+    See reference to method in ``_process_table_creation_gen`` in
+    upstream_dict.py.
+
+    Examples
+    --------
+    >>> find_upstream_location(
+    ...     'power plant construction - solar_thermal_const - US Average',
+    ...     'SOLARTHERM_CONSTRUCTION')
+    'US'
+    >>> find_upstream_location(
+    ...     'natural gas extraction, processing, and transport - Northeast',
+    ...     'GAS')
+    'Northeast'
+    """
+    match fuel_type:
+        case 'coal_transport' | 'NUCLEAR' | 'OIL':
+            return 'US'
+        case 'COAL':
+            # Search across basin names
+            for basin_name in COAL_BASIN_CODES:
+                if basin_name in process_name:
+                    return basin_name
+        case 'GAS':
+            # Take the words after the last hyphen.
+            return process_name.rpartition('-')[-1].strip()
+        case name if name.endswith('CONSTRUCTION'):
+            # Note that some BA names have hyphens, so stop at the first two.
+            loc_parts = process_name.split("-", 2)
+            # Clean up the location name
+            loc_name = loc_parts[2].strip() if len(loc_parts) > 2 else ""
+            # Correct for national average construction
+            if loc_name == 'US Average':
+                loc_name = 'US'
+            return loc_name
+        case _:
+            # All others will be treated thusly.
+            return ""
+
+
 def find_worksheet_header_row(workbook, worksheet, keywords, num_rows_to_scan):
     """Dynamically scans the top rows of an Excel worksheet to find the
     header row based on a list of identifying keywords.
@@ -1799,7 +1864,7 @@ def read_ba_codes():
         "Alaska": "AK",
         "Hawaii": "HI",
     }
-    logging.info("Reading EIA930 reference table")
+    logging.debug("Reading EIA930 reference table")
     df = pd.read_excel(data_path_local)
     df = df.rename(columns={
         'BA Code': 'BA_Acronym',

@@ -17,6 +17,8 @@ from ast import literal_eval
 from electricitylci.globals import paths
 from electricitylci.globals import data_dir
 from electricitylci.globals import STATE_ABBREV
+from electricitylci.globals import COAL_BASIN_CODES
+from electricitylci.globals import COAL_TYPE_CODES
 from electricitylci.eia860_facilities import eia860_balancing_authority
 from electricitylci.eia923_generation import eia923_download
 from electricitylci.eia923_generation import eia923_generation_and_fuel
@@ -58,13 +60,10 @@ inventories, including newer background data, for coal mining and
 transportation, but still mainly represents 2016.
 
 Last updated:
-    2025-09-05
+    2026-03-05
 """
 __all__ = [
-    "basin_codes",       # Globals
-    "coal_type_codes",
-    "mine_type_codes",
-    "transport_dict",
+    "transport_dict",    # Globals
     "eia_7a_download",   # Methods
     "fix_coal_mining_lci",
     "generate_upstream_coal",
@@ -82,38 +81,6 @@ __all__ = [
 ##############################################################################
 # GLOBALS
 ##############################################################################
-basin_codes = {
-    'Central Appalachia': 'CA',
-    'Central Interior': 'CI',
-    'Gulf Lignite': 'GL',
-    'Illinois Basin': 'IB',
-    'Lignite': 'L',
-    'Northern Appalachia': 'NA',
-    'Powder River Basin': 'PRB',
-    'Rocky Mountain': 'RM',
-    'Southern Appalachia': 'SA',
-    'West/Northwest': 'WNW',
-    'Import': 'IMP',
-}
-'''dict : A map between NETL coal basin names and their abbreviations.'''
-
-coal_type_codes = {
-    'BIT': 'B',
-    'LIG': 'L',
-    'SUB': 'S',
-    'WC': 'W',
-    'RC' : 'RC',
-}
-'''dict : Map between EIA coal fuel source codes and NETL coal codes.'''
-
-mine_type_codes = {
-    'Surface': 'S',
-    'Underground': 'U',
-    'Facility': 'F',
-    'Processing': 'P',
-}
-'''dict : A map between coal mine type and their abbreviation.'''
-
 transport_dict = {
     'Avg Barge Ton*Miles': 'Barge',
     'Avg Lake Vessel Ton*Miles': 'Lake Vessel',
@@ -145,8 +112,8 @@ def _clean_columns(df):
 def _coal_code(row):
     """Generate coal basin + energy source + mine type string-based code."""
     coal_code_str = (
-        f'{basin_codes[row["netl_basin"]]}-'
-        f'{coal_type_codes[row["energy_source"]]}-'
+        f'{COAL_BASIN_CODES[row["netl_basin"]]}-'
+        f'{COAL_TYPE_CODES[row["energy_source"]]}-'
         f'{row["coalmine_type"]}'
     ).upper()
 
@@ -209,7 +176,7 @@ def _make_2023_coal_transport_data(year):
 
     # NOTE: the 2023 coal model uses a slightly different naming scheme
     # for WNW coal basin, so let's fix it.
-    basin_codes_new = {k:v for k, v in basin_codes.items()}
+    basin_codes_new = {k:v for k, v in COAL_BASIN_CODES.items()}
     del basin_codes_new["West/Northwest"]
     basin_codes_new["West/North West"] = "WNW"
 
@@ -1070,7 +1037,7 @@ def generate_upstream_coal_map(year):
     # Map to NETL coal types --- these should match the coal type found in
     # the coal source code.
     eia_fuel_receipts_good["coal_type"] = eia_fuel_receipts_good[
-        "energy_source"].map(coal_type_codes)
+        "energy_source"].map(COAL_TYPE_CODES)
 
     final_df = eia_fuel_receipts_good.groupby(
         ['plant_id', 'coal_type', 'coal_source_code'],
@@ -1101,7 +1068,7 @@ def generate_upstream_coal_map(year):
         "elec_fuel_consumption_mmbtu"
     ]].copy()
     eia_923_gen_fuel["coal_type"] = eia_923_gen_fuel[
-        "reported_fuel_type_code"].map(coal_type_codes)
+        "reported_fuel_type_code"].map(COAL_TYPE_CODES)
     eia_923_gen_fuel["plant_id"] = eia_923_gen_fuel["plant_id"].astype(int)
     # Effectively filters out NaNs in coal type
     # NOTE: quantity is in short tons

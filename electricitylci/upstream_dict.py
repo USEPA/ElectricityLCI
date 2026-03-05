@@ -8,17 +8,16 @@
 ##############################################################################
 import logging
 
-from electricitylci.coal_upstream import (
-    coal_type_codes,
-    mine_type_codes,
-    basin_codes,
-)
+from electricitylci.globals import COAL_TYPE_CODES
+from electricitylci.globals import COAL_BASIN_CODES
+from electricitylci.globals import COAL_MINE_CODES
 from electricitylci import write_process_dicts_to_jsonld
 from electricitylci.process_dictionary_writer import (
         process_doc_creation,
         process_description_creation
 )
 from electricitylci.utils import make_valid_version_num
+from electricitylci.utils import find_upstream_location
 from electricitylci.globals import elci_version
 # Issue #150, need Balancing Authority names for regional construction
 from electricitylci.eia860_facilities import add_balancing_authorities_to_plants
@@ -35,7 +34,7 @@ petroleum extraction and processing, coal transport, nuclear fuel extraction,
 processing, and transport, and power plant construction.
 
 Last updated:
-    2026-02-13
+    2026-03-05
 """
 __all__ = [
     "olcaschema_genupstream_processes",
@@ -352,7 +351,8 @@ def _process_table_creation_gen(process_name, exchanges_list, fuel_type):
     ar["allocationFactors"] = ""
     ar["defaultAllocationMethod"] = ""
     ar["exchanges"] = exchanges_list
-    ar["location"] = ""  # TODO: consider default location, 'US'
+    # Issue 327: apply locations to upstream processes [26.03.05; TWD]
+    ar["location"] = find_upstream_location(process_name, fuel_type)
     ar["parameters"] = ""
 
     logging.debug(
@@ -430,9 +430,9 @@ def olcaschema_genupstream_processes(merged):
     - "coal transport - stage code"
     - "power plant construction - fuel - US Average/region"
     """
-    coal_type_codes_inv = dict(map(reversed, coal_type_codes.items()))
-    mine_type_codes_inv = dict(map(reversed, mine_type_codes.items()))
-    basin_codes_inv = dict(map(reversed, basin_codes.items()))
+    coal_type_codes_inv = dict(map(reversed, COAL_TYPE_CODES.items()))
+    mine_type_codes_inv = dict(map(reversed, COAL_MINE_CODES.items()))
+    basin_codes_inv = dict(map(reversed, COAL_BASIN_CODES.items()))
     # Hotfix: add 'Belt' to coal transport list [12/16/2024;MBJ]
     # NOTE: I don't think the belt inventory is actually used anywhere
     coal_transport = [

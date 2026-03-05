@@ -26,6 +26,7 @@ import pandas as pd
 import pytz
 import requests
 
+from electricitylci.globals import COAL_BASIN_CODES
 from electricitylci.globals import US_STATES
 from electricitylci.globals import paths
 from electricitylci.globals import elci_version as VERSION
@@ -55,13 +56,14 @@ References:
 
 Changelog (since v2.0):
 
+    -   [26.03.05] Add coal basin to location finder.
     -   [26.02.12] Check v3 & v4 UUIDs for locations.
     -   [25.12.19] New update providers helper function.
     -   [25.12.16] New build residual processes method.
     -   [25.06.11] New method for updating product system description text.
 
 Last edited:
-    2026-02-26
+    2026-03-05
 """
 __all__ = [
     "add_to_product_system_description",
@@ -1144,6 +1146,23 @@ def _find_location_code_name(loc):
             logging.info("Found name in openLCA locations")
             code = rev_dict[loc]
             name = loc
+
+        # Add upstream coal basins locations [26.03.05; TWD]
+        coal_dict = COAL_BASIN_CODES
+        coal_rev = {v: k for k, v in COAL_BASIN_CODES.items()}
+        if loc in coal_dict.keys():
+            logging.info("Found name in coal basin locations")
+            code = coal_dict[loc]
+            name = loc
+        elif loc in coal_rev.keys():
+            logging.info("Found code in coal basin locations")
+            code = loc
+            name = coal_dict[loc]
+        # HOTFIX: no location for coal import process
+        if name == 'Import' or code == 'IMP':
+            name = ""
+            loc = ""
+
     else:
         # Assumes hierarchy if multiple columns were matched:
         #   BA first, EIA second, FERC last.
