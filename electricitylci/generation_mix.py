@@ -458,6 +458,7 @@ def olcaschema_genmix(database, gen_dict, subregion=None):
                             "Skipping this flow for now"
                         )
 
+        # Send the region and exchanges list to create the Process dictionary
         final = process_table_creation_genmix(reg, exchanges_list)
         generation_mix_dict[reg] = final
 
