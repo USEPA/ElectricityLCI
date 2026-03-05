@@ -600,6 +600,14 @@ nuclear_upstream:
     'Secondary/tertiary material inputs provided via thinkstep data are from service pack 34 - 2016.
     The full description of data selection is available in Skone (2012).'
 
+  TemporalDescription:
+    'The inventory was generated with a target year of 2016.
+    It includes EIA uranium marketing data from 2018.'
+
+  Start_date: '1/1/2016'
+
+  End_date: '12/31/2016'
+
   SamplingProcedure:
     - 'BOUNDARY CONDITIONS'
     - 'The system boundary includes the extraction of uranium from mining operations, fuel enrichment, fuel fabrication, fuel transportation, power plant construction, and power plant operations.'
@@ -1508,7 +1516,9 @@ construction_upstream:
     The single year of impacts are then divided by the generation of the year selected in the model configuration, which is why input amounts are typically less than 1 unit.'
 
   TemporalDescription:
-    'The time frame reflects the generation data year.'
+    'The construction inventory was built on several years of data.
+    The inventory was generated with a target year of 2016.
+    It includes data from a 2015 techno-economic analysis and is scaled based on the model generation year.'
 
   SamplingProcedure:
     - 'BOUNDARY CONDITIONS'
@@ -1564,7 +1574,11 @@ solarpv_construction_upstream:
     'The 2022 model updates include 2020 EIA data, updated aluminum functional unit, and new aluminum LCI.'
 
   TemporalDescription:
-    'The time frame reflects the generation data year.'
+    'The time frame reflects the target year for the inventory creation.'
+
+  Start_date: '1/1/2020'
+
+  End_date: '12/31/2020'
 
   SamplingProcedure: &renewable_const_sp
     - 'BOUNDARY CONDITIONS'
@@ -1626,7 +1640,11 @@ solartherm_construction_upstream:
     'The 2022 model updates include 2020 EIA data and corrections/updates to aluminum LCI.'
 
   TemporalDescription:
-    'The time frame reflects the generation data year.'
+    'The time frame reflects the target year for the inventory creation.'
+
+  Start_date: '1/1/2020'
+
+  End_date: '12/31/2020'
 
   SamplingProcedure: *renewable_const_sp
 
@@ -1672,7 +1690,11 @@ wind_construction_upstream:
   TechnologyDescription: *wind_techno_desc
 
   TemporalDescription:
-    'The time frame reflects the generation data year.'
+    'The time frame reflects the target year for the inventory creation.'
+
+  Start_date: '1/1/2020'
+
+  End_date: '12/31/2020'
 
   SamplingProcedure: *renewable_const_sp
 
