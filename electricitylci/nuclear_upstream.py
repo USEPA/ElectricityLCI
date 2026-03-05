@@ -149,8 +149,6 @@ def generate_upstream_nuc(year):
     nuc_merged["Source"]="netlnuceiafuel"
 
     # Issue #296 - adding DQI information for upstream processes
-    # Setting year to be equal to the year that the costs were generated
-    # to develop this USEEIO-based inventory
     nuc_merged["Year"] = 2016
     nuc_merged["DataReliability"] = 3
     nuc_merged["TemporalCorrelation"] = add_temporal_correlation_score(
