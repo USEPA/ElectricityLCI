@@ -38,7 +38,7 @@ JSON-LD format as prescribed by OpenLCA software.
 Portions of this code were cleaned using ChatGPTv3.5.
 
 Last updated:
-    2026-02-27
+    2026-03-05
 """
 __all__ = [
     'con_process_ref',
@@ -186,6 +186,7 @@ VALID_FUEL_CATS=[
     "solarthermal",
     "wind",
     "consumption_mix",
+    "distribution_mix",
     "generation_mix",
     "coal_upstream",
     "gas_upstream",
@@ -1079,11 +1080,11 @@ def process_doc_creation(process_type="default"):
                         logging.debug("Failed default key; looking at subkey")
                         ar[kw] = metadata['default'][subkey][key]
             except TypeError:
+                # HOTFIX: don't overwrite process_type [26.03.05; TWD]
                 logging.debug(
                     "Failed first key, likely no metadata defined for "
                     f"{process_type}")
-                process_type = "default"
-                ar[kw] = metadata[process_type][key]
+                ar[kw] = metadata["default"][key]
 
     # Default valid year is the range of generation years
     if not ar["validUntil"]:
@@ -1222,7 +1223,7 @@ def process_table_creation_con_mix(region, exchanges_list):
     ar['description'] = (
         'This process provides the electricity inputs from the various '
         + 'trade regions that make up the electricity consumption '
-        + f'mix for the {region} region.'
+        + f'mix for the {region} region.\n\n'
         + ar['processDocumentation']['description']
     )
     ar["version"] = make_valid_version_num(elci_version)
@@ -1263,7 +1264,7 @@ def process_table_creation_distribution(region, exchanges_list):
     ar['description'] = (
         'This process provides the electricity inputs from the various '
         + 'trade regions that make up the electricity consumption '
-        + f'mix for the {region} region.'
+        + f'mix for the {region} region.\n\n'
         + ar['processDocumentation']['description']
     )
     ar["version"] = make_valid_version_num(elci_version)
@@ -1388,7 +1389,7 @@ def process_table_creation_genmix(region, exchanges_list):
     ar['description'] = (
         'This process provides the electricity inputs from the various '
         + 'generation technologies that make up the electricity generation '
-        + f'mix for the {region} region.'
+        + f'mix for the {region} region.\n\n'
         + ar['processDocumentation']['description']
     )
     ar['version'] = make_valid_version_num(elci_version)
