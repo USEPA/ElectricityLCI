@@ -242,7 +242,7 @@ def get_solar_pv_construction(year):
     solar_upstream["input"] = False
 
     solar_upstream = fix_renewable(solar_upstream, "netlnrelsolarpv")
-        # Issue #296 - adding DQI information for upstream processes
+    # Issue #296 - adding DQI information for upstream processes
     solar_upstream["Year"] = model_specs.renewable_vintage
     solar_upstream["DataReliability"] = 3
     solar_upstream["TemporalCorrelation"] = add_temporal_correlation_score(
