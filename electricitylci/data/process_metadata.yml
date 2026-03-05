@@ -656,7 +656,7 @@ biomass:
     - *biomass_techno_process
 
   TemporalDescription: &gen_proc_temp_desc
-    'The time frame reflects the period for background data (e.g., eGRID, TRI, NEI, and RCRAInfo) and generation year (e.g., EIA Form 923).'
+    'The time frame reflects the period for all background data (e.g., eGRID, TRI, NEI, and RCRAInfo), NETL inventory data (e.g., for renewables and power plant water use), and model generation year (e.g., EIA Form 923).'
 
   DatasetOwner: 'NETL'
 
