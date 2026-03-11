@@ -158,7 +158,7 @@ def run_distribution(generation_process_dict):
         # True for ELCI_1 & ELCI_2 (not ELCI_3)
         dist_dict = run_net_trade(generation_mix_dict)
     else:
-        # ELC1_3
+        # ELCI_3
         # NOTE: replace eGRID configuration must be true
         # BUG:  keyerror in fill_default_provider_uuids in utils.py
         dist_dict = run_epa_trade(
