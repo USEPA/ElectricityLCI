@@ -57,6 +57,23 @@ source_bergesen_etal: &bergesen_etal
   Version:
     '2.1.0'
 
+source_cer_energy: &cer_energy
+  Name:
+    'Canadian Energy Regulator (2023).
+    Canada''s Energy Future 2023: Energy Supply and Demand Projections to 2050'
+  TextReference:
+    'Canadian Energy Regulator (2023).
+    Canada''s Energy Future 2023: Energy Supply and Demand Projections to 2050 - electricity-generation-2023 [Data set].
+    Online: https://www.cer-rec.gc.ca/open/energy/energyfutures2023/electricity-generation-2023.csv'
+  Year:
+    2023
+  Version:
+    '2.1.0'
+  Url:
+    'https://open.canada.ca/data/en/dataset/7643c948-d661-4d90-ab91-e9ac732fc737/resource/1b14f347-8876-4646-b594-955ebb7baafd'
+  Category:
+    ''
+
 source_cooney_etal: &cooney_etal
   Name:
     'Cooney et al. (2016).
@@ -631,6 +648,37 @@ nuclear_upstream:
 
     Source2:
       <<: *eia_uranium_2018
+
+all:
+
+  Description:
+    - ''
+    - 'Functional Unit: 1 MWh of high voltage electricity'
+    - 'Co-products: N/A'
+    - 'Default co-product approach: N/A'
+    - 'Data source: NETL (2025)'
+    - ''
+    - 'This process is a part of NETL''s electricity baseline and is intended to capture the emissions inventory for electricity generation imported from Canada. '
+
+  TechnologyDescription:
+    'The fuels used for electricity generation in this Canadian region are based on the public data published by Canadian Energy Futures and the emissions inventory is proxied using U.S. fuel generation, weighted by the Canadian mix amounts.'
+
+  ModelingConstants:
+    'Uses Canada''s Energy Future 2023: Energy Supply and Demand Projections to 2050 for the given generation year''s fuel mix and uses weighted U.S. emissions inventories as a proxy.'
+
+  DataTreatment:
+    'Balancing authority names are from EIA 930 reference tables.
+    Fuel mixes are based on reported values in CER (2023) based on the ''Current Measures'' scenario.
+    Fuel categories are grouped to proxy those found in the U.S. (e.g., biomass / geothermal is labeled as BIOMASS and hydro / wave /tidal is labeled HYDRO; see import_impacts.py in ElectricityLCI for details).
+    The U.S. generation inventory is summarized by fuel category and used as proxy to create the Canadian inventory (where fuel mix percents are used as weights).'
+
+  Sources:
+
+    Source1:
+      <<: *cer_energy
+
+    Source2:
+      <<: *ingwersen_etal
 
 biomass:
 

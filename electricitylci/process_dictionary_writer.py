@@ -38,7 +38,7 @@ JSON-LD format as prescribed by OpenLCA software.
 Portions of this code were cleaned using ChatGPTv3.5.
 
 Last updated:
-    2026-03-05
+    2026-03-11
 """
 __all__ = [
     'con_process_ref',
@@ -178,10 +178,11 @@ OLCA_TO_METADATA = {
 
 VALID_FUEL_CATS=[
     "default",
-    "biomass", # NEW
+    "all", # NEW (Canada generation process metadata)
+    "biomass",
     "nuclear_upstream",
     "geothermal",
-    "hydro",  # NEW
+    "hydro",
     "solar",
     "solarthermal",
     "wind",

@@ -57,13 +57,14 @@ computer memory.
 
 CHANGELOG (since v2.0)
 
+- Add Canada generation process descriptions [260311; TWD]
 - Add 2016 to get generation years for NETL water inventory [260305; TWD]
 - Hotfix DQI entry in :func:`turn_data_to_dict` [260109; TWD]
 
 Created:
     2019-06-04
 Last edited:
-    2026-03-05
+    2026-03-11
 """
 __all__ = [
     "add_data_collection_score",
@@ -1615,20 +1616,31 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     else:
         # HOTFIX: remove .values, which throws ValueError [2023-11-13; TWD]
         # Update the intro statement for generation processes [26.02.27; TWD]
-        process_df["location"] = process_df[region_agg]
-        process_df["description"] = (
-            "This process represents the cradle-to-gate inventory "
-            + "for the production of "
-            + process_df[fuel_agg].squeeze().values
-            + "-powered electricity produced at generating facilities in the "
-            + process_df[region_agg].squeeze().values
-            + " region.\n"
-        )
         process_df["name"] = (
             "Electricity - "
             + process_df[fuel_agg].squeeze().values
             + " - "
             + process_df[region_agg].squeeze().values
+        )
+        process_df["location"] = process_df[region_agg]
+
+        # Try for a better Canadian generation description [26.03.11; TWD]
+        is_canada = process_df[fuel_agg[0]] == "ALL"
+        not_canada = ~(is_canada)
+
+        process_df.loc[not_canada, "description"] = (
+            "This process represents the cradle-to-gate inventory "
+            + "for the production of "
+            + process_df.loc[not_canada, fuel_agg].squeeze().values
+            + "-powered electricity produced at generating facilities in the "
+            + process_df.loc[not_canada, region_agg].squeeze().values
+            + " region.\n"
+        )
+        process_df.loc[is_canada, "description"] = (
+            "This process represents the cradle-to-gate inventory "
+            + "for the production of electricity in the Canadian region of "
+            + process_df.loc[is_canada, region_agg].squeeze().values
+            + ".\n"
         )
 
     # HOTFIX: remove duplicate eLCI model reference & version number---
