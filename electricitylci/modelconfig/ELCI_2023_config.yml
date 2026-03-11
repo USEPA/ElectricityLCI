@@ -8,7 +8,7 @@
 # The target year is used to determine the temporal correlation of data with
 # the electricity generation processes, which can be used in uncertainty
 # calculations.
-electricity_lci_target_year: 2025
+electricity_lci_target_year: 2026
 
 # Select a regional aggregation from "eGRID", "NERC", "BA", "US", "FERC",
 # and "EIA". The EPA_eGRID trading method can only be used with "eGRID".
@@ -68,6 +68,7 @@ inventories_of_interest:
 stewicombo_file: 'ELCI_2023_v1.2.1_3687292'
 
 # Provide uncertainty estimates for emissions.
+# May add 15 minutes to aggregation step.
 calculate_uncertainty: true
 
 
@@ -165,9 +166,9 @@ run_post_processes: true
 # by setting ``output_residual_mix`` parameter to true. By setting
 # ``add_rem_product_systems`` to true, the "at user; residual consumption mix"
 # processes will be made into a product system.
-add_residual_mix: true
-output_residual_mix: true
-add_rem_product_systems: true
+add_residual_mix: false
+output_residual_mix: false
+add_rem_product_systems: false
 
 # Option for state-to-BA level aggregation method. Options include:
 # 'count' - uses facility counts that fall within the shared regions
