@@ -264,8 +264,8 @@ if __name__ == "__main__":
     try:
         main()
         #get_facility_level_inventory(True, False)
-    except Exception as e:
-        log.error("Crashed on main!\n%s" % repr(e))
+    except Exception:
+        log.exception("Crashed on main!")
     else:
         log.info(
             "Finished!\n"
