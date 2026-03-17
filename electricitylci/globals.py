@@ -68,12 +68,12 @@ EIA923_BASE_URL = 'https://www.eia.gov/electricity/data/eia923/'
 EIA860_BASE_URL = 'https://www.eia.gov/electricity/data/eia860/'
 '''str : The base URL for EIA Form 860 workbooks.'''
 NREL_REC_YEAR = 2024
-'''int : See https://www.nrel.gov/analysis/renewable-power for pub years.'''
+'''int : See https://www.nlr.gov/analysis/renewable-power for pub years.'''
 NREL_REC_URL = (
-    "https://www.nrel.gov/"
+    "https://www.nlr.gov/"
     f"docs/libraries/analysis/nrel-green-power-data-v{NREL_REC_YEAR}.xlsx"
 )
-'''str : NREL voluntary renewable power procurement data sheet URL.'''
+'''str : NLR voluntary renewable power procurement data sheet URL.'''
 
 # EPA Clean Air Markets API URL
 # https://www.epa.gov/power-sector/cam-api-portal

@@ -81,14 +81,14 @@ generation total to determine the new residual mix.
 Methods are based on ``elci_to_rem`` Python tool version 2.[2]
 
 1.  E. O'Shaughnessy, S. Jena, and D. Salyer. 2025. Status and Trends in the
-    Voluntary Market (2024 Data). Golden, CO: NREL. Online:
-    https://www.nrel.gov/docs/libraries/analysis/nrel-green-power-data-v2024.xlsx
+    Voluntary Market (2024 Data). Golden, CO: NLR. Online:
+    https://www.nlr.gov/docs/libraries/analysis/nrel-green-power-data-v2024.xlsx
 2.  Tyler W. Davis, Matthew Jamieson, Becca Rosen, Joseph Chou, elci_to_rem,
     1/21/2025, https://edx.netl.doe.gov/dataset/elci_to_rem,
     DOI: 10.18141/2503966
 
 Last updated:
-    2025-12-23
+    2026-03-17
 """
 __all__ = [
     "agg_by_count",
@@ -126,7 +126,7 @@ def add_residual_mixes():
     # NOTE: This is added to all residual process descriptions.
     rem_text = (
         "Electricity generation mixes updated to reflect residual grid "
-        "mix based on NREL's Status and Trends in the Voluntary Market "
+        "mix based on NLR's Status and Trends in the Voluntary Market "
         f"for sales in year {model_specs.eia_gen_year} "
         f"({NREL_REC_URL}). "
     )

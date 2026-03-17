@@ -27,7 +27,7 @@ default_uncertainty_statement: &uncertainty_statement
     Process completeness is calculated by first creating a list of expected flows for each fuel type.
     U.S. average profiles for the fuels used in electricity generation are developed for expected flows in the following categories: greenhouse gases (GHG), CAPs, toxic and hazardous air pollutants (HAP), toxic water discharges, toxic soil releases, and hazardous waste.
     To determine the expected flows in each category the number of flows reported in the underlying data sources NEI, TRI, eGRID, RCRAInfo are summed across eGRID subregions by fuel type.
-    Expected flows by fuel type for other inputs and outputs including intermediate inputs, raw energy demands, and water inputs are determined based on flows reported for the relevant electricity generation fuel type in existing LCI datasets such as ANL''s GREET model, NREL''s USLCI, and ecoinvent.
+    Expected flows by fuel type for other inputs and outputs including intermediate inputs, raw energy demands, and water inputs are determined based on flows reported for the relevant electricity generation fuel type in existing LCI datasets such as ANL''s GREET model, NLR''s USLCI, and ecoinvent.
     Expected nutrient discharges to water are derived from a sample of electric facilities reporting to USEPA''s Discharge Monitoring Report (DMR).
     The actual flows evaluated for each fuel type by eGRID subregion can then be documented and compared to the U.S. average electrical fuel generation profiles to determine the overall process completeness according to the method described in USEPA LCA Data Quality Assessment guidance.
     Air emission flow data collection scores can also draw on these fuel-specific profiles by documenting whether an expected flow is being reported by the fuel type in the relevant eGRID subregion.
@@ -53,7 +53,7 @@ source_bergesen_etal: &bergesen_etal
   Url:
     'https://doi.org/10.1021/es405539z'
   Category:
-    'NREL'
+    'NLR'
   Version:
     '2.1.0'
 
@@ -141,7 +141,7 @@ source_fingersh_etal: &fingersh_etal
   Version:
     '2.1.0'
   Category:
-    'NREL'
+    'NLR'
 
 source_frischknecht: &frischknecht_etal
   Name:
@@ -157,7 +157,7 @@ source_frischknecht: &frischknecht_etal
   Version:
     '2.1.0'
   Category:
-    'NREL'
+    'NLR'
 
 source_hottle_ghosh: &hottle_ghosh_2021
   Name:
@@ -410,7 +410,7 @@ source_sengupta_etal: &sengupta_etal
   Version:
     '2.1.0'
   Category:
-    'NREL'
+    'NLR'
 
 source_vestas: &razdan_garrett
   Name:
@@ -511,7 +511,7 @@ default:
   ProjectDescription:
     'The current project development is funded by the Department of Energy National Energy Technology Laboratory (DOE/NETL) under the SA Contract (89243323CFE000075).
     Support for this project is provided by Eastern Research Group (ERG).
-    Previous development was supported by the US Environmental Protection Agency (USEPA) under the USEPA Air, Climate, and Energy national research program and by the National Laboratory of the Rockies (NREL).'
+    Previous development was supported by the US Environmental Protection Agency (USEPA) under the USEPA Air, Climate, and Energy national research program and by the National Laboratory of the Rockies (NLR).'
 
   LCIMethod: 'Attributional'
 
@@ -834,7 +834,7 @@ solar:
   TechnologyDescription: &solar_techno_desc
     'The technology is representative of U.S. photovoltaic power plants including, but not limited to, crystalline silicon, amorphous silicon, cadmium telluride (CdTe), and copper indium gallium selenide (CIGS) thin film.'
 
-  DatasetOwner: 'IEA, NREL, JE Mason, VM Fthenakis, T Hansen, HC Kim'
+  DatasetOwner: 'IEA, NLR, JE Mason, VM Fthenakis, T Hansen, HC Kim'
 
   DataGenerator: 'NETL'
 
@@ -926,7 +926,7 @@ solarthermal:
   TechnologyDescription: &solar_therm_techno
     'The technology is representative of U.S. parabolic trough and power tower solar plants (see Skone et al., 2012).'
 
-  DatasetOwner: 'NREL'
+  DatasetOwner: 'NLR'
 
   DataGenerator: 'NETL'
 
@@ -1001,7 +1001,7 @@ wind:
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the emissions inventory for electricity generation from wind farms in the US. '
 
-  DatasetOwner: 'NREL and Vestas'
+  DatasetOwner: 'NLR and Vestas'
 
   DataGenerator: 'NETL'
 
@@ -1590,7 +1590,7 @@ solarpv_construction_upstream:
 
   TechnologyDescription: *solar_techno_desc
 
-  DatasetOwner: 'IEA, NREL, JE Mason, VM Fthenakis, T Hansen, HC Kim'
+  DatasetOwner: 'IEA, NLR, JE Mason, VM Fthenakis, T Hansen, HC Kim'
 
   DataGenerator: 'NETL'
 
@@ -1656,7 +1656,7 @@ solartherm_construction_upstream:
 
   TechnologyDescription: *solar_therm_techno
 
-  DatasetOwner: 'NREL'
+  DatasetOwner: 'NLR'
 
   DataGenerator: 'NETL'
 
@@ -1704,7 +1704,7 @@ wind_construction_upstream:
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the emissions inventory for the construction of wind farms in the US.'
 
-  DatasetOwner: 'NREL and Vestas'
+  DatasetOwner: 'NLR and Vestas'
 
   DataGenerator: 'NETL'
 

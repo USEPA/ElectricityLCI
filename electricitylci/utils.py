@@ -1423,7 +1423,7 @@ def get_nrel_rec(year):
 
     Notes
     -----
-    Data are based on the NREL Green Power Data by State (2013-2023)[1]_.
+    Data are based on the NLR Green Power Data by State (2013-2023)[1]_.
     Estimates are based on green power generated in each state, regardless of
     where the renewable energy certificate (REC) is retired.
     Some state-level totals do not add up to market-wide totals because some
@@ -1432,12 +1432,12 @@ def get_nrel_rec(year):
     There is an estimated 192.1 million MWh sold in 2020.
 
     [1] E. O'Shaughnessy, S. Jena, and D. Salyer. 2024. Status and Trends in
-    the Voluntary Market (2023 Data). Golden, CO: NREL.
+    the Voluntary Market (2023 Data). Golden, CO: NLR.
 
     See also
     --------
-    1.  https://www.nrel.gov/analysis/renewable-power
-    2.  https://data.nrel.gov/submissions/174
+    1.  https://www.nlr.gov/analysis/renewable-power
+    2.  https://data.nlr.gov/submissions/174
 
     Parameters
     ----------
@@ -1471,12 +1471,12 @@ def get_nrel_rec(year):
     if year not in range(2016, 2025, 1):
         raise ValueError("Year should be between 2016-2024, not %d" % year)
 
-    # Define the NREL data store
-    nrel_dir = os.path.join(paths.local_path, "nrel")
+    # Define the NLR data store
+    nrel_dir = os.path.join(paths.local_path, "nlr")
     if check_output_dir(nrel_dir):
-        logging.debug("NREL data store exists")
+        logging.debug("NLR data store exists")
 
-    # Define the NREL REC Excel workbook file path
+    # Define the NLR REC Excel workbook file path
     rec_name = os.path.basename(NREL_REC_URL)
     rec_path = os.path.join(nrel_dir, rec_name)
 
@@ -1486,7 +1486,7 @@ def get_nrel_rec(year):
 
     if not os.path.exists(rec_path):
         raise OSError(
-            "Failed to download NREL Voluntary Renewable Procurement workbook!"
+            "Failed to download NLR Voluntary Renewable Procurement workbook!"
         )
 
     # Dynamically find header row (it may change depending on the workbook year)
