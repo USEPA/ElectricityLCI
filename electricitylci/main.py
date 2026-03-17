@@ -206,7 +206,7 @@ def run_generation():
         upstream_df = None
 
     # NOTE: This method triggers an input request for EPA data via API key;
-    #       see https://github.com/USEPA/ElectricityLCI/issues/207
+    #       see https://github.com/NETL-RIC/ElectricityLCI/issues/207
     # NOTE: This method runs aggregation and emission uncertainty
     #       calculations, which may add 15 minutes to run time.
     # NOTE: Will import generation.py, which triggers a lot data into memory.

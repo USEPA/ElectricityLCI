@@ -96,7 +96,7 @@ def _check_json(d):
     If a JSON entry is missing data, send a critical logging statement.
     The consequence of using this data is that consumption mix processes
     will not be created in the JSON-LD.
-    See https://github.com/USEPA/ElectricityLCI/discussions/254.
+    See https://github.com/NETL-RIC/ElectricityLCI/discussions/254.
 
     Parameters
     ----------
@@ -252,7 +252,7 @@ def _get_ca_imports(just_read=False):
         "New Hampshire": "ISNE",
         "Florida": "FPL",
         # HOTFIX: missing state maps [2024-03-14; TWD]
-        # https://github.com/USEPA/ElectricityLCI/issues/236
+        # https://github.com/NETL-RIC/ElectricityLCI/issues/236
         'Illinois': 'MISO',
         'Missouri': 'AECI',
         'South Dakota': 'SWPP',
@@ -1043,7 +1043,7 @@ def _read_bulk_api(ba_cols):
     -----
     For API registration, go to: https://www.eia.gov/opendata/.
 
-    See https://github.com/USEPA/ElectricityLCI/discussions/254 for details.
+    See https://github.com/NETL-RIC/ElectricityLCI/discussions/254 for details.
 
     If you don't want to pass ba_cols, you can find all the respondents
     on the API by calling (adding ?api_key=YOUR-KEY at the end):
@@ -1210,7 +1210,7 @@ def _read_bulk_zip():
 
             # All the entries should have a 'series_id' and an 'f' key.
             # 'H' for UTC hourly; 'HL' for local hourly; hard-coded to UTC.
-            # See https://github.com/USEPA/ElectricityLCI/discussions/254.
+            # See https://github.com/NETL-RIC/ElectricityLCI/discussions/254.
             if 'series_id' in f_json.keys() and f_json.get('f', '') == 'H':
                 series_id = f_json['series_id']
 

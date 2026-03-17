@@ -599,7 +599,7 @@ def get_facility_level_inventory(to_save=False, sep_by_fac=True):
         upstream_df = None
 
     # NOTE: This method triggers an input request for EPA data API key;
-    #       see https://github.com/USEPA/ElectricityLCI/issues/207
+    #       see https://github.com/NETL-RIC/ElectricityLCI/issues/207
     # NOTE: This method runs aggregation and emission uncertainty
     #       calculations.
     logging.info("get aggregated generation process")
@@ -810,12 +810,12 @@ def run_post_processes():
         addressed in the new _save_to_json (olca_jsonld_writer.py)
     2.  Remove flows/*.json that are not found in a process exchange.
         See cleanup SQL queries in GitHub issue
-        https://github.com/USEPA/ElectricityLCI/issues/216
+        https://github.com/NETL-RIC/ElectricityLCI/issues/216
     3.  Remove zero flows from quantitative reference exchanges
-        https://github.com/USEPA/ElectricityLCI/issues/217
+        https://github.com/NETL-RIC/ElectricityLCI/issues/217
     4.  DO NOT ADD NETL TRACI 2.1 characterization factors
     5.  Fix labeling of Heat input to elementary flow
-        https://github.com/USEPA/ElectricityLCI/issues/293
+        https://github.com/NETL-RIC/ElectricityLCI/issues/293
     6.  Create product systems for select processes (user, consumption mixes);
         now includes residual mixes (if configured in model specifications)
     """

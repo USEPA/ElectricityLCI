@@ -241,7 +241,7 @@ def calculate_plant_efficiency(gen_fuel_data):
     # HOTFIX: The sum of string columns was to repeat them (e.g., 'ALALAL' for
     # three rows of 'AL') [240806;TWD].
     # HOTFIX: The NAICS Code filtering must be done here. [240806; TWD]
-    # See https://github.com/USEPA/ElectricityLCI/issues/232
+    # See https://github.com/NETL-RIC/ElectricityLCI/issues/232
     if model_specs.filter_non_egrid_emission_on_NAICS:
         logging.info("Filtering facilities by NAICS code")
         row_criteria = (gen_fuel_data['NAICS Code'] == '22') & (

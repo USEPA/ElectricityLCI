@@ -58,6 +58,10 @@ electricity_flow_name_generation_and_distribution = (
     'Electricity, AC, 2300-7650 V')
 electricity_flow_name_consumption = 'Electricity, AC, 120 V'
 
+# GitHub repo URL
+GH_URL = "https://github.com/NETL-RIC/ElectricityLCI"
+'''str : The web address for ElectricityLCI GitHub repository.'''
+
 # EIA base URLs - need to add file name
 EIA923_BASE_URL = 'https://www.eia.gov/electricity/data/eia923/'
 '''str : The base URL for EIA Form 923 workbooks.'''

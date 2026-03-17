@@ -14,6 +14,7 @@ import yaml
 import pandas as pd
 
 from electricitylci.globals import (
+    GH_URL,
     data_dir,
     electricity_flow_name_generation_and_distribution,
     electricity_flow_name_consumption,
@@ -992,8 +993,9 @@ def process_description_creation(process_type="fossil"):
     # HOTFIX: update GitHub URL [26.02.26; TWD]
     desc_string = (
         desc_string.rstrip()
-        + " This process was created with ElectricityLCI "
-        + "(https://github.com/NETL-RIC/ElectricityLCI) version "
+        + " This process was created with ElectricityLCI ("
+        + GH_URL
+        + ") version "
         + elci_version
         + " using the " + model_specs.model_name + " configuration.")
     desc_string = desc_string.strip()
@@ -1089,7 +1091,7 @@ def process_doc_creation(process_type="default"):
 
     # Default valid year is the range of generation years
     if not ar["validUntil"]:
-        # Hot fix for https://github.com/USEPA/ElectricityLCI/issues/244
+        # Hot fix for https://github.com/NETL-RIC/ElectricityLCI/issues/244
         # Default is the full scope of background data; should be true for
         # fuel generation processes (i.e., the StEWI inventory of interest +
         # NETL renewable data years). NOTE: upstream processes likely have
@@ -1438,8 +1440,9 @@ def process_table_creation_surplus(region, exchanges_list):
         "2211: Electric Power Generation, Transmission and Distribution")
     ar["description"] = "Electricity surplus in the " + str(region) + " region."
     ar["description"]=(ar["description"]
-        + " This process was created with ElectricityLCI "
-        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
+        + " This process was created with ElectricityLCI ("
+        + GH_URL
+        + ") version " + elci_version
         + " using the " + model_specs.model_name + " configuration."
     )
     ar["version"] = make_valid_version_num(elci_version)
@@ -1488,8 +1491,9 @@ def process_table_creation_usaverage(fuel, exchanges_list):
     ar["description"] = (
         "Electricity fuel US Average mix for the " + str(fuel) + " fuel.")
     ar["description"] = (ar["description"]
-        + " This process was created with ElectricityLCI "
-        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
+        + " This process was created with ElectricityLCI ("
+        + GH_URL
+        + ") version " + elci_version
         + " using the " + model_specs.model_name + " configuration."
     )
     ar["version"] = make_valid_version_num(elci_version)

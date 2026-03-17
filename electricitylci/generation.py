@@ -592,7 +592,7 @@ def aggregate_data(total_db, subregion="BA"):
         database_f3['electricity_sum'] == fix_val, 'Emission_factor'] = 0
 
     # Calculate the log-normal parameters for uncertainty; see Hawkins-Young
-    # https://github.com/USEPA/ElectricityLCI/discussions/240
+    # https://github.com/NETL-RIC/ElectricityLCI/discussions/240
     database_f3["GeomMean"], database_f3["GeomSD"] = zip(
         *database_f3[["Emission_factor", "uncertaintySigma"]].apply(
             _calc_geom_params, axis=1
@@ -902,7 +902,7 @@ def create_generation_process_df():
 
         # NOTE: data pulled from Facility Register Service (FRS) program
         # provided by USEPA's FacilityMatcher, now a part of StEWI.
-        # https://github.com/USEPA/standardizedinventories
+        # https://github.com/NETL-RIC/standardizedinventories
         try:
             eia860_FRS = pd.read_csv(inventories_of_interest_csv)
             logging.info(
@@ -1147,7 +1147,7 @@ def create_generation_process_df():
 
     # Apply the "manual edits"
     # See GitHub issues #212, #160, #121, and #77.
-    # https://github.com/USEPA/ElectricityLCI/issues/
+    # https://github.com/NETL-RIC/ElectricityLCI/issues/
     final_database = edits.check_for_edits(
         final_database, "generation.py", "create_generation_process_df")
 
@@ -1824,7 +1824,7 @@ def turn_data_to_dict(data, upstream_dict):
 
     # HOTFIX: remove exchanges that have NaNs for Emission_factor;
     #   they crash openLCA. [240813; TWD]
-    #   https://github.com/USEPA/ElectricityLCI/issues/246
+    #   https://github.com/NETL-RIC/ElectricityLCI/issues/246
     num_nans = data['Emission_factor'].isna().sum()
     if num_nans > 0:
         logging.info("Removing %d nans from exchange table" % num_nans)

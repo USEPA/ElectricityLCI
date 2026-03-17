@@ -38,9 +38,9 @@ For each edit entry, a series of attributes are available. They are:
 For details on the issues that these manual edits fix, see the following
 on GitHub:
 
--   https://github.com/USEPA/ElectricityLCI/issues/77
--   https://github.com/USEPA/ElectricityLCI/issues/121
--   https://github.com/USEPA/ElectricityLCI/issues/160
+-   https://github.com/NETL-RIC/ElectricityLCI/issues/77
+-   https://github.com/NETL-RIC/ElectricityLCI/issues/121
+-   https://github.com/NETL-RIC/ElectricityLCI/issues/160
 
 Referenced by 'create_generation_process_df' in generation.py.
 

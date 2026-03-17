@@ -425,7 +425,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     #   set conversion factor equal to 1.0.
     #   Note that all other unmapped flows are lost, which is based on
     #   only keeping emissions that contribute to TRACI impacts;
-    #   See eLCI.csv here: https://github.com/USEPA/fedelemflowlist
+    #   See eLCI.csv here: https://github.com/NETL-RIC/fedelemflowlist
     r_flows = (upstream_mapped_df['TargetFlowContext'].isna()) & (
         upstream_mapped_df['input']
     )

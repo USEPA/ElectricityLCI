@@ -16,6 +16,7 @@ import requests
 from ast import literal_eval
 from electricitylci.globals import paths
 from electricitylci.globals import data_dir
+from electricitylci.globals import GH_URL
 from electricitylci.globals import STATE_ABBREV
 from electricitylci.globals import COAL_BASIN_CODES
 from electricitylci.globals import COAL_TYPE_CODES
@@ -165,7 +166,7 @@ def _make_2023_coal_transport_data(year):
     coal_map_df = coal_map_df.drop(columns=['coal_source_code', 'heat_input'])
 
     # Read the 2023 coal model transportation data
-    # Source: https://github.com/USEPA/ElectricityLCI/discussions/273
+    # Source: https://github.com/NETL-RIC/ElectricityLCI/discussions/273
     coal_dir = os.path.join(data_dir, "coal", "2023")
     coal_file = os.path.join(coal_dir, "coal_transport_dist.csv")
     if not os.path.isfile(coal_file):
@@ -400,7 +401,7 @@ def eia_7a_download(year, save_path):
     -----
     Some years are provided in XML format and require re-saving to work with
     the remainder of the code. If you run into troubles with the download,
-    see https://github.com/USEPA/ElectricityLCI/issues/230 for a solution.
+    see https://github.com/NETL-RIC/ElectricityLCI/issues/230 for a solution.
     """
     eia7a_base_url = 'http://www.eia.gov/coal/data/public/xls/'
     name = ('coalpublic{}.xls'.format(year) if year <= 2022 else
@@ -1642,7 +1643,7 @@ def read_eia7a_public_coal(year):
         file_pattern_match=['coalpublic'],
         return_name=False)
     # If you're here, then see the following for hotfix:
-    # https://github.com/USEPA/ElectricityLCI/issues/230
+    # https://github.com/NETL-RIC/ElectricityLCI/issues/230
     try:
         eia7a_df = pd.read_excel(
             eia7a_path,
@@ -1651,9 +1652,8 @@ def read_eia7a_public_coal(year):
         )
     except ValueError:
         raise ValueError(
-            f'Error reading {eia7a_path}. Please see '
-            'https://github.com/USEPA/ElectricityLCI/issues/230 '
-            'for a solution'
+            f'Error reading {eia7a_path}. '
+            f'Please see {GH_URL}/issues/230 for a solution'
         )
     eia7a_df = _clean_columns(eia7a_df)
 
