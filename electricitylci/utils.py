@@ -35,9 +35,10 @@ from electricitylci.globals import COAL_BASIN_CODES
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2026-02-10
+    2026-03-17
 
 Changelog:
+    -   [26.03.17]: Update stewi inventory years
     -   [26.02.10]: New filter out zero helper function
     -   [26.01.28]: Allow resetting log levels
     -   [25.12.12]: Add NREL REC data handler
@@ -1550,10 +1551,10 @@ def get_stewi_invent_years(year):
     STEWI_DATA_VINTAGES = {
         # 'DMR': [x for x in range(2011, 2023, 1)],
         # 'GHGRP': [x for x in range(2011, 2023, 1)],
-        'eGRID': [2014, 2016, 2018, 2019, 2020, 2021],
+        'eGRID': [2014, 2016, 2018, 2019, 2020, 2021, 2022, 2023],
         'NEI': [2011, 2014, 2017, 2020],
-        'RCRAInfo': [x for x in range(2011, 2023, 2)],
-        'TRI': [x for x in range(2011, 2023, 1)],
+        'RCRAInfo': [x for x in range(2011, 2024, 2)],
+        'TRI': [x for x in range(2011, 2024, 1)],
     }
 
     r_dict = {}
