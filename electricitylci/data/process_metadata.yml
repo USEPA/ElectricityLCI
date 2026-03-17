@@ -475,7 +475,7 @@ default:
     - 'Functional unit: 1 MWh of high-voltage electricity'
     - 'Co-products: N/A'
     - 'Default co-product approach: N/A'
-    - 'Data source: NETL (2025)'
+    - 'Data source: ElectricityLCI (2025)'
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the emissions inventory for electricity generation in the US. '
 
@@ -656,7 +656,7 @@ all:
     - 'Functional Unit: 1 MWh of high voltage electricity'
     - 'Co-products: N/A'
     - 'Default co-product approach: N/A'
-    - 'Data source: NETL (2025)'
+    - 'Data source: ElectricityLCI (2025)'
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the emissions inventory for electricity generation imported from Canada. '
 
@@ -696,7 +696,7 @@ biomass:
     - 'Functional Unit: 1 MWh of high voltage electricity'
     - 'Co-products: N/A'
     - 'Default co-product approach: N/A'
-    - 'Data source: NETL (2025)'
+    - 'Data source: ElectricityLCI (2025)'
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the emissions inventory for biomass powered electricity generation in the US. '
 
@@ -827,7 +827,7 @@ solar:
     - 'Functional Unit: 1 MWh of high voltage electricity'
     - 'Co-products: N/A'
     - 'Default co-product approach: N/A'
-    - 'Data source: NETL (2025)'
+    - 'Data source: Various (see sources)'
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the emissions inventory for solar photovoltaic powered electricity generation in the US. '
 
@@ -1163,7 +1163,7 @@ distribution_mix:
     - 'Functional Unit: 1 MWh of 120 V electricity'
     - 'Co-products: N/A'
     - 'Default co-product approach: N/A'
-    - 'Data source: NETL (2025)'
+    - 'Data source: ElectricityLCI (2025)'
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the electricity at the end user for the given region in the US. '
 
@@ -1177,7 +1177,7 @@ generation_mix:
     - 'Functional Unit: 1 MWh of high voltage electricity'
     - 'Co-products: N/A'
     - 'Default co-product approach: N/A'
-    - 'Data source: NETL (2025)'
+    - 'Data source: ElectricityLCI (2025)'
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the electricity grid generation mix for the given region in the US. '
 
