@@ -20,7 +20,7 @@ __doc__ = """Define paths, variables, and functions used across several
 modules.
 
 Last updated:
-    2026-03-05
+    2026-03-18
 """
 
 
@@ -118,49 +118,48 @@ COAL_MINE_CODES = {
 
 # Grouping of Reported fuel codes to EPA categories
 FUEL_CAT_CODES = {
-    'BIT': 'COAL',
-    'SUB': 'COAL',
-    'LIG': 'COAL',
-    'RC': 'COAL',
-    'ANT': 'COAL',
-    'SGC': 'COAL',
-    'SC': 'COAL',
-    'NG': 'GAS',
-    'NUC': 'NUCLEAR',
-    'WND': 'WIND',
-    'SUN': 'SOLAR',
-    'DFO': 'OIL',
-    'RFO': 'OIL',
-    'WAT': 'HYDRO',
-    # 'HPS': 'OTHF',
-    'GEO': 'GEOTHERMAL',
-    'WO': 'OIL',
-    'KER': 'OIL',
-    'JF': 'OIL',
-    'PG': 'OIL',
-    'BLQ': 'BIOMASS',
-    'WDS': 'BIOMASS',
-    'WDL': 'BIOMASS',
-    'PC': 'OIL',
-    'SGP': 'OIL',
-    'MSB': 'BIOMASS',
-    'MSN': 'OTHF',
-    'LFG': 'BIOMASS',
-    'WOC': 'COAL',
-    'WH': 'OTHF',
-    'MSN': 'OTHF',
-    'OTH': 'OTHF',
-    'TDF': 'OTHF',
-    'PUR': 'OTHF',
-    'MWH': 'OTHF',
-    'AB': 'BIOMASS',
-    'OBL': 'BIOMASS',
-    'SLW': 'BIOMASS',
-    'OBG': 'BIOMASS',
-    'OBS': 'BIOMASS',
-    'OG': 'OFSL',
-    'BFG': 'OFSL',
-    'WC': 'COAL'
+    'AB': 'BIOMASS',    # Agricultural byproducts
+    'ANT': 'COAL',      # Anthracite coal
+    'BFG': 'OFSL',      # Blast furnace gas
+    'BIT': 'COAL',      # Bituminous coal
+    'BLQ': 'BIOMASS',   # Black liquor
+    'DFO': 'OIL',       # Distillate fuel oil (e.g., diesel)
+    'GEO': 'GEOTHERMAL', # Geothermal
+    # 'H2': 'HYDROGEN'   # Hydrogen
+    'JF': 'OIL',        # Jet fuel
+    'KER': 'OIL',       # Kerosene
+    'LFG': 'BIOMASS',   # Landfill gas
+    'LIG': 'COAL',      # Lignite coal
+    'MSB': 'BIOMASS',   # Biogenic municipal solid waste
+    'MSN': 'OTHF',      # Non-biogenic municipal solid waste
+    'MWH': 'OTHF',      # Electricity for energy storage
+    'NG': 'GAS',        # Natural gas
+    'NUC': 'NUCLEAR',   # Nuclear (e.g., uranium, plutonium, thorium)
+    'OBG': 'BIOMASS',   # Other biomass gas (e.g., digester)
+    'OBL': 'BIOMASS',   # Other biomass liquids
+    'OBS': 'BIOMASS',   # Other biomass solids
+    'OG': 'OFSL',       # Other gas
+    'OTH': 'OTHF',      # Other fuel
+    'PC': 'OIL',        # Petroleum coke
+    'PG': 'OIL',        # Gaseous propane
+    'PUR': 'OTHF',      # Purchased steam
+    'RC': 'COAL',       # Refined coal
+    'RFO': 'OIL',       # Residual fuel oil
+    'SC': 'COAL',       # Coal-derived synthesis fuel
+    'SGC': 'COAL',      # Coal-derived synthesis gas
+    'SGP': 'OIL',       # Synthesis gas from petroleum coke
+    'SLW': 'BIOMASS',   # Sludge waste
+    'SUB': 'COAL',      # Subbituminous coal
+    'SUN': 'SOLAR',     # Solar
+    'TDF': 'OTHF',      # Tire-derived fuels
+    'WAT': 'HYDRO',     # Water (e.g., hydroelectric/hydrokinetic)
+    'WC': 'COAL',       # Waste/other coal
+    'WDL': 'BIOMASS',   # Wood waste liquids (excludes black liquor)
+    'WDS': 'BIOMASS',   # Wood/wood waste solids
+    'WH': 'OTHF',       # Waste heat (unattributed)
+    'WND': 'WIND',      # Wind
+    'WO': 'OIL',        # Waste/other oil
+    'WOC': 'COAL',      # Waste coal
 }
 
 US_STATES = {
