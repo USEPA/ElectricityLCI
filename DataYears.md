@@ -30,14 +30,16 @@ The following is a summary of input data and years available for use in building
 | Coal mining and transport LCI | | x | | | | | | |
 | Geothermal LCI<sup>1</sup> | | x | | | | | | |
 | Hydro LCI<sup>1</sup> | | x | | | | | | |
-| Natural gas LCI | | x | | | | | | |
+| Natural gas LCI<sup>2</sup> | | x | | | | x | | |
 | Nuclear LCI<sup>1</sup> | | x | | | | | | |
-| Solar PV LCI<sup>2</sup> | | x | | | | x | | |
-| Solar thermal LCI<sup>2</sup> | | x | | | | x | | |
-| Wind farm LCI<sup>2</sup> | | x | | | | x | | |
+| Solar PV LCI<sup>3</sup> | | x | | | | x | | |
+| Solar thermal LCI<sup>3</sup> | | x | | | | x | | |
+| Wind farm LCI<sup>3</sup> | | x | | | | x | | |
 
 Notes:
 
 <sup>1</sup> The inventories for these technologies are based on data from 2016; however, so long as the same plants exist in other years in the EIA 923 data, that inventory can be re-used and applied to different years.
 
-<sup>2</sup> The inventories for these technologies are based on data from 2016 and 2020 (as defined in the RENEWABLE_VINTAGE parameter in globals.py).
+<sup>2</sup> This cradle-to-gate inventory is based on data from 2016 or 2020 (as defined in the `ng_model_year` parameter in the model configuration YAML files).
+
+<sup>3</sup> The cradle-to-gate inventories for these technologies are based on data from 2016 or 2020 (as defined in the `renewable_vintage` parameter in the model configuration YAML files).
