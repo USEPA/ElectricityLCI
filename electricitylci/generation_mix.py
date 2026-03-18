@@ -33,7 +33,7 @@ The functions in this module calculate the fraction of each generating source
 (either from generation data or straight from eGRID).
 
 Last edited:
-    2026-02-13
+    2026-03-18
 """
 
 
@@ -187,9 +187,18 @@ def create_generation_mix_process_df_from_model_generation_data(
         # pulls 2 MWh for every 1MWh generated. For simplicity and because
         # NBSO is an imported BA, we'll remove the US-side and assume it's
         # covered under the Canadian imports.
+        nbo_filter = (
+            subregion_fuel_gen["Subregion"] != BA_CODES.loc['NBSO', 'BA_Name']
+        )
+
+        # Issue #276---HECO fails when residual grid mixes are generated.
+        # Currently, HECO is hard filtered (see manual_edits.yml); repeat here.
+        heco_filter = (
+            subregion_fuel_gen["Subregion"] != BA_CODES.loc['HECO', 'BA_Name']
+        )
+
         subregion_fuel_gen = subregion_fuel_gen.loc[
-            subregion_fuel_gen["Subregion"] != "New Brunswick System Operator",
-            :
+            (nbo_filter & heco_filter), :
         ]
 
     canada_list=[]
@@ -491,7 +500,7 @@ def olcaschema_usaverage(
 
     Notes
     -----
-    Reference in `run_epa_trade` in \_\_init\_\_.py
+    Reference in `run_epa_trade` in \\_\\_init\\_\\_.py
     """
     if subregion is None:
         subregion = model_specs.regional_aggregation
