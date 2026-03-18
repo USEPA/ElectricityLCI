@@ -513,7 +513,9 @@ default:
     Support for this project is provided by Eastern Research Group (ERG).
     Previous development was supported by the US Environmental Protection Agency (USEPA) under the USEPA Air, Climate, and Energy national research program and by the National Laboratory of the Rockies (NLR).'
 
-  LCIMethod: 'Attributional'
+  LCIMethod:
+    - 'Attributional'
+    - 'Gate-to-Gate process'
 
   ModelingConstants: ''
 
@@ -589,6 +591,10 @@ nuclear_upstream:
     - 'Data source: Skone (2012)'
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the upstream life cycle inventory for nuclear powered electricity generation in the US. '
+
+  LCIMethod:
+    - 'Attributional'
+    - 'Cradle-to-Gate process'
 
   TechnologyDescription:
     - 'Documentation for the original model is available in Skone (2012).
@@ -1224,6 +1230,10 @@ coal_upstream:
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the emissions inventory US coal production. '
 
+  LCIMethod:
+    - 'Attributional'
+    - 'Cradle-to-Gate process'
+
   TechnologyDescription:
     'Technologies represent U.S. surface and underground mining for bituminous, sub-bituminous, and lignite coal.'
 
@@ -1338,6 +1348,10 @@ gas_upstream:
       Source2:
         <<: *netl_2019_2039
 
+  LCIMethod:
+    - 'Attributional'
+    - 'Cradle-to-Gate process'
+
   IntendedApplication:
     'This process is intended to serve the upstream inventory to natural gas electricity generation and was created as a part of NETL''s electricity baseline.'
 
@@ -1366,7 +1380,7 @@ gas_upstream:
 
   SamplingProcedure:
     - 'BOUNDARY CONDITIONS'
-    - 'These are system processes that provide cradle-to-gate inventory for the US production of natural gas.'
+    - 'This system process provides cradle-to-gate inventory for the US production of natural gas.'
     - ''
     - 'DATA COLLECTION'
     - 'All inventories were calculated using secondary data from publicly available datasets.'
@@ -1387,6 +1401,10 @@ oil_upstream:
     - 'Data source: Cooney et al. (2016)'
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the upstream emissions inventory for U.S. refinery products.'
+
+  LCIMethod:
+    - 'Attributional'
+    - 'Cradle-to-Gate process'
 
   TechnologyDescription:
 
@@ -1463,6 +1481,10 @@ coal_transport_upstream:
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the emissions inventory for coal transportation in the US. '
 
+  LCIMethod:
+    - 'Attributional'
+    - 'Cradle-to-Gate process'
+
   TechnologyDescription:
     'This inventory includes impacts from fuel combustion for the various modes of coal transportation to power plants including: train, truck, tug and barge, ocean vessel, lake vessel, and conveyer.'
 
@@ -1532,6 +1554,10 @@ construction_upstream:
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the emissions inventory for the construction of fossil-based power plants in the US.'
 
+  LCIMethod:
+    - 'Attributional'
+    - 'Cradle-to-Gate process'
+
   TechnologyDescription:
     'The inventories represent the construction of natural gas combined cycle or coal power plants using an economic input output life cycle inventory model (Yang et al., 2017) and the construction costs for these plants as detailed by NETL techno-economics analysis (Fout et al., 2015).'
 
@@ -1587,6 +1613,10 @@ solarpv_construction_upstream:
     - 'Data source: Various (see sources)'
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the emissions inventory for the construction of solar PV power plants in the US.'
+
+  LCIMethod:
+    - 'Attributional'
+    - 'Cradle-to-Gate process'
 
   TechnologyDescription: *solar_techno_desc
 
@@ -1654,6 +1684,10 @@ solartherm_construction_upstream:
     - ''
     - 'This process is a part of NETL''s electricity baseline and is intended to capture the emissions inventory for the construction of solar thermal power plants in the US.'
 
+  LCIMethod:
+    - 'Attributional'
+    - 'Cradle-to-Gate process'
+
   TechnologyDescription: *solar_therm_techno
 
   DatasetOwner: 'NLR'
@@ -1719,6 +1753,10 @@ wind_construction_upstream:
 
   DataCollectionPeriod:
     'These data are representative of efforts that happened in 2024.'
+
+  LCIMethod:
+    - 'Attributional'
+    - 'Cradle-to-Gate process'
 
   ModelingConstants:
     'The 2022 model updates include 2020 EIA data, corrections/updates to aluminum LCI, and corrections to turbine blade count, trunkline, and switchyard calculations.'
