@@ -158,6 +158,7 @@ def build_generation_data(egrid_facilities_to_include=None,
                 final_gen_df = final_gen_df.loc[f_crit, :]
             if model_specs.filter_on_efficiency:
                 logging.info("Filtering facilities based on their efficiency")
+                # NOTE: in 2023 removes all OTHF plants; see #330 [260318; TWD]
                 final_gen_df = efficiency_filter(
                     final_gen_df,
                     model_specs.egrid_facility_efficiency_filters
