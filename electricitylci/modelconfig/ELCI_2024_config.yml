@@ -97,12 +97,16 @@ eia_api: ""
 
 
 # GENERATOR FILTERS
-# These parameters determine if any power plants are filtered out
+# These parameters determine if any power plants are filtered out.
+# First, if true, only facilities with net-zero or greater generation are
+# included (i.e., removes net energy consumers); second, if true, removes
+# outliers if not within the given bounds of efficiency, calculated as the
+# ratio of net generation to total fuel consumption.
 include_only_egrid_facilities_with_positive_generation: true
 filter_on_efficiency: true
 egrid_facility_efficiency_filters:
   lower_efficiency: 10
-  upper_efficiency: 100
+  upper_efficiency: 100.1
 
 # ELCI creates life cycle processes for each fuel type. If you only want to
 # include power plants with a minimum amount of generation from a single fuel,
