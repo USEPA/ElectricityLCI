@@ -115,6 +115,9 @@ def build_generation_data(egrid_facilities_to_include=None,
         Years of generation data to include in the output (default is None,
         which builds a list from the inventories of interest and eia_gen_year
         parameters).
+    keep_all_cols : bool, optional
+        Whether to keep all data frame columns or filter to just the three
+        listed below. Defaults to false (i.e., filter to three columns).
 
     Returns
     -------
