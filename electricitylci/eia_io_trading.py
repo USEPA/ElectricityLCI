@@ -68,7 +68,7 @@ References:
     52(11), 6666-6675. https://doi.org/10.1021/acs.est.7b05191
 
 Last updated:
-    2026-02-13
+    2026-03-19
 """
 __all__ = [
     "ba_io_trading_model",
@@ -924,7 +924,7 @@ def _make_us_trade(df):
     us_trade = us_trade.groupby(['export BAA'])['value'].sum().reset_index()
     us_trade["fraction"] = us_trade["value"]/us_import_grouped_tot
     us_trade = us_trade.fillna(value=0)
-    us_trade=us_trade.drop(columns=["value"])
+    us_trade = us_trade.drop(columns=["value"])
 
     return us_trade
 
@@ -987,8 +987,17 @@ def _read_ba():
         - list : U.S. FERC region codes
     """
     ba_df = read_ba_codes()
+
+    # HOTFIX: drop Hawaii (HECO) [26.03.19; TWD]
+    # NOTE: Hawaii does not trade with other BA regions and the generation
+    # processes for this BA are currently dropped.
+    ba_df = ba_df.drop("HECO")
+
+    # HOTFIX: remove Canada and Mexico from U.S. BA list [26.03.19; TWD]
+    ca_filt = ba_df['EIA_Region'] != 'Canada'
+    mx_filt = ba_df['EIA_Region'] != 'Mexico'
     US_BA_acronyms = sorted(list(
-        ba_df.query("EIA_Region != 'Canada'").index.values
+        ba_df.loc[(ca_filt & mx_filt), :].index.values
     ))
     df_BA_NA = ba_df.reset_index()
     ferc_list = df_BA_NA['FERC_Region_Abbr'].unique().tolist()
