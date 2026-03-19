@@ -59,6 +59,8 @@ References:
 
 Changelog (since v2.0):
 
+    -   [26.03.19] Fix location name and code finder & set IMP to GLO.
+    -   [26.03.19] Add LCI_Method description correction to clean_json.
     -   [26.03.05] Add coal basin to location finder.
     -   [26.02.12] Check v3 & v4 UUIDs for locations.
     -   [25.12.19] New update providers helper function.
@@ -1160,13 +1162,26 @@ def _find_location_code_name(loc):
 
     # Check to see if the location code is a BA, EIA, or FERC region
     if len(match_cols) == 0:
-        logging.warning("Failed to find location for '%s'" % loc)
+        logging.info("Failed first attempt find location for '%s'" % loc)
 
-        # See if it's already a location in openLCA
+        # Check upstream coal basins locations [26.03.05; TWD]
+        coal_dict = COAL_BASIN_CODES
+        coal_rev = {v: k for k, v in COAL_BASIN_CODES.items()}
+
+        # Check openLCA standard locations
         olca_locs = _get_olca_locations()
         olca_dict = {x.code: x.name for x in olca_locs}
         rev_dict = {x.name: x.code for x in olca_locs}
-        if loc in olca_dict.keys():
+
+        if loc in coal_dict.keys():
+            logging.info("Found name in coal basin locations")
+            code = coal_dict[loc]
+            name = loc
+        elif loc in coal_rev.keys():
+            logging.info("Found code in coal basin locations")
+            code = loc
+            name = coal_rev[loc]
+        elif loc in olca_dict.keys():
             logging.info("Found code in openLCA locations")
             code = loc
             name = olca_dict[loc]
@@ -1175,22 +1190,11 @@ def _find_location_code_name(loc):
             code = rev_dict[loc]
             name = loc
 
-        # Add upstream coal basins locations [26.03.05; TWD]
-        coal_dict = COAL_BASIN_CODES
-        coal_rev = {v: k for k, v in COAL_BASIN_CODES.items()}
-        if loc in coal_dict.keys():
-            logging.info("Found name in coal basin locations")
-            code = coal_dict[loc]
-            name = loc
-        elif loc in coal_rev.keys():
-            logging.info("Found code in coal basin locations")
-            code = loc
-            name = coal_dict[loc]
-        # HOTFIX: no location for coal import process
+        # HOTFIX: use global for coal import process [26.03.19;TWD]
         if name == 'Import' or code == 'IMP':
-            name = ""
-            loc = ""
-
+            logging.info("Setting import location to Global (GLO)")
+            name = "Global"
+            code = "GLO"
     else:
         # Assumes hierarchy if multiple columns were matched:
         #   BA first, EIA second, FERC last.
