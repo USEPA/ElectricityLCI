@@ -20,7 +20,7 @@ __doc__ = """Define paths, variables, and functions used across several
 modules.
 
 Last updated:
-    2026-03-18
+    2026-03-19
 """
 
 
@@ -298,6 +298,12 @@ REM_WEIGHT_METHODS = ['count', 'gen']
 
 NEG_REM_METHODS = ['zero', 'keep']
 '''list : Accounting methods for negative renewable generation for REM.'''
+
+C2G_LCI_METHOD = "Attributional\nCradle-to-Gate process"
+'''str : Metadata text for cradle-to-gate inventory method description'''
+
+G2G_LCI_METHOD = "Attributional\nGate-to-Gate process"
+'''str : Metadata text for gate-to-gate inventory method description'''
 
 
 ##############################################################################

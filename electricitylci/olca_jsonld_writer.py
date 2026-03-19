@@ -27,6 +27,8 @@ import pytz
 import requests
 
 from electricitylci.globals import COAL_BASIN_CODES
+from electricitylci.globals import C2G_LCI_METHOD
+from electricitylci.globals import G2G_LCI_METHOD
 from electricitylci.globals import GH_URL
 from electricitylci.globals import US_STATES
 from electricitylci.globals import paths
@@ -64,7 +66,7 @@ Changelog (since v2.0):
     -   [25.06.11] New method for updating product system description text.
 
 Last edited:
-    2026-03-05
+    2026-03-19
 """
 __all__ = [
     "add_to_product_system_description",
@@ -359,6 +361,7 @@ def clean_json(file_path):
         associated with the resources 'Heat' and 'Water, reclaimed'
     6.  Fix compartment for two product flows: 'Light fuel oil' and
         'Ammonium nitrate' from the coal model.
+    7.  Fix inventory method description for C2G and G2G processes.
 
     Parameters
     ----------
@@ -377,7 +380,14 @@ def clean_json(file_path):
         # https://github.com/NETL-RIC/ElectricityLCI/issues/217
         e_list = []
         for p in data["Process"]['objs']:
+            # Issue #328; check if unit processes are C2G or G2G [260319;TWD]
+            has_provider = False
+
             for e in p.exchanges:
+                # New tracker for default provider existence [26.03.19;TWD]
+                if e.default_provider:
+                    has_provider = True
+
                 # Get the flow object
                 fid = data["Flow"]['ids'].index(e.flow.id)
                 f_obj = data["Flow"]['objs'][fid]
@@ -473,6 +483,23 @@ def clean_json(file_path):
             for e in p.exchanges:
                 p.last_internal_id += 1
                 e.internal_id = p.last_internal_id
+
+            # Update inventory method description
+            if p.process_type == o.ProcessType.LCI_RESULT:
+                # All system processes are currently cradle-to-gate
+                p.process_documentation.inventory_method_description = \
+                    C2G_LCI_METHOD
+            elif p.process_type == o.ProcessType.UNIT_PROCESS and has_provider:
+                # Unit process w/ providers are considered gate-to-gate.
+                p.process_documentation.inventory_method_description = \
+                    G2G_LCI_METHOD
+            elif (p.process_type == o.ProcessType.UNIT_PROCESS) and (
+                    not has_provider):
+                # Unit process w/o providers are considered cradle-to-gate.
+                p.process_documentation.inventory_method_description = \
+                    C2G_LCI_METHOD
+            else:
+                logging.warning("You should not be here")
 
         # Overwrite
         _save_to_json(file_path, data)

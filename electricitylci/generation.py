@@ -57,6 +57,7 @@ computer memory.
 
 CHANGELOG (since v2.0)
 
+- Generalize generation process description (rm 'cradle-to-gate') [260319;TWD]
 - Add Canada generation process descriptions [260311; TWD]
 - Add 2016 to get generation years for NETL water inventory [260305; TWD]
 - Hotfix DQI entry in :func:`turn_data_to_dict` [260109; TWD]
@@ -64,7 +65,7 @@ CHANGELOG (since v2.0)
 Created:
     2019-06-04
 Last edited:
-    2026-03-11
+    2026-03-19
 """
 __all__ = [
     "add_data_collection_score",
@@ -1605,7 +1606,8 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     if region_agg is None:
         process_df["location"] = "US"
         process_df["description"] = (
-            "This process represents the cradle-to-gate inventory "
+            # Use 'life cycle' in place of 'cradle-to-gate'; see iss328
+            "This process represents the life cycle inventory "
             + "for the production of electricity from "
             + process_df[fuel_agg].squeeze().values
             + " produced at generating facilities in the US."
@@ -1629,7 +1631,8 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         not_canada = ~(is_canada)
 
         process_df.loc[not_canada, "description"] = (
-            "This process represents the cradle-to-gate inventory "
+            # Use 'life cycle' in place of 'cradle-to-gate'; see iss328
+            "This process represents the life cycle inventory "
             + "for the production of "
             + process_df.loc[not_canada, fuel_agg].squeeze().values
             + "-powered electricity produced at generating facilities in the "
@@ -1637,6 +1640,7 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
             + " region.\n"
         )
         process_df.loc[is_canada, "description"] = (
+            # Canadian processes are basically roll-ups; okay to be C2G.
             "This process represents the cradle-to-gate inventory "
             + "for the production of electricity in the Canadian region of "
             + process_df.loc[is_canada, region_agg].squeeze().values
