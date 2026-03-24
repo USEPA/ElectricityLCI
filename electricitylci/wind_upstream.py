@@ -26,10 +26,9 @@ for wind farm construction for each plant in EIA 923 based on upstream
 contributions.
 
 Last updated:
-    2026-02-27
+    2026-03-24
 """
 __all__ = [
-    "aggregate_wind",
     "generate_upstream_wind",
     "get_wind_construction",
     "get_wind_generation",
