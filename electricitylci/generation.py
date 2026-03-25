@@ -1183,8 +1183,8 @@ def eia_facility_fuel_region(year):
         - 'Balancing Authority Name' : str
     """
     logging.info(
-        "Generating the percent generation from primary fuel category "
-        "for each facility")
+        "Calculating the percent generation in %d from primary fuel category "
+        "for each facility" % year)
     primary_fuel = eia923_primary_fuel(year=year)
     ba_match = eia860_balancing_authority(year)
     primary_fuel["Plant Id"] = primary_fuel["Plant Id"].astype(int)
@@ -1546,23 +1546,28 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         x for x in process_df.index.values if x[2] in upstream_dict.keys()]
     # HOTFIX: only include stage codes found in process_df [241011; TWD]
     sc_list = list(set([x[2] for x in provider_filter]))
+    # Loop over rows with an upstream stage code:
     for index, row in process_df.loc(axis=0)[:, :, sc_list].iterrows():
         # New Issue #150, try first to match regional construction. Fall back
         # is US average.
         if "_const" in index[2]:
             try:
+                # Extract upstream regional construction process info
+                u_key = index[2] + " - " + index[0]
                 provider_dict = {
-                    "name": upstream_dict[index[2] + " - " +index[0]]["name"],
-                    "categoryPath": upstream_dict[index[2] + " - " +index[0]]["category"],
+                    "name": upstream_dict[u_key]["name"],
+                    "categoryPath": upstream_dict[u_key]["category"],
                     "processType": "UNIT_PROCESS",
-                    "@id": upstream_dict[index[2] + " - " +index[0]]["uuid"],
+                    "@id": upstream_dict[u_key]["uuid"],
                 }
             except KeyError:
+                # Fall back on the U.S. average process
+                u_key2 = index[2]
                 provider_dict = {
-                    "name": upstream_dict[index[2]]["name"],
-                    "categoryPath": upstream_dict[index[2]]["category"],
+                    "name": upstream_dict[u_key2]["name"],
+                    "categoryPath": upstream_dict[u_key2]["category"],
                     "processType": "UNIT_PROCESS",
-                    "@id": upstream_dict[index[2]]["uuid"],
+                    "@id": upstream_dict[u_key2]["uuid"],
                 }
         else:
             provider_dict = {
@@ -1571,15 +1576,18 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
                 "processType": "UNIT_PROCESS",
                 "@id": upstream_dict[index[2]]["uuid"],
             }
+        # Create the upstream flow and make the upstream process the provider.
         row["exchanges"][0]["provider"] = provider_dict
         row["exchanges"][0]["unit"] = unit(
             upstream_dict[index[2]]["q_reference_unit"]
         )
         row["exchanges"][0]["FlowType"] = "PRODUCT_FLOW"
+        # Copy the upstream process into the power plant process as an exchange.
         process_df.loc[index[0], index[1], "Power plant"]["exchanges"].append(
             row["exchanges"][0])
 
-    # These are now only power plant stage codes (and life cycle for CAN)
+    # Remove upstream processes from data frame; they are now provider in the
+    # exchange table of the power plant generation processes.
     process_df = process_df.drop(provider_filter)
     process_df.reset_index(inplace=True)
 

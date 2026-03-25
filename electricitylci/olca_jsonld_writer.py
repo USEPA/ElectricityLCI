@@ -2696,6 +2696,9 @@ def _save_to_json(json_file, e_dict):
             if k == "Flow":
                 # FEDEFL flows are not added as objects, write them separately
                 # using fedelmflowlist.write_jsonld() [20240911; BY]
+                # NOTE: calls `Writer._write_flows` in fedelemflowlist.jsonld,
+                # which sets the last updated timestamp to .now() and will
+                # always show up as a change when comparing two JSON-LD files.
                 flowlist = fedelemflowlist.get_flows()
                 flows = flowlist[flowlist['Flow UUID'].isin(e_dict[k]['ids'])]
                 fedelemflowlist.write_jsonld(flows, path=None, zw=writer)
