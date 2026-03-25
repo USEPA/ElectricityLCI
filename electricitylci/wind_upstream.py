@@ -116,6 +116,9 @@ def get_wind_construction(year):
         'FlowAmount': float,
     })
 
+    # NOTE: wind generation data reflects all wind facilities in the modeling
+    # year; therefore, they will show up in the end LCI; however, this merge
+    # will only return wind facilities from the 2020 generation data.
     wind_generation_data = get_wind_generation(year)
     wind_upstream = wind_df_t_melt.merge(
         right=wind_generation_data,
