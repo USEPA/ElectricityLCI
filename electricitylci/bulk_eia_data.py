@@ -29,7 +29,7 @@ Commission regions. This electricity trading ultimately decides the
 consumption mix for a given region.
 
 Last updated:
-    2024-08-21
+    2026-03-25
 """
 __all__ = [
     "ba_exchange_to_df",
@@ -272,7 +272,9 @@ def ba_exchange_to_df(rows, data_type='ba_to_ba'):
                     )
                     continue
         data = [x[1] for x in row['data']]
+        # Trim 'EBA.' from series ID
         from_region = row['series_id'].split('-')[0][4:]
+        # Trim '.ID.D' from series ID
         to_region = row['series_id'].split('-')[1][:-5]
         tuple_data = [
             x for x in zip(

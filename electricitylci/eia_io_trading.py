@@ -68,7 +68,7 @@ References:
     52(11), 6666-6675. https://doi.org/10.1021/acs.est.7b05191
 
 Last updated:
-    2026-03-19
+    2026-03-25
 """
 __all__ = [
     "ba_io_trading_model",
@@ -760,6 +760,7 @@ def _make_trade_pivot(year, ba_cols, trade_df):
     df_ba_trade_pivot = df_ba_trade_pivot.loc[
         df_ba_trade_pivot.index.year==year]
 
+    # Force any columns that are strings to floats (they should all be floats).
     cols_to_change = df_ba_trade_pivot.columns[
         df_ba_trade_pivot.dtypes.eq('object')]
     df_ba_trade_pivot[cols_to_change] = df_ba_trade_pivot[
@@ -789,13 +790,50 @@ def _make_trade_pivot(year, ba_cols, trade_df):
         ['BAA2', 'BAA1', 'Transacting BAAs'], as_index=False
     )[['Exchange']].sum()
 
+    # Sort by BAAs before merge.
+    df_trade_sum_1_2 = df_trade_sum_1_2.sort_values(by=['BAA1', 'BAA2'])
+    df_trade_sum_2_1 = df_trade_sum_2_1.sort_values(by=['BAA2', 'BAA1'])
+
+    # Rename fields to avoid collisions.
     df_trade_sum_1_2.columns = [
         'BAA1_1_2', 'BAA2_1_2','Transacting BAAs_1_2', 'Exchange_1_2']
     df_trade_sum_2_1.columns = [
         'BAA2_2_1', 'BAA1_2_1','Transacting BAAs_2_1', 'Exchange_2_1']
 
     # Combine two grouped tables for comparison for exchange values
-    df_concat_trade = pd.concat([df_trade_sum_1_2, df_trade_sum_2_1], axis=1)
+    # BUGFIX: the old concat didn't align BAAs how we thought [26.03.25; TWD]
+    df_concat_trade = pd.merge(
+        left=df_trade_sum_1_2,
+        right=df_trade_sum_2_1,
+        how='outer',
+        left_on=['BAA1_1_2', 'BAA2_1_2'],
+        right_on=['BAA2_2_1', 'BAA1_2_1']
+    )
+
+    # Gap fill the NaNs:
+    # 1. BAA1_1_2 should match BAA2_2_1
+    # 2. BAA2_1_2 should match BAA1_2_1
+    # 3. Exchange_1_2 & Exchange_2_1 NaNs should be zero.
+    df_concat_trade['BAA1_1_2'] = df_concat_trade['BAA1_1_2'].fillna(
+        df_concat_trade['BAA2_2_1'])
+    df_concat_trade['BAA2_1_2'] = df_concat_trade['BAA2_1_2'].fillna(
+        df_concat_trade['BAA1_2_1'])
+    df_concat_trade['BAA1_2_1'] = df_concat_trade['BAA1_2_1'].fillna(
+        df_concat_trade['BAA2_1_2'])
+    df_concat_trade['BAA2_2_1'] = df_concat_trade['BAA2_2_1'].fillna(
+        df_concat_trade['BAA1_1_2'])
+    df_concat_trade['Exchange_1_2'] = df_concat_trade['Exchange_1_2'].fillna(0)
+    df_concat_trade['Exchange_2_1'] = df_concat_trade['Exchange_2_1'].fillna(0)
+
+    # Re-create the transacting BAAs
+    df_concat_trade['Transacting BAAs_1_2'] = (
+        df_concat_trade['BAA1_1_2'] + "-" + df_concat_trade['BAA2_1_2']
+    )
+    df_concat_trade['Transacting BAAs_2_1'] = (
+        df_concat_trade['BAA1_2_1'] + "-" + df_concat_trade['BAA2_2_1']
+    )
+
+    # Create an absolute amount (since exchanges can be +/-)
     df_concat_trade['Exchange_1_2_abs'] = df_concat_trade['Exchange_1_2'].abs()
     df_concat_trade['Exchange_2_1_abs'] = df_concat_trade['Exchange_2_1'].abs()
 
@@ -803,6 +841,8 @@ def _make_trade_pivot(year, ba_cols, trade_df):
     # both importers or if one of the entities in the transaction reports a
     # zero value. Drop combinations where any of these conditions are true,
     # keep everything else.
+    # Essentially, we're looking for confirmation that BA1 -> BA2 in both
+    # columns (e.g. positive in Exchange_1_2 and negative in Exchange_2_1).
     df_concat_trade['Status_Check'] = np.where(
         (
             (df_concat_trade['Exchange_1_2'] > 0)
@@ -818,11 +858,9 @@ def _make_trade_pivot(year, ba_cols, trade_df):
         'keep'
     )
 
-    # Calculate the difference in exchange values
-    df_concat_trade['Delta'] = (
-        df_concat_trade['Exchange_1_2_abs']
-        - df_concat_trade['Exchange_2_1_abs']
-    )
+    # Run the filter. For 2023, removes 22 rows.
+    df_concat_trade = df_concat_trade.loc[
+        df_concat_trade['Status_Check'] == 'keep', :].copy()
 
     # Calculate percent diff of exchange_abs values.
     # This can be down two ways:
@@ -846,13 +884,9 @@ def _make_trade_pivot(year, ba_cols, trade_df):
     df_concat_trade['Exchange_mean'] = df_concat_trade[[
         'Exchange_1_2_abs', 'Exchange_2_1_abs']].mean(axis=1)
 
-    # Percent diff equations creates NaN where both values are 0, fill with 0
-    df_concat_trade['Percent_Diff_Avg'] = df_concat_trade[
-        'Percent_Diff_Avg'].fillna(0)
-
     # Final exchange value based on logic;
     # if percent diff is less than 20%, take mean,
-    # if not use the value as reported by the exporting BAA.
+    # if not, use the value as reported by the exporting BAA.
     # First figure out which BAA is the exporter by checking the value of the
     # Exchange_1_2. If that value is positive, it indicates that BAA1 is
     # exported to BAA2; if negative, use the value from Exchange_2_1.
@@ -886,7 +920,6 @@ def _make_trade_pivot(year, ba_cols, trade_df):
             ''
         )
     )
-    df_concat_trade = df_concat_trade[df_concat_trade['Status_Check'] == 'keep']
 
     # Create the final trading matrix; first grab the necessary columns,
     # rename the columns and then pivot.
@@ -895,6 +928,16 @@ def _make_trade_pivot(year, ba_cols, trade_df):
 
     df_concat_trade_subset.columns = [
         'Exporting_BAA', 'Importing_BAA', 'Amount']
+
+    # Remove duplicated entries---this is caused by BA1-BA2 and BA2-BA1 existing
+    # in both groupby data frames; however, the same outcome should be found
+    # regardless of the pairing, give the logic above.
+    df_concat_trade_subset = df_concat_trade_subset.drop_duplicates()
+
+    # Sort by exporting BAAs
+    df_concat_trade_subset = df_concat_trade_subset.sort_values(
+        by=['Exporting_BAA', 'Importing_BAA']
+    )
 
     trade_pivot = df_concat_trade_subset.pivot_table(
         index='Exporting_BAA',
