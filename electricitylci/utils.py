@@ -35,9 +35,10 @@ from electricitylci.globals import COAL_BASIN_CODES
 __doc__ = """Small utility functions for use throughout the repository.
 
 Last updated:
-    2026-03-17
+    2026-03-26
 
 Changelog:
+    -   [26.03.26]: Fix long subfolder paths in archive background data
     -   [26.03.17]: Update stewi inventory years
     -   [26.02.10]: New filter out zero helper function
     -   [26.01.28]: Allow resetting log levels
@@ -373,7 +374,13 @@ def archive_background_data(save_folder="background"):
     Parameters
     ----------
     save_folder : str, optional
-        The output folder to store the archives, by default "background"
+        The folder name to create in the electricitylci output directory to
+        store the archives, by default "background"
+
+    Examples
+    --------
+    >>> from electricitylci.utils import archive_background_data
+    >>> archive_background()
     """
     ds = _init_data_store()
     to_skip = ['archive', 'hidden', 'output']
@@ -411,10 +418,16 @@ def archive_background_data(save_folder="background"):
         # Archive subfolder files into own ZIP (e.g., stewi.flowbyfacility.zip)
         _, sub_folders = _get_non_hidden(cur_path, to_skip)
         for sub_folder in sub_folders:
-            sub_name = os.path.basename(sub_folder)
+            # This is the folder name from ds.keys().
             sub_zip_name = os.path.basename(cur_path)
-            sub_zip_name += "."
-            sub_zip_name += sub_name
+
+            # Replace the upstream path with just the current folder
+            sub_zip_name = sub_folder.replace(cur_path, sub_zip_name)
+
+            # Replace folder sep with dot
+            sub_zip_name = sub_zip_name.replace(os.path.sep, ".")
+
+            # Name as .zip file and locate it in outputs
             sub_zip_name += ".zip"
             sub_zip_path = os.path.join(output_path, sub_zip_name)
 
