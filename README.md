@@ -11,19 +11,22 @@ More information on this effort can be found in the [Framework for an Open-Sourc
 
 ## Disclaimer
 
-    This United States Environmental Protection Agency (EPA) and National Energy
+    This United States Department of Energy (DOE) and National Energy
     Technology Laboratory (NETL) GitHub project code is provided on an "as is"
-    basis and the user assumes responsibility for its use. EPA and NETL have
-    relinquished control of the information and no longer has responsibility to
+    basis and the user assumes responsibility for its use. DOE and NETL have
+    relinquished control of the information and no longer have responsibility to
     protect the integrity, confidentiality, or availability of the information.
     Any reference to specific commercial products, processes, or services by
     service mark, trademark, manufacturer, or otherwise, does not constitute or
-    imply their endorsement, recommendation or favoring by EPA or NETL.
+    imply their endorsement, recommendation or favoring by DOE or NETL.
 
 # Setup
-A Python environment (recommended v3.12) is required with the following packages installed, which were recorded in January 2026.
+A Python environment (recommended v3.12) is required with the following packages installed, which were recorded in March 2026.
+Dependency versions change.
+Note asterisks beside versions of esupy, fedelemflowlist, and StEWI that were used in the latest model development.
 _Note that Python 3.14 is not supported (yet)._
 
++ `pip install pandas==2.2.3`
 + `pip install git+https://github.com/FLCAC-admin/fedelemflowlist`
     * Successfully installs:
         + appdirs-1.4.4
@@ -31,13 +34,12 @@ _Note that Python 3.14 is not supported (yet)._
         + botocore-1.42.37
         + certifi-2026.1.4
         + charset-normalizer-3.4.4
-        + esupy-0.4.2
-        + fedelemflowlist-1.3.1
+        + esupy-0.4.2 (*)
+        + fedelemflowlist-1.3.1 (*)
         + idna-3.11
         + jmespath-1.1.0
         + numpy-2.4.1
         + olca-schema-2.4.0
-        + pandas-3.0.0
         + pyarrow-23.0.0
         + python-dateutil-2.9.0
         + PyYAML-6.0.3
@@ -48,7 +50,7 @@ _Note that Python 3.14 is not supported (yet)._
         + urllib3-2.6.3
 + `pip install git+https://github.com/USEPA/standardizedinventories#egg=StEWI`
     * Successfully installed:
-        + StEWI-1.2.1
+        + StEWI-1.2.1 (*)
         + et-xmlfile-2.0.0
         + openpyxl-3.1.5
         + xlrd-2.0.2
