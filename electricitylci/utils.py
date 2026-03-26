@@ -420,6 +420,8 @@ def archive_background_data(save_folder="background"):
         for sub_folder in sub_folders:
             # This is the folder name from ds.keys().
             sub_zip_name = os.path.basename(cur_path)
+            # This is the sub-folder node we are archiving.
+            sub_name = os.path.basename(sub_folder)
 
             # Replace the upstream path with just the current folder
             sub_zip_name = sub_folder.replace(cur_path, sub_zip_name)
