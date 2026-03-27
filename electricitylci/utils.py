@@ -433,6 +433,9 @@ def archive_background_data(save_folder="background"):
             sub_zip_name += ".zip"
             sub_zip_path = os.path.join(output_path, sub_zip_name)
 
+            # BUG: this fails to parse sub-sub and sub-sub-sub folder files;
+            # they all show up in the sub zip file. [26.03.27; TWD]
+            # Consider a loop with root=true until all files are accounted for.
             sub_files, _ = _get_non_hidden(sub_folder, to_skip)
             with zipfile.ZipFile(sub_zip_path, 'w', zipfile.ZIP_DEFLATED) as z:
                 for filepath in sub_files:
