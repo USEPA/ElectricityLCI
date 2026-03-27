@@ -88,7 +88,7 @@ Methods are based on ``elci_to_rem`` Python tool version 2.[2]
     DOI: 10.18141/2503966
 
 Last updated:
-    2026-03-17
+    2026-03-27
 """
 __all__ = [
     "agg_by_count",
@@ -103,7 +103,7 @@ __all__ = [
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def add_residual_mixes():
+def add_residual_mixes(json_path=None):
     """Helper function to generate residual mix processes.
 
     Takes model configuration parameters (``eia_gen_year``,
@@ -111,6 +111,13 @@ def add_residual_mixes():
     mix data frame (see :func:`get_rem`), which may be saved to CSV
     (depending on config parameter, ``output_residual_mix``), and
     passes the residual mix to olca_jsonld_writer for creating the processes.
+
+    Parameters
+    ----------
+    json_path : str, optional
+        The JSON-LD file path, by default None.
+        If none, the current model run's JSON-LD file is referenced.
+        (_this optional parameter is to permit REM post-processing_)
 
     Notes
     -----
@@ -135,10 +142,11 @@ def add_residual_mixes():
             "The balancing authority residual mix is based on a facility "
             "count weighting method of state-level REC sales where excess REC "
         )
-    elif model_specs.rem_weight_method == 'area':
+    elif model_specs.rem_weight_method == 'gen':
         rem_text += (
-            "The balancing authority residual mix is based on an areal "
-            "weighting method of state-level REC sales where excess REC "
+            "The balancing authority residual mix is based on a weighting "
+            "method of facility-level generation using state-level REC sales "
+            "where excess REC "
         )
 
     if model_specs.neg_rem_method == 'zero':
@@ -148,17 +156,24 @@ def add_residual_mixes():
         )
     elif model_specs.neg_rem_method == 'keep':
         rem_text += (
-            "generation amounts (MWh) are subtracted from non-renewables, "
-            "assuming that some renewable energy may be provided from a "
-            "non-renewable fuel category (e.g., mixed/other fuels)."
+            "generation amounts (MWh) are subtracted from non-renewable "
+            "sources, assuming that some renewable energy may be provided from "
+            "a non-renewable fuel category (e.g., mixed/other fuels)."
         )
 
     # Create residual mix for BA by fuel category;
     #   let the user decide to save mix as CSV file in outputs
     df = get_rem(to_save=model_specs.output_residual_mix)
 
+    # Allow user to run this process on an existing baseline JSON-LD;
+    # otherwise, default back to the current output file.
+    if json_path is None:
+        json_path = model_specs.namestr
+    else:
+        logging.info("Adding residual processes to %s" % json_path)
+
     # Add residual process to JSON-LD
-    build_residual_processes(model_specs.namestr, df, rem_text)
+    build_residual_processes(json_path, df, rem_text)
 
 
 def agg_by_count():

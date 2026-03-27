@@ -59,6 +59,7 @@ References:
 
 Changelog (since v2.0):
 
+    -   [26.03.27] Skip existing product systems.
     -   [26.03.19] Fix location name and code finder & set IMP to GLO.
     -   [26.03.19] Add LCI_Method description correction to clean_json.
     -   [26.03.05] Add coal basin to location finder.
@@ -68,7 +69,7 @@ Changelog (since v2.0):
     -   [25.06.11] New method for updating product system description text.
 
 Last edited:
-    2026-03-19
+    2026-03-27
 """
 __all__ = [
     "add_to_product_system_description",
@@ -146,6 +147,8 @@ def build_product_systems(file_path, elci_config, add_residuals=False):
         openLCA to crash.
     -   This method overwrites the existing JSON-LD with the new product
         systems.
+    -   This method checks for existing product systems (based on the name
+        of the reference process) and skips any if found.
     """
     try:
         # Read all JSON-LD data in order to overwrite.
@@ -165,11 +168,7 @@ def build_product_systems(file_path, elci_config, add_residuals=False):
     q1 = re.compile(qs1)
     q2 = re.compile(qs2)
     q3 = re.compile(qs3)
-
-    r1 = _match_process_names(data['Process']['objs'], q1)
-    r2 = _match_process_names(data['Process']['objs'], q2)
-    r3 = _match_process_names(data['Process']['objs'], q3)
-    r = r1 + r2 + r3
+    q_list = [q1, q2, q3]
 
     # Provide residual mix support
     if add_residuals:
@@ -181,14 +180,13 @@ def build_product_systems(file_path, elci_config, add_residuals=False):
         q5 = re.compile(qr2)
         q6 = re.compile(qr3)
 
-        r4 = _match_process_names(data['Process']['objs'], q4)
-        r5 = _match_process_names(data['Process']['objs'], q5)
-        r6 = _match_process_names(data['Process']['objs'], q6)
+        q_list += [q4, q5, q6]
 
-        r += r4
-        r += r5
-        r += r6
-    logging.info("Processing %d product systems" % len(r))
+    r = []
+    for q in q_list:
+        r += _match_process_names(data['Process']['objs'], q)
+
+    logging.info("Identified %d processes slated for product systems" % len(r))
 
     # Create a common description text
     t_now = datetime.datetime.now()
@@ -205,12 +203,22 @@ def build_product_systems(file_path, elci_config, add_residuals=False):
     for pid in r:
         p_idx = data['Process']['ids'].index(pid)
         p_obj = data['Process']['objs'][p_idx]
-        ps_obj = _make_product_system(file_path, p_obj, d_txt)
 
-        # Update master data dictionary
-        data['ProductSystem']['objs'].append(ps_obj)
-        data['ProductSystem']['ids'].append(ps_obj.id)
-        logging.debug("Created %s" % ps_obj.name)
+        # Note product system may already exist; check and skip if found.
+        q = re.compile(p_obj.name)
+        ps_list = _match_process_names(data['ProductSystem']['objs'], q)
+        if len(ps_list) == 1:
+            logging.info(
+                "Product system, '%s', exists! Skipping." % (p_obj.name)
+            )
+        else:
+            logging.info("Creating product system, '%s'" % p_obj.name)
+            ps_obj = _make_product_system(file_path, p_obj, d_txt)
+
+            # Update master data dictionary
+            data['ProductSystem']['objs'].append(ps_obj)
+            data['ProductSystem']['ids'].append(ps_obj.id)
+            logging.debug("Created %s" % ps_obj.name)
 
     # Overwrite JSON-LD
     _save_to_json(file_path, data)
@@ -238,6 +246,10 @@ def build_residual_processes(json_path, rem_ref, rem_txt=""):
         If a non-existent CSV file path was provided for ``rem_ref``.
     TypeError
         If ``rem_ref`` was not provided as a file path or data frame.
+
+    Notes
+    -----
+    See reference in :func:`add_residual_mixes` in residual_grid_mix.py.
     """
     # 1. READ RESIDUAL MIX DATA
     # Two options supported here: send pandas DataFrame or CSV file path.
@@ -268,6 +280,7 @@ def build_residual_processes(json_path, rem_ref, rem_txt=""):
         data = _read_jsonld(json_path, _root_entity_dict())
     except OSError:
         logging.warning("Failed to read JSON-LD file, %s" % json_path)
+        raise
 
     # 3. CREATE RESIDUAL GENERATION MIX PROCESSES
     logging.info("Creating residual generation mix processes")
@@ -1958,7 +1971,7 @@ def _make_rem_gen_process(pid, ba_name, e_dict, rem_txt, rem_df):
             if len(a) == 1:
                 # Best case scenario; set new mix amount
                 new_mix = a.iloc[0].Gen_Ratio_new
-                logging.info("Replacing %s with %s for %s in %s" % (
+                logging.debug("Replacing %s with %s for %s in %s" % (
                     p_ex.amount, new_mix, f_name, ba_name))
                 p_ex.amount = new_mix
             elif len(a) == 0 and len(b) == 0:
@@ -1978,6 +1991,8 @@ def _make_rem_gen_process(pid, ba_name, e_dict, rem_txt, rem_df):
                         f_name, ba_name
                     )
                 )
+
+    # NOTE: Consider adding a new Source here, also.
 
     #
     # Step 3: Add new residual process to the master entity list
