@@ -196,16 +196,16 @@ The inventory data associated with StEWI are stored in the application folders, 
 
 Flow mapping is handled using Federal LCA Commons's Federal Elementary Flow List Python package and is saved in the application folder 'fedelemflowlist'.
 
-The following is an example of the 181 data files downloaded from running the 2020 configuration file (updated in May 2025).
+The following is an example of the data files downloaded from running the 2023 configuration file (updated in March 2026).
 EIA Form 860 Excel workbooks have worksheets that are summarized into CSV files for speed.
 Note that once downloaded, these files are referenced (and not downloaded again) unless a different year of data is referenced in a configuration file.
 
     users_data_dir/                <- Folder as defined by appdirs
     ├── electricitylci/            <- Support data (183 MB) and outputs (80 MB)
     │   ├── bulk_data/
-    │   │   ├── eia_bulk_demand_2020.json (0.5 MB)
-    │   │   ├── eia_bulk_id_2020.json (2.6 MB)
-    │   │   └── eia_bulk_netgen_2020.json (0.6 MB)
+    │   │   ├── eia_bulk_demand_2023.json (0.5 MB)
+    │   │   ├── eia_bulk_id_2023.json (2.6 MB)
+    │   │   └── eia_bulk_netgen_2023.json (0.6 MB)
     │   │
     │   ├── cer_rer/
     │   │   └── electricity-trade-summary-resume-echanges-commerciaux-electricite.xlsx (100 KB)
@@ -226,41 +226,41 @@ Note that once downloaded, these files are referenced (and not downloaded again)
     │   │   ├── Form EIA-860 Insturctions (2016).pdf (0.4 MB)
     │   │   └── LayoutY2016.xlsx (0.2 MB)
     │   │
-    │   ├── eia860_2019/
-    │   │   ├── 1___Utility_Y2019.xlsx (0.4 MB)
-    │   │   ├── 2___Plant_Y2019.csv (3.2 MB)
-    │   │   ├── 2___Plant_Y2019.xlsx (3.1 MB)
-    │   │   ├── 3_1_Generator_Y2019.xlsx (8.7 MB)
-    │   │   ├── 3_2_Wind_Y2019.xlsx (0.2 MB)
-    │   │   ├── 3_3_Solar_Y2019.xlsx (0.8 MB)
-    │   │   ├── 3_4_Energy_Storage_Y2019.xlsx (48 KB)
-    │   │   ├── 3_5_Multifuel_Y2019.xlsx (0.7 MB)
-    │   │   ├── 4___Owner_Y2019.xlsx (0.4 MB)
-    │   │   ├── 6_1_EnviroAssoc_Y2019.xlsx (1.2 MB)
-    │   │   ├── 6_2_EnviroEquip_Y2019.xlsx (2.9 MB)
-    │   │   ├── EIA-860 Form.xlsx (3.1 MB)
-    │   │   ├── EIA-860 instruction.pdf (0.6 MB)
-    │   │   └── LayoutY2019.xlsx (0.2 MB)
-    │   │
     │   ├── eia860_2020/
     │   │   ├── 1___Utility_Y2020.xlsx (0.4 MB)
     │   │   ├── 2___Plant_Y2020.csv (3.4 MB)
     │   │   ├── 2___Plant_Y2020.xlsx (3.3 MB)
     │   │   ├── 3_1_Generator_Y2020.xlsx (9.0 MB)
-    │   │   ├── 3_1_Generator_Y2020_generator_operable.csv (5.2 MB)
     │   │   ├── 3_2_Wind_Y2020.xlsx (0.2 MB)
     │   │   ├── 3_3_Solar_Y2020.xlsx (1.0 MB)
     │   │   ├── 3_4_Energy_Storage_Y2020.xlsx (60 KB)
     │   │   ├── 3_5_Multifuel_Y2020.xlsx (0.7 MB)
     │   │   ├── 4___Owner_Y2020.xlsx (0.4 MB)
     │   │   ├── 6_1_EnviroAssoc_Y2020.xlsx (1.2 MB)
-    │   │   ├── 6_1_EnviroAssoc_Y2020_boiler_nox.csv (0.1 MB)
-    │   │   ├── 6_1_EnviroAssoc_Y2020_boiler_so2.csv (64 KB)
     │   │   ├── 6_2_EnviroEquip_Y2020.xlsx (2.9 MB)
-    │   │   ├── 6_2_EnviroEquip_Y2020_boiler_info.csv (0.6 MB)
     │   │   ├── EIA-860 Form.xlsx (3.1 MB)
     │   │   ├── EIA-860 Instructions.pdf (0.8 MB)
     │   │   └── LayoutY2020.xlsx (0.2 MB)
+    │   │
+    │   ├── eia860_2023/
+    │   │   ├── 1___Utility_Y2023.xlsx (0.5 MB)
+    │   │   ├── 2___Plant_Y2023.csv (4.0 MB)
+    │   │   ├── 2___Plant_Y2023.xlsx (3.9 MB)
+    │   │   ├── 3_1_Generator_Y2023.xlsx (10.0 MB)
+    │   │   ├── 3_1_Generator_Y2023_generator_operable.csv (5.8 MB)
+    │   │   ├── 3_2_Wind_Y2023.xlsx (0.2 MB)
+    │   │   ├── 3_3_Solar_Y2023.xlsx (1.4 MB)
+    │   │   ├── 3_4_Energy_Storage_Y2023.xlsx (0.3 KB)
+    │   │   ├── 3_5_Multifuel_Y2023.xlsx (0.7 MB)
+    │   │   ├── 4___Owner_Y2023.xlsx (0.5 MB)
+    │   │   ├── 6_1_EnviroAssoc_Y2023.xlsx (1.2 MB)
+    │   │   ├── 6_1_EnviroAssoc_Y2023_boiler_nox.csv (0.1 MB)
+    │   │   ├── 6_1_EnviroAssoc_Y2023_boiler_so2.csv (0.1 MB)
+    │   │   ├── 6_2_EnviroEquip_Y2023.xlsx (2.7 MB)
+    │   │   ├── 6_2_EnviroEquip_Y2023_boiler_info.csv (0.6 MB)
+    │   │   ├── EIA-860 Form.xlsx (0.4 MB)
+    │   │   ├── EIA-860 Instructions.pdf (0.7 MB)
+    │   │   └── LayoutY2023.xlsx (0.1 MB)
     │   │
     │   ├── eia930/
     │   │   └── EIA930_Reference_Tables.xlsx (43 KB)
@@ -268,14 +268,14 @@ Note that once downloaded, these files are referenced (and not downloaded again)
     │   ├── energyfutures/
     │   │   └── electricity-generation-2023.csv (1.0 MB)
     │   │
-    │   ├── epacems2020/                     <- 48 lower states + D.C. (0.1 MB)
-    │   │   ├── epacems2020al.zip (2 KB)
-    │   │   ├── epacems2020ar.zip (2 KB)
+    │   ├── epacems2023/                     <- 48 lower states + D.C. (0.1 MB)
+    │   │   ├── epacems2023al.zip (2 KB)
+    │   │   ├── epacems2023ar.zip (2 KB)
     │   │   ├── ...
-    │   │   └── epacems2020wy.zip (1 KB)
+    │   │   └── epacems2023wy.zip (1 KB)
     │   │
-    │   ├── f7a_2020/
-    │   │   └── coalpublic2020.xls (0.2 MB)
+    │   ├── f7a_2023/
+    │   │   └── coalpublic2023.xls (0.1 MB)
     │   │
     │   ├── f923_2016/
     │   │   ├── EIA923_Schedule_8_Annual_Environmental_Information_\
@@ -286,79 +286,85 @@ Note that once downloaded, these files are referenced (and not downloaded again)
     │   │   └── EIA923_Schedules_6_7_NU_SourceNDisposition_\
     │   │         2016_Final_Revision.xlsx (0.7 MB)
     │   │
-    │   ├── f923_2019/
-    │   │   ├── EIA923_Schedule_8_Annual_Environmental_Information_\
-    │   │   │     2019_Final_Revision.xlsx (3.1 MB)
-    │   │   ├── EIA923_Schedules_2_3_4_5_M_12_2019_Final_Revision.xlsx (19 MB)
-    │   │   ├── EIA923_Schedules_2_3_4_5_M_12_2019_Final_\
-    │   │   │     Revisionpage_1.csv (8.1 MB)
-    │   │   └── EIA923_Schedules_6_7_NU_SourceNDisposition_\
-    │   │         2019_Final_Revision.xlsx (0.9 MB)
-    │   │
     │   ├── f923_2020/
     │   │   ├── EIA923_Schedule_8_Annual_Environmental_Information_\
     │   │   │     2020_Final_Revision.xlsx (3.0 MB)
-    │   │   ├── EIA923_Schedule_8_Annual_Environmental_Information_\
-    │   │   │     2020_Final_Revision_page_8c.csv (0.6 MB)
     │   │   ├── EIA923_Schedules_2_3_4_5_M_12_2020_Final_Revision.xlsx (18 MB)
     │   │   ├── EIA923_Schedules_2_3_4_5_M_12_\
-    │   │   │     2020_Final_Revision_page_1.csv (8.4 MB)
-    │   │   ├── EIA923_Schedules_2_3_4_5_M_12_\
-    │   │   │     2020_Final_Revision_page_3.csv (3.2 MB)
-    │   │   ├── EIA923_Schedules_2_3_4_5_M_12_\
-    │   │   │     2020_Final_Revision_page_5_reduced.csv (2.3 MB)
+    │   │   │     2020_Final_Revisionpage_1.csv (2.0 MB)
     │   │   └── EIA923_Schedules_6_7_NU_SourceNDisposition_\
     │   │         2020_Final_Revision.xlsx (1.0 MB)
+    │   │
+    │   ├── f923_2023/
+    │   │   ├── EIA923_Schedule_8_Annual_Envir_Info_2023_Final.xlsx (3.0 MB)
+    │   │   ├── EIA923_Schedule_8_Annual_Envir_Info_2023_Final_page_8c.csv (0.5 MB)
+    │   │   ├── EIA923_Schedules_2_3_4_5_M_12_2023_Final_Revision.xlsx (19 MB)
+    │   │   ├── EIA923_Schedules_2_3_4_5_M_12_\
+    │   │   │     2023_Final_Revision_page_1.csv (9.2 MB)
+    │   │   ├── EIA923_Schedules_2_3_4_5_M_12_\
+    │   │   │     2023_Final_Revision_page_3.csv (3.1 MB)
+    │   │   ├── EIA923_Schedules_2_3_4_5_M_12_\
+    │   │   │     2023_Final_Revision_page_5_reduced.csv (2.4 MB)
+    │   │   └── EIA923_Schedules_6_7_NU_SourceNDisposition_\
+    │   │         2023_Final_Revision.xlsx (1.2 MB)
     │   │
     │   ├── fedcommons/
     │   │   ├── dq_sources.json (0.5 KB)
     │   │   ├── dq_systems.json (6 KB)
-    │   │   ├── flow_properties.json (12 KB)
-    │   │   └── unit_groups.json (36 KB)
+    │   │   ├── flow_properties.json (10 KB)
+    │   │   ├── locations.json (99 KB)
+    │   │   └── unit_groups.json (33 KB)
     │   │
     │   ├── FRS_bridges/
-    │   │   └── NEI_2020_RCRAInfo_2019_TRI_2020_eGRID_2020.csv (0.3 MB)
+    │   │   └── NEI_2020_RCRAInfo_2023_TRI_2023_eGRID_2023.csv (0.3 MB)
     │   │
     │   ├── netl/
-    │   │   └── Transportation_Inventories_02262025.xlsx (0.5 MB)
+    │   │   ├──Transportation_Inventories_02262025.xlsx (0.5 MB)
+    │   │   └── 2020_ng/
+    │   │       ├── ng_lci_2020rev1.csv (43 KB)
+    │   │       └── 2020_ng_model/
+    │   │           ├── Appendix_F_2020_Full_Inventory_Results_Midwest_\
+    │   │           │   ProdThruTrans.xlsx (14 MB)
+    │   │           ├── Appendix_F_2020_Full_Inventory_Results_Northeast_\
+    │   │           │   ProdThruTrans.xlsx (11 MB)
+    │   │           ├── Appendix_F_2020_Full_Inventory_Results_Pacific_\
+    │   │           │   ProdThruTrans.xlsx (3 MB)
+    │   │           ├── Appendix_F_2020_Full_Inventory_Results_Rocky_Mountain_\
+    │   │           │   ProdThruTrans.xlsx (3 MB)
+    │   │           ├── Appendix_F_2020_Full_Inventory_Results_Southeast_\
+    │   │           │   ProdThruTrans.xlsx (13 MB)
+    │   │           └── Appendix_F_2020_Full_Inventory_Results_Southwest_\
+    │   │               ProdThruTrans.xlsx (13 MB)
     │   │
     │   ├── output/                              <- ELCI model results
-    │   │   ├── BAA_final_trade_2020.csv (69 KB)
+    │   │   ├── BAA_final_trade_2023.csv (67 KB)
     │   │   ├── elci.log (0 KB)
-    │   │   ├── elci.log.1 (112 MB)
-    │   │   ├── ELCI_2020_jsonld_20250528_142931.zip (23 MB)
-    │   │   └── ferc_final_trade_2020.csv (18 KB)
+    │   │   ├── elci.log.1 (106 MB)
+    │   │   ├── ELCI_2023_jsonld_20260326_140109.zip (22 MB)
+    │   │   └── ferc_final_trade_2023.csv (17 KB)
     │   │
-    │   └── t_and_d_2020/                         <- 50 states (4.3 MB)
+    │   └── t_and_d_2023/                         <- 50 states (4.3 MB)
     │       ├── ak.xlsx (84 KB)
     │       ├── al.xlsx (89 KB)
     │       ├── ...
     │       └── wy.xlsx (83 KB)
     │
-    ├── fedelemflowlist/                 <- Flow mapping data (14 MB)
-    │   └── FedElemFlowListMaster_v1.2.0_e57a542.parquet (14 MB)
+    ├── facilitymatcher/                 <- Facility mapping data (1.1 GB)
+    │   └── FRS Data Files/
+    │       ├── NATIONAL_ENVIRONMENTAL_INTEREST_FILE_v1.2.1_metadata.json
+    │       └── NATIONAL_ENVIRONMENTAL_INTEREST_FILE.CSV
     │
-    ├── stewi/                           <- Inventory data / metadata (45 MB)
-    │   ├── facility/
-    │   │   ├── eGRID_2020_v1.1.3_6710a0f.parquet (0.7 MB)
-    │   │   ├── NEI_2020_v1.1.0_084a311.parquet (6.0 MB)
-    │   │   ├── RCRAInfo_2019_v1.0.5_f40a6aa.parquet (1.3 MB)
-    │   │   └── TRI_2020_v1.1.0_084a311.parquet (1.8 MB)
-    │   │
-    │   ├── flowbyfacility/
-    │   │   ├── eGRID_2020_v1.1.3_6710a0f.parquet (0.5 MB)
-    │   │   ├── NEI_2020_v1.1.0_084a311.parquet (31 MB)
-    │   │   ├── RCRAInfo_2019_v1.0.5_f40a6aa.parquet (2.1 MB)
-    │   │   └── TRI_2020_v1.1.0_084a311.parquet (1.2 MB)
-    │   │
-    │   ├── eGRID_2020_v1.1.3_6710a0f_metadata.json (1 KB)
-    │   ├── NEI_2020_v1.1.0_084a311_metadata.json (3 KB)
-    │   ├── RCRAInfo_2019_v1.0.5_f40a6aa_metadata.json (1 KB)
-    │   └── TRI_2020_v1.1.0_084a311_metadata.json (1 KB)
+    ├── fedelemflowlist/                 <- Flow mapping data (14 MB)
+    │   └── FedElemFlowListMaster_v1.3.0_a79846d.parquet (14 MB)
+    │
+    ├── stewi/                           <- Inventory data / metadata
+    │   ├── eGRID_2023_v1.2.1_3687292_metadata.json (1 KB)
+    │   └── facility/
+    │       └── eGRID_2023_v1.2.1_3687292.parquet (0.7 MB)
     │
     └── stewicombo/      <- Data / metadata generated by stewicombo
-        ├── ELCI_2020_v1.1.2.parquet (2.2 MB)
-        └── ELCI_2020_v1.1.2_metadata.json (7 KB)
+        ├── ELCI_2023_v1.2.1_3687292.parquet (1.9 MB)
+        └── ELCI_2023_v1.2.1_3687292_metadata.json (7 KB)
 
 # Developer's Corner
 
