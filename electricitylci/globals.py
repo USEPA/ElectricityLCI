@@ -20,7 +20,7 @@ __doc__ = """Define paths, variables, and functions used across several
 modules.
 
 Last updated:
-    2026-03-19
+    2026-03-27
 """
 
 
@@ -51,7 +51,7 @@ try:
     # HOTFIX: remove dependency on setuptools and its deprecated pkg_resources
     elci_version = version("ElectricityLCI")
 except:
-    elci_version = "2.1.0"
+    elci_version = "3.0.0"
 
 # ref Table 1.1 NERC report
 electricity_flow_name_generation_and_distribution = (
