@@ -109,9 +109,9 @@ def eia_trans_dist_download_extract(year):
                 url += "SEP%20Tables%20for%20" + f"{STATE_ABBREV[key].upper()}.xlsx"
             else:
                 url += f"{STATE_ABBREV[key]}.xlsx"
-            
-            r = requests.get(url, timeout=20)    
-            # HOTFIX: https://github.com/USEPA/ElectricityLCI/issues/235
+
+            r = requests.get(url, timeout=20)
+            # HOTFIX: https://github.com/NETL-RIC/ElectricityLCI/issues/235
             #adding 20s timeout to avoid long delays due to server issues.
             with open (filename, "wb") as f:
                     f.write(r.content)

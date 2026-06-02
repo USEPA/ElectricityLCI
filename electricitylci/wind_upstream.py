@@ -26,10 +26,9 @@ for wind farm construction for each plant in EIA 923 based on upstream
 contributions.
 
 Last updated:
-    2025-01-31
+    2026-03-24
 """
 __all__ = [
-    "aggregate_wind",
     "generate_upstream_wind",
     "get_wind_construction",
     "get_wind_generation",
@@ -76,7 +75,7 @@ def get_wind_construction(year):
             low_memory=False,
         )
     elif model_specs.renewable_vintage == 2016:
-        logging.info(
+        logging.warning(
             "The 2016 wind LCI does not separate construction and O&M."
             "Returning none.")
         return None
@@ -117,6 +116,9 @@ def get_wind_construction(year):
         'FlowAmount': float,
     })
 
+    # NOTE: wind generation data reflects all wind facilities in the modeling
+    # year; therefore, they will show up in the end LCI; however, this merge
+    # will only return wind facilities from the 2020 generation data.
     wind_generation_data = get_wind_generation(year)
     wind_upstream = wind_df_t_melt.merge(
         right=wind_generation_data,

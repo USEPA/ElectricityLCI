@@ -24,9 +24,12 @@ __doc__ = """This module contains the main API functions to be used by the
 end user.
 
 Last updated:
-    2025-06-09
+    2026-03-27
 """
 __version__ = elci_version
+__all__ = [
+    "basic_setup",
+]
 
 
 ##############################################################################
@@ -99,6 +102,14 @@ def aggregate_gen(gen_df, subregion="BA"):
     logging.info(f"Aggregating to subregion - {subregion}")
     aggregate_df = aggregate_data(gen_df, subregion=subregion)
     return aggregate_df
+
+
+def basic_setup(lvl='INFO', elci='ELCI_2023'):
+    """Quickly create a stream logger and define model specs."""
+    from electricitylci.utils import get_logger
+    log = get_logger(True, False, str_lv=lvl)
+    config.model_specs = config.build_model_class(elci)
+    log.info("Setup complete")
 
 
 def combine_upstream_and_gen_df(gen_df, upstream_df):
@@ -588,7 +599,7 @@ def get_facility_level_inventory(to_save=False, sep_by_fac=True):
         upstream_df = None
 
     # NOTE: This method triggers an input request for EPA data API key;
-    #       see https://github.com/USEPA/ElectricityLCI/issues/207
+    #       see https://github.com/NETL-RIC/ElectricityLCI/issues/207
     # NOTE: This method runs aggregation and emission uncertainty
     #       calculations.
     logging.info("get aggregated generation process")
@@ -788,9 +799,17 @@ def run_net_trade(generation_mix_dict):
     return dist_mix_dicts
 
 
-def run_post_processes():
+def run_post_processes(json_path=None):
     """Run post processes on JSON-LD file.
 
+    Parameters
+    ----------
+    json_path : str, optional
+        The file path to a JSON-LD, defaults to none.
+        If none, uses the current model run's JSON-LD file.
+
+    Notes
+    -----
     There is no easy way of editing files archived in a zip and no
     easy way of remove files from a zip without just creating a new zip,
     so that's what's done here.
@@ -799,21 +818,46 @@ def run_post_processes():
         addressed in the new _save_to_json (olca_jsonld_writer.py)
     2.  Remove flows/*.json that are not found in a process exchange.
         See cleanup SQL queries in GitHub issue
-        https://github.com/USEPA/ElectricityLCI/issues/216
+        https://github.com/NETL-RIC/ElectricityLCI/issues/216
     3.  Remove zero flows from quantitative reference exchanges
-        https://github.com/USEPA/ElectricityLCI/issues/217
+        https://github.com/NETL-RIC/ElectricityLCI/issues/217
     4.  DO NOT ADD NETL TRACI 2.1 characterization factors
     5.  Fix labeling of Heat input to elementary flow
-        https://github.com/USEPA/ElectricityLCI/issues/293
-    6.  Create product systems for select processes (user, consumption mixes)
+        https://github.com/NETL-RIC/ElectricityLCI/issues/293
+    6.  Create product systems for select processes (user, consumption mixes);
+        now includes residual mixes (if configured in model specifications)
+
+    If you have JSON-LD without residual mixes that you want to add residual
+    mixes (and product systems) to, follow these steps:
+
+    1.  Edit the config.yml that was used to create the original JSON-LD by
+        enabling the 'add_residual_mix' and, optionally,
+        'add_rem_product_systems', and configure the two settings (i.e.,
+        'rem_weight_method' and 'neg_rem_method').
+    2.  Quick-start ElectricityLCI with your configuration in Python (e.g.,
+        ``basic_setup("ELCI_2023")``).
+    3.  Define your JSON-LD file path
+        (e.g., ``my_json = "~/ELCI_2023_jsonld_20260327_094053-rem.zip"``).
+    4.  Run post-processes on your JSON-LD. The residual processes will be
+        added to the JSON-LD file and will be cleaned;
+        ``run_post_processes(my_json)``.
     """
     from electricitylci.olca_jsonld_writer import build_product_systems
     from electricitylci.olca_jsonld_writer import clean_json
+    from electricitylci.residual_grid_mix import add_residual_mixes
 
-    clean_json(config.model_specs.namestr)
+    if json_path is None:
+        json_path = config.model_specs.namestr
+    else:
+        logging.info("Running post-processes on %s" % json_path)
+
+    # HOTFIX: clean JSON after residual mix processes [260107; TWD]
+    add_residual_mixes(json_path)  # skipped if not configured
+    clean_json(json_path)
     build_product_systems(
-        file_path=config.model_specs.namestr,
-        elci_config=config.model_specs.model_name
+        file_path=json_path,
+        elci_config=config.model_specs.model_name,
+        add_residuals=config.model_specs.add_rem_product_systems
     )
 
 

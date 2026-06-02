@@ -19,7 +19,7 @@ included in stewi. For now, this specifically means emissions from Air Markets
 Program Data (AMPD).
 
 Last updated:
-    2024-08-02
+    2026-03-24
 """
 __all__ = [
     "integrate_replace_emissions",
@@ -88,7 +88,7 @@ def integrate_replace_emissions(new_emissions, stewi_emissions):
         'eGRID_ID'
     ]
     assert set(required_cols).issubset(set(new_emissions.columns))
-    stewi_emissions["eGRID_ID"]=stewi_emissions["eGRID_ID"].astype(int)
+    stewi_emissions["eGRID_ID"] = stewi_emissions["eGRID_ID"].astype(int)
 
     # NEI data sourced from StEWI has different capitalization than eGRID,
     # while these are handled in stewicombo, here this issue persists due to
@@ -100,36 +100,37 @@ def integrate_replace_emissions(new_emissions, stewi_emissions):
         "Sulfur Dioxide",
         "Nitrogen Oxides",
         ]
-    stewi_emissions.loc[
-        stewi_emissions['FlowName'].isin(flow_list),
-        'FlowName'
-    ] = stewi_emissions['FlowName'].str.capitalize()
+    # HOTFIX: use a filter to match left and right sides [26.03.24; TWD]
+    fl_filter = stewi_emissions['FlowName'].isin(flow_list)
+    stewi_emissions.loc[fl_filter, 'FlowName'] = stewi_emissions.loc[
+        fl_filter, 'FlowName'].str.capitalize()
 
     # Added line below because eGRID_ID got duplicated somewhere causing
     # error in concat
-    stewi_emissions = stewi_emissions.loc[
-        :, ~stewi_emissions.columns.duplicated()].copy()
+    dup_col_filter = stewi_emissions.columns.duplicated()
+    num_dup_cols = dup_col_filter.sum()
+    if num_dup_cols > 0:
+        logging.warning(
+            "Encountered %d duplicate columns in StEWI data; fixing." % (
+                num_dup_cols)
+        )
+        stewi_emissions = stewi_emissions.loc[:, ~dup_col_filter].copy()
     updated_emissions = pd.concat([stewi_emissions, new_emissions])
 
-    subset_cols = [
-        'Compartment', 'FlowName',
-        'Unit', 'eGRID_ID'
-    ]
     # Remove Year from this list, otherwise results in duplicate emissions
     # by facility if years don't match in specs
+    subset_cols = [
+        'Compartment',
+        'FlowName',
+        'Unit',
+        'eGRID_ID'
+    ]
     updated_emissions.drop_duplicates(
         subset=subset_cols, keep='last', inplace=True)
     updated_emissions.reset_index(drop=True, inplace=True)
 
-    # Convert NEI flows back to original case for later flow mapping
-    updated_emissions.loc[
-        (updated_emissions['Source']=='NEI')
-        & (
-            updated_emissions['FlowName'].isin(
-                [x.capitalize() for x in flow_list])
-        ),
-        'FlowName'
-    ] = updated_emissions['FlowName'].str.title()
+    # NOTE: all flow mapping is done with lowercase flow names (see
+    # elementaryflows.py); removing unnecessary retitling step. [26.03.24; TWD]
 
     drop_columns = [
         'operator_name',

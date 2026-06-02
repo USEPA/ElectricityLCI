@@ -18,6 +18,8 @@ from electricitylci.globals import output_dir
 from electricitylci.globals import COAL_MODEL_YEARS
 from electricitylci.globals import RENEWABLE_VINTAGES
 from electricitylci.globals import NG_MODEL_YEARS
+from electricitylci.globals import REM_WEIGHT_METHODS
+from electricitylci.globals import NEG_REM_METHODS
 
 
 ##############################################################################
@@ -35,7 +37,7 @@ configuration settings are set once and shared with the rest of the Python
 package. To change configuration settings, restart Python.
 
 Last edited:
-    2025-05-13
+    2025-12-12
 """
 __all__ = [
     "ConfigurationError",
@@ -144,6 +146,19 @@ class ModelSpecs:
         located by default in the output directory (see globals.py).
     ng_model_year : int
         The natural gas model year (e.g., 2016 or 2020).
+    add_residual_mix : bool
+        Whether to include residual electricity mix processes in JSON-LD.
+    output_residual_mix : bool
+        Whether to save the residual mix data as CSV in output folder.
+    add_rem_product_systems : bool
+        Whether to create "at user; residual consumption mix" product systems.
+    rem_weight_method : str
+        The state-to-balancing authority weighting method (e.g., by facility
+        'count' or by facility 'gen' weights).
+    neg_rem_method : str
+        The method to deal with negative renewable electricity generation
+        (e.g., if REC sales in a BA are greater than renewable electricity generation); choose either to 'zero' excess or 'keep' excess and
+        attempt to subtract from vague fuel categories (e.g., MIXED or OTHER).
     """
     def __init__(self, model_specs, model_name):
         """Class initialization.
@@ -200,6 +215,14 @@ class ModelSpecs:
         self.gen_mix_from_model_generation_data = False
         self.calculate_uncertainty = model_specs.get(
             "calculate_uncertainty", True)
+        self.add_residual_mix = model_specs.get("add_residual_mix", False)
+        self.add_rem_product_systems = model_specs.get(
+            "add_rem_product_systems", False
+        )
+        self.output_residual_mix = model_specs.get("output_residual_mix", False)
+        # Use empty string rather than crash b/c not implemented in all YAMLs
+        self.rem_weight_method = model_specs.get("rem_weight_method", "")
+        self.neg_rem_method = model_specs.get("neg_rem_method", "")
         self.namestr = (
             f"{output_dir}/{model_name}_jsonld_"
             f"{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.zip"
@@ -330,22 +353,46 @@ def check_model_specs(model_specs):
             "will not import correctly."
         )
     if not model_specs['coal_model_year'] in COAL_MODEL_YEARS:
-        err_str = "The coal model year must be one of "
+        err_str = "The coal model year must be one of: "
         err_str += " or ".join([str(x) for x in COAL_MODEL_YEARS])
-        err_str += " not %s!" % model_specs['coal_model_year']
+        err_str += "; not '%s'!" % model_specs['coal_model_year']
         raise ConfigurationError(err_str)
-    
-    if not model_specs['renewable_vintage'] in RENEWABLE_VINTAGES:
-        err_str = "The renewable inventory vintage must be one of "
-        err_str += " or ".join([str(x) for x in RENEWABLE_VINTAGES])
-        err_str += " not %s!" % model_specs['renewable_vintage']
-        raise ConfigurationError(err_str)
-    
-    if not model_specs['ng_model_year'] in NG_MODEL_YEARS:
-        err_str = "The natural gas model year must be one of "
-        err_str += " or ".join([str(x) for x in NG_MODEL_YEARS])
-        err_str += " not %s!" % model_specs['ng_model_year']
-        raise ConfigurationError(err_str)
-    
-    logging.info("Checks passed!")
 
+    if not model_specs['renewable_vintage'] in RENEWABLE_VINTAGES:
+        err_str = "The renewable inventory vintage must be one of: "
+        err_str += " or ".join([str(x) for x in RENEWABLE_VINTAGES])
+        err_str += "; not '%s'!" % model_specs['renewable_vintage']
+        raise ConfigurationError(err_str)
+
+    if not model_specs['ng_model_year'] in NG_MODEL_YEARS:
+        err_str = "The natural gas model year must be one of: "
+        err_str += " or ".join([str(x) for x in NG_MODEL_YEARS])
+        err_str += "; not '%s'!" % model_specs['ng_model_year']
+        raise ConfigurationError(err_str)
+
+    if model_specs['add_rem_product_systems'] and (
+            not model_specs['add_residual_mix']):
+        raise ConfigurationError(
+            "Residual mix product systems cannot be created unless "
+            "`add_residual_mix` is set to true!"
+        )
+    if model_specs['output_residual_mix'] and (
+            not model_specs['add_residual_mix']):
+        raise ConfigurationError(
+            "Residual mix data cannot be generated unless "
+            "`add_residual_mix` is set to true!"
+        )
+    if model_specs['add_residual_mix']:
+        if not model_specs['rem_weight_method'] in REM_WEIGHT_METHODS:
+            err_str = "The residual mix weighting method must be one of: "
+            err_str += " or ".join([x for x in REM_WEIGHT_METHODS])
+            err_str += "; not '%s'!" % model_specs['rem_weight_method']
+            raise ConfigurationError(err_str)
+
+        if not model_specs['neg_rem_method'] in NEG_REM_METHODS:
+            err_str = "The negative renewable allocation method must be one of: "
+            err_str += " or ".join([x for x in NEG_REM_METHODS])
+            err_str += "; not '%s'!" % model_specs['neg_rem_method']
+            raise ConfigurationError(err_str)
+
+    logging.info("Checks passed!")

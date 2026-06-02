@@ -33,7 +33,7 @@ The functions in this module calculate the fraction of each generating source
 (either from generation data or straight from eGRID).
 
 Last edited:
-    2025-06-09
+    2026-03-18
 """
 
 
@@ -187,9 +187,18 @@ def create_generation_mix_process_df_from_model_generation_data(
         # pulls 2 MWh for every 1MWh generated. For simplicity and because
         # NBSO is an imported BA, we'll remove the US-side and assume it's
         # covered under the Canadian imports.
+        nbo_filter = (
+            subregion_fuel_gen["Subregion"] != BA_CODES.loc['NBSO', 'BA_Name']
+        )
+
+        # Issue #276---HECO fails when residual grid mixes are generated.
+        # Currently, HECO is hard filtered (see manual_edits.yml); repeat here.
+        heco_filter = (
+            subregion_fuel_gen["Subregion"] != BA_CODES.loc['HECO', 'BA_Name']
+        )
+
         subregion_fuel_gen = subregion_fuel_gen.loc[
-            subregion_fuel_gen["Subregion"] != "New Brunswick System Operator",
-            :
+            (nbo_filter & heco_filter), :
         ]
 
     canada_list=[]
@@ -361,7 +370,7 @@ def olcaschema_international(database, gen_dict, subregion=None):
 
 
 def olcaschema_genmix(database, gen_dict, subregion=None):
-    """Generate an olca-schema process for each region-fuel pairing.
+    """Create the 'at-grid; generation mix' processes each region-fuel pairing.
 
     Parameters
     ----------
@@ -376,6 +385,12 @@ def olcaschema_genmix(database, gen_dict, subregion=None):
     -------
     dict
         An olca-schema-formatted process dictionary.
+
+    Notes
+    -----
+    This method is called in :func:`write_generation_mix_database_to_dict`
+    in __init__.py, which is called during :func:`run_distribution` in main.py
+    to create the generation mix dictionary from the generation mix data frame.
     """
     if subregion is None:
         subregion = model_specs.regional_aggregation
@@ -393,6 +408,8 @@ def olcaschema_genmix(database, gen_dict, subregion=None):
     f_list = list(database["FuelCategory"].unique())
 
     for reg in region:
+        # Get the fuel mix associated with the current region
+        # (e.g., GAS, COAL, SOLAR, WIND).
         database_reg = database[database["Subregion"] == reg]
         exchanges_list = []
 
@@ -406,41 +423,41 @@ def olcaschema_genmix(database, gen_dict, subregion=None):
             database_f1 = database_reg[
                 database_reg["FuelCategory"] == fuelname
             ]
-            if database_f1.empty != True:
-                matching_dict = {
-                    'Electricity': None,
-                    'Construction': None
-                }
-                # Iss150, need to search for both electricity and construction
+            if database_f1.empty:
+                continue
+            else:
+                # NOTE: Issue 150 put regionalized construction within the
+                # generation processes (e.g., an resource flow within
+                # 'Electricity - WIND - Avangrid Renewables, LLC');
+                # removing the search for construction here [260213;TWD].
+                matching_dict = {'Electricity': None}
                 m_str1 = "Electricity - " + fuelname + " - " + reg
-                m_str2 = "Construction - " + fuelname + " - " + reg
+
+                # Single search through generation processes for a match
+                # to current fuel and region (e.g., 'Electricity - SOLAR -
+                # Avangrid Renewables, LLC').
                 for generator in gen_dict:
                     if gen_dict[generator]["name"] == m_str1:
                         logging.debug(
                             "Found matching dictionary for '%s'" % m_str1)
                         matching_dict['Electricity'] = gen_dict[generator]
-                    elif gen_dict[generator]["name"] == m_str2:
-                        logging.debug(
-                            "Found matching dictionary for '%s'" % m_str2)
-                        matching_dict['Construction'] = gen_dict[generator]
-                    # Still allow breaking if we've found both dicts.
-                    if (matching_dict['Construction'] is not None) and (
-                            matching_dict['Electricity'] is not None):
-                        logging.debug("Found both!")
                         break
 
-                for k, match in matching_dict.items():
-                    if match is not None:
+                for k, p in matching_dict.items():
+                    if p is not None:
+                        # Create default exchange table, sets the default
+                        # provider based on 'Subregion' field and fuelname,
+                        # and exchange amount based on 'Generation_Ratio'.
                         ra = exchange_table_creation_input_genmix(
                             database_f1, fuelname
                         )
+                        # These are inputs; set quantitative reference to false.
                         ra["quantitativeReference"] = False
-                        # HOTFIX: make category string, not list
-                        # [2023-11-29; TWD]
+                        # HOTFIX: make category string, not list [231129; TWD]
                         ra["provider"] = {
-                            "name": match["name"],
-                            "@id": match["uuid"],
-                            "category": match["category"],
+                            "name": p["name"],
+                            "@id": p["uuid"],
+                            "category": p["category"],
                         }
                         exchanges_list = exchange(ra, exchanges_list)
                     else:
@@ -450,6 +467,7 @@ def olcaschema_genmix(database, gen_dict, subregion=None):
                             "Skipping this flow for now"
                         )
 
+        # Send the region and exchanges list to create the Process dictionary
         final = process_table_creation_genmix(reg, exchanges_list)
         generation_mix_dict[reg] = final
 
@@ -482,7 +500,7 @@ def olcaschema_usaverage(
 
     Notes
     -----
-    Reference in `run_epa_trade` in \_\_init\_\_.py
+    Reference in `run_epa_trade` in \\_\\_init\\_\\_.py
     """
     if subregion is None:
         subregion = model_specs.regional_aggregation

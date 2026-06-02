@@ -1,0 +1,62 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "electricitylci"
+version = "3.0.0"
+authors = [
+  { name = "Matthew Jamieson", email = "Mathew.Jamieson@netl.doe.gov" },
+  { name = "Tyler W. Davis" },
+  { name = "Francis Hanna" },
+  { name = "Wesley W. Ingwersen" },
+  { name = "Greg Schivley" },
+  { name = "Ben Young" },
+  { name = "Tapajyoti Ghosh" },
+  { name = "Jing Li" },
+  { name = "Shirley Sam" },
+  { name = "Daniel Lee Young" },
+  { name = "Michael Srocka" },
+  { name = "Troy A. Hottle" }
+]
+description = "A Python package to create regional life cycle inventory models of U.S. electricity generation, consumption, and distribution using standardized facility and generation data for use with open-source LCA software."
+readme = "README.md"
+license = { text = "CC0" }
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "License :: CC0",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "fedelemflowlist @ git+https://github.com/FLCAC-Admin/fedelemflowlist",
+    "StEWI @ git+https://github.com/USEPA/standardizedinventories",
+    "scipy>=1.10",
+    "pandas<3.0",
+    "pytz",
+]
+
+[project.urls]
+Homepage = "https://github.com/NETL-RIC/ElectricityLCI"
+
+[tool.setuptools]
+packages = ["electricitylci"]
+
+[tool.setuptools.package-data]
+electricitylci = [
+    "data/*.*",
+    "data/EFs/*.*",
+    "data/coal/2020/*.*",
+    "data/coal/2023/*.*",
+    "data/petroleum_inventory/*.*",
+    "data/renewables/2016/*.*",
+    "data/renewables/2020/*.*",
+    "modelconfig/*.yml",
+    "output/.gitignore",
+]

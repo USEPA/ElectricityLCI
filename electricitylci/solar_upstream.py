@@ -26,7 +26,7 @@ the upstream contributions. Emissions from the construction of panels are
 accounted for elsewhere.
 
 Last updated:
-    2025-01-31
+    2026-02-27
 """
 __all__ = [
     "fix_renewable",
@@ -176,7 +176,7 @@ def get_solar_pv_construction(year):
             na_values=["#VALUE!", "#DIV/0!"],
         )
     elif model_specs.renewable_vintage == 2016:
-        logging.info(
+        logging.warning(
             "The 2016 solar PV LCI does not separate construction and O&M. "
             "Returning none.")
         return None
@@ -242,7 +242,7 @@ def get_solar_pv_construction(year):
     solar_upstream["input"] = False
 
     solar_upstream = fix_renewable(solar_upstream, "netlnrelsolarpv")
-        # Issue #296 - adding DQI information for upstream processes
+    # Issue #296 - adding DQI information for upstream processes
     solar_upstream["Year"] = model_specs.renewable_vintage
     solar_upstream["DataReliability"] = 3
     solar_upstream["TemporalCorrelation"] = add_temporal_correlation_score(

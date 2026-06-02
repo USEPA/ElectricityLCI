@@ -30,7 +30,7 @@ Hydro & Power Authority generation mix includes 9 per-cent biomass, then U.S.
 -level biomass emissions are multiplied by 0.09. The result is a data frame
 that includes balancing authority level inventories for Canadian imports.
 
-See https://github.com/USEPA/ElectricityLCI/issues/231 for details and
+See https://github.com/NETL-RIC/ElectricityLCI/issues/231 for details and
 references.
 
 Last updated:

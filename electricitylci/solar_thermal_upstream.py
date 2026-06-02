@@ -27,7 +27,7 @@ solely the upstream contributions. Emissions from the construction of panels
 are accounted for elsewhere.
 
 Last updated:
-    2025-01-31
+    2026-02-27
 """
 __all__ = [
     "generate_upstream_solarthermal",
@@ -73,7 +73,7 @@ def get_solarthermal_construction(year):
             header=[0, 1]
         )
     elif model_specs.renewable_vintage == 2016:
-        logging.info(
+        logging.warning(
             "The 2016 solar thermal LCI did not have separate construction "
             "and O&M. Returning none")
         return None
@@ -150,7 +150,7 @@ def get_solarthermal_construction(year):
     # Fix/fill construction LCI
     solarthermal_upstream = fix_renewable(
         solarthermal_upstream, "netlsolarthermal")
-            # Issue #296 - adding DQI information for upstream processes
+    # Issue #296 - adding DQI information for upstream processes
     solarthermal_upstream["Year"] = model_specs.renewable_vintage
     solarthermal_upstream["DataReliability"] = 3
     solarthermal_upstream["TemporalCorrelation"] = add_temporal_correlation_score(

@@ -30,7 +30,6 @@ from electricitylci.eia860_facilities import eia860_balancing_authority
 from electricitylci.eia923_generation import build_generation_data
 from electricitylci.eia923_generation import eia923_primary_fuel
 import electricitylci.emissions_other_sources as em_other
-from electricitylci.globals import elci_version
 from electricitylci.globals import paths
 from electricitylci.globals import output_dir
 import electricitylci.manual_edits as edits
@@ -39,7 +38,6 @@ from electricitylci.process_dictionary_writer import process_doc_creation
 from electricitylci.process_dictionary_writer import ref_exchange_creator
 from electricitylci.process_dictionary_writer import uncertainty_table_creation
 from electricitylci.process_dictionary_writer import unit
-from electricitylci.utils import make_valid_version_num
 from electricitylci.utils import check_output_dir
 from electricitylci.utils import write_csv_to_output
 from electricitylci.egrid_emissions_and_waste_by_facility import (
@@ -57,33 +55,17 @@ desired regional aggregation categories, and creates the dictionaries (i.e.,
 the LCA inventories but in python dictionary format) and stores them in
 computer memory.
 
-CHANGELOG
+CHANGELOG (since v2.0)
 
--   Remove module logger.
--   Remove unused imports.
--   Add missing documentation to methods.
--   Clean up formatting towards PEP8.
--   Note: the uncertainty calculations in :func:`aggregate_data` are
-    questionable (see doc strings of submodules for details).
--   Fix the outdated pd.DataFrame.append call in :func:`turn_data_to_dict`
--   Remove :func:`add_flow_representativeness_data_quality_scores` because
-    unused.
--   Replace .values with .squeeze().values when calling a data frame with
-    only one column of data in :func:`olcaschema_genprocess`.
--   Fix groupby for source_db in :func:`calculate_electricity_by_source` to
-    match the filter used to find multiple source entries.
--   Add empty database check in :func:`calculate_electricity_by_source`
--   Separate replace egrid function
--   Fix zero division error in aggregate data
--   Implement Hawkins-Young uncertainty
--   Add uncertainty switch
--   Drop NaNs in exchange table
--   Move FRS file download to its own function
+- Generalize generation process description (rm 'cradle-to-gate') [260319;TWD]
+- Add Canada generation process descriptions [260311; TWD]
+- Add 2016 to get generation years for NETL water inventory [260305; TWD]
+- Hotfix DQI entry in :func:`turn_data_to_dict` [260109; TWD]
 
 Created:
     2019-06-04
 Last edited:
-    2025-06-09
+    2026-03-19
 """
 __all__ = [
     "add_data_collection_score",
@@ -94,10 +76,13 @@ __all__ = [
     "calculate_electricity_by_source",
     "create_generation_process_df",
     "eia_facility_fuel_region",
+    "get_facilities_w_fuel_region",
+    "get_generation_years",
     "hawkins_young",
     "hawkins_young_sigma",
     "hawkins_young_uncertainty",
     "olcaschema_genprocess",
+    "read_stewi_frs",
     "replace_egrid",
     "turn_data_to_dict",
 ]
@@ -120,15 +105,27 @@ def _calc_sigma(p_series):
     float
         The fitted sigma for a Hawkins-Young uncertainty method.
         Assumes a 90% confidence level (see :param:`alpha`).
+        Returns NaN if the series is empty or all NaNs.
+
+    Notes
+    -----
+    This method is responsible for infrequent ValueErrors, 'zero-size array to
+    reduction operation minimum which has no identity'. Occasionally, pandas
+    performs an inference check to determine the best datatype for a column.
+    In the off chance that numpy is called in to infer a NoneType, you may end
+    up with a 'no identity' error. By changing the return type from None to
+    NaN, the latter being a float, should *potentially* eliminate the problem.
     """
     alpha = 0.9
-    if model_specs.calculate_uncertainty:
+    # HOTFIX: skip zero-length and all NaN series [26.02.12; TWD]
+    is_empty = p_series.dropna().empty
+    if model_specs.calculate_uncertainty and not is_empty:
         (is_error, sigma) = hawkins_young_sigma(p_series.values, alpha)
     else:
-        return None
+        return np.nan
 
     if is_error:
-        return None
+        return np.nan
     else:
         return sigma
 
@@ -235,26 +232,23 @@ def _wtd_mean(pdser, total_db):
         The flow-amount-weighted average of values.
     """
     # HOTFIX: averaging with NaNs in the array.
-    non_nans = pdser.values[~np.isnan(pdser.values)]
+    nan_filter = ~np.isnan(pdser)
+    non_nans = pdser[nan_filter].values
     if len(non_nans) == 0:
         logging.debug("Encountered a NaN array!")
-        result = float("nan")
+        return np.nan
     else:
-        try:
-            wts = total_db.loc[
-                pdser[~np.isnan(pdser)].index, "FlowAmount"].values
-            result = np.average(non_nans, weights=wts)
-        except:
-            logging.debug(
-                f"Error calculating weighted mean for {pdser.name}-"
-                f"likely from 0 FlowAmounts"
-            )
-            try:
-                with np.errstate(all='raise'):
-                    result = np.average(non_nans)
-            except (ArithmeticError, ValueError, FloatingPointError):
-                result = float("nan")
-    return result
+        # Attempt a cleaner weighting approach [26.02.11; TWD]
+        wts = total_db.loc[pdser[nan_filter].index, "FlowAmount"].values
+        # HOTFIX: any NaN flow amount always come back NaN; zero these weights
+        #   If all FlowAmounts are NaNs, then perform standard average.
+        wts = np.nan_to_num(wts, nan=0.0)
+        wts_sum = np.sum(wts)
+        if wts_sum != 0:
+            return np.average(non_nans, weights=wts)
+        else:
+            # Triggers if wts is empty or NaN array or weights sum to zero.
+            return np.average(non_nans)
 
 
 def add_data_collection_score(db, elec_df, subregion="BA"):
@@ -474,9 +468,11 @@ def aggregate_data(total_db, subregion="BA"):
     logging.debug("Reduce data from %d to %d rows" % (sz_tdb, len(total_db)))
 
     # Calculate electricity totals by region and source
+    logging.info("Calculating electricity by source")
     total_db, electricity_df = calculate_electricity_by_source(
         total_db, subregion
     )
+    logging.info("Finished calculating electricity by source")
 
     # Assign data score based on percent generation
     total_db = add_data_collection_score(total_db, electricity_df, subregion)
@@ -597,7 +593,7 @@ def aggregate_data(total_db, subregion="BA"):
         database_f3['electricity_sum'] == fix_val, 'Emission_factor'] = 0
 
     # Calculate the log-normal parameters for uncertainty; see Hawkins-Young
-    # https://github.com/USEPA/ElectricityLCI/discussions/240
+    # https://github.com/NETL-RIC/ElectricityLCI/discussions/240
     database_f3["GeomMean"], database_f3["GeomSD"] = zip(
         *database_f3[["Emission_factor", "uncertaintySigma"]].apply(
             _calc_geom_params, axis=1
@@ -907,7 +903,7 @@ def create_generation_process_df():
 
         # NOTE: data pulled from Facility Register Service (FRS) program
         # provided by USEPA's FacilityMatcher, now a part of StEWI.
-        # https://github.com/USEPA/standardizedinventories
+        # https://github.com/NETL-RIC/standardizedinventories
         try:
             eia860_FRS = pd.read_csv(inventories_of_interest_csv)
             logging.info(
@@ -942,6 +938,7 @@ def create_generation_process_df():
 
         # Effectively removes all non-EIA facilities from StEWICombo inventory.
         #   drops 909 rows in 2022 inventory
+        #   drops 2,545 rows in 2023 inventory
         ewf_df.dropna(subset=["PGM_SYS_ID"], inplace=True)
 
         # Drop unused columns; note legacy column names are still here.
@@ -1086,15 +1083,20 @@ def create_generation_process_df():
         final_database.rename(columns={"Year_x": "Year"}, inplace=True)
 
     # Use the Federal Elementary Flow List (FEDEFL) to map flow UUIDs
-    # NOTE: 10,000 unmatched flows; mostly wastes and product flows
+    # NOTE: 10,000 unmatched flows; mostly wastes and product flows.
+    # For 2023, only 91 flows without a UUID; mainly wastes, but also
+    # includes 'Heat' input, 'Steam' output, and 'Dibenzo(a,h)Anthracene' to
+    # air.
     final_database = map_emissions_to_fedelemflows(final_database)
 
     # Sanity check that no duplicated columns exist in the data frame.
+    #   27 columns for 2023
     final_database = final_database.loc[
         :, ~final_database.columns.duplicated()
     ]
 
     # Sanity check that no duplicate emission rows are in the data frame.
+    #   2023: 60% of rows were duplicates
     dup_cols_check = [
         "eGRID_ID",
         "FuelCategory",
@@ -1119,7 +1121,7 @@ def create_generation_process_df():
     final_database["DataCollection"] = 5
     final_database["GeographicalCorrelation"] = 1
 
-    # For surety's sake
+    # For super surety's sake
     final_database["eGRID_ID"] = final_database["eGRID_ID"].astype(int)
 
     # Organize database by facility, then by emission compartment
@@ -1146,7 +1148,7 @@ def create_generation_process_df():
 
     # Apply the "manual edits"
     # See GitHub issues #212, #160, #121, and #77.
-    # https://github.com/USEPA/ElectricityLCI/issues/
+    # https://github.com/NETL-RIC/ElectricityLCI/issues/
     final_database = edits.check_for_edits(
         final_database, "generation.py", "create_generation_process_df")
 
@@ -1181,8 +1183,8 @@ def eia_facility_fuel_region(year):
         - 'Balancing Authority Name' : str
     """
     logging.info(
-        "Generating the percent generation from primary fuel category "
-        "for each facility")
+        "Calculating the percent generation in %d from primary fuel category "
+        "for each facility" % year)
     primary_fuel = eia923_primary_fuel(year=year)
     ba_match = eia860_balancing_authority(year)
     primary_fuel["Plant Id"] = primary_fuel["Plant Id"].astype(int)
@@ -1273,6 +1275,10 @@ def get_generation_years():
     # Check to see if hydro power plant data are used (always 2016)
     if model_specs.include_renewable_generation is True:
         generation_years += [2016]
+    # Check to see if NETL power plant water use is used (always 2016)
+    if model_specs.include_netl_water:
+        generation_years += [2016]
+
     # Add years of inventories of interest; remove duplicates, and
     # sort chronologically:
     generation_years = sorted(list(set(
@@ -1482,6 +1488,11 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     -------
     dict
         Dictionary containing openLCA-formatted data.
+
+    Notes
+    -----
+    This process is responsible for naming the generation processes
+    (e.g., 'Electricity - SOLAR - Portland General Electric Company')
     """
     region_agg = subregion_col(subregion)
     fuel_agg = ["FuelCategory"]
@@ -1535,23 +1546,28 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         x for x in process_df.index.values if x[2] in upstream_dict.keys()]
     # HOTFIX: only include stage codes found in process_df [241011; TWD]
     sc_list = list(set([x[2] for x in provider_filter]))
+    # Loop over rows with an upstream stage code:
     for index, row in process_df.loc(axis=0)[:, :, sc_list].iterrows():
         # New Issue #150, try first to match regional construction. Fall back
         # is US average.
         if "_const" in index[2]:
             try:
+                # Extract upstream regional construction process info
+                u_key = index[2] + " - " + index[0]
                 provider_dict = {
-                    "name": upstream_dict[index[2] + " - " +index[0]]["name"],
-                    "categoryPath": upstream_dict[index[2] + " - " +index[0]]["category"],
+                    "name": upstream_dict[u_key]["name"],
+                    "categoryPath": upstream_dict[u_key]["category"],
                     "processType": "UNIT_PROCESS",
-                    "@id": upstream_dict[index[2] + " - " +index[0]]["uuid"],
+                    "@id": upstream_dict[u_key]["uuid"],
                 }
             except KeyError:
+                # Fall back on the U.S. average process
+                u_key2 = index[2]
                 provider_dict = {
-                    "name": upstream_dict[index[2]]["name"],
-                    "categoryPath": upstream_dict[index[2]]["category"],
+                    "name": upstream_dict[u_key2]["name"],
+                    "categoryPath": upstream_dict[u_key2]["category"],
                     "processType": "UNIT_PROCESS",
-                    "@id": upstream_dict[index[2]]["uuid"],
+                    "@id": upstream_dict[u_key2]["uuid"],
                 }
         else:
             provider_dict = {
@@ -1560,15 +1576,18 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
                 "processType": "UNIT_PROCESS",
                 "@id": upstream_dict[index[2]]["uuid"],
             }
+        # Create the upstream flow and make the upstream process the provider.
         row["exchanges"][0]["provider"] = provider_dict
         row["exchanges"][0]["unit"] = unit(
             upstream_dict[index[2]]["q_reference_unit"]
         )
         row["exchanges"][0]["FlowType"] = "PRODUCT_FLOW"
+        # Copy the upstream process into the power plant process as an exchange.
         process_df.loc[index[0], index[1], "Power plant"]["exchanges"].append(
             row["exchanges"][0])
 
-    # These are now only power plant stage codes (and life cycle for CAN)
+    # Remove upstream processes from data frame; they are now provider in the
+    # exchange table of the power plant generation processes.
     process_df = process_df.drop(provider_filter)
     process_df.reset_index(inplace=True)
 
@@ -1591,11 +1610,13 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
     )
 
     # HOTFIX: construction processes are handled in upstream_dict.py;
-    # remove filter and assignment from here.
+    # filter and assignment removed from here.
     if region_agg is None:
         process_df["location"] = "US"
         process_df["description"] = (
-            "Electricity from "
+            # Use 'life cycle' in place of 'cradle-to-gate'; see iss328
+            "This process represents the life cycle inventory "
+            + "for the production of electricity from "
             + process_df[fuel_agg].squeeze().values
             + " produced at generating facilities in the US."
         )
@@ -1604,38 +1625,48 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         )
     else:
         # HOTFIX: remove .values, which throws ValueError [2023-11-13; TWD]
-        process_df["location"] = process_df[region_agg]
-        process_df["description"] = (
-            "Electricity from "
-            + process_df[fuel_agg].squeeze().values
-            + " produced at generating facilities in the "
-            + process_df[region_agg].squeeze().values
-            + " region."
-        )
+        # Update the intro statement for generation processes [26.02.27; TWD]
         process_df["name"] = (
             "Electricity - "
             + process_df[fuel_agg].squeeze().values
             + " - "
             + process_df[region_agg].squeeze().values
         )
+        process_df["location"] = process_df[region_agg]
 
-    # Add model reference and version number
-    process_df["description"] += (
-        " This process was created with ElectricityLCI "
-        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
-        + " using the " + model_specs.model_name + " configuration."
-    )
-    process_df["version"] = make_valid_version_num(elci_version)
+        # Try for a better Canadian generation description [26.03.11; TWD]
+        is_canada = process_df[fuel_agg[0]] == "ALL"
+        not_canada = ~(is_canada)
 
-    # TODO: use `process_description_creation` from process_dictionary_writer to fill in this portion; note that the default text below is captured in the return string from that method.
+        process_df.loc[not_canada, "description"] = (
+            # Use 'life cycle' in place of 'cradle-to-gate'; see iss328
+            "This process represents the life cycle inventory "
+            + "for the production of "
+            + process_df.loc[not_canada, fuel_agg].squeeze().values
+            + "-powered electricity produced at generating facilities in the "
+            + process_df.loc[not_canada, region_agg].squeeze().values
+            + " region.\n"
+        )
+        process_df.loc[is_canada, "description"] = (
+            # Canadian processes are basically roll-ups; okay to be C2G.
+            "This process represents the cradle-to-gate inventory "
+            + "for the production of electricity in the Canadian region of "
+            + process_df.loc[is_canada, region_agg].squeeze().values
+            + ".\n"
+        )
+
+    # HOTFIX: remove duplicate eLCI model reference & version number---
+    # this is represented in the 'description' key in processDocumentation.
 
     # Create the dictionaries for process documentation based on fuel type.
-    # NOTE: this creates process-level DQI (5;5)
+    # NOTE: this defines the process-level DQI
     process_df["processDocumentation"] = [
         process_doc_creation(x) for x in list(
             process_df["FuelCategory"].str.lower())
     ]
 
+    # Append YAML descriptions to generating processes (e.g., biomass,
+    # geothermal, hydro, solar, solarthermal, wind).
     process_df["description"] += [
         "\n" + x["description"] for x in process_df["processDocumentation"]
     ]
@@ -1650,10 +1681,12 @@ def olcaschema_genprocess(database, upstream_dict={}, subregion="BA"):
         "processDocumentation",
         "processType",
         "name",
-        "version",
+        "version",     # NEW--- failed to find this column [26.02.26; TWD]
         "category",
         "description",
     ]
+    # HOTFIX: make sure all columns are represented [26.02.26; TWD]
+    process_cols = [x for x in process_cols if x in process_df.columns]
     result = process_df[process_cols].to_dict("index")
 
     return result
@@ -1745,10 +1778,9 @@ def turn_data_to_dict(data, upstream_dict):
     ----------
     data : pandas.DataFrame
         A multi-row data frame containing aggregated emissions to be turned
-        into openLCA unit processes. Columns include the follow (as defined by
-        `ng_agg_cols` in :func:`olcaschema_genprocess`):
+        into openLCA unit processes. Columns include the following (as defined
+        by `ng_agg_cols` in :func:`olcaschema_genprocess`):
 
-        - stage_code
         - FlowName
         - FlowUUID
         - Compartment
@@ -1766,6 +1798,9 @@ def turn_data_to_dict(data, upstream_dict):
         - Emission_factor
         - GeomMean
         - GeomSD
+
+        The data.name should return the group tuple (e.g., balancing authority
+        name, fuel category, stage code).
 
     upstream_dict : dict
         Dictionary as created by upstream_dict.py, containing the openLCA
@@ -1801,12 +1836,13 @@ def turn_data_to_dict(data, upstream_dict):
 
     # HOTFIX: remove exchanges that have NaNs for Emission_factor;
     #   they crash openLCA. [240813; TWD]
-    #   https://github.com/USEPA/ElectricityLCI/issues/246
+    #   https://github.com/NETL-RIC/ElectricityLCI/issues/246
     num_nans = data['Emission_factor'].isna().sum()
     if num_nans > 0:
         logging.info("Removing %d nans from exchange table" % num_nans)
     data = data.dropna(subset='Emission_factor')
 
+    # Create new columns and fill with relevant info
     data["internalId"] = ""
     data["@type"] = "Exchange"
     data["avoidedProduct"] = False
@@ -1830,8 +1866,8 @@ def turn_data_to_dict(data, upstream_dict):
     data.loc[input_filter, "input"] = True
 
     # Define products based on compartment label
-    # HOTFIT: input compartment tends to be technosphere flow
-    product_filter=(
+    # HOTFIX: input compartment tends to be technosphere flow
+    product_filter = (
         (data["Compartment"].str.lower().str.contains("technosphere"))
         | (data["Compartment"].str.lower().str.contains("valuable"))
         | (data["Compartment"].str.lower().str.contains("input"))
@@ -1844,9 +1880,11 @@ def turn_data_to_dict(data, upstream_dict):
     )
     data.loc[waste_filter, "FlowType"] = "WASTE_FLOW"
 
-    data["flow"] = ""
-    data["uncertainty"] = ""
+    # HOTFIX: pandas 3 has dedicated 'str' datatype; use None for generic object
+    data["flow"] = None
+    data["uncertainty"] = None
     for index, row in data.iterrows():
+        # Reminder: use '.at' to assign dictionary as a single row/col's value
         data.at[index, "uncertainty"] = uncertainty_table_creation(
             data.loc[index:index, :]
         )
@@ -1859,17 +1897,15 @@ def turn_data_to_dict(data, upstream_dict):
     data["quantitativeReference"] = False
 
     # Pull pedigree matrix values for DQI
+    # HOTFIX: this assumes the first row's DQI value is the same for all
+    # rows; however, each flow has its own DQI values [260109; TWD]
     data["dqEntry"] = (
         "("
-        + str(round(data["DataReliability"].iloc[0], 1))
-        + ";"
-        + str(round(data["TemporalCorrelation"].iloc[0], 1))
-        + ";"
-        + str(round(data["GeographicalCorrelation"].iloc[0], 1))
-        + ";"
-        + str(round(data["TechnologicalCorrelation"].iloc[0], 1))
-        + ";"
-        + str(round(data["DataCollection"].iloc[0], 1))
+        + data['DataReliability'].round().astype(int).astype(str) + ';'
+        + data['TemporalCorrelation'].round().astype(int).astype(str) + ';'
+        + data['GeographicalCorrelation'].round().astype(int).astype(str) + ';'
+        + data['TechnologicalCorrelation'].round().astype(int).astype(str) + ';'
+        + data['DataCollection'].round().astype(int).astype(str)
         + ")"
     )
     data["pedigreeUncertainty"] = ""

@@ -15,6 +15,9 @@ from electricitylci.globals import data_dir
 from electricitylci.eia923_generation import eia923_download_extract
 from electricitylci.generation import add_temporal_correlation_score
 from electricitylci.model_config import model_specs
+from electricitylci.utils import filter_out_zero
+
+
 ##############################################################################
 # MODULE DOCUMENTATION
 ##############################################################################
@@ -22,10 +25,19 @@ __doc__ = """This module generates the annual upstream emissions from the
 extraction, processing, and transportation of uranium for each nuclear plant
 in EIA-923.
 
+The upstream nuclear life cycle inventory is based on NETL unit processes,
+which were updated, and ecoinvent inventory (where NETL UPs were not
+available). The cradle-to-grave supply chain was modeled in Sphera's GaBi LCA
+software. Stage 1 (EU and US uranium enrichment chain) and Stage 2 (fuel
+assembly transport) were rolled up into a system process, scaled based on 1 MWh
+of nuclear power generated. This inventory is saved in the nuclear_lci.csv
+provided in the ElectricityLCI repository's data folder and represents
+activities conducted in 2020.
+
 Created:
     2019-05-31
 Last updated:
-    2024-01-10
+    2024-02-24
 """
 __all__ = [
     "generate_upstream_nuc",
@@ -43,7 +55,7 @@ def generate_upstream_nuc(year):
     Notes
     -----
     Depends on data file, nuclear_lci.csv, which contains the upstream
-    emission impacts of a kilogram of uranium.
+    emission impacts associated with 1 MWh of nuclear fuel, at plant.
 
     Parameters
     ----------
@@ -56,32 +68,43 @@ def generate_upstream_nuc(year):
     """
     # Get the EIA generation data for the specified year, this dataset includes
     # the fuel consumption for generating electricity for each facility
-    # and fuel type. Filter the data to only include NG facilities and on
-    # positive fuel consumption. Group that data by Plant Id as it is possible
-    # to have multiple rows for the same facility and fuel based on different
-    # prime movers (e.g., gas turbine and combined cycle).
+    # and fuel type.
     eia_generation_data = eia923_download_extract(year)
 
+    # Filter the data on NUC facilities and on positive fuel consumption.
+    # NOTE:
+    # - 62 unique plants in 2016.
+    # - 58 unique plants in 2020.
+    # - 56 unique plants in 2021.
+    # - 55 unique plants in 2022.
+    # - 54 unique plants in 2023.
     column_filt = (eia_generation_data["Reported Fuel Type Code"] == "NUC") & (
         eia_generation_data["Net Generation (Megawatthours)"] > 0
     )
     nuc_generation_data = eia_generation_data[column_filt]
 
-    nuc_generation_data = (
-        nuc_generation_data.groupby("Plant Id")
-        .agg({"Net Generation (Megawatthours)": "sum"})
-        .reset_index()
-    )
+    # Group data by Plant Id in case multiple rows exist for the same facility
+    # and fuel (e.g., based on different prime movers.
+    # NOTE: This was not identified in years 2016, 2020--2023 [26.02.18; TWD]
+    nuc_generation_data = nuc_generation_data.groupby("Plant Id").agg(
+        {"Net Generation (Megawatthours)": "sum"}).reset_index()
+
     nuc_generation_data["Plant Id"] = nuc_generation_data[
         "Plant Id"].astype(int)
 
     # Read the nuclear LCI file
+    # NOTE: 2016 LCI has 1772 rows where 421 rows have zero flow amount.
     nuc_lci = pd.read_csv(
         os.path.join(data_dir, "nuclear_lci.csv"),
         index_col=0,
         low_memory=False
     )
-    nuc_lci.dropna(subset=["compartment"],inplace=True)
+
+    # HOTFIX: remove zero-flows from LCI [26.02.24; TWD]
+    nuc_lci = filter_out_zero(nuc_lci, 'FlowAmount')
+
+    # NOTE: the 14 flows without compartment data have no flow amounts
+    nuc_lci.dropna(subset=["compartment"], inplace=True)
 
     # There is no column to merge the inventory and generation data on,
     # so we iterate through the plants and make a new column in the lci
@@ -126,8 +149,6 @@ def generate_upstream_nuc(year):
     nuc_merged["Source"]="netlnuceiafuel"
 
     # Issue #296 - adding DQI information for upstream processes
-    # Setting year to be equal to the year that the costs were generated
-    # to develop this USEEIO-based inventory
     nuc_merged["Year"] = 2016
     nuc_merged["DataReliability"] = 3
     nuc_merged["TemporalCorrelation"] = add_temporal_correlation_score(
@@ -136,10 +157,10 @@ def generate_upstream_nuc(year):
     nuc_merged["GeographicalCorrelation"] = 3
     nuc_merged["TechnologicalCorrelation"] = 3
     nuc_merged["DataCollection"] = 4
-    #3/20/2025 MBJ - replacing 2016 here so that temporal correlation
-    #is based on the year the inventory is based on, but when electricity
-    #generation is combined, it needs to be based on the target year for the
-    #inventory.
+    # 3/20/2025 MBJ - replacing 2016 here so that temporal correlation
+    # is based on the year the inventory is based on, but when electricity
+    # generation is combined, it needs to be based on the target year for the
+    # inventory.
     nuc_merged["Year"] = year
     return nuc_merged
 

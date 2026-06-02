@@ -99,8 +99,8 @@ generation.py:
               - 2016
 # One of these has been an issue since 2016 - Issue #190.
 # 60822 is an industrial facility, specifically electronics manufacturing
-# that has signficant SF6 emissions. Since these emissions aren't expected to
-# come from solar power generation in any signficant quantities, we'll just
+# that has significant SF6 emissions. Since these emissions aren't expected to
+# come from solar power generation in any significant quantities, we'll just
 # remove for now.
         entry_8:
           edit_type: "remove"
@@ -137,3 +137,26 @@ generation.py:
             Source:
               - "TRI"
               - "NEI"
+# Heavy-handed method to remove Hawaii balancing authority from generation
+# data; see Issue 276 for current decision [26.02.06; TWD]
+        entry_11:
+          edit_type: "remove"
+          data_source: "yaml"
+          filters:
+            Balancing Authority Code:
+              - "HECO"
+# Entries 12 & 13 drop the elevated Chloromethane air emissions from WI hydro
+# power plants; see Issue 324.
+        entry_12:
+          edit_type: "remove"
+          data_source: "yaml"
+          filters:
+            eGRID_ID:
+              - 3971
+              - 3974
+            FlowName:
+              - "Chloromethane"
+            Source:
+              - "NEI"
+            Year:
+               - 2020

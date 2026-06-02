@@ -7,57 +7,59 @@ Pre-configured model specifications are included (in the modelconfig directory o
 The created LCI models are exported for use in standard life cycle assessment software (i.e., in JSON-LD format using the openLCA v2.0 schema).
 
 This code was created as part of a collaboration between US EPA Office of Research and Development (USEPA) and the National Energy Technology Laboratory (NETL) with contributions from the National Renewable Energy Laboratory (NREL) and support from Eastern Research Group (ERG).
-More information on this effort can be found in the [Framework for an Open-Source Life Cycle Baseline for Electricity Consumption in the United States](https://netl.doe.gov/energy-analysis/details?id=4004).
+More information on this effort can be found in the [Framework for an Open-Source Life Cycle Baseline for Electricity Consumption in the United States](https://www.osti.gov/biblio/1576767).
 
 ## Disclaimer
 
-    This United States Environmental Protection Agency (EPA) and National Energy
+    This United States Department of Energy (DOE) and National Energy
     Technology Laboratory (NETL) GitHub project code is provided on an "as is"
-    basis and the user assumes responsibility for its use. EPA and NETL have
-    relinquished control of the information and no longer has responsibility to
+    basis and the user assumes responsibility for its use. DOE and NETL have
+    relinquished control of the information and no longer have responsibility to
     protect the integrity, confidentiality, or availability of the information.
     Any reference to specific commercial products, processes, or services by
     service mark, trademark, manufacturer, or otherwise, does not constitute or
-    imply their endorsement, recommendation or favoring by EPA or NETL.
+    imply their endorsement, recommendation or favoring by DOE or NETL.
 
 # Setup
-A Python virtual environment (recommended v3.12) is required with the following packages installed, which were recorded in February 2025.
+A Python environment (recommended v3.12) is required with the following packages installed, which were recorded in March 2026.
+Dependency versions change.
+Note asterisks beside versions of esupy, fedelemflowlist, and StEWI that were used in the latest model development.
 _Note that Python 3.14 is not supported (yet)._
 
-+ `pip install git+https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List#egg=fedelemflowlist`
++ `pip install pandas==2.2.3`
++ `pip install git+https://github.com/FLCAC-admin/fedelemflowlist`
     * Successfully installs:
         + appdirs-1.4.4
-        + boto3-1.36.18
-        + botocore-1.36.18
-        + certifi-2025.1.31
-        + charset-normalizer-3.4.1
-        + esupy-0.4.0
-        + fedelemflowlist-1.3.0
-        + idna-3.10
-        + jmespath-1.0.1
-        + numpy-2.2.2
+        + boto3-1.42.37
+        + botocore-1.42.37
+        + certifi-2026.1.4
+        + charset-normalizer-3.4.4
+        + esupy-0.4.2 (*)
+        + fedelemflowlist-1.3.1 (*)
+        + idna-3.11
+        + jmespath-1.1.0
+        + numpy-2.4.1
         + olca-schema-2.4.0
-        + pandas-2.2.3
-        + pyarrow-19.0.0
+        + pyarrow-23.0.0
         + python-dateutil-2.9.0
-        + pytz-2025.1
-        + PyYAML-6.0.2
-        + requests-2.32.3
-        + s3transfer-0.11.2
+        + PyYAML-6.0.3
+        + requests-2.32.5
+        + s3transfer-0.16.0
         + six-1.17.0
-        + tzdata-2025.1
-        + urllib3-2.3.0
+        + tzdata-2025.3
+        + urllib3-2.6.3
 + `pip install git+https://github.com/USEPA/standardizedinventories#egg=StEWI`
     * Successfully installed:
-        + StEWI-1.1.4
-        + beautifulsoup4-4.12.3
+        + StEWI-1.2.1 (*)
         + et-xmlfile-2.0.0
         + openpyxl-3.1.5
-        + soupsieve-2.5
-        + xlrd-2.0.1
+        + xlrd-2.0.2
 + `pip install scipy`
     * Successfully installs:
-        + scipy-1.15.1
+        + scipy-1.17.0
++ `pip install pytz`
+    * Successfully installs:
+        + pytz-2025.2
 
 # API
 In the latest version of ElectricityLCI, there is a dependency on three external datasets that require the use of an application programming interface (API) key.
@@ -74,8 +76,8 @@ Request a free API key by registering at the following address.
 
 - https://www.eia.gov/opendata/.
 
-NETL's coal transportation inventory update is provided through a public URL on [EDX](https://edx.netl.doe.gov), found within the [Life Cycle Analysis](https://edx.netl.doe.gov/group/life-cycle-analysis) group.
-An automated download of the Excel workbook will trigger a request for an EDX API key.
+NETL's upstream inventory data (e.g., coal transportation and natural gas extraction and processing) are provided through public URLs on [EDX](https://edx.netl.doe.gov), found within the [Life Cycle Analysis](https://edx.netl.doe.gov/group/life-cycle-analysis) group.
+An automated download of the Excel workbooks will trigger a request for an EDX API key.
 API keys require registration.
 
 - https://edx.netl.doe.gov/user/register
@@ -116,7 +118,7 @@ The `main()` method has four steps:
 1. `build_model_config()`
     - Prompts the user to select one of the model configurations.
     - The 2016 baseline configurations are:
-        * ELCI_1
+        * ELCI_1 (_Fed Commons published version_)
         * ELCI_2
         * ELCI_3
     - Version 2 baselines include:
@@ -141,28 +143,30 @@ The `main()` method has four steps:
     - Creates the at-user consumption mix processes (based on calculated transmission and distribution losses)
 4. `run_post_processes()`
     - Cleans the JSON-LD files (e.g., removing zero-value product flows, removing untracked flows, correcting flow categories, and creating consecutive internal exchange IDs)
+    - Generates residual electricity mix processes (based on public sales data provided by O'Shaughnessy et al., 2025).
     - Builds the product systems for balancing authority areas, FERC regions, and US.
 
 # Known Issues
-See Appendix A in [this discussion](https://github.com/USEPA/ElectricityLCI/discussions/288) for an overview of unresolved issues in version 2.
+See Appendix A in [this discussion](https://github.com/NETL-RIC/ElectricityLCI/discussions/288) for an overview of unresolved issues in version 2.
 
 # Troubleshooting
-If you receive a TypeError in `write_jsonld`, got unexpected keyword argument 'zw', then it's likely you have an outdated version of [fedelemflowlist](https://github.com/USEPA/fedelemflowlist).
-Please ensure these USEPA packages are up-to-date:
+If you receive a TypeError in `write_jsonld`, got unexpected keyword argument 'zw', then it's likely you have an outdated version of [fedelemflowlist](https://github.com/FLCAC-admin/fedelemflowlist).
 
-- esupy
-- fedelemflowlist
-- stewi
+Please ensure these additional USEPA packages are up-to-date:
 
-If GitHub-hosted packages fail to clone and install, manually downloading the zip files, extracting them, and running the pip install command within package folder also works (see snippet below for example for older version of fedelemflowlist).
+- [esupy](https://github.com/USEPA/esupy)
+- [stewi](https://github.com/USEPA/standardizedinventories)
+
+If GitHub-hosted packages fail to clone and install, manually downloading the zip files, extracting them, and running the `pip install .` command within package folder also works (see snippet below for example for older version of fedelemflowlist).
 
 ```bash
 # Download the correct version of the repo
-wget https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List/archive/refs/tags/v1.1.2.zip
+wget https://github.com/FLCAC-admin/fedelemflowlist/archive/refs/tags/v1.1.2.zip
 unzip v1.1.2.zip
-cd cd Federal-LCA-Commons-Elementary-Flow-List-1.1.2/
+cd cd fedelemflowlist-1.1.2/
 pip install .
 ```
+
 
 # Data Store
 This package downloads a significant amount of background and inventory data (>2.5 GB) in order to process electricity baselines.
@@ -190,18 +194,18 @@ The application folder for this package is 'electricitylci'.
 Inventory data is provided by USEPA's Standardized Emission and Waste Inventories ([StEWI](https://github.com/USEPA/standardizedinventories)) package (via stewicombo).
 The inventory data associated with StEWI are stored in the application folders, 'stewi' and 'stewicombo'.
 
-Flow mapping is handled using USEPA's Federal Elementary Flow List Python package and is saved in the application folder 'fedelemflowlist'.
+Flow mapping is handled using Federal LCA Commons's Federal Elementary Flow List Python package and is saved in the application folder 'fedelemflowlist'.
 
-The following is an example of the 181 data files downloaded from running the 2020 configuration file (updated in May 2025).
+The following is an example of the data files downloaded from running the 2023 configuration file (updated in March 2026).
 EIA Form 860 Excel workbooks have worksheets that are summarized into CSV files for speed.
 Note that once downloaded, these files are referenced (and not downloaded again) unless a different year of data is referenced in a configuration file.
 
     users_data_dir/                <- Folder as defined by appdirs
     ├── electricitylci/            <- Support data (183 MB) and outputs (80 MB)
     │   ├── bulk_data/
-    │   │   ├── eia_bulk_demand_2020.json (0.5 MB)
-    │   │   ├── eia_bulk_id_2020.json (2.6 MB)
-    │   │   └── eia_bulk_netgen_2020.json (0.6 MB)
+    │   │   ├── eia_bulk_demand_2023.json (0.5 MB)
+    │   │   ├── eia_bulk_id_2023.json (2.6 MB)
+    │   │   └── eia_bulk_netgen_2023.json (0.6 MB)
     │   │
     │   ├── cer_rer/
     │   │   └── electricity-trade-summary-resume-echanges-commerciaux-electricite.xlsx (100 KB)
@@ -222,41 +226,41 @@ Note that once downloaded, these files are referenced (and not downloaded again)
     │   │   ├── Form EIA-860 Insturctions (2016).pdf (0.4 MB)
     │   │   └── LayoutY2016.xlsx (0.2 MB)
     │   │
-    │   ├── eia860_2019/
-    │   │   ├── 1___Utility_Y2019.xlsx (0.4 MB)
-    │   │   ├── 2___Plant_Y2019.csv (3.2 MB)
-    │   │   ├── 2___Plant_Y2019.xlsx (3.1 MB)
-    │   │   ├── 3_1_Generator_Y2019.xlsx (8.7 MB)
-    │   │   ├── 3_2_Wind_Y2019.xlsx (0.2 MB)
-    │   │   ├── 3_3_Solar_Y2019.xlsx (0.8 MB)
-    │   │   ├── 3_4_Energy_Storage_Y2019.xlsx (48 KB)
-    │   │   ├── 3_5_Multifuel_Y2019.xlsx (0.7 MB)
-    │   │   ├── 4___Owner_Y2019.xlsx (0.4 MB)
-    │   │   ├── 6_1_EnviroAssoc_Y2019.xlsx (1.2 MB)
-    │   │   ├── 6_2_EnviroEquip_Y2019.xlsx (2.9 MB)
-    │   │   ├── EIA-860 Form.xlsx (3.1 MB)
-    │   │   ├── EIA-860 instruction.pdf (0.6 MB)
-    │   │   └── LayoutY2019.xlsx (0.2 MB)
-    │   │
     │   ├── eia860_2020/
     │   │   ├── 1___Utility_Y2020.xlsx (0.4 MB)
     │   │   ├── 2___Plant_Y2020.csv (3.4 MB)
     │   │   ├── 2___Plant_Y2020.xlsx (3.3 MB)
     │   │   ├── 3_1_Generator_Y2020.xlsx (9.0 MB)
-    │   │   ├── 3_1_Generator_Y2020_generator_operable.csv (5.2 MB)
     │   │   ├── 3_2_Wind_Y2020.xlsx (0.2 MB)
     │   │   ├── 3_3_Solar_Y2020.xlsx (1.0 MB)
     │   │   ├── 3_4_Energy_Storage_Y2020.xlsx (60 KB)
     │   │   ├── 3_5_Multifuel_Y2020.xlsx (0.7 MB)
     │   │   ├── 4___Owner_Y2020.xlsx (0.4 MB)
     │   │   ├── 6_1_EnviroAssoc_Y2020.xlsx (1.2 MB)
-    │   │   ├── 6_1_EnviroAssoc_Y2020_boiler_nox.csv (0.1 MB)
-    │   │   ├── 6_1_EnviroAssoc_Y2020_boiler_so2.csv (64 KB)
     │   │   ├── 6_2_EnviroEquip_Y2020.xlsx (2.9 MB)
-    │   │   ├── 6_2_EnviroEquip_Y2020_boiler_info.csv (0.6 MB)
     │   │   ├── EIA-860 Form.xlsx (3.1 MB)
     │   │   ├── EIA-860 Instructions.pdf (0.8 MB)
     │   │   └── LayoutY2020.xlsx (0.2 MB)
+    │   │
+    │   ├── eia860_2023/
+    │   │   ├── 1___Utility_Y2023.xlsx (0.5 MB)
+    │   │   ├── 2___Plant_Y2023.csv (4.0 MB)
+    │   │   ├── 2___Plant_Y2023.xlsx (3.9 MB)
+    │   │   ├── 3_1_Generator_Y2023.xlsx (10.0 MB)
+    │   │   ├── 3_1_Generator_Y2023_generator_operable.csv (5.8 MB)
+    │   │   ├── 3_2_Wind_Y2023.xlsx (0.2 MB)
+    │   │   ├── 3_3_Solar_Y2023.xlsx (1.4 MB)
+    │   │   ├── 3_4_Energy_Storage_Y2023.xlsx (0.3 KB)
+    │   │   ├── 3_5_Multifuel_Y2023.xlsx (0.7 MB)
+    │   │   ├── 4___Owner_Y2023.xlsx (0.5 MB)
+    │   │   ├── 6_1_EnviroAssoc_Y2023.xlsx (1.2 MB)
+    │   │   ├── 6_1_EnviroAssoc_Y2023_boiler_nox.csv (0.1 MB)
+    │   │   ├── 6_1_EnviroAssoc_Y2023_boiler_so2.csv (0.1 MB)
+    │   │   ├── 6_2_EnviroEquip_Y2023.xlsx (2.7 MB)
+    │   │   ├── 6_2_EnviroEquip_Y2023_boiler_info.csv (0.6 MB)
+    │   │   ├── EIA-860 Form.xlsx (0.4 MB)
+    │   │   ├── EIA-860 Instructions.pdf (0.7 MB)
+    │   │   └── LayoutY2023.xlsx (0.1 MB)
     │   │
     │   ├── eia930/
     │   │   └── EIA930_Reference_Tables.xlsx (43 KB)
@@ -264,14 +268,14 @@ Note that once downloaded, these files are referenced (and not downloaded again)
     │   ├── energyfutures/
     │   │   └── electricity-generation-2023.csv (1.0 MB)
     │   │
-    │   ├── epacems2020/                     <- 48 lower states + D.C. (0.1 MB)
-    │   │   ├── epacems2020al.zip (2 KB)
-    │   │   ├── epacems2020ar.zip (2 KB)
+    │   ├── epacems2023/                     <- 48 lower states + D.C. (0.1 MB)
+    │   │   ├── epacems2023al.zip (2 KB)
+    │   │   ├── epacems2023ar.zip (2 KB)
     │   │   ├── ...
-    │   │   └── epacems2020wy.zip (1 KB)
+    │   │   └── epacems2023wy.zip (1 KB)
     │   │
-    │   ├── f7a_2020/
-    │   │   └── coalpublic2020.xls (0.2 MB)
+    │   ├── f7a_2023/
+    │   │   └── coalpublic2023.xls (0.1 MB)
     │   │
     │   ├── f923_2016/
     │   │   ├── EIA923_Schedule_8_Annual_Environmental_Information_\
@@ -282,88 +286,94 @@ Note that once downloaded, these files are referenced (and not downloaded again)
     │   │   └── EIA923_Schedules_6_7_NU_SourceNDisposition_\
     │   │         2016_Final_Revision.xlsx (0.7 MB)
     │   │
-    │   ├── f923_2019/
-    │   │   ├── EIA923_Schedule_8_Annual_Environmental_Information_\
-    │   │   │     2019_Final_Revision.xlsx (3.1 MB)
-    │   │   ├── EIA923_Schedules_2_3_4_5_M_12_2019_Final_Revision.xlsx (19 MB)
-    │   │   ├── EIA923_Schedules_2_3_4_5_M_12_2019_Final_\
-    │   │   │     Revisionpage_1.csv (8.1 MB)
-    │   │   └── EIA923_Schedules_6_7_NU_SourceNDisposition_\
-    │   │         2019_Final_Revision.xlsx (0.9 MB)
-    │   │
     │   ├── f923_2020/
     │   │   ├── EIA923_Schedule_8_Annual_Environmental_Information_\
     │   │   │     2020_Final_Revision.xlsx (3.0 MB)
-    │   │   ├── EIA923_Schedule_8_Annual_Environmental_Information_\
-    │   │   │     2020_Final_Revision_page_8c.csv (0.6 MB)
     │   │   ├── EIA923_Schedules_2_3_4_5_M_12_2020_Final_Revision.xlsx (18 MB)
     │   │   ├── EIA923_Schedules_2_3_4_5_M_12_\
-    │   │   │     2020_Final_Revision_page_1.csv (8.4 MB)
-    │   │   ├── EIA923_Schedules_2_3_4_5_M_12_\
-    │   │   │     2020_Final_Revision_page_3.csv (3.2 MB)
-    │   │   ├── EIA923_Schedules_2_3_4_5_M_12_\
-    │   │   │     2020_Final_Revision_page_5_reduced.csv (2.3 MB)
+    │   │   │     2020_Final_Revisionpage_1.csv (2.0 MB)
     │   │   └── EIA923_Schedules_6_7_NU_SourceNDisposition_\
     │   │         2020_Final_Revision.xlsx (1.0 MB)
+    │   │
+    │   ├── f923_2023/
+    │   │   ├── EIA923_Schedule_8_Annual_Envir_Info_2023_Final.xlsx (3.0 MB)
+    │   │   ├── EIA923_Schedule_8_Annual_Envir_Info_2023_Final_page_8c.csv (0.5 MB)
+    │   │   ├── EIA923_Schedules_2_3_4_5_M_12_2023_Final_Revision.xlsx (19 MB)
+    │   │   ├── EIA923_Schedules_2_3_4_5_M_12_\
+    │   │   │     2023_Final_Revision_page_1.csv (9.2 MB)
+    │   │   ├── EIA923_Schedules_2_3_4_5_M_12_\
+    │   │   │     2023_Final_Revision_page_3.csv (3.1 MB)
+    │   │   ├── EIA923_Schedules_2_3_4_5_M_12_\
+    │   │   │     2023_Final_Revision_page_5_reduced.csv (2.4 MB)
+    │   │   └── EIA923_Schedules_6_7_NU_SourceNDisposition_\
+    │   │         2023_Final_Revision.xlsx (1.2 MB)
     │   │
     │   ├── fedcommons/
     │   │   ├── dq_sources.json (0.5 KB)
     │   │   ├── dq_systems.json (6 KB)
-    │   │   ├── flow_properties.json (12 KB)
-    │   │   └── unit_groups.json (36 KB)
+    │   │   ├── flow_properties.json (10 KB)
+    │   │   ├── locations.json (99 KB)
+    │   │   └── unit_groups.json (33 KB)
     │   │
     │   ├── FRS_bridges/
-    │   │   └── NEI_2020_RCRAInfo_2019_TRI_2020_eGRID_2020.csv (0.3 MB)
+    │   │   └── NEI_2020_RCRAInfo_2023_TRI_2023_eGRID_2023.csv (0.3 MB)
     │   │
     │   ├── netl/
-    │   │   └── Transportation_Inventories_02262025.xlsx (0.5 MB)
+    │   │   ├──Transportation_Inventories_02262025.xlsx (0.5 MB)
+    │   │   └── 2020_ng/
+    │   │       ├── ng_lci_2020rev1.csv (43 KB)
+    │   │       └── 2020_ng_model/
+    │   │           ├── Appendix_F_2020_Full_Inventory_Results_Midwest_\
+    │   │           │   ProdThruTrans.xlsx (14 MB)
+    │   │           ├── Appendix_F_2020_Full_Inventory_Results_Northeast_\
+    │   │           │   ProdThruTrans.xlsx (11 MB)
+    │   │           ├── Appendix_F_2020_Full_Inventory_Results_Pacific_\
+    │   │           │   ProdThruTrans.xlsx (3 MB)
+    │   │           ├── Appendix_F_2020_Full_Inventory_Results_Rocky_Mountain_\
+    │   │           │   ProdThruTrans.xlsx (3 MB)
+    │   │           ├── Appendix_F_2020_Full_Inventory_Results_Southeast_\
+    │   │           │   ProdThruTrans.xlsx (13 MB)
+    │   │           └── Appendix_F_2020_Full_Inventory_Results_Southwest_\
+    │   │               ProdThruTrans.xlsx (13 MB)
     │   │
     │   ├── output/                              <- ELCI model results
-    │   │   ├── BAA_final_trade_2020.csv (69 KB)
+    │   │   ├── BAA_final_trade_2023.csv (67 KB)
     │   │   ├── elci.log (0 KB)
-    │   │   ├── elci.log.1 (112 MB)
-    │   │   ├── ELCI_2020_jsonld_20250528_142931.zip (23 MB)
-    │   │   └── ferc_final_trade_2020.csv (18 KB)
+    │   │   ├── elci.log.1 (106 MB)
+    │   │   ├── ELCI_2023_jsonld_20260326_140109.zip (22 MB)
+    │   │   └── ferc_final_trade_2023.csv (17 KB)
     │   │
-    │   └── t_and_d_2020/                         <- 50 states (4.3 MB)
+    │   └── t_and_d_2023/                         <- 50 states (4.3 MB)
     │       ├── ak.xlsx (84 KB)
     │       ├── al.xlsx (89 KB)
     │       ├── ...
     │       └── wy.xlsx (83 KB)
     │
-    ├── fedelemflowlist/                 <- Flow mapping data (14 MB)
-    │   └── FedElemFlowListMaster_v1.2.0_e57a542.parquet (14 MB)
+    ├── facilitymatcher/                 <- Facility mapping data (1.1 GB)
+    │   └── FRS Data Files/
+    │       ├── NATIONAL_ENVIRONMENTAL_INTEREST_FILE_v1.2.1_metadata.json
+    │       └── NATIONAL_ENVIRONMENTAL_INTEREST_FILE.CSV
     │
-    ├── stewi/                           <- Inventory data / metadata (45 MB)
-    │   ├── facility/
-    │   │   ├── eGRID_2020_v1.1.3_6710a0f.parquet (0.7 MB)
-    │   │   ├── NEI_2020_v1.1.0_084a311.parquet (6.0 MB)
-    │   │   ├── RCRAInfo_2019_v1.0.5_f40a6aa.parquet (1.3 MB)
-    │   │   └── TRI_2020_v1.1.0_084a311.parquet (1.8 MB)
-    │   │
-    │   ├── flowbyfacility/
-    │   │   ├── eGRID_2020_v1.1.3_6710a0f.parquet (0.5 MB)
-    │   │   ├── NEI_2020_v1.1.0_084a311.parquet (31 MB)
-    │   │   ├── RCRAInfo_2019_v1.0.5_f40a6aa.parquet (2.1 MB)
-    │   │   └── TRI_2020_v1.1.0_084a311.parquet (1.2 MB)
-    │   │
-    │   ├── eGRID_2020_v1.1.3_6710a0f_metadata.json (1 KB)
-    │   ├── NEI_2020_v1.1.0_084a311_metadata.json (3 KB)
-    │   ├── RCRAInfo_2019_v1.0.5_f40a6aa_metadata.json (1 KB)
-    │   └── TRI_2020_v1.1.0_084a311_metadata.json (1 KB)
+    ├── fedelemflowlist/                 <- Flow mapping data (14 MB)
+    │   └── FedElemFlowListMaster_v1.3.0_a79846d.parquet (14 MB)
+    │
+    ├── stewi/                           <- Inventory data / metadata
+    │   ├── eGRID_2023_v1.2.1_3687292_metadata.json (1 KB)
+    │   └── facility/
+    │       └── eGRID_2023_v1.2.1_3687292.parquet (0.7 MB)
     │
     └── stewicombo/      <- Data / metadata generated by stewicombo
-        ├── ELCI_2020_v1.1.2.parquet (2.2 MB)
-        └── ELCI_2020_v1.1.2_metadata.json (7 KB)
+        ├── ELCI_2023_v1.2.1_3687292.parquet (1.9 MB)
+        └── ELCI_2023_v1.2.1_3687292_metadata.json (7 KB)
 
 # Developer's Corner
 
 To install the dependencies for this package without installing the package itself, put the following in a text file, called requirements.txt
 
-    fedelemflowlist @ git+https://github.com/USEPA/Federal-LCA-Commons-Elementary-Flow-List#egg=fedelemflowlist
+    fedelemflowlist @ git+https://github.com/FLCAC-Admin/fedelemflowlist
     StEWI @ git+https://github.com/USEPA/standardizedinventories#egg=StEWI
     scipy>=1.10
-
+    pytz
 
 To checkout a pull request locally for testing:
 

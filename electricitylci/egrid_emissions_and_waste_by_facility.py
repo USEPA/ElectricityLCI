@@ -79,7 +79,7 @@ def get_combined_stewicombo_file(model_specs):
         # relies on stewicombo, then delete the stewi and stewicombo data store
         # folders on your computer (see globals.get_datastore_dir), then run
         # try again. This will pull StEWI's pre-processed data. See GitHub
-        # issue: https://github.com/USEPA/standardizedinventories/issues/151
+        # issue: https://github.com/NETL-RIC/standardizedinventories/issues/151
         df = cbi(
             base_inventory = base_inventory,
             inventory_dict = model_specs.inventories_of_interest,

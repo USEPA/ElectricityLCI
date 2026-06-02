@@ -65,6 +65,6 @@ def distribution_mix_dictionary():
             ), exchanges_list
         )
         final = process_table_creation_distribution(reg, exchanges_list)
-        distribution_dict['Distribution' + reg] = final;
+        distribution_dict['Distribution' + reg] = final
 
     return distribution_dict

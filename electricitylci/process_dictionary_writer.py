@@ -14,6 +14,7 @@ import yaml
 import pandas as pd
 
 from electricitylci.globals import (
+    GH_URL,
     data_dir,
     electricity_flow_name_generation_and_distribution,
     electricity_flow_name_consumption,
@@ -38,7 +39,7 @@ JSON-LD format as prescribed by OpenLCA software.
 Portions of this code were cleaned using ChatGPTv3.5.
 
 Last updated:
-    2025-06-09
+    2026-03-11
 """
 __all__ = [
     'con_process_ref',
@@ -83,21 +84,31 @@ international_reg = list(pd.unique(international['Subregion']))
 
 # Read in general metadata to be used by all processes
 METADATA_FILE = "process_metadata.yml"
+'''str : The process metadata YAML file name.'''
 METADATA_PATH = os.path.join(data_dir, METADATA_FILE)
+'''str : The process metadata YAML file path.'''
+metadata = dict()
+'''dict : The dictionary of process metadata.'''
 with open(METADATA_PATH, encoding='utf-8') as f:
     metadata = yaml.safe_load(f)
 
 # Read in process location uuids
 location_UUID = pd.read_csv(os.path.join(data_dir, "location_UUIDs.csv"))
+'''pandas.DataFrame : Columns of NAME and REF_ID for locations.'''
 
 # Read in process name info
 process_name = pd.read_csv(os.path.join(data_dir, "processname_1.csv"))
+'''pandas.DataFrame : Contains naming conventions for electricity processes.'''
+
 generation_name_parts = process_name[
     process_name["Stage"] == "generation"
 ].iloc[0]
+'''pandas.Series : Naming convention for generation at facility processes.'''
+
 generation_mix_name_parts = process_name[
     process_name["Stage"] == "generation mix"
 ].iloc[0]
+'''pandas.Series : Naming convention for at-grid generation mix processes.'''
 
 generation_mix_name = (
     generation_mix_name_parts["Base name"]
@@ -106,6 +117,7 @@ generation_mix_name = (
     + "; "
     + generation_mix_name_parts["Mix type"]
 )
+'''str : At-grid electricity generation mix process name.'''
 
 fuel_mix_name = 'Electricity; at grid; USaverage'
 surplus_pool_name = "Electricity; at grid; surplus pool"
@@ -135,7 +147,7 @@ electricity_at_user_flow = {
 }
 
 OLCA_TO_METADATA = {
-    "timeDescription": None,
+    "timeDescription": "TemporalDescription",
     "validUntil": "End_date",
     "validFrom": "Start_date",
     "technologyDescription": "TechnologyDescription",
@@ -163,17 +175,20 @@ OLCA_TO_METADATA = {
     "dqSystem": None,
     "dqEntry": None
 }
+'''dict : Keys are olca-schema fields and values are YAML metadata keys.'''
 
 VALID_FUEL_CATS=[
     "default",
-    "biomass", # NEW
+    "all", # NEW (Canada generation process metadata)
+    "biomass",
     "nuclear_upstream",
     "geothermal",
-    "hydro",  # NEW
+    "hydro",
     "solar",
     "solarthermal",
     "wind",
     "consumption_mix",
+    "distribution_mix",
     "generation_mix",
     "coal_upstream",
     "gas_upstream",
@@ -185,6 +200,7 @@ VALID_FUEL_CATS=[
     "solartherm_construction_upstream",
     "wind_construction_upstream",
 ]
+'''list : List of valid fuel categories found in the process metadata YAML.'''
 
 
 ##############################################################################
@@ -407,6 +423,10 @@ def exchange_table_creation_input_usaverage(database, fuelname):
     dict
         A dictionary representing the input exchange table entry for the US
         average electricity generation mix.
+
+    Notes
+    -----
+    Referenced in generation_mix.py and utilized during :func:`run_epa_trade`.
 
     Examples
     --------
@@ -934,19 +954,28 @@ def process_description_creation(process_type="fossil"):
     except AssertionError:
         process_type = "default"
 
+    # The subkeys "replace_egrid" and "use_egrid" are relevant to:
+    # - "default" process type (e.g., at-user; consumption mix);
+    # - "consumption_mix" process type (e.g., at-grid; consumption mix)
+    # - "generation_mix" process type (e.g., at-grid, generation mix)
     if model_specs.replace_egrid is True:
         subkey = "replace_egrid"
     else:
         subkey = "use_egrid"
 
-    global year
+    # NEW: add subkey for natural gas modeling year. [26.02.18; TWD]
+    if process_type == "gas_upstream":
+        subkey = "NGI_" + str(model_specs.ng_model_year)
+
     key = "Description"
 
     try:
         desc_string = metadata[process_type][key]
     except KeyError:
         logging.debug(
-            f"Failed first key ({key}), trying subkey: {subkey}")
+            f"Failed first key ({key}) for {process_type}, "
+            f"trying subkey: {subkey}"
+        )
         try:
             desc_string = metadata[process_type][subkey][key]
             logging.debug(
@@ -960,12 +989,16 @@ def process_description_creation(process_type="fossil"):
         process_type = "default"
         desc_string = metadata[process_type][key]
 
+    # Append YAML description string with eLCI clause and clean up.
+    # HOTFIX: update GitHub URL [26.02.26; TWD]
     desc_string = (
-        desc_string
-        + " This process was created with ElectricityLCI "
-        + "(https://github.com/USEPA/ElectricityLCI) version "
+        desc_string.rstrip()
+        + " This process was created with ElectricityLCI ("
+        + GH_URL
+        + ") version "
         + elci_version
         + " using the " + model_specs.model_name + " configuration.")
+    desc_string = desc_string.strip()
 
     return desc_string
 
@@ -977,6 +1010,10 @@ def process_doc_creation(process_type="default"):
     This function generates a dictionary with process metadata based on the
     provided process type. It maps certain keys from OLCA to Metadata and
     retrieves values from the metadata based on the process type and keys.
+
+    This method is called for generation, generation mix, consumption mix, and
+    distribution processes, as well as upstream processes (as found in
+    :func:`_process_table_creation_gen` in upstream_dict.py).
 
     Parameters
     ----------
@@ -996,16 +1033,30 @@ def process_doc_creation(process_type="default"):
     """
     from electricitylci.generation import get_generation_years
     try:
-        assert process_type in VALID_FUEL_CATS, f"Invalid process_type ({process_type}), using default"
+        assert process_type in VALID_FUEL_CATS
     except AssertionError:
+        logging.debug(
+            "Invalid process type, '%s', using 'default'" % process_type
+        )
         process_type = "default"
 
+    # The subkeys "replace_egrid" and "use_egrid" are relevant to:
+    # - "default" process type (e.g., at-user; consumption mix);
+    # - "consumption_mix" process type (e.g., at-grid; consumption mix)
+    # - "generation_mix" process type (e.g., at-grid, generation mix)
     if model_specs.replace_egrid is True:
         subkey = "replace_egrid"
     else:
         subkey = "use_egrid"
 
-    global year
+    # NEW: add subkey for natural gas modeling year. [26.02.18; TWD]
+    if process_type == "gas_upstream":
+        subkey = "NGI_" + str(model_specs.ng_model_year)
+
+    # NEW: subkey for renewable generation. [26.02.16]
+    if process_type in ["wind", "solarthermal", "solar"]:
+        subkey = "LCI_" + str(model_specs.renewable_vintage)
+
     ar = dict()
 
     for kw, key in OLCA_TO_METADATA.items():
@@ -1013,35 +1064,46 @@ def process_doc_creation(process_type="default"):
         if key is not None:
             try:
                 # First try the key at the process level
+                logging.debug(f"Looking for metadata {key}")
                 ar[kw] = metadata[process_type][key]
             except KeyError:
-                logging.debug(
-                    f"Failed first key ({kw}), trying subkey: {subkey}")
                 try:
                     # Try looking at the subkey level
-                    ar[kw] = metadata[process_type][subkey][key]
                     logging.debug(
-                        "Failed subkey, likely no entry in metadata for "
-                        f"{process_type}:{kw}")
+                        f"Failed key ({key}), trying: {subkey}: {key}"
+                    )
+                    ar[kw] = metadata[process_type][subkey][key]
                 except:
                     try:
+                        logging.debug("Failed subkey; looking at default")
                         # Check to see if default has the key
                         ar[kw] = metadata["default"][key]
                     except KeyError:
                         # Lastly, check to see if the default has the subkey
+                        logging.debug("Failed default key; looking at subkey")
                         ar[kw] = metadata['default'][subkey][key]
             except TypeError:
+                # HOTFIX: don't overwrite process_type [26.03.05; TWD]
                 logging.debug(
                     "Failed first key, likely no metadata defined for "
                     f"{process_type}")
-                process_type = "default"
-                ar[kw] = metadata[process_type][key]
+                ar[kw] = metadata["default"][key]
 
-    ar["timeDescription"] = ""
-    # default valid year is the range of generation years
+    # Default valid year is the range of generation years
     if not ar["validUntil"]:
-        #Hot fix for https://github.com/USEPA/ElectricityLCI/issues/244
+        # Hot fix for https://github.com/NETL-RIC/ElectricityLCI/issues/244
+        # Default is the full scope of background data; should be true for
+        # fuel generation processes (i.e., the StEWI inventory of interest +
+        # NETL renewable data years). NOTE: upstream processes likely have
+        # their validity dates included in the process_metadata.yml.
         year_range = get_generation_years()
+        # For at-grid generation, the data for the EIA generation year.
+        # For at-user consumption, the data are EIA gen year (for T&D).
+        if process_type in ['generation_mix', 'distribution_mix']:
+            year_range = [model_specs.eia_gen_year,]
+        # For at-grid consumption, the data are for the trading year.
+        if process_type == 'consumption_mix':
+            year_range = [model_specs.NETL_IO_trading_year,]
         ar["validUntil"] = "12/31/" + str(max(year_range))
         ar["validFrom"] = "1/1/" + str(min(year_range))
     ar["sources"] = [x for x in ar["sources"].values()]
@@ -1052,7 +1114,8 @@ def process_doc_creation(process_type="default"):
     ar["exchangeDqSystem"] = exchangeDqsystem()
     ar["dqSystem"] = processDqsystem()
     # Temp place holder for process DQ scores
-    ar["dqEntry"] = "(5;5)"
+    # HOTFIX: replace (5;5) with (2;4); see issue 322. [26.02.24;TWD]
+    ar["dqEntry"] = "(2;4)"
     ar["description"] = process_description_creation(process_type)
 
     return ar
@@ -1153,20 +1216,18 @@ def process_table_creation_con_mix(region, exchanges_list):
     ar["exchanges"] = exchanges_list
     ar["location"] = location(region)
     ar["parameters"] = ""
-    ar["processDocumentation"] = process_doc_creation(
-        process_type="consumption_mix")
+    ar["processDocumentation"] = process_doc_creation("consumption_mix")
     ar["processType"] = "UNIT_PROCESS"
     ar["name"] = consumption_mix_name + " - " + region
-    ar["category"] = (
-        "22: Utilities/"
-        "2211: Electric Power Generation, Transmission and Distribution")
-    ar["description"] = (
-        "Electricity consumption mix using power plants in the "
-        + str(region) + " region.")
-    ar["description"] = (ar["description"]
-        + " This process was created with ElectricityLCI "
-        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
-        + " using the " + model_specs.model_name + " configuration."
+    ar["category"] = "%s/%s" % (                # <- same as gen mix
+        generation_mix_name_parts['Category'],
+        generation_mix_name_parts['Subcategory']
+    )
+    ar['description'] = (
+        'This process provides the electricity inputs from the various '
+        + 'trade regions that make up the electricity consumption '
+        + f'mix for the {region} region.\n\n'
+        + ar['processDocumentation']['description']
     )
     ar["version"] = make_valid_version_num(elci_version)
 
@@ -1196,21 +1257,18 @@ def process_table_creation_distribution(region, exchanges_list):
     ar["exchanges"] = exchanges_list
     ar["location"] = location(region)
     ar["parameters"] = ""
-    ar["processDocumentation"] = process_doc_creation()
+    ar["processDocumentation"] = process_doc_creation("distribution_mix")
     ar["processType"] = "UNIT_PROCESS"
     ar["name"] = distribution_to_end_user_name + " - " + region
-    ar["category"] = (
-        "22: Utilities/"
-        "2211: Electric Power Generation, Transmission and Distribution")
-    ar["description"] = (
-        "Electricity distribution to end user in the "
-        + str(region)
-        + " region."
+    ar["category"] = "%s/%s" % (                # <- same as gen mix
+        generation_mix_name_parts['Category'],
+        generation_mix_name_parts['Subcategory']
     )
-    ar["description"]=(ar["description"]
-        + " This process was created with ElectricityLCI "
-        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
-        + " using the " + model_specs.model_name + " configuration."
+    ar['description'] = (
+        'This process provides the electricity inputs from the various '
+        + 'trade regions that make up the electricity consumption '
+        + f'mix for the {region} region.\n\n'
+        + ar['processDocumentation']['description']
     )
     ar["version"] = make_valid_version_num(elci_version)
 
@@ -1279,18 +1337,14 @@ def process_table_creation_gen(fuelname, exchanges_list, region):
             + " region"
         )
     }
-    try:
-        # Use the software version number as the process version
-        ar["version"] = make_valid_version_num(elci_version)
-    except:
-        # Set to 1 by default
-        ar["version"] = 1
+    ar["version"] = make_valid_version_num(elci_version)
+
     return ar
 
 
 def process_table_creation_genmix(region, exchanges_list):
     """
-    Create a dictionary representing a process table for a generation mix.
+    Create an olca-schema formatted dictionary a generation mix process.
 
     Parameters
     ----------
@@ -1307,39 +1361,42 @@ def process_table_creation_genmix(region, exchanges_list):
 
     Notes
     -----
-    This function creates a dictionary to represent a process table for a
-    generation mix. It populates the dictionary with various key-value pairs,
-    including region-specific information and exchanges.
+    -   This method is responsible for naming generation mix processes (i.e.,
+        "Electricity; at grid; generation mix - REGION").
+    -   Note that ``process_doc_creation`` includes the process description
+        field found in the YAML.
+
+    This method is referenced in ``olcaschema_genmix`` in generation_mix.py.
 
     Examples
     --------
-    >>> region = "ExampleRegion"
+    >>> region = "US"
     >>> exchanges = [exchange1, exchange2, exchange3]
     >>> process_table = process_table_creation_genmix(region, exchanges)
     """
-    process_dict = {
-        "@type": "Process",
-        "allocationFactors": "",
-        "defaultAllocationMethod": "",
-        "exchanges": exchanges_list,
-        "location": location(region),
-        "parameters": "",
-        "processDocumentation": process_doc_creation(
-            process_type="generation_mix"),
-        "processType": "UNIT_PROCESS",
-        "name": f"{generation_mix_name} - {region}",
-        "category": (
-            "22: Utilities/2211: Electric Power Generation, "
-            "Transmission and Distribution"),
-        "description": (
-            f"Electricity generation mix in the {region} region. "
-            "This process was created with ElectricityLCI "
-            "(https://github.com/USEPA/ElectricityLCI) version "
-            f"{elci_version} using the {model_specs.model_name} "
-            "configuration."),
-        "version": make_valid_version_num(elci_version)
-    }
-    return process_dict
+    # Update to resemble ``_process_table_creation_gen`` in upstream_dict.py
+    ar = dict()
+    ar["@type"] = "Process"
+    ar["allocationFactors"] = ""
+    ar["defaultAllocationMethod"] = ""
+    ar["exchanges"] = exchanges_list
+    ar["location"] = location(region)
+    ar["parameters"] = ""
+    ar["processDocumentation"] = process_doc_creation("generation_mix")
+    ar["processType"] = "UNIT_PROCESS"
+    ar["name"] = f"{generation_mix_name} - {region}"
+    ar["category"] = "%s/%s" % (
+        generation_mix_name_parts['Category'],
+        generation_mix_name_parts['Subcategory']
+    )
+    ar['description'] = (
+        'This process provides the electricity inputs from the various '
+        + 'generation technologies that make up the electricity generation '
+        + f'mix for the {region} region.\n\n'
+        + ar['processDocumentation']['description']
+    )
+    ar['version'] = make_valid_version_num(elci_version)
+    return ar
 
 
 def process_table_creation_surplus(region, exchanges_list):
@@ -1348,6 +1405,7 @@ def process_table_creation_surplus(region, exchanges_list):
 
     This function generates a dictionary representing a process table entry for
     a surplus pool process with the provided region and list of exchanges.
+    This method is called when not replacing eGRID.
 
     Parameters
     ----------
@@ -1382,8 +1440,9 @@ def process_table_creation_surplus(region, exchanges_list):
         "2211: Electric Power Generation, Transmission and Distribution")
     ar["description"] = "Electricity surplus in the " + str(region) + " region."
     ar["description"]=(ar["description"]
-        + " This process was created with ElectricityLCI "
-        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
+        + " This process was created with ElectricityLCI ("
+        + GH_URL
+        + ") version " + elci_version
         + " using the " + model_specs.model_name + " configuration."
     )
     ar["version"] = make_valid_version_num(elci_version)
@@ -1423,7 +1482,7 @@ def process_table_creation_usaverage(fuel, exchanges_list):
     ar["exchanges"] = exchanges_list
     ar["location"] = location('US')
     ar["parameters"] = ""
-    ar["processDocumentation"] = process_doc_creation(process_type="fuel_mix")
+    ar["processDocumentation"] = process_doc_creation("fuel_mix")
     ar["processType"] = "UNIT_PROCESS"
     ar["name"] = fuel_mix_name + " - " + str(fuel)
     ar["category"] = (
@@ -1432,8 +1491,9 @@ def process_table_creation_usaverage(fuel, exchanges_list):
     ar["description"] = (
         "Electricity fuel US Average mix for the " + str(fuel) + " fuel.")
     ar["description"] = (ar["description"]
-        + " This process was created with ElectricityLCI "
-        + "(https://github.com/USEPA/ElectricityLCI) version " + elci_version
+        + " This process was created with ElectricityLCI ("
+        + GH_URL
+        + ") version " + elci_version
         + " using the " + model_specs.model_name + " configuration."
     )
     ar["version"] = make_valid_version_num(elci_version)
@@ -1588,7 +1648,6 @@ def unit(unt):
     >>> unit_entry = unit(unit_name)
     """
     ar = dict()
-    ar["internalId"] = ""
     ar["@type"] = "Unit"
     ar["name"] = unt
     return ar
@@ -1598,7 +1657,11 @@ def unit(unt):
 # POST-PROCESSING GLOBALS
 ##############################################################################
 for key in metadata.keys():
-    metadata[key] = process_metadata(metadata[key])
+    try:
+        metadata[key] = process_metadata(metadata[key])
+    except Exception as e:
+        logging.error("Failed to read metadata key, %s! %s" % (key, e))
+        raise
 
 
 ##############################################################################

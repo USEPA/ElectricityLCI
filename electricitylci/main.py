@@ -32,7 +32,7 @@ options. The selection of configuration file will occur after the start
 of this script or it may be passed following the command-line argument, '-c'.
 
 Last updated:
-    2025-03-14
+    2026-03-05
 
 Changelog:
     -   Address logging handler import for Python 3.12 compatibility.
@@ -46,6 +46,14 @@ Changelog:
     -   Test facility-level inventory generation.
     -   Make use of the post-processing configuration parameter.
     -   Make main() runnable (add ``is_set`` param)
+
+Quick start. Use the following to create a logger and initialize model
+specifications.
+
+>>> from electricity import basic_setup
+>>> basic_setup("INFO", "ELCI_2023")  # 'INFO' and 'ELCI_2023' are defaults
+>>> from electricitylci.main import main
+>>> main()
 """
 __all__ = [
     "main",
@@ -57,7 +65,7 @@ __all__ = [
 ##############################################################################
 # FUNCTIONS
 ##############################################################################
-def main(is_set=False):
+def main():
     """Generate an openLCA-schema JSON-LD zip file containing the life cycle
     inventory for US power plants based on the settings in the user-specified
     configuration file. The basic workflow is as follows:
@@ -93,7 +101,8 @@ def main(is_set=False):
     >>> config.model_specs = config.build_model_class()
     >>> print(config.model_specs.namestr)
     """
-    if not is_set or config.model_specs is None:
+    # HOTFIX: replace the is_set with getattr [26.03.05; TWD]
+    if getattr(config, 'model_specs', None) is None:
         # Prompt user to select configuration option.
         # These are defined as YAML files in the modelconfig/ folder in the
         # eLCI package; you might have to search site-packages under lib.
@@ -134,6 +143,7 @@ def run_distribution(generation_process_dict):
         generation_mix_df = get_generation_mix_process_df()
 
     # Create the "Electricity; at grid; generation mix" processes
+    # Essentially, calls :func:`olcaschema_genmix`
     logging.info("write gen mix to dict")
     generation_mix_dict = write_generation_mix_database_to_dict(
         generation_mix_df, generation_process_dict,
@@ -148,7 +158,7 @@ def run_distribution(generation_process_dict):
         # True for ELCI_1 & ELCI_2 (not ELCI_3)
         dist_dict = run_net_trade(generation_mix_dict)
     else:
-        # ELC1_3
+        # ELCI_3
         # NOTE: replace eGRID configuration must be true
         # BUG:  keyerror in fill_default_provider_uuids in utils.py
         dist_dict = run_epa_trade(
@@ -195,10 +205,10 @@ def run_generation():
         upstream_dict = {}
         upstream_df = None
 
-    # NOTE: This method triggers an input request for EPA data API key;
-    #       see https://github.com/USEPA/ElectricityLCI/issues/207
+    # NOTE: This method triggers an input request for EPA data via API key;
+    #       see https://github.com/NETL-RIC/ElectricityLCI/issues/207
     # NOTE: This method runs aggregation and emission uncertainty
-    #       calculations.
+    #       calculations, which may add 15 minutes to run time.
     # NOTE: Will import generation.py, which triggers a lot data into memory.
     logging.info("get aggregated generation process")
     generation_process_df = get_generation_process_df(
@@ -252,10 +262,10 @@ if __name__ == "__main__":
 
     # Execute main; make is_set true in this block.
     try:
-        main(True)
+        main()
         #get_facility_level_inventory(True, False)
-    except Exception as e:
-        log.error("Crashed on main!\n%s" % repr(e))
+    except Exception:
+        log.exception("Crashed on main!")
     else:
         log.info(
             "Finished!\n"

@@ -13,7 +13,7 @@ import pandas as pd
 from electricitylci.eia923_generation import eia923_download_extract #modelspecs
 from electricitylci.globals import data_dir
 from electricitylci.globals import output_dir
-
+from electricitylci.utils import filter_out_zero
 from electricitylci.solar_upstream import fix_renewable
 
 
@@ -28,7 +28,7 @@ generated at that plant. The data frame is saved as a CSV file, geothermal_emiss
 Created:
     2019-05-31
 Last updated:
-    2025-01-22
+    2026-02-10
 """
 
 
@@ -94,7 +94,7 @@ def generate_upstream_geo():
         "us_average",
     ]
 
-    # Read the state-level geothermal LCI file
+    # Read the state-level geothermal LCI file (1740 rows x 12 cols)
     # Columns include 'california', 'hawaii', 'idaho', 'new_mexico', 'nevada',
     # 'utah', and 'us_average' (see geothermal_states list); as well as
     # 'Directionality' (e.g., resource or emission), and 'Compartment'
@@ -114,14 +114,23 @@ def generate_upstream_geo():
     )
     geo_lci["stage_code"] = geo_lci["stage_code"].map(geothermal_state_dict)
 
+    # HOTFIX: remove zero-quantity flows from LCI (Issue 314) [26.02.10;TWD]
+    # -> filters 3,072 rows
+    geo_lci = filter_out_zero(geo_lci, "FlowAmount")
+
     # Pull generation data and aggregate across prime movers [25.01.22; TWD]
     # NOTE: there are 3--5 duplicated facilities for years 2016, 2020-2022.
+    # NOTE: Yes, use 2016 generation to match inventory.
     geo_generation_data = get_geo_generation(2016)
     geo_generation_data = geo_generation_data.groupby(
         by='Plant Id').agg({
             'State': 'first',
             'EIA Sector Number': 'first',
             'Net Generation (Megawatthours)': 'sum'}).reset_index()
+
+    # Merge generation and inventory.
+    # NOTE: 'US' is the only non-matched key from geo_lci.
+    # NOTE: 'quantity' represents net generation (MWh).
     geo_merged = pd.merge(
         left=geo_generation_data,
         right=geo_lci,
@@ -154,7 +163,7 @@ def generate_upstream_geo():
             inplace=True
         )
 
-    # NOTE
+    # NOTE:
     # Compartments are already lowercase (e.g., 'resource', 'water', 'air',
     # 'ground'), so no additional mapping needed [25.01.15; TWD].
 
@@ -162,8 +171,8 @@ def generate_upstream_geo():
     geo_merged["Electricity"] = geo_merged["quantity"]
     geo_merged["fuel_type"] = "GEOTHERMAL"
     geo_merged["stage_code"] = "Power plant"
-    geo_merged["Year"]=2016
-    # Map directionality to resources (true) or emissions (false)
+    geo_merged["Year"] = 2016
+    # Map directionality to input: resources (true) or emissions (false)
     input_dict = {"emission": False, "resource": True}
     geo_merged["Directionality"] = geo_merged["Directionality"].map(input_dict)
     geo_merged.rename(

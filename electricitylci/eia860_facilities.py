@@ -17,6 +17,7 @@ from electricitylci.globals import EIA860_BASE_URL
 from electricitylci.utils import download_unzip
 from electricitylci.utils import find_file_in_folder
 from electricitylci.utils import create_ba_region_map
+from electricitylci.utils import read_ba_codes
 
 
 ##############################################################################
@@ -29,10 +30,14 @@ authority, and primary fuel type.
 For now, this module is using most of the code from eia923_generation.py.
 It could be combined and generalized in the future.
 
+Note that this is one of the few modules in ElectricityLCI that does not
+depend on config.model_specs, which means you can utilize it freely.
+
 Last updated:
-    2025-09-02
+    2026-02-12
 """
 __all__ = [
+    "add_balancing_authorities_to_plants",
     "eia860_balancing_authority",
     "eia860_boiler_info_design",
     "eia860_download",
@@ -120,6 +125,93 @@ def _remove_table_note(df):
         return df.iloc[:-1]
     else:
         return df
+
+
+# NEW
+def add_balancing_authorities_to_plants(plant_df, plant_col, year):
+    """Helper function to add balancing authority information to a data frame
+    with facility IDs.
+
+    Relies on :func:`read_ba_codes` in utils.py to standardized balancing
+    authority naming.
+
+    Parameters
+    ----------
+    plant_df : pandas.DataFrame
+        A data frame where ``plant_col`` has facility IDs
+    plant_col : str
+        The column name associated with plant IDs.
+    year : int
+        The year to associate with EIA Form 860.
+
+    Returns
+    -------
+    tuple
+        A tuple of length two:
+
+        -   pandas.DataFrame, the original data frame returned with additional
+            columns (e.g., 'State', 'NERC Region', 'Balancing Authority Name',
+            and 'Balancing Authority Code').
+        -   dict, a dictionary with keys associated with plant IDs (int) and
+            values associated with balancing authority names (str)
+
+    Notes
+    -----
+    This method may be better utilized if it extended to multiple years'
+    worth of EIA 860 to try to capture as many facilities as possible.
+    """
+
+    # Read the EIA Form 860 for the given year
+    eia_df = eia860_balancing_authority(year)
+
+    # EIA has 'No BA' for AK facilities; this can cause problems, so remove it!
+    noba_filter = eia_df['Balancing Authority Name'] == 'No BA'
+    eia_df.loc[noba_filter, 'Balancing Authority Name'] = float('nan')
+
+    # We want BA info, so lose any rows without it.
+    eia_df = eia_df.dropna(
+        subset=['Balancing Authority Name', 'Balancing Authority Code'],
+        how='all'
+    ).copy()
+
+    # Standardized BA names
+    ba_codes = read_ba_codes()
+    eia_df["Balancing Authority Name"] = eia_df["Balancing Authority Code"].map(
+        ba_codes['BA_Name'])
+
+    # Make sure plant ID columns are integers for matching;
+    # NOTE: you can typically get away with 32-bit integer for plant IDs
+    eia_df["Plant Id"] = eia_df["Plant Id"].astype("int32")
+    plant_df[plant_col] = plant_df[plant_col].astype("int32")
+
+    # Get sets of plant IDs
+    eia_plants = set(eia_df['Plant Id'].tolist())
+    user_plants = set(plant_df[plant_col].tolist())
+
+    # Analysis of user plants not found in EIA
+    user_only = user_plants - eia_plants
+    logging.warning(
+        "Found %d plants without balancing authority info!" % len(user_only)
+    )
+
+    # Merge the EIA data to the plant data frame.
+    plant_df = plant_df.merge(
+        eia_df,
+        how="left",
+        left_on=plant_col,
+        right_on="Plant Id"
+    ).copy()
+
+    # Create a helper dictionary to map plant IDs to their BA names.
+    plant_ba_dict = {
+        x[0]: x[1]
+        for x in zip(
+            eia_df["Plant Id"],
+            eia_df["Balancing Authority Name"],
+        )
+    }
+
+    return (plant_df, plant_ba_dict)
 
 
 def eia860_balancing_authority(year, regional_aggregation=None):

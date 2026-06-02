@@ -29,7 +29,7 @@ nuclear fuel cycle), and maps emissions based on the Federal LCA Commons
 Elementary Flow List in order to provide life cycle inventory.
 
 Last edited:
-    2025-02-05
+    2025-03-09
 """
 __all__ = [
     "BA_CODES",
@@ -106,7 +106,7 @@ def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     # Fill in with appropriate fields.
     # NOTE: 'quantity' is units of Electricity (MWh) for construction and
     # nameplate capacity (MW) for coal, heat input (MJ) for petroleum, tons
-    # for coal mining, etc.
+    # for coal mining, net generation (MWh) for nuclear upstream, etc.
     fuel_df["Compartment"] = "input"
     fuel_df["FlowName"] = expand_fuel_df["q_reference_name"]
     fuel_df["stage_code"] = upstream_reduced["stage_code"]
@@ -218,6 +218,9 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
 
     This method sets all data vintages with EIA generation year.
 
+    Renames upstream 'fuel_type' column to 'FuelCategory' and standardizes
+    fuel category names (i.e., to all caps).
+
     Examples
     --------
     >>> import electricitylci.geothermal as geo
@@ -251,9 +254,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
                 df = map_compartment_path(df)
             upstream_df_list.append(df)
     upstream_df = pd.concat(upstream_df_list, ignore_index=True, sort=False)
-    # Hoping to reduce memory usage or at least make more of it available
-    # for the later groupby.
-    del(arg)
+
     # See https://github.com/FLCAC-admin/fedelemflowlist
     # The mapping data includes a conversion factor to convert everything into
     # standard units (e.g., kg, MJ, m2*a). Note that 'SourceFlowContext' is
@@ -261,7 +262,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     logging.info("Creating flow mapping database")
     flow_mapping = fedefl.get_flowmapping('eLCI')
 
-    # as hotfix for https://github.com/USEPA/ElectricityLCI/issues/274
+    # as hotfix for https://github.com/NETL-RIC/ElectricityLCI/issues/274
     # append full flowlist to the flow mapping file (dropping duplicates)
     # to catch any other mappings of flows that use the same name as already
     # in the flow list
@@ -281,6 +282,9 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
                         subset=['SourceFlowName', 'SourceFlowContext', 'TargetFlowName'])
                     )
     flow_mapping["SourceFlowName"] = flow_mapping["SourceFlowName"].str.lower()
+
+    # Memory management [26.03.09; TWD]
+    del flowlist
 
     logging.info("Preparing upstream df for merge")
     upstream_df["FlowName_orig"] = upstream_df["FlowName"]
@@ -313,14 +317,14 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
         "Unit_orig",
         "Source"
     ]
-    # Addings years to the groupby when data is passed to the function
+    # Adding years to the groupby when data is passed to the function
     # that includes years.
     if "Year" in upstream_df.columns:
         groupby_cols=groupby_cols+["Year"]
     # Ensure flow amounts are floats
     upstream_df["FlowAmount"] = upstream_df["FlowAmount"].astype(float)
-    # Refactoring this a bit due to possibility of some columns not being present.
-    # Also gets rid of an if statement!
+    # Refactoring this a bit due to possibility of some columns not being
+    # present. Also gets rid of an if statement!
     possible_quant_columns = [
         "FlowAmount",
         "quantity",
@@ -421,7 +425,7 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     #   set conversion factor equal to 1.0.
     #   Note that all other unmapped flows are lost, which is based on
     #   only keeping emissions that contribute to TRACI impacts;
-    #   See eLCI.csv here: https://github.com/USEPA/fedelemflowlist
+    #   See eLCI.csv here: https://github.com/NETL-RIC/fedelemflowlist
     r_flows = (upstream_mapped_df['TargetFlowContext'].isna()) & (
         upstream_mapped_df['input']
     )
@@ -477,8 +481,9 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     # defined upstream (renewable O&M). I think in almost all cases year
     # will already be defined now. But just in case...
     if "Year" not in upstream_mapped_df.columns:
-        upstream_mapped_df["Year"]=pd.NA
-    upstream_mapped_df.loc[upstream_mapped_df["Year"].isna(),"Year"] = eia_gen_year
+        upstream_mapped_df["Year"] = pd.NA
+    upstream_mapped_df.loc[
+        upstream_mapped_df["Year"].isna(), "Year"] = eia_gen_year
     final_columns = [
         "plant_id",
         "FuelCategory",
@@ -564,6 +569,11 @@ def concat_clean_upstream_and_plant(pl_df, up_df):
     Returns
     -------
     pandas.DataFrame
+
+    Notes
+    -----
+    This process is responsible for creating the 'eGRID_ID' column in the
+    upstream data frame.
     """
     # Match location data to the upstream inventory
     region_cols = [

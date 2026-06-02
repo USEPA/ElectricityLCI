@@ -13,6 +13,8 @@ import pandas as pd
 from electricitylci.globals import data_dir
 import electricitylci.PhysicalQuantities as pq
 from electricitylci.eia923_generation import eia923_download_extract
+from electricitylci.generation import add_temporal_correlation_score
+from electricitylci.model_config import model_specs
 
 
 ##############################################################################
@@ -25,7 +27,7 @@ intensities are used to generate annual amounts of water use using
 generation data from the given year.
 
 Last updated:
-    2024-01-10
+    2026-03-05
 """
 __all__ = [
     "generate_plant_water_use",
@@ -237,13 +239,19 @@ def generate_plant_water_use(year):
     final_water=final_water.drop(columns=["Electricity"])
     final_water["plant_id"] = final_water["FacilityID"]
     final_water["eGRID_ID"] = final_water["FacilityID"]
-    final_water["Year"] = year
     final_water["Source"] = "netlwater"
     final_water["Unit"] = "kg"
     final_water["stage_code"] = "Power plant"
     final_water["TechnologicalCorrelation"] = 1
     final_water["GeographicalCorrelation"] = 1
-    final_water["TemporalCorrelation"] = 1
+
+    # Issue #296 & 328 - updating DQI information for NETL (2016) water
+    final_water["Year"] = 2016
+    final_water["TemporalCorrelation"] = add_temporal_correlation_score(
+        final_water["Year"], model_specs.electricity_lci_target_year
+    )
+    final_water["Year"] = year
+
     final_water["DataCollection"] = 5
     final_water["DataReliability"] = 1
     final_water["input"]=True

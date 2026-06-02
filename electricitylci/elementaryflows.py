@@ -21,7 +21,7 @@ and replaces them with names in the Federal LCA Commons elementary flows list.
 Types of flows and compartment information are also determined and indexed.
 
 Last updated:
-    2025-06-09
+    2026-01-30
 """
 __all__ = [
     "add_flow_direction",
@@ -89,8 +89,8 @@ def add_flow_direction(df_with_flowtypes):
 def correct_netl_flow_names(df, amount_col="FlowAmount"):
     """A helper method that replaces NETL air, water, and ground emissions
     with Federal Elementary Flow List equivalents based on a subset of
-    flows defined in USEPA's eLCI mapping using the Python package
-    `fedelemflowlist <https://github.com/USEPA/fedelemflowlist>`_
+    flows defined in the FLCAC-admin elementary flow mapping Python package,
+    `fedelemflowlist<https://github.com/FLCAC-admin/fedelemflowlist>`_.
 
     Parameters
     ----------
@@ -108,9 +108,29 @@ def correct_netl_flow_names(df, amount_col="FlowAmount"):
         are updated based on emissions matches with the FEDEFL. All unmatched
         flows are returned 'as is'. If FlowUUID was not in the column list,
         it is created; otherwise, the matched UUIDs are updated.
+
+    Notes
+    -----
+    The majority of fixes are with compartment names. For example,
+    "Emission to air/unspecified" -> "emission/air". Also standardizes certain
+    chemical names (e.g., "Toluene, 2,4-dinitro-" -> "2,4-Dinitrotoluene"),
+    and maps chemicals to common names (e.g., "Spent chlorofluorocarbon
+    solvents, unspecified" -> "Chlorofluorocarbons").
+
+    This method is referenced in the following methods:
+
+    - :func:`fix_coal_mining_lci` in coal_upstream.py
+    - :func:`generate_lci` in natural_gas_upstream.py
+
+    The update, which was originally added to the upstream natural gas module
+    and consists of lower-casing and right-stripping the eLCI.csv source flow
+    and source compartment names produces the same 2020 coal results (before
+    and after the modification of this method) [2025-12-30; TWD].
     """
     # This data frame has about 4k source flow names and contexts associated
     # with NETL unit process models (e.g., petro, nuclear, coal).
+    # NOTE: In versions >1.3.1, the eLCI.csv in fedelemflowlist is updated with
+    # 2020 natural gas mappings.
     flow_mapping = fedelemflowlist.get_flowmapping('eLCI')
 
     # Matching occurs on name and compartment; help this along by lowering the
@@ -120,8 +140,19 @@ def correct_netl_flow_names(df, amount_col="FlowAmount"):
     df["FlowName"] = df["FlowName"].str.lower().str.rstrip()
     df["Compartment"] = df["Compartment"].str.lower().str.rstrip()
 
-    flow_mapping['SourceFlowName'] = flow_mapping['SourceFlowName'].str.lower()
-    flow_mapping['SourceFlowContext'] = flow_mapping["SourceFlowContext"].str.lower()
+    # Lower-case names and compartments & remove trailing space from map.
+    # NOTE: this introduces duplicate entries in the map, so remove them.
+    # The duplicates are from entries that include capitalization and trailing
+    # white space; so ignore mapper, verifier and last updated cols when
+    # searching for duplicates. [251230; TWD]
+    flow_mapping['SourceFlowName'] = flow_mapping[
+        'SourceFlowName'].str.lower().str.rstrip()
+    flow_mapping['SourceFlowContext'] = flow_mapping[
+        "SourceFlowContext"].str.lower().str.rstrip()
+    ignore_cols = ['Mapper', 'Verifier', 'LastUpdated']
+    flow_mapping = flow_mapping.drop_duplicates(
+        subset=[x for x in flow_mapping.columns if x not in ignore_cols]
+    )
 
     # Some compartments in NETL UPs are complex (e.g., 'Emission to water/fresh
     # water'), but are listed simply in the FEDEFL eLCI mapper (e.g., 'emission/

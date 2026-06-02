@@ -68,7 +68,7 @@ References:
     52(11), 6666-6675. https://doi.org/10.1021/acs.est.7b05191
 
 Last updated:
-    2025-06-09
+    2026-03-25
 """
 __all__ = [
     "ba_io_trading_model",
@@ -96,7 +96,7 @@ def _check_json(d):
     If a JSON entry is missing data, send a critical logging statement.
     The consequence of using this data is that consumption mix processes
     will not be created in the JSON-LD.
-    See https://github.com/USEPA/ElectricityLCI/discussions/254.
+    See https://github.com/NETL-RIC/ElectricityLCI/discussions/254.
 
     Parameters
     ----------
@@ -252,7 +252,7 @@ def _get_ca_imports(just_read=False):
         "New Hampshire": "ISNE",
         "Florida": "FPL",
         # HOTFIX: missing state maps [2024-03-14; TWD]
-        # https://github.com/USEPA/ElectricityLCI/issues/236
+        # https://github.com/NETL-RIC/ElectricityLCI/issues/236
         'Illinois': 'MISO',
         'Missouri': 'AECI',
         'South Dakota': 'SWPP',
@@ -506,6 +506,8 @@ def _make_net_gen(year, ba_cols, ng_json_list):
     # Net Generation Data Import
     logging.info("Creating net generation data frame with datetime")
     df_net_gen = row_to_df(ng_json_list, 'net_gen')
+    # HOTFIX: convert 'net_gen' str values to float [26.02.12;TWD]
+    df_net_gen['net_gen'] = df_net_gen['net_gen'].astype('float')
 
     logging.info("Pivoting")
     df_net_gen = df_net_gen.pivot(
@@ -524,7 +526,7 @@ def _make_net_gen(year, ba_cols, ng_json_list):
     # Add in missing columns, then sort in alphabetical order
     logging.info("Cleaning net_gen data frame")
     for i in col_diff:
-        df_net_gen[i] = 0
+        df_net_gen[i] = 0.0  # HOTFIX: all cols to floats [26.02.12; TWD]
 
     # Keep only the columns that match the balancing authority names;
     # there are several other columns included in the dataset
@@ -568,6 +570,7 @@ def _make_net_gen_sum(net_trade, eia_gen, ca_gen):
     # Sum values in each column
     # Creates a data frame with one column, rows are BA codes, values are
     # annual sums of net generation.
+    # BUG: net_trade is a mix of ints, str, and objects
     df_net_gen_sum = net_trade.sum(axis=0).to_frame()
 
     # Add Canadian import data to the net generation dataset,
@@ -757,6 +760,7 @@ def _make_trade_pivot(year, ba_cols, trade_df):
     df_ba_trade_pivot = df_ba_trade_pivot.loc[
         df_ba_trade_pivot.index.year==year]
 
+    # Force any columns that are strings to floats (they should all be floats).
     cols_to_change = df_ba_trade_pivot.columns[
         df_ba_trade_pivot.dtypes.eq('object')]
     df_ba_trade_pivot[cols_to_change] = df_ba_trade_pivot[
@@ -786,13 +790,50 @@ def _make_trade_pivot(year, ba_cols, trade_df):
         ['BAA2', 'BAA1', 'Transacting BAAs'], as_index=False
     )[['Exchange']].sum()
 
+    # Sort by BAAs before merge.
+    df_trade_sum_1_2 = df_trade_sum_1_2.sort_values(by=['BAA1', 'BAA2'])
+    df_trade_sum_2_1 = df_trade_sum_2_1.sort_values(by=['BAA2', 'BAA1'])
+
+    # Rename fields to avoid collisions.
     df_trade_sum_1_2.columns = [
         'BAA1_1_2', 'BAA2_1_2','Transacting BAAs_1_2', 'Exchange_1_2']
     df_trade_sum_2_1.columns = [
         'BAA2_2_1', 'BAA1_2_1','Transacting BAAs_2_1', 'Exchange_2_1']
 
     # Combine two grouped tables for comparison for exchange values
-    df_concat_trade = pd.concat([df_trade_sum_1_2, df_trade_sum_2_1], axis=1)
+    # BUGFIX: the old concat didn't align BAAs how we thought [26.03.25; TWD]
+    df_concat_trade = pd.merge(
+        left=df_trade_sum_1_2,
+        right=df_trade_sum_2_1,
+        how='outer',
+        left_on=['BAA1_1_2', 'BAA2_1_2'],
+        right_on=['BAA2_2_1', 'BAA1_2_1']
+    )
+
+    # Gap fill the NaNs:
+    # 1. BAA1_1_2 should match BAA2_2_1
+    # 2. BAA2_1_2 should match BAA1_2_1
+    # 3. Exchange_1_2 & Exchange_2_1 NaNs should be zero.
+    df_concat_trade['BAA1_1_2'] = df_concat_trade['BAA1_1_2'].fillna(
+        df_concat_trade['BAA2_2_1'])
+    df_concat_trade['BAA2_1_2'] = df_concat_trade['BAA2_1_2'].fillna(
+        df_concat_trade['BAA1_2_1'])
+    df_concat_trade['BAA1_2_1'] = df_concat_trade['BAA1_2_1'].fillna(
+        df_concat_trade['BAA2_1_2'])
+    df_concat_trade['BAA2_2_1'] = df_concat_trade['BAA2_2_1'].fillna(
+        df_concat_trade['BAA1_1_2'])
+    df_concat_trade['Exchange_1_2'] = df_concat_trade['Exchange_1_2'].fillna(0)
+    df_concat_trade['Exchange_2_1'] = df_concat_trade['Exchange_2_1'].fillna(0)
+
+    # Re-create the transacting BAAs
+    df_concat_trade['Transacting BAAs_1_2'] = (
+        df_concat_trade['BAA1_1_2'] + "-" + df_concat_trade['BAA2_1_2']
+    )
+    df_concat_trade['Transacting BAAs_2_1'] = (
+        df_concat_trade['BAA1_2_1'] + "-" + df_concat_trade['BAA2_2_1']
+    )
+
+    # Create an absolute amount (since exchanges can be +/-)
     df_concat_trade['Exchange_1_2_abs'] = df_concat_trade['Exchange_1_2'].abs()
     df_concat_trade['Exchange_2_1_abs'] = df_concat_trade['Exchange_2_1'].abs()
 
@@ -800,6 +841,8 @@ def _make_trade_pivot(year, ba_cols, trade_df):
     # both importers or if one of the entities in the transaction reports a
     # zero value. Drop combinations where any of these conditions are true,
     # keep everything else.
+    # Essentially, we're looking for confirmation that BA1 -> BA2 in both
+    # columns (e.g. positive in Exchange_1_2 and negative in Exchange_2_1).
     df_concat_trade['Status_Check'] = np.where(
         (
             (df_concat_trade['Exchange_1_2'] > 0)
@@ -815,11 +858,9 @@ def _make_trade_pivot(year, ba_cols, trade_df):
         'keep'
     )
 
-    # Calculate the difference in exchange values
-    df_concat_trade['Delta'] = (
-        df_concat_trade['Exchange_1_2_abs']
-        - df_concat_trade['Exchange_2_1_abs']
-    )
+    # Run the filter. For 2023, removes 22 rows.
+    df_concat_trade = df_concat_trade.loc[
+        df_concat_trade['Status_Check'] == 'keep', :].copy()
 
     # Calculate percent diff of exchange_abs values.
     # This can be down two ways:
@@ -843,13 +884,9 @@ def _make_trade_pivot(year, ba_cols, trade_df):
     df_concat_trade['Exchange_mean'] = df_concat_trade[[
         'Exchange_1_2_abs', 'Exchange_2_1_abs']].mean(axis=1)
 
-    # Percent diff equations creates NaN where both values are 0, fill with 0
-    df_concat_trade['Percent_Diff_Avg'] = df_concat_trade[
-        'Percent_Diff_Avg'].fillna(0)
-
     # Final exchange value based on logic;
     # if percent diff is less than 20%, take mean,
-    # if not use the value as reported by the exporting BAA.
+    # if not, use the value as reported by the exporting BAA.
     # First figure out which BAA is the exporter by checking the value of the
     # Exchange_1_2. If that value is positive, it indicates that BAA1 is
     # exported to BAA2; if negative, use the value from Exchange_2_1.
@@ -883,7 +920,6 @@ def _make_trade_pivot(year, ba_cols, trade_df):
             ''
         )
     )
-    df_concat_trade = df_concat_trade[df_concat_trade['Status_Check'] == 'keep']
 
     # Create the final trading matrix; first grab the necessary columns,
     # rename the columns and then pivot.
@@ -892,6 +928,16 @@ def _make_trade_pivot(year, ba_cols, trade_df):
 
     df_concat_trade_subset.columns = [
         'Exporting_BAA', 'Importing_BAA', 'Amount']
+
+    # Remove duplicated entries---this is caused by BA1-BA2 and BA2-BA1 existing
+    # in both groupby data frames; however, the same outcome should be found
+    # regardless of the pairing, give the logic above.
+    df_concat_trade_subset = df_concat_trade_subset.drop_duplicates()
+
+    # Sort by exporting BAAs
+    df_concat_trade_subset = df_concat_trade_subset.sort_values(
+        by=['Exporting_BAA', 'Importing_BAA']
+    )
 
     trade_pivot = df_concat_trade_subset.pivot_table(
         index='Exporting_BAA',
@@ -921,7 +967,7 @@ def _make_us_trade(df):
     us_trade = us_trade.groupby(['export BAA'])['value'].sum().reset_index()
     us_trade["fraction"] = us_trade["value"]/us_import_grouped_tot
     us_trade = us_trade.fillna(value=0)
-    us_trade=us_trade.drop(columns=["value"])
+    us_trade = us_trade.drop(columns=["value"])
 
     return us_trade
 
@@ -984,8 +1030,17 @@ def _read_ba():
         - list : U.S. FERC region codes
     """
     ba_df = read_ba_codes()
+
+    # HOTFIX: drop Hawaii (HECO) [26.03.19; TWD]
+    # NOTE: Hawaii does not trade with other BA regions and the generation
+    # processes for this BA are currently dropped.
+    ba_df = ba_df.drop("HECO")
+
+    # HOTFIX: remove Canada and Mexico from U.S. BA list [26.03.19; TWD]
+    ca_filt = ba_df['EIA_Region'] != 'Canada'
+    mx_filt = ba_df['EIA_Region'] != 'Mexico'
     US_BA_acronyms = sorted(list(
-        ba_df.query("EIA_Region != 'Canada'").index.values
+        ba_df.loc[(ca_filt & mx_filt), :].index.values
     ))
     df_BA_NA = ba_df.reset_index()
     ferc_list = df_BA_NA['FERC_Region_Abbr'].unique().tolist()
@@ -1040,7 +1095,7 @@ def _read_bulk_api(ba_cols):
     -----
     For API registration, go to: https://www.eia.gov/opendata/.
 
-    See https://github.com/USEPA/ElectricityLCI/discussions/254 for details.
+    See https://github.com/NETL-RIC/ElectricityLCI/discussions/254 for details.
 
     If you don't want to pass ba_cols, you can find all the respondents
     on the API by calling (adding ?api_key=YOUR-KEY at the end):
@@ -1207,7 +1262,7 @@ def _read_bulk_zip():
 
             # All the entries should have a 'series_id' and an 'f' key.
             # 'H' for UTC hourly; 'HL' for local hourly; hard-coded to UTC.
-            # See https://github.com/USEPA/ElectricityLCI/discussions/254.
+            # See https://github.com/NETL-RIC/ElectricityLCI/discussions/254.
             if 'series_id' in f_json.keys() and f_json.get('f', '') == 'H':
                 series_id = f_json['series_id']
 
@@ -1663,6 +1718,8 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     # WARNING: Peaks around 11 GB of memory
     logging.info("Creating trading data frame")
     df_ba_trade = ba_exchange_to_df(BA_TO_BA_ROWS, data_type='ba_to_ba')
+    # HOTFIX: cast string to integer (values range -172k to 316k).
+    df_ba_trade['ba_to_ba'] = df_ba_trade['ba_to_ba'].astype('int')
     del(BA_TO_BA_ROWS)
 
     # Make export-import trade pivot table, make it square.
@@ -1745,7 +1802,8 @@ def ba_io_trading_model(year=None, subregion=None, regions_to_keep=None):
     return {
         'BA': BAA_final_trade,
         'FERC': ferc_final_trade,
-        'US': us_final_trade}
+        'US': us_final_trade
+    }
 
 
 def olca_schema_consumption_mix(database, gen_dict, subregion="BA"):
@@ -2032,3 +2090,32 @@ def qio_model(net_gen_df, trade_pivot, ba_map, ba_list, roi=None, thresh=1e-5):
     )
 
     return df_final_trade_out_filt_melted_merge
+
+
+#
+# MAIN
+#
+if __name__ == "__main__":
+    from electricitylci.eia_io_trading import _check_json
+    from electricitylci.eia_io_trading import _fix_final_trade
+    from electricitylci.eia_io_trading import _get_ca_imports
+    from electricitylci.eia_io_trading import _get_zero_traders
+    from electricitylci.eia_io_trading import _get_zero_traders_w_demand
+    from electricitylci.eia_io_trading import _make_ba_trade
+    from electricitylci.eia_io_trading import _make_ferc_trade
+    from electricitylci.eia_io_trading import _make_net_gen
+    from electricitylci.eia_io_trading import _make_net_gen_sum
+    from electricitylci.eia_io_trading import _make_square_pivot
+    from electricitylci.eia_io_trading import _make_trade_pivot
+    from electricitylci.eia_io_trading import _make_us_trade
+    from electricitylci.eia_io_trading import _match_df_cols
+    from electricitylci.eia_io_trading import _read_ba
+    from electricitylci.eia_io_trading import _read_bulk
+    from electricitylci.eia_io_trading import _read_bulk_api
+    from electricitylci.eia_io_trading import _read_bulk_json
+    from electricitylci.eia_io_trading import _read_bulk_zip
+    from electricitylci.eia_io_trading import _read_ca_imports
+    from electricitylci.eia_io_trading import _read_dng_api
+    from electricitylci.eia_io_trading import _read_eia_gen
+    from electricitylci.eia_io_trading import _read_id_api
+    from electricitylci.eia_io_trading import _write_bulk_api

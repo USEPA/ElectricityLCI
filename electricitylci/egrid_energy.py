@@ -78,7 +78,7 @@ egrid_efficiency.dropna(inplace=True)
 
 # NOTE: this data frame is referenced in generation_mix.py
 # HOTFIX: add check for missing reference data [2023-11-20; TWD]
-#   See https://github.com/USEPA/ElectricityLCI/issues/211
+#   See https://github.com/NETL-RIC/ElectricityLCI/issues/211
 make_egrid_subregion_ref(model_specs.egrid_year)
 path = os.path.join(
     data_dir,

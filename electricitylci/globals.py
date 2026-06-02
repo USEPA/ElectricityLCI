@@ -20,7 +20,7 @@ __doc__ = """Define paths, variables, and functions used across several
 modules.
 
 Last updated:
-    2025-08-14
+    2026-03-27
 """
 
 
@@ -33,28 +33,47 @@ try:
 except NameError:
     modulepath = 'electricitylci/'
 
-paths=Paths()
+paths = Paths()
+'''Paths : esupy class object to connect user's data directory.'''
 paths.local_path = os.path.realpath(str(paths.local_path) + "/electricitylci")
+
 # NOTE: output_dir used in a handful of modules (e.g., combinator)
 # HOTFIX PosixPath in os.path.join [TWD; 2023-07-27]
 output_dir = os.path.join(str(paths.local_path), 'output')
-data_dir = os.path.join(modulepath,  'data')
+'''str : The ElectricityLCI local output folder (where models are saved).'''
 
+data_dir = os.path.join(modulepath,  'data')
+'''str : The ElectricityLCI Python package's data folder.'''
+
+elci_version = "0.0.0"
+'''str : The ElectricityLCI Python package version.'''
 try:
     # HOTFIX: remove dependency on setuptools and its deprecated pkg_resources
     elci_version = version("ElectricityLCI")
 except:
-    elci_version = "2.0.0"
+    elci_version = "3.0.0"
 
 # ref Table 1.1 NERC report
 electricity_flow_name_generation_and_distribution = (
     'Electricity, AC, 2300-7650 V')
 electricity_flow_name_consumption = 'Electricity, AC, 120 V'
 
-# EIA923 download url - this is just the base, need to add
-# extension and file name
+# GitHub repo URL
+GH_URL = "https://github.com/NETL-RIC/ElectricityLCI"
+'''str : The web address for ElectricityLCI GitHub repository.'''
+
+# EIA base URLs - need to add file name
 EIA923_BASE_URL = 'https://www.eia.gov/electricity/data/eia923/'
+'''str : The base URL for EIA Form 923 workbooks.'''
 EIA860_BASE_URL = 'https://www.eia.gov/electricity/data/eia860/'
+'''str : The base URL for EIA Form 860 workbooks.'''
+NREL_REC_YEAR = 2024
+'''int : See https://www.nlr.gov/analysis/renewable-power for pub years.'''
+NREL_REC_URL = (
+    "https://www.nlr.gov/"
+    f"docs/libraries/analysis/nrel-green-power-data-v{NREL_REC_YEAR}.xlsx"
+)
+'''str : NLR voluntary renewable power procurement data sheet URL.'''
 
 # EPA Clean Air Markets API URL
 # https://www.epa.gov/power-sector/cam-api-portal
@@ -64,51 +83,83 @@ CAM_API_URL = (
 )
 '''str : EPA CEMS annual apportioned emissions by facility API URL'''
 
+# Coal model constants
+COAL_BASIN_CODES = {
+    'Central Appalachia': 'CA',
+    'Central Interior': 'CI',
+    'Gulf Lignite': 'GL',
+    'Illinois Basin': 'IB',
+    'Lignite': 'L',
+    'Northern Appalachia': 'NA',
+    'Powder River Basin': 'PRB',
+    'Rocky Mountain': 'RM',
+    'Southern Appalachia': 'SA',
+    'West/Northwest': 'WNW',
+    'Import': 'IMP',
+}
+'''dict : A map between NETL coal basin names and their abbreviations.'''
+
+COAL_TYPE_CODES = {
+    'BIT': 'B',
+    'LIG': 'L',
+    'SUB': 'S',
+    'WC': 'W',
+    'RC' : 'RC',
+}
+'''dict : Map between EIA coal fuel source codes and NETL coal codes.'''
+
+COAL_MINE_CODES = {
+    'Surface': 'S',
+    'Underground': 'U',
+    'Facility': 'F',
+    'Processing': 'P',
+}
+'''dict : A map between coal mine type and their abbreviation.'''
+
 # Grouping of Reported fuel codes to EPA categories
 FUEL_CAT_CODES = {
-    'BIT': 'COAL',
-    'SUB': 'COAL',
-    'LIG': 'COAL',
-    'RC': 'COAL',
-    'ANT': 'COAL',
-    'SGC': 'COAL',
-    'SC': 'COAL',
-    'NG': 'GAS',
-    'NUC': 'NUCLEAR',
-    'WND': 'WIND',
-    'SUN': 'SOLAR',
-    'DFO': 'OIL',
-    'RFO': 'OIL',
-    'WAT': 'HYDRO',
-    # 'HPS': 'OTHF',
-    'GEO': 'GEOTHERMAL',
-    'WO': 'OIL',
-    'KER': 'OIL',
-    'JF': 'OIL',
-    'PG': 'OIL',
-    'BLQ': 'BIOMASS',
-    'WDS': 'BIOMASS',
-    'WDL': 'BIOMASS',
-    'PC': 'OIL',
-    'SGP': 'OIL',
-    'MSB': 'BIOMASS',
-    'MSN': 'OTHF',
-    'LFG': 'BIOMASS',
-    'WOC': 'COAL',
-    'WH': 'OTHF',
-    'MSN': 'OTHF',
-    'OTH': 'OTHF',
-    'TDF': 'OTHF',
-    'PUR': 'OTHF',
-    'MWH': 'OTHF',
-    'AB': 'BIOMASS',
-    'OBL': 'BIOMASS',
-    'SLW': 'BIOMASS',
-    'OBG': 'BIOMASS',
-    'OBS': 'BIOMASS',
-    'OG': 'OFSL',
-    'BFG': 'OFSL',
-    'WC': 'COAL'
+    'AB': 'BIOMASS',    # Agricultural byproducts
+    'ANT': 'COAL',      # Anthracite coal
+    'BFG': 'OFSL',      # Blast furnace gas
+    'BIT': 'COAL',      # Bituminous coal
+    'BLQ': 'BIOMASS',   # Black liquor
+    'DFO': 'OIL',       # Distillate fuel oil (e.g., diesel)
+    'GEO': 'GEOTHERMAL', # Geothermal
+    # 'H2': 'HYDROGEN'   # Hydrogen
+    'JF': 'OIL',        # Jet fuel
+    'KER': 'OIL',       # Kerosene
+    'LFG': 'BIOMASS',   # Landfill gas
+    'LIG': 'COAL',      # Lignite coal
+    'MSB': 'BIOMASS',   # Biogenic municipal solid waste
+    'MSN': 'OTHF',      # Non-biogenic municipal solid waste
+    'MWH': 'OTHF',      # Electricity for energy storage
+    'NG': 'GAS',        # Natural gas
+    'NUC': 'NUCLEAR',   # Nuclear (e.g., uranium, plutonium, thorium)
+    'OBG': 'BIOMASS',   # Other biomass gas (e.g., digester)
+    'OBL': 'BIOMASS',   # Other biomass liquids
+    'OBS': 'BIOMASS',   # Other biomass solids
+    'OG': 'OFSL',       # Other gas
+    'OTH': 'OTHF',      # Other fuel
+    'PC': 'OIL',        # Petroleum coke
+    'PG': 'OIL',        # Gaseous propane
+    'PUR': 'OTHF',      # Purchased steam
+    'RC': 'COAL',       # Refined coal
+    'RFO': 'OIL',       # Residual fuel oil
+    'SC': 'COAL',       # Coal-derived synthesis fuel
+    'SGC': 'COAL',      # Coal-derived synthesis gas
+    'SGP': 'OIL',       # Synthesis gas from petroleum coke
+    'SLW': 'BIOMASS',   # Sludge waste
+    'SUB': 'COAL',      # Subbituminous coal
+    'SUN': 'SOLAR',     # Solar
+    'TDF': 'OTHF',      # Tire-derived fuels
+    'WAT': 'HYDRO',     # Water (e.g., hydroelectric/hydrokinetic)
+    'WC': 'COAL',       # Waste/other coal
+    'WDL': 'BIOMASS',   # Wood waste liquids (excludes black liquor)
+    'WDS': 'BIOMASS',   # Wood/wood waste solids
+    'WH': 'OTHF',       # Waste heat (unattributed)
+    'WND': 'WIND',      # Wind
+    'WO': 'OIL',        # Waste/other oil
+    'WOC': 'COAL',      # Waste coal
 }
 
 US_STATES = {
@@ -235,6 +286,25 @@ RENEWABLE_VINTAGES = [2016, 2020]
 
 NG_MODEL_YEARS = [2016, 2020]
 '''list : The valid years for natural gas model (i.e., 2016 and 2020).'''
+
+GREEN_E = ['HYDRO', 'BIOMASS', 'SOLAR', 'SOLARTHERMAL', 'WIND', 'GEOTHERMAL']
+'''list: Green or renewable energy categories for residual mixes.'''
+
+OVERFLOW_E = ['MIXED', 'OTHF']
+'''list: Non-green fuels that can lend overflow electricity for res. mixes.'''
+
+REM_WEIGHT_METHODS = ['count', 'gen']
+'''list : State-level REC sales to Balancing authority weighting methods.'''
+
+NEG_REM_METHODS = ['zero', 'keep']
+'''list : Accounting methods for negative renewable generation for REM.'''
+
+C2G_LCI_METHOD = "Attributional\nCradle-to-Gate process"
+'''str : Metadata text for cradle-to-gate inventory method description'''
+
+G2G_LCI_METHOD = "Attributional\nGate-to-Gate process"
+'''str : Metadata text for gate-to-gate inventory method description'''
+
 
 ##############################################################################
 # FUNCTIONS

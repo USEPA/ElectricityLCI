@@ -36,7 +36,7 @@ data as needed and provides functions to access different pages of the Excel
 workbook.
 
 Last edited:
-    2025-09-05
+    2026-02-26
 """
 EIA923_PAGES = {
     "1": "Page 1 Generation and Fuel Data",
@@ -94,8 +94,9 @@ def _clean_columns(df):
     return df
 
 
-def build_generation_data(
-        egrid_facilities_to_include=None, generation_years=None):
+def build_generation_data(egrid_facilities_to_include=None,
+                          generation_years=None,
+                          keep_all_cols=False):
     """Build a dataset of facility-level generation using EIA923.
 
     This function applies filters for positive generation, generation
@@ -114,6 +115,9 @@ def build_generation_data(
         Years of generation data to include in the output (default is None,
         which builds a list from the inventories of interest and eia_gen_year
         parameters).
+    keep_all_cols : bool, optional
+        Whether to keep all data frame columns or filter to just the three
+        listed below. Defaults to false (i.e., filter to three columns).
 
     Returns
     -------
@@ -157,6 +161,7 @@ def build_generation_data(
                 final_gen_df = final_gen_df.loc[f_crit, :]
             if model_specs.filter_on_efficiency:
                 logging.info("Filtering facilities based on their efficiency")
+                # NOTE: in 2023 removes all OTHF plants; see #330 [260318; TWD]
                 final_gen_df = efficiency_filter(
                     final_gen_df,
                     model_specs.egrid_facility_efficiency_filters
@@ -190,9 +195,12 @@ def build_generation_data(
         }
     )
 
-    all_years_gen = all_years_gen.loc[:, ["FacilityID", "Electricity", "Year"]]
     all_years_gen.reset_index(drop=True, inplace=True)
     all_years_gen["Year"] = all_years_gen["Year"].astype("int32")
+    if not keep_all_cols:
+        all_years_gen = all_years_gen.loc[
+            :, ["FacilityID", "Electricity", "Year"]
+        ]
     return all_years_gen
 
 
@@ -237,7 +245,7 @@ def calculate_plant_efficiency(gen_fuel_data):
     # HOTFIX: The sum of string columns was to repeat them (e.g., 'ALALAL' for
     # three rows of 'AL') [240806;TWD].
     # HOTFIX: The NAICS Code filtering must be done here. [240806; TWD]
-    # See https://github.com/USEPA/ElectricityLCI/issues/232
+    # See https://github.com/NETL-RIC/ElectricityLCI/issues/232
     if model_specs.filter_non_egrid_emission_on_NAICS:
         logging.info("Filtering facilities by NAICS code")
         row_criteria = (gen_fuel_data['NAICS Code'] == '22') & (

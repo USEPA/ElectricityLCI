@@ -58,7 +58,7 @@ Copyright 2016-2024 Catalyst Cooperative and the Climate Policy Initiative
 CC-BY-4.0
 
 In the current release, the PUDL methods are replaced with EPA's API:
-https://github.com/USEPA/ElectricityLCI/issues/207#issuecomment-1751075194
+https://github.com/NETL-RIC/ElectricityLCI/issues/207#issuecomment-1751075194
 
 Last edited:
     2025-08-13
