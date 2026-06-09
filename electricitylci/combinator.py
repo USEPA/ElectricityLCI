@@ -51,6 +51,49 @@ BA_CODES = read_ba_codes()
 # FUNCTIONS
 ##############################################################################
 
+def _build_flowmapping_small_for_merge(
+    flow_mapping: pd.DataFrame,
+    elci_flow_mapping: pd.DataFrame,
+) -> pd.DataFrame:
+    """Build merge keys for upstream flow mapping without row blow-up.
+
+    Issue #274 appends the full FEDEFL flowlist. Many keys then have both an
+    eLCI row and a flowlist self-map with a different TargetFlowName. Merging
+    upstream on (SourceFlowName, SourceFlowContext) alone multiplies rows and
+    triggers ArrayMemoryError on large upstream inventories.
+
+    For keys with intentional eLCI 1→many splits (e.g. sand and gravel →
+    Sand + Gravel), retain every eLCI target row. For all other keys, keep one
+    mapping row per merge key (eLCI wins because it is concatenated first).
+    """
+    merge_keys = ["SourceFlowName", "SourceFlowContext"]
+    elci = elci_flow_mapping.copy()
+    elci["SourceFlowName"] = elci["SourceFlowName"].str.lower()
+    elci_triple = elci[merge_keys + ["TargetFlowName"]].drop_duplicates()
+    split_keys = (
+        elci.groupby(merge_keys, observed=True)
+        .size()
+        .reset_index(name="n")
+        .query("n > 1")[merge_keys]
+    )
+
+    fm_idx = flow_mapping.reset_index().rename(columns={"index": "orig_fm_index"})
+
+    if split_keys.empty:
+        return fm_idx.drop_duplicates(subset=merge_keys, keep="first")[
+            merge_keys + ["orig_fm_index"]
+        ]
+
+    tagged = fm_idx.merge(split_keys.assign(_split=True), on=merge_keys, how="left")
+    split_part = tagged[tagged["_split"].eq(True)].merge(
+        elci_triple, on=merge_keys + ["TargetFlowName"], how="inner"
+    )[merge_keys + ["orig_fm_index"]]
+    nonsplit_part = tagged[tagged["_split"].isna()].drop_duplicates(
+        subset=merge_keys, keep="first"
+    )[merge_keys + ["orig_fm_index"]]
+    return pd.concat([split_part, nonsplit_part], ignore_index=True)
+
+
 def add_fuel_inputs(gen_df, upstream_df, upstream_dict):
     """Convert the upstream emissions database to fuel inputs and add them
     to the generator data frame.
@@ -260,12 +303,13 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     # standard units (e.g., kg, MJ, m2*a). Note that 'SourceFlowContext' is
     # already in lowercase letters, which is why no change happens below.
     logging.info("Creating flow mapping database")
-    flow_mapping = fedefl.get_flowmapping('eLCI')
+    elci_flow_mapping = fedefl.get_flowmapping('eLCI')
+    flow_mapping = elci_flow_mapping
 
-    # as hotfix for https://github.com/NETL-RIC/ElectricityLCI/issues/274
-    # append full flowlist to the flow mapping file (dropping duplicates)
-    # to catch any other mappings of flows that use the same name as already
-    # in the flow list
+    # Issue #274: append full flowlist, then dedupe on
+    # (SourceFlowName, SourceFlowContext, TargetFlowName) so intentional eLCI
+    # 1:many splits (e.g. sand and gravel) are preserved. Piecewise merge below
+    # avoids ArrayMemoryError.
     flowlist = (fedefl.get_flows()
                 .filter(['Flowable', 'Context', 'Unit', 'Flow UUID'])
                 .assign(SourceFlowName = lambda x: x['Flowable'])
@@ -372,10 +416,13 @@ def concat_map_upstream_databases(eia_gen_year, *arg, **kwargs):
     # dataframe to a slice of upstream_df_grp, so that we only copy a small
     # dataframe during the merge. Then we can used the matched indeces to assign
     # column values later on.
-    flowmapping_small = (
-        flow_mapping[["SourceFlowName", "SourceFlowContext"]]
-        .reset_index()
-        .rename(columns={"index": "orig_fm_index"})
+    flowmapping_small = _build_flowmapping_small_for_merge(
+        flow_mapping, elci_flow_mapping
+    )
+    logging.info(
+        "Flow mapping merge keys: %d (from %d mapping rows)",
+        len(flowmapping_small),
+        len(flow_mapping),
     )
     upstream_df_grp_small = (
         upstream_df_grp[["FlowName", "Compartment_path"]]
