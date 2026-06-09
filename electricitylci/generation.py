@@ -163,6 +163,41 @@ def _calc_geom_params(p_series):
         return (d['mu_g'], d['sigma_g'])
 
 
+def _source_string_for_group(s, source_limit=None):
+    """Build underscore-joined source string for a grouped Source series."""
+    sources = sorted(s.dropna().unique())
+    if source_limit is not None and len(sources) > source_limit:
+        return np.nan
+    if len(sources) == 0:
+        return np.nan
+    return "_".join(sources)
+
+
+def _source_table_from_groupby(df, keys, source_limit=None):
+    """Faster replacement for groupby(Source).apply(_combine_sources)."""
+    logging.info(
+        "  grouping %d rows by %s",
+        len(df),
+        keys if isinstance(keys, str) else list(keys),
+    )
+    t0 = datetime.now()
+    out = (
+        df.groupby(keys, sort=False)["Source"]
+        .agg(lambda s: _source_string_for_group(s, source_limit=source_limit))
+        .rename("source_string")
+        .reset_index()
+    )
+    out["source_list"] = out["source_string"].apply(
+        lambda x: x.split("_") if isinstance(x, str) else np.nan
+    )
+    logging.info(
+        "  finished in %s (%d groups)",
+        datetime.now() - t0,
+        len(out),
+    )
+    return out
+
+
 def _combine_sources(p_series, df, cols, source_limit=None):
     """Take the sources from a groupby.apply and return a list that
     contains one column containing a list of the sources and another
@@ -749,69 +784,52 @@ def calculate_electricity_by_source(db, subregion="BA"):
         db_cols = list(db_powerplant.columns) + ['source_list', 'source_string']
         db_powerplant = pd.DataFrame(columns=db_cols)
     else:
-        # This is a pretty expensive process when we have to start looking
-        # at each flow generated in each compartment for each balancing
-        # authority area. To hopefully speed this up, we'll group by FlowName
-        # and Compartment and look and try to eliminate flows where all
-        # sources are single entities.
-        combine_source_by_flow = lambda x: _combine_sources(
-            x, db, ["FlowName", "Compartment"], 1
+        # Pass 1: flows with a single inventory source across all plants.
+        logging.info(
+            "Assigning source labels (pass 1/2: FlowName + Compartment)"
         )
-        # Find all single-source flows (all multiple sources are nans)
-        source_df = pd.DataFrame(
-            db_powerplant.groupby(["FlowName", "Compartment"])[
-                ["Source"]].apply(combine_source_by_flow),
-            columns=["source_list"],
+        source_df = _source_table_from_groupby(
+            db_powerplant,
+            ["FlowName", "Compartment"],
+            source_limit=1,
         )
-        source_df[["source_list", "source_string"]] = pd.DataFrame(
-            source_df["source_list"].values.tolist(),
-            index=source_df.index
-        )
-        source_df.reset_index(inplace=True)
         old_index = db_powerplant.index
         db_powerplant = db_powerplant.merge(
             right=source_df,
-            left_on=["FlowName", "Compartment"],
-            right_on=["FlowName", "Compartment"],
+            on=["FlowName", "Compartment"],
             how="left",
         )
         db_powerplant.index = old_index
 
-        # Filter out single flows; leaving only multi-flows
+        # Pass 2: rows where source mix varies by region/fuel/stage.
         db_multiple_sources = db_powerplant.loc[
-            db_powerplant["source_string"].isna(), :].copy()
+            db_powerplant["source_string"].isna(), :
+        ].copy()
         if len(db_multiple_sources) > 0:
-            combine_source_lambda = lambda x: _combine_sources(
-                x, db_multiple_sources, groupby_cols
+            logging.info(
+                "Assigning source labels (pass 2/2: %d rows need "
+                "region-level source resolution)",
+                len(db_multiple_sources),
             )
-            # HOTFIX: it doesn't make sense to groupby a different group;
-            # it gives different results from the first-pass filter;
-            # changed to match criteria above. [2023-12-19; TWD]
-            # HOTFIX undone [2024-08-13; MBJ]
-            source_df = pd.DataFrame(
-                db_multiple_sources.groupby(groupby_cols)[
-                    ["Source"]].apply(combine_source_lambda),
-                columns=["source_list"],
+            source_df = _source_table_from_groupby(
+                db_multiple_sources,
+                groupby_cols,
+                source_limit=None,
             )
-            source_df[["source_list", "source_string"]] = pd.DataFrame(
-                source_df["source_list"].values.tolist(),
-                index=source_df.index
-            )
-            source_df.reset_index(inplace=True)
-            db_multiple_sources.drop(
-                columns=["source_list", "source_string"], inplace=True
+            db_multiple_sources = db_multiple_sources.drop(
+                columns=["source_list", "source_string"],
+                errors="ignore",
             )
             old_index = db_multiple_sources.index
             db_multiple_sources = db_multiple_sources.merge(
                 right=source_df,
-                left_on=groupby_cols,
-                right_on=groupby_cols,
+                on=groupby_cols,
                 how="left",
             )
             db_multiple_sources.index = old_index
             db_powerplant.loc[
                 db_powerplant["source_string"].isna(),
-                ["source_string", "source_list"]
+                ["source_string", "source_list"],
             ] = db_multiple_sources[["source_string", "source_list"]]
     unique_source_lists = list(db_powerplant["source_string"].unique())
     unique_source_lists = [x for x in unique_source_lists if str(x) != "nan"]
@@ -820,16 +838,13 @@ def calculate_electricity_by_source(db, subregion="BA"):
     # used as proxies for Canadian generation. In those cases the electricity
     # generation will be equal to the Electricity already in the dataframe.
     elec_sum_lists = list()
-    for src in unique_source_lists:
-        logging.info(f"Calculating electricity for {src}")
-        db["temp_src"] = src
-        src_filter = [
-            a in b
-            for a, b in zip(
-                db["Source"].values.tolist(), db["temp_src"].values.tolist()
-            )
-        ]
-        sub_db = db.loc[src_filter, :].copy()
+    n_src = len(unique_source_lists)
+    for i, src in enumerate(unique_source_lists, start=1):
+        logging.info(
+            "Calculating electricity for %s (%d/%d)", src, i, n_src
+        )
+        src_parts = src.split("_")
+        sub_db = db[db["Source"].isin(src_parts)].copy()
         sub_db.drop_duplicates(subset=fuel_agg + ["eGRID_ID","Year"], inplace=True)
         # HOTFIX: fix pandas futurewarning syntax [2024-03-08; TWD]
         sub_db_group = sub_db.groupby(elec_groupby_cols, as_index=False).agg(
